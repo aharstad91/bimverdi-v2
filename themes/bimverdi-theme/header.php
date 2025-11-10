@@ -29,7 +29,7 @@
             <div class="hidden md:block">
                 <?php
                 wp_nav_menu(array(
-                    'theme_location' => 'primary',
+                    'menu' => 31,
                     'container' => false,
                     'menu_class' => 'flex space-x-8',
                     'fallback_cb' => false,
@@ -70,7 +70,7 @@
         <div class="md:hidden hidden" id="mobile-menu">
             <?php
             wp_nav_menu(array(
-                'theme_location' => 'primary',
+                'menu' => 31,
                 'container' => false,
                 'menu_class' => 'py-4 space-y-2',
                 'fallback_cb' => false,

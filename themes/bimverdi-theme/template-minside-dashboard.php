@@ -74,12 +74,6 @@ $upcoming_events = get_posts(array(
 ));
 ?>
 
-<!-- Min Side Horizontal Tab Navigation -->
-<?php 
-$current_tab = 'dashboard';
-get_template_part('template-parts/minside-tabs', null, array('current_tab' => $current_tab));
-?>
-
 <div class="min-h-screen bg-bim-beige-100 py-8">
     <div class="container mx-auto px-4">
         
@@ -144,6 +138,12 @@ get_template_part('template-parts/minside-tabs', null, array('current_tab' => $c
             <?php endif; ?>
         </div>
 
+        <!-- Min Side Horizontal Tab Navigation -->
+        <?php 
+        $current_tab = 'dashboard';
+        get_template_part('template-parts/minside-tabs', null, array('current_tab' => $current_tab));
+        ?>
+
         <!-- Main Content (Full Width) -->
         <div>
 
@@ -177,47 +177,91 @@ get_template_part('template-parts/minside-tabs', null, array('current_tab' => $c
 
 
                 <!-- Quick Actions -->
-                <div class="card-hjem mb-6">
-                    <div class="card-body p-6">
-                        <h2 class="text-2xl font-bold text-bim-black-900 mb-4">Hurtighandlinger</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            
-                            <a href="<?php echo esc_url(home_url('/rediger-bruker/')); ?>" class="btn btn-hjem-primary btn-lg flex-col h-auto py-6">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                Rediger Profil
-                            </a>
-                            
-                            <a href="<?php echo esc_url(home_url('/koble-foretak/')); ?>" class="btn btn-outline border-bim-orange text-bim-orange hover:bg-bim-orange hover:text-white btn-lg flex-col h-auto py-6">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
-                                <?php echo $company_id ? 'Foretak Status' : 'Koble til Foretak'; ?>
-                            </a>
-                            
-                            <?php if ($is_company_owner || current_user_can('manage_options')): ?>
-                            <a href="<?php echo esc_url(home_url('/registrer-verktoy/')); ?>" class="btn btn-outline border-bim-purple text-bim-purple hover:bg-bim-purple hover:text-white btn-lg flex-col h-auto py-6">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Registrer Verktøy
-                            </a>
-                            <?php endif; ?>
-                            
-                            <a href="#" class="btn btn-outline border-bim-purple text-bim-purple hover:bg-bim-purple hover:text-white btn-lg flex-col h-auto py-6">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                                Send Inn Idé
-                            </a>
-                            
-                            <a href="#arrangementer" class="btn btn-outline border-bim-orange text-bim-orange hover:bg-bim-orange hover:text-white btn-lg flex-col h-auto py-6">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                Kommende Events
-                            </a>
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-bim-black-900 mb-4">Hurtighandlinger</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        
+                        <!-- Profil Card -->
+                        <div class="card bg-base-100 shadow-xl border border-base-200">
+                            <div class="card-body">
+                                <h2 class="card-title text-bim-black-900">Profil</h2>
+                                <p class="text-sm text-bim-black-700">Administrer din brukerprofil</p>
+                                <div class="card-actions justify-end mt-4">
+                                    <a href="<?php echo esc_url(home_url('/rediger-bruker/')); ?>" class="btn btn-primary btn-sm">Rediger</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Foretak Card -->
+                        <div class="card bg-base-100 shadow-xl border border-base-200">
+                            <div class="card-body">
+                                <h2 class="card-title text-bim-black-900">Foretak</h2>
+                                <p class="text-sm text-bim-black-700"><?php echo $company_id ? 'Se foretak status' : 'Koble til foretak'; ?></p>
+                                <div class="card-actions justify-end mt-4">
+                                    <a href="<?php echo esc_url(home_url('/koble-foretak/')); ?>" class="btn btn-primary btn-sm">
+                                        <?php echo $company_id ? 'Se Status' : 'Koble Til'; ?>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Verktøy Card -->
+                        <?php 
+                        $my_tools = get_posts(array(
+                            'post_type' => 'verktoy',
+                            'author' => $user_id,
+                            'posts_per_page' => -1,
+                            'post_status' => array('publish', 'draft', 'pending'),
+                        ));
+                        $my_tools_count = count($my_tools);
+                        ?>
+                        <div class="card bg-base-100 shadow-xl border border-base-200">
+                            <div class="card-body">
+                                <h2 class="card-title text-bim-black-900">Verktøy</h2>
+                                <p class="text-3xl font-bold text-bim-purple my-2"><?php echo $my_tools_count; ?></p>
+                                <div class="card-actions justify-end mt-4">
+                                    <a href="<?php echo esc_url(home_url('/registrer-verktoy/')); ?>" class="btn btn-primary btn-sm">Lag Nytt</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Idéer Card -->
+                        <?php 
+                        $my_ideas = get_posts(array(
+                            'post_type' => 'case',
+                            'author' => $user_id,
+                            'posts_per_page' => -1,
+                        ));
+                        $my_ideas_count = count($my_ideas);
+                        ?>
+                        <div class="card bg-base-100 shadow-xl border border-base-200">
+                            <div class="card-body">
+                                <h2 class="card-title text-bim-black-900">Idéer</h2>
+                                <p class="text-3xl font-bold text-bim-purple my-2"><?php echo $my_ideas_count; ?></p>
+                                <div class="card-actions justify-end mt-4">
+                                    <a href="#" class="btn btn-primary btn-sm">Send Inn</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Arrangementer Card -->
+                        <?php 
+                        $my_registrations = get_posts(array(
+                            'post_type' => 'pamelding',
+                            'meta_key' => 'pamelding_bruker',
+                            'meta_value' => $user_id,
+                            'posts_per_page' => -1,
+                        ));
+                        $registrations_count = count($my_registrations);
+                        ?>
+                        <div class="card bg-base-100 shadow-xl border border-base-200">
+                            <div class="card-body">
+                                <h2 class="card-title text-bim-black-900">Arrangementer</h2>
+                                <p class="text-3xl font-bold text-bim-orange my-2"><?php echo $registrations_count; ?></p>
+                                <div class="card-actions justify-end mt-4">
+                                    <a href="#arrangementer" class="btn btn-primary btn-sm">Se Events</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -258,76 +302,6 @@ get_template_part('template-parts/minside-tabs', null, array('current_tab' => $c
                     </div>
                 </div>
                 <?php endif; ?>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    
-                    <!-- My Tools Count -->
-                    <?php 
-                    $my_tools_count = 0;
-                    if ($company_id) {
-                        $my_tools = get_posts(array(
-                            'post_type' => 'verktoy',
-                            'meta_key' => 'verktoy_eier',
-                            'meta_value' => $company_id,
-                            'posts_per_page' => -1,
-                        ));
-                        $my_tools_count = count($my_tools);
-                    }
-                    ?>
-                    <div class="card-hjem">
-                        <div class="card-body p-6 text-center">
-                            <div class="text-4xl font-bold text-bim-orange mb-2"><?php echo $my_tools_count; ?></div>
-                            <div class="text-sm text-bim-black-700">Delte Verktøy</div>
-                        </div>
-                    </div>
-
-                    <!-- My Ideas Count -->
-                    <?php 
-                    $my_ideas = get_posts(array(
-                        'post_type' => 'case',
-                        'author' => $user_id,
-                        'posts_per_page' => -1,
-                    ));
-                    $my_ideas_count = count($my_ideas);
-                    ?>
-                    <div class="card-hjem">
-                        <div class="card-body p-6 text-center">
-                            <div class="text-4xl font-bold text-bim-purple mb-2"><?php echo $my_ideas_count; ?></div>
-                            <div class="text-sm text-bim-black-700">Mine Idéer</div>
-                        </div>
-                    </div>
-
-                    <!-- Events Attended -->
-                    <?php 
-                    $my_registrations = get_posts(array(
-                        'post_type' => 'pamelding',
-                        'meta_key' => 'pamelding_bruker',
-                        'meta_value' => $user_id,
-                        'posts_per_page' => -1,
-                    ));
-                    $registrations_count = count($my_registrations);
-                    ?>
-                    <div class="card-hjem">
-                        <div class="card-body p-6 text-center">
-                            <div class="text-4xl font-bold text-bim-orange mb-2"><?php echo $registrations_count; ?></div>
-                            <div class="text-sm text-bim-black-700">Påmeldinger</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="card-hjem">
-                    <div class="card-body p-6">
-                        <h2 class="text-2xl font-bold text-bim-black-900 mb-4">Siste Aktivitet</h2>
-                        <div class="text-center py-8 text-bim-black-600">
-                            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <p>Ingen aktivitet ennå. Start med å utforske medlemsportalen!</p>
-                        </div>
-                    </div>
-                </div>
 
             </main>
         </div>
