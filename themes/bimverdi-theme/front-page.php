@@ -15,7 +15,7 @@ get_header();
 <!-- Hero Section -->
 <?php
 $hero_args = array(
-    'title' => 'Velkommen til BIM Verdi',
+    'title' => 'Velkommen til BIM Verdi (BIM Value)',
     'subtitle' => 'Et fagnettverk som bidrar til bedre og mer effektiv digitalisering av byggenæringen',
     'height' => 'min-h-screen',
     'buttons' => array(
