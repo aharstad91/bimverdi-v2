@@ -1,0 +1,16 @@
+{
+  "name": "bimverdi-theme",
+  "version": "2.0.0",
+  "description": "BIM Verdi WordPress Theme with hjem.no inspired design",
+  "scripts": {
+    "dev": "tailwindcss -i ./style.css -o ./dist/style.css --watch",
+    "build": "tailwindcss -i ./style.css -o ./dist/style.css",
+    "production": "tailwindcss -i ./style.css -o ./dist/style.css --minify"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "daisyui": "^4.4.19",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6"
+  }
+}

@@ -1,0 +1,134 @@
+/*
+Theme Name: BIM Verdi Theme
+Theme URI: https://bimverdi.no
+Description: Custom WordPress theme for BIM Verdi member portal with hjem.no inspired design
+Version: 2.0.0
+Author: BIM Verdi
+Text Domain: bimverdi
+*/
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Import fonts - Moderat (hjem.no) with Inter fallback */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Custom base styles */
+@layer base {
+  body {
+    @apply font-sans text-base text-bim-black-900 antialiased bg-bim-beige-100;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold text-bim-black-900;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl leading-tight;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl leading-snug;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+}
+
+/* Custom component styles (HJEM.NO INSPIRED) */
+@layer components {
+  
+  /* === BUTTONS (hjem.no style) === */
+  .btn-hjem-primary {
+    @apply bg-bim-orange text-white font-medium px-6 py-3 rounded-hjem 
+           hover:bg-bim-orange-700 transition-colors duration-200
+           shadow-sm hover:shadow-md;
+  }
+  
+  .btn-hjem-secondary {
+    @apply bg-bim-purple text-white font-medium px-6 py-3 rounded-hjem
+           hover:bg-bim-purple-700 transition-colors duration-200;
+  }
+  
+  .btn-hjem-outline {
+    @apply bg-transparent border-2 border-bim-black-200 text-bim-black-900 
+           font-medium px-6 py-3 rounded-hjem
+           hover:bg-bim-beige-200 transition-colors duration-200;
+  }
+  
+  /* === CARDS (hjem.no style) === */
+  .card-hjem {
+    @apply bg-white rounded-xl overflow-hidden shadow-card 
+           hover:shadow-lg transition-shadow duration-300
+           border border-bim-black-100;
+  }
+  
+  .card-hjem-image {
+    @apply w-full h-48 object-cover;
+  }
+  
+  .card-hjem-body {
+    @apply p-6;
+  }
+  
+  .card-hjem-title {
+    @apply text-xl font-bold text-bim-black-900 mb-2;
+  }
+  
+  .card-hjem-text {
+    @apply text-bim-black-500 mb-4;
+  }
+  
+  /* === INPUTS (hjem.no style) === */
+  .input-hjem {
+    @apply w-full px-4 py-3 bg-white border border-bim-black-200 
+           rounded-hjem text-bim-black-900 placeholder-bim-black-400
+           focus:outline-none focus:border-bim-orange focus:ring-2 focus:ring-bim-orange focus:ring-opacity-20
+           transition-all duration-200;
+  }
+  
+  .input-hjem-search {
+    @apply input-hjem pl-12 bg-white shadow-sm;
+  }
+  
+  /* === BADGES/TAGS (hjem.no style) === */
+  .badge-hjem {
+    @apply inline-flex items-center px-3 py-1 rounded-hjem-pill
+           text-sm font-medium bg-bim-beige-200 text-bim-black-700;
+  }
+  
+  .badge-hjem-orange {
+    @apply badge-hjem bg-bim-orange-100 text-bim-orange-700;
+  }
+  
+  .badge-hjem-success {
+    @apply badge-hjem bg-green-100 text-green-700;
+  }
+  
+  /* === MEMBER CARD (BIM specific) === */
+  .member-card {
+    @apply card-hjem;
+  }
+  
+  .member-card-featured {
+    @apply card-hjem border-2 border-bim-orange;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Gradient backgrounds (optional) */
+  .bg-gradient-orange {
+    background: linear-gradient(135deg, #FF8B5E 0%, #E67A4E 100%);
+  }
+  
+  .bg-gradient-purple {
+    background: linear-gradient(135deg, #5E36FE 0%, #4E26DE 100%);
+  }
+}

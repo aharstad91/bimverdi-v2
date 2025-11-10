@@ -1,0 +1,20 @@
+# Ignorer alt
+*
+!.gitignore
+
+# Unntatt themes og plugins
+!themes/
+!themes/**
+!plugins/
+!plugins/**
+
+# Ignorer standard plugins
+plugins/index.php
+plugins/hello.php
+plugins/akismet/
+
+# Ignorer common files
+**/node_modules/
+**/vendor/
+**/.DS_Store
+**/dist/

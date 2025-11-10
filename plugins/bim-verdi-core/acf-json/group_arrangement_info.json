@@ -1,0 +1,121 @@
+{
+    "key": "group_arrangement_info",
+    "title": "Arrangement Info",
+    "fields": [
+        {
+            "key": "field_arrangement_dato",
+            "label": "Dato",
+            "name": "arrangement_dato",
+            "type": "date_picker",
+            "instructions": "Når arrangementet finner sted",
+            "required": 1,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "first_day": 1
+        },
+        {
+            "key": "field_tidspunkt_start",
+            "label": "Tidspunkt start",
+            "name": "tidspunkt_start",
+            "type": "time_picker",
+            "instructions": "Starttidspunkt",
+            "required": 1,
+            "display_format": "H:i",
+            "return_format": "H:i"
+        },
+        {
+            "key": "field_tidspunkt_slutt",
+            "label": "Tidspunkt slutt",
+            "name": "tidspunkt_slutt",
+            "type": "time_picker",
+            "instructions": "Sluttidspunkt",
+            "required": 0,
+            "display_format": "H:i",
+            "return_format": "H:i"
+        },
+        {
+            "key": "field_sted",
+            "label": "Sted",
+            "name": "sted",
+            "type": "text",
+            "instructions": "Fysisk adresse eller 'Digital/Teams'",
+            "required": 1,
+            "placeholder": "Konferanserom A, Oslo / Digital via Teams"
+        },
+        {
+            "key": "field_arrangement_beskrivelse",
+            "label": "Beskrivelse",
+            "name": "arrangement_beskrivelse",
+            "type": "wysiwyg",
+            "instructions": "Agenda, tema og formål med arrangementet",
+            "required": 1,
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 1
+        },
+        {
+            "key": "field_pamelding_lenke",
+            "label": "Påmeldingslenke",
+            "name": "pamelding_lenke",
+            "type": "url",
+            "instructions": "URL til påmeldingsskjema (hvis eksternt) eller la stå tom for intern påmelding",
+            "required": 0,
+            "placeholder": "https://forms.gle/..."
+        },
+        {
+            "key": "field_maks_deltakere",
+            "label": "Maks antall deltakere",
+            "name": "maks_deltakere",
+            "type": "number",
+            "instructions": "La stå tom hvis ubegrenset",
+            "required": 0,
+            "min": 1,
+            "placeholder": "50"
+        },
+        {
+            "key": "field_arrangement_status",
+            "label": "Status",
+            "name": "arrangement_status",
+            "type": "select",
+            "instructions": "Gjeldende status for arrangementet",
+            "required": 1,
+            "choices": {
+                "planlagt": "Planlagt",
+                "avholdt": "Avholdt",
+                "avlyst": "Avlyst"
+            },
+            "default_value": "planlagt",
+            "return_format": "value"
+        },
+        {
+            "key": "field_prosjektleder",
+            "label": "Prosjektleder/Ansvarlig",
+            "name": "prosjektleder",
+            "type": "user",
+            "instructions": "Hvem er ansvarlig for arrangementet?",
+            "required": 0,
+            "role": [
+                "member_coordinator",
+                "administrator"
+            ],
+            "return_format": "id",
+            "multiple": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "arrangement"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true,
+    "description": "Detaljer om arrangement/event"
+}

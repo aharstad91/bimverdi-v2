@@ -1,0 +1,116 @@
+{
+    "key": "group_prosjekt_info",
+    "title": "Prosjekt Info",
+    "fields": [
+        {
+            "key": "field_prosjekt_beskrivelse",
+            "label": "Prosjektbeskrivelse",
+            "name": "prosjekt_beskrivelse",
+            "type": "wysiwyg",
+            "instructions": "Formål, mål og arbeidsområde",
+            "required": 1,
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 1
+        },
+        {
+            "key": "field_startdato",
+            "label": "Startdato",
+            "name": "startdato",
+            "type": "date_picker",
+            "instructions": "Når startet prosjektet?",
+            "required": 1,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "first_day": 1
+        },
+        {
+            "key": "field_sluttdato",
+            "label": "Sluttdato (planlagt)",
+            "name": "sluttdato",
+            "type": "date_picker",
+            "instructions": "Forventet/planlagt sluttdato",
+            "required": 0,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "first_day": 1
+        },
+        {
+            "key": "field_prosjekt_status",
+            "label": "Status",
+            "name": "prosjekt_status",
+            "type": "select",
+            "instructions": "Gjeldende prosjektstatus",
+            "required": 1,
+            "choices": {
+                "planning": "Planlegging",
+                "active": "Aktiv",
+                "completed": "Fullført",
+                "archived": "Arkivert"
+            },
+            "default_value": "planning",
+            "return_format": "value"
+        },
+        {
+            "key": "field_prosjektleder_prosjekt",
+            "label": "Prosjektleder",
+            "name": "prosjektleder",
+            "type": "user",
+            "instructions": "Hvem leder prosjektet?",
+            "required": 0,
+            "return_format": "id",
+            "multiple": 0
+        },
+        {
+            "key": "field_deltakere",
+            "label": "Deltakende bedrifter",
+            "name": "deltakere",
+            "type": "relationship",
+            "instructions": "Velg foretak som deltar i prosjektet",
+            "required": 0,
+            "post_type": [
+                "foretak"
+            ],
+            "return_format": "id",
+            "min": 0,
+            "max": 0
+        },
+        {
+            "key": "field_deltakerliste_tekst",
+            "label": "Deltakerliste med roller (tekst)",
+            "name": "deltakerliste_tekst",
+            "type": "textarea",
+            "instructions": "Manuell liste over deltakere og deres roller i prosjektet",
+            "required": 0,
+            "rows": 5,
+            "placeholder": "Bedrift A - Prosjektleder\nBedrift B - Teknisk partner\n..."
+        },
+        {
+            "key": "field_dokumenter",
+            "label": "Dokumenter",
+            "name": "dokumenter",
+            "type": "file",
+            "instructions": "Last opp relevante prosjektdokumenter (rapporter, presentasjoner, etc.)",
+            "required": 0,
+            "return_format": "array",
+            "library": "all",
+            "multiple": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "prosjekt"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true,
+    "description": "Informasjon om pilot-prosjekter"
+}

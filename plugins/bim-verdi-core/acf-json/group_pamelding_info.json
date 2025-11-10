@@ -1,0 +1,80 @@
+{
+    "key": "group_pamelding_info",
+    "title": "Påmelding Info",
+    "fields": [
+        {
+            "key": "field_pamelding_bruker",
+            "label": "Bruker",
+            "name": "pamelding_bruker",
+            "type": "user",
+            "instructions": "Hvem meldte seg på?",
+            "required": 1,
+            "return_format": "id",
+            "multiple": 0
+        },
+        {
+            "key": "field_pamelding_arrangement",
+            "label": "Arrangement",
+            "name": "pamelding_arrangement",
+            "type": "post_object",
+            "instructions": "Hvilket arrangement?",
+            "required": 1,
+            "post_type": [
+                "arrangement"
+            ],
+            "return_format": "id",
+            "multiple": 0
+        },
+        {
+            "key": "field_tidspunkt_pameldt",
+            "label": "Tidspunkt påmeldt",
+            "name": "tidspunkt_pameldt",
+            "type": "date_time_picker",
+            "instructions": "Når ble påmeldingen registrert?",
+            "required": 1,
+            "display_format": "d.m.Y H:i",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1
+        },
+        {
+            "key": "field_pamelding_status",
+            "label": "Status",
+            "name": "pamelding_status",
+            "type": "select",
+            "instructions": "Status på påmeldingen",
+            "required": 1,
+            "choices": {
+                "aktiv": "Aktiv",
+                "avmeldt": "Avmeldt",
+                "gjennomfort": "Gjennomført"
+            },
+            "default_value": "aktiv",
+            "return_format": "value"
+        },
+        {
+            "key": "field_pamelding_notater",
+            "label": "Notater (admin)",
+            "name": "pamelding_notater",
+            "type": "textarea",
+            "instructions": "Interne notater om påmeldingen",
+            "required": 0,
+            "rows": 3
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "pamelding"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true,
+    "description": "Påmeldingsinformasjon for arrangementer"
+}

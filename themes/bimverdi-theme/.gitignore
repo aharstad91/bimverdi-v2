@@ -1,0 +1,24 @@
+# Node modules
+node_modules/
+npm-debug.log
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*~
+*.swp
+*.tmp
+
+# Build files (if using compilation)
+# dist/
+*.map
