@@ -22,7 +22,7 @@ get_header();
                 </a>
             </div>
             <div class="flex items-center justify-between flex-wrap gap-4">
-                <div class="flex-1">
+                <div class="flex-1 text-black">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold">FORSKRIFT</span>
                         <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold">⚖️ Lovdata</span>
@@ -30,7 +30,7 @@ get_header();
                     <h1 class="text-5xl font-bold mb-4">TEK17</h1>
                     <p class="text-2xl opacity-95">Tekniske krav til byggverk – Norges gjeldende byggenorm</p>
                 </div>
-                <div class="text-right">
+                <div class="text-right text-black">
                     <div class="text-4xl font-bold">156</div>
                     <div class="text-sm opacity-80">visninger denne måneden</div>
                 </div>

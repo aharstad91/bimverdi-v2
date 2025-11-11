@@ -71,9 +71,9 @@ $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori');
                     
                     <!-- Company -->
                     <?php if ($eier): ?>
-                    <p class="text-xl text-white/90">
+                    <p class="text-xl text-black">
                         Levert av <a href="<?php echo get_permalink($eier_id); ?>" 
-                           class="text-white hover:underline font-semibold">
+                           class="hover:underline font-semibold">
                             <?php echo esc_html($eier->post_title); ?>
                         </a>
                     </p>
@@ -109,14 +109,14 @@ $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori');
                     <a href="<?php echo esc_url($lenke); ?>" 
                        target="_blank" 
                        rel="noopener" 
-                       class="px-8 py-4 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors text-lg flex items-center gap-2">
+                       class="px-8 py-4 bg-purple-600 rounded-lg font-bold hover:bg-purple-700 transition-colors text-lg flex items-center gap-2">
                         🌐 Besøk nettside
                     </a>
                     <?php endif; ?>
                     
                     <?php if ($eier): ?>
                     <a href="<?php echo get_permalink($eier_id); ?>" 
-                       class="px-8 py-4 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition-colors text-lg flex items-center gap-2">
+                       class="px-8 py-4 bg-orange-600 rounded-lg font-bold hover:bg-orange-700 transition-colors text-lg flex items-center gap-2">
                         📧 Kontakt leverandør
                     </a>
                     <?php endif; ?>
@@ -247,7 +247,7 @@ $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori');
                         <h3 class="text-xl font-bold mb-3">
                             📞 Kontakt leverandør
                         </h3>
-                        <p class="mb-4 text-sm opacity-90">
+                        <p class="mb-4 text-sm opacity-90 text-black">
                             Vil du vite mer om <?php the_title(); ?>? Ta kontakt med leverandøren.
                         </p>
                         <a href="<?php echo get_permalink($eier_id); ?>" 

@@ -30,7 +30,7 @@ get_header();
                     <h1 class="text-5xl font-bold mb-4">MiljøBIM</h1>
                     <p class="text-xl opacity-95 text-black">Tema: Miljø og klima i BIM – klimagassberegning, EPD-data, sirkulæritet</p>
                 </div>
-                <div class="text-center">
+                <div class="text-center text-black">
                     <div class="text-4xl font-bold">34</div>
                     <div class="text-sm opacity-80">medlemsbedrifter</div>
                 </div>

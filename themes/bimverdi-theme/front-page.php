@@ -15,7 +15,7 @@ get_header();
 <!-- Hero Section -->
 <section class="bg-gradient-to-br from-blue-600 via-purple-600 to-orange-600 text-white py-20">
     <div class="container mx-auto px-4 md:px-8">
-        <div class="max-w-5xl mx-auto">
+        <div class="max-w-5xl mx-auto text-black">
             
             <!-- Badge -->
             <div class="text-center mb-6">
