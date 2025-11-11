@@ -24,11 +24,11 @@ get_header();
             <div class="flex items-center justify-between flex-wrap gap-6">
                 <div class="flex-1">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold">🌱 TEMAGRUPPE</span>
+                        <span class="bg-white/20 text-black px-4 py-2 rounded-full text-sm font-bold">🌱 TEMAGRUPPE</span>
                         <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold">Aktiv</span>
                     </div>
                     <h1 class="text-5xl font-bold mb-4">MiljøBIM</h1>
-                    <p class="text-xl opacity-95">Tema: Miljø og klima i BIM – klimagassberegning, EPD-data, sirkulæritet</p>
+                    <p class="text-xl opacity-95 text-black">Tema: Miljø og klima i BIM – klimagassberegning, EPD-data, sirkulæritet</p>
                 </div>
                 <div class="text-center">
                     <div class="text-4xl font-bold">34</div>
@@ -330,16 +330,16 @@ get_header();
         </div>
         
         <!-- Join CTA -->
-        <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl shadow-2xl p-12 text-center text-white">
-            <h2 class="text-4xl font-bold text-white mb-4">Vil du bli med i MiljøBIM?</h2>
-            <p class="text-xl text-white mb-8 opacity-90 max-w-2xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-12 text-center">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">Vil du bli med i MiljøBIM?</h2>
+            <p class="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
                 Vi møtes 6-8 ganger i året for å dele kunnskap, erfaringer og utvikle beste praksis for miljø og klima i BIM.
             </p>
             <div class="flex gap-4 justify-center flex-wrap">
-                <a href="#" class="px-8 py-4 bg-white text-green-600 rounded-lg font-bold hover:bg-gray-100 transition-colors text-lg">
+                <a href="#" class="px-8 py-4 bg-green-600 rounded-lg font-bold hover:bg-green-700 transition-colors text-lg">
                     Bli medlem av gruppen
                 </a>
-                <a href="<?php echo esc_url(home_url('/kontakt/')); ?>" class="px-8 py-4 bg-white/20 text-white rounded-lg font-bold hover:bg-white/30 transition-colors text-lg">
+                <a href="<?php echo esc_url(home_url('/kontakt/')); ?>" class="px-8 py-4 bg-gray-100 text-gray-900 rounded-lg font-bold hover:bg-gray-200 transition-colors text-lg">
                     Kontakt gruppeleder
                 </a>
             </div>
