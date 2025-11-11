@@ -69,12 +69,12 @@ $tools_query = new WP_Query($args);
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between flex-wrap gap-6">
                 <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-4">
+                    <div class="flex items-center gap-3 mb-4 text-black">
                         <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold">🔧 VERKTØY</span>
                         <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold"><?php echo $tools_query->found_posts; ?> Løsninger</span>
                     </div>
                     <h1 class="text-5xl font-bold mb-4">Verktøy & Løsninger</h1>
-                    <p class="text-xl opacity-95">Utforsk digitale verktøy og løsninger fra BIM Verdi medlemmer</p>
+                    <p class="text-xl opacity-95 text-black">Utforsk digitale verktøy og løsninger fra BIM Verdi medlemmer</p>
                 </div>
                 <div class="text-center">
                     <a href="<?php echo esc_url(home_url('/registrer-verktoy/')); ?>" class="px-8 py-4 bg-white text-purple-600 rounded-lg font-bold hover:bg-gray-100 transition-colors text-lg inline-block">
@@ -193,7 +193,7 @@ $tools_query = new WP_Query($args);
                 $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori', array('fields' => 'names'));
             ?>
             
-            <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden group">
+            <a href="<?php the_permalink(); ?>" class="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden group">
                 
                 <!-- Logo/Image -->
                 <?php if ($logo_url): ?>
@@ -248,16 +248,16 @@ $tools_query = new WP_Query($args);
                     <!-- CTA -->
                     <div class="flex gap-3 pt-4 border-t border-gray-200">
                         <?php if (!empty($lenke)): ?>
-                            <a href="<?php echo esc_url($lenke); ?>" target="_blank" rel="noopener" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-center text-sm">
+                            <span onclick="event.preventDefault(); event.stopPropagation(); window.open('<?php echo esc_url($lenke); ?>', '_blank');" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-center text-sm cursor-pointer">
                                 🔗 Besøk
-                            </a>
+                            </span>
                         <?php endif; ?>
-                        <a href="<?php the_permalink(); ?>" class="flex-1 px-4 py-2 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-center text-sm">
+                        <span class="flex-1 px-4 py-2 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-center text-sm">
                             📄 Detaljer
-                        </a>
+                        </span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <?php endwhile; wp_reset_postdata(); ?>
         </div>
