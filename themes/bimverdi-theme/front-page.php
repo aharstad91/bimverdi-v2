@@ -13,55 +13,71 @@ get_header();
 ?>
 
 <!-- Hero Section -->
-<?php
-$hero_args = array(
-    'title' => 'Velkommen til BIM Verdi',
-    'subtitle' => 'Et fagnettverk som bidrar til bedre og mer effektiv digitalisering av byggenæringen',
-    'height' => 'min-h-screen',
-    'buttons' => array(
-        array(
-            'label' => 'Bli medlem',
-            'url' => home_url('/registrer/'),
-            'class' => 'btn-primary text-white',
-        ),
-        array(
-            'label' => 'Utforsk medlemmer',
-            'url' => home_url('/medlemmer/'),
-            'class' => 'btn-outline text-white border-white',
-        ),
-    ),
-);
-get_template_part('template-parts/hero', null, $hero_args);
-?>
-
-<main>
-    <!-- Stats Section -->
-    <section class="bg-white py-16 border-b border-gray-200">
-        <div class="container mx-auto px-4 md:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<section class="bg-gradient-to-br from-blue-600 via-purple-600 to-orange-600 text-white py-20">
+    <div class="container mx-auto px-4 md:px-8">
+        <div class="max-w-5xl mx-auto">
+            
+            <!-- Badge -->
+            <div class="text-center mb-6">
+                <span class="inline-block bg-white/20 px-4 py-2 rounded-full text-sm font-bold">
+                    🏢 Norges ledende BIM-nettverk
+                </span>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                    Kunnskap. Nettverk. Innovasjon.
+                </h1>
+                <p class="text-2xl md:text-3xl mb-8 opacity-95 max-w-3xl mx-auto">
+                    Vi kobler bransjen med <strong>forskrifter</strong>, <strong>erfaringer</strong>, <strong>verktøy</strong> og <strong>ekspertise</strong> – alt på ett sted.
+                </p>
+                <p class="text-lg opacity-90 max-w-2xl mx-auto mb-10">
+                    Et fagnettverk som bidrar til bedre og mer effektiv digitalisering av byggenæringen gjennom deling av kunnskap og beste praksis.
+                </p>
                 
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-primary mb-2">70+</div>
-                    <p class="text-gray-600">Bedrifter</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-secondary mb-2">7</div>
-                    <p class="text-gray-600">Temagrupper</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-primary mb-2">30+</div>
-                    <p class="text-gray-600">Pilotprosjekter</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-secondary mb-2">50+</div>
-                    <p class="text-gray-600">Arrangementer</p>
+                <!-- CTA Buttons -->
+                <div class="flex flex-wrap gap-4 justify-center mb-12">
+                    <a href="<?php echo esc_url(home_url('/begreper/')); ?>" class="px-8 py-4 bg-white text-purple-600 rounded-lg font-bold hover:bg-gray-100 transition-colors text-lg shadow-xl">
+                        🔍 Utforsk begreper
+                    </a>
+                    <a href="<?php echo esc_url(home_url('/registrer/')); ?>" class="px-8 py-4 bg-white/20 text-white rounded-lg font-bold hover:bg-white/30 transition-colors text-lg backdrop-blur">
+                        Bli medlem
+                    </a>
                 </div>
             </div>
+            
+            <!-- Stats Grid -->
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold mb-2">70+</div>
+                        <p class="text-white/90 font-semibold">Medlemsbedrifter</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold mb-2">7</div>
+                        <p class="text-white/90 font-semibold">Temagrupper</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold mb-2">200+</div>
+                        <p class="text-white/90 font-semibold">Begreper</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold mb-2">50+</div>
+                        <p class="text-white/90 font-semibold">Arrangementer</p>
+                    </div>
+                </div>
+            </div>
+            
         </div>
-    </section>
+    </div>
+</section>
+
+<main>
     
     <!-- Demo: Semantic Concept System -->
     <section class="bg-gradient-to-br from-blue-50 to-purple-50 py-20 border-t-4 border-blue-500">
