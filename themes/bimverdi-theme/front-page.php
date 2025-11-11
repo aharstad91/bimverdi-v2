@@ -83,8 +83,8 @@ get_header();
     <section class="bg-gradient-to-br from-blue-50 to-purple-50 py-20 border-t-4 border-blue-500">
         <div class="container mx-auto px-4 md:px-8">
             <div class="text-center mb-12">
-                <div class="inline-block bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
-                    🚀 NYT: Semantisk Begrepssystem
+                <div class="inline-block bg-blue-500 px-4 py-2 rounded-full text-sm font-bold mb-4 text-black">
+                    🚀 NYTT: Semantisk Begrepssystem
                 </div>
                 <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
                     Finn Alt Du Trenger på Ett Sted
