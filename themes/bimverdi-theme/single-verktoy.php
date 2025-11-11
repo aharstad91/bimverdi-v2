@@ -27,93 +27,153 @@ $all_meta = get_post_meta(get_the_ID());
 $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori');
 ?>
 
-<div class="min-h-screen bg-bim-beige-100 py-8">
-    <div class="container mx-auto px-4 max-w-6xl">
-
-        <!-- Breadcrumbs -->
-        <div class="mb-6">
-            <nav class="text-sm text-bim-black-600">
-                <a href="<?php echo home_url(); ?>" class="hover:text-bim-orange">Hjem</a>
-                <span class="mx-2">/</span>
-                <a href="<?php echo home_url('/verktoy'); ?>" class="hover:text-bim-orange">Verktøy</a>
-                <span class="mx-2">/</span>
-                <span class="text-bim-black-900"><?php the_title(); ?></span>
-            </nav>
+<div class="min-h-screen bg-bim-beige-100">
+    
+    <!-- Hero Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-orange-600 text-white py-12">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <!-- Breadcrumbs -->
+            <div class="mb-6">
+                <nav class="text-sm text-white/80">
+                    <a href="<?php echo home_url(); ?>" class="hover:text-white">Hjem</a>
+                    <span class="mx-2">/</span>
+                    <a href="<?php echo home_url('/verktoy'); ?>" class="hover:text-white">Verktøy</a>
+                    <span class="mx-2">/</span>
+                    <span class="text-white"><?php the_title(); ?></span>
+                </nav>
+            </div>
+            
+            <!-- Hero Content -->
+            <div class="flex items-start gap-6">
+                <?php if ($logo_url): ?>
+                <div class="w-32 h-32 flex-shrink-0 bg-white rounded-lg overflow-hidden flex items-center justify-center p-4">
+                    <img src="<?php echo esc_url($logo_url); ?>" 
+                         alt="<?php the_title(); ?>" 
+                         class="w-full h-full object-contain">
+                </div>
+                <?php endif; ?>
+                
+                <div class="flex-1">
+                    <!-- Categories -->
+                    <?php if (!empty($kategori_terms)): ?>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <?php foreach ($kategori_terms as $term): ?>
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">
+                            <?php echo esc_html($term->name); ?>
+                        </span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <h1 class="text-4xl md:text-5xl font-bold mb-3">
+                        <?php the_title(); ?>
+                    </h1>
+                    
+                    <!-- Company -->
+                    <?php if ($eier): ?>
+                    <p class="text-xl text-white/90">
+                        Levert av <a href="<?php echo get_permalink($eier_id); ?>" 
+                           class="text-white hover:underline font-semibold">
+                            <?php echo esc_html($eier->post_title); ?>
+                        </a>
+                    </p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
+    </div>
+    
+    <div class="container mx-auto px-4 max-w-6xl py-12">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-8">
                 
-                <!-- Header Card -->
-                <div class="card-hjem">
-                    <div class="p-6">
-                        
-                        <!-- Logo and Title -->
-                        <div class="flex items-start gap-6 mb-6">
-                            <?php if ($logo_url): ?>
-                            <div class="w-24 h-24 flex-shrink-0 bg-bim-beige-200 rounded-lg overflow-hidden flex items-center justify-center">
-                                <img src="<?php echo esc_url($logo_url); ?>" 
-                                     alt="<?php the_title(); ?>" 
-                                     class="w-full h-full object-contain p-2">
-                            </div>
-                            <?php endif; ?>
-                            
-                            <div class="flex-grow">
-                                <h1 class="text-3xl md:text-4xl font-bold text-bim-black-900 mb-3">
-                                    <?php the_title(); ?>
-                                </h1>
-                                
-                                <!-- Categories -->
-                                <?php if (!empty($kategori_terms)): ?>
-                                <div class="flex flex-wrap gap-2 mb-3">
-                                    <?php foreach ($kategori_terms as $term): ?>
-                                    <span class="badge badge-hjem-orange">
-                                        <?php echo esc_html($term->name); ?>
-                                    </span>
-                                    <?php endforeach; ?>
-                                </div>
-                                <?php endif; ?>
-                                
-                                <!-- Company -->
-                                <?php if ($eier): ?>
-                                <p class="text-bim-black-700">
-                                    <span class="font-semibold">Levert av:</span>
-                                    <a href="<?php echo get_permalink($eier_id); ?>" 
-                                       class="text-bim-orange hover:underline">
-                                        <?php echo esc_html($eier->post_title); ?>
-                                    </a>
-                                </p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                <!-- Description Card -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">📋 Om verktøyet</h2>
+                    
+                    <?php if (!empty($detaljert_beskrivelse)): ?>
+                    <div class="prose max-w-none text-gray-700">
+                        <?php echo wpautop($detaljert_beskrivelse); ?>
+                    </div>
+                    <?php else: ?>
+                    <p class="text-gray-600"><?php the_excerpt(); ?></p>
+                    <?php endif; ?>
+                </div>
 
-                        <!-- Description -->
-                        <?php if (!empty($detaljert_beskrivelse)): ?>
-                        <div class="prose max-w-none text-bim-black-700">
-                            <?php echo wpautop($detaljert_beskrivelse); ?>
+                <!-- CTA Buttons -->
+                <div class="flex flex-wrap gap-4">
+                    <?php if (!empty($lenke)): ?>
+                    <a href="<?php echo esc_url($lenke); ?>" 
+                       target="_blank" 
+                       rel="noopener" 
+                       class="px-8 py-4 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors text-lg flex items-center gap-2">
+                        🌐 Besøk nettside
+                    </a>
+                    <?php endif; ?>
+                    
+                    <?php if ($eier): ?>
+                    <a href="<?php echo get_permalink($eier_id); ?>" 
+                       class="px-8 py-4 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition-colors text-lg flex items-center gap-2">
+                        📧 Kontakt leverandør
+                    </a>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Features Section (demo data) -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">✨ Funksjoner</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl">🔷</span>
+                            <div>
+                                <h3 class="font-bold text-gray-900">BIM-integrasjon</h3>
+                                <p class="text-sm text-gray-600">Full støtte for IFC og native formater</p>
+                            </div>
                         </div>
-                        <?php endif; ?>
-
-                        <!-- CTA Buttons -->
-                        <div class="flex flex-wrap gap-3 mt-6 pt-6 border-t border-bim-black-200">
-                            <?php if (!empty($lenke)): ?>
-                            <a href="<?php echo esc_url($lenke); ?>" 
-                               target="_blank" 
-                               rel="noopener" 
-                               class="btn-hjem-primary">
-                                🌐 Besøk nettside
-                            </a>
-                            <?php endif; ?>
-                            
-                            <?php if ($eier): ?>
-                            <a href="<?php echo get_permalink($eier_id); ?>" 
-                               class="btn-hjem-outline">
-                                📧 Kontakt leverandør
-                            </a>
-                            <?php endif; ?>
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl">☁️</span>
+                            <div>
+                                <h3 class="font-bold text-gray-900">Cloud-basert</h3>
+                                <p class="text-sm text-gray-600">Samarbeid i sanntid fra hvor som helst</p>
+                            </div>
                         </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl">📊</span>
+                            <div>
+                                <h3 class="font-bold text-gray-900">Rapportering</h3>
+                                <p class="text-sm text-gray-600">Automatisk generering av rapporter</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl">🔗</span>
+                            <div>
+                                <h3 class="font-bold text-gray-900">API-tilgang</h3>
+                                <p class="text-sm text-gray-600">Integrer med andre systemer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Related Concepts (demo - kobling til semantikk) -->
+                <div class="bg-gradient-to-r from-purple-50 to-orange-50 rounded-lg shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🔗 Relaterte Begreper</h2>
+                    <p class="text-gray-700 mb-6">Dette verktøyet støtter følgende standarder og krav:</p>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="<?php echo home_url('/begrep-tek17/'); ?>" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
+                            <span class="font-bold text-purple-600">TEK17</span>
+                        </a>
+                        <a href="#" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
+                            <span class="font-bold text-blue-600">IFC</span>
+                        </a>
+                        <a href="#" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
+                            <span class="font-bold text-green-600">BIM-koordinering</span>
+                        </a>
+                        <a href="#" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
+                            <span class="font-bold text-orange-600">EPD-data</span>
+                        </a>
                     </div>
                 </div>
 
@@ -163,64 +223,82 @@ $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori');
                 <div class="sticky top-24 space-y-6">
                     
                     <!-- Quick Info Card -->
-                    <div class="card-hjem">
-                        <div class="p-6">
-                            <h3 class="text-lg font-bold text-bim-black-900 mb-4">
-                                ℹ️ Informasjon
-                            </h3>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">
+                            ℹ️ Rask info
+                        </h3>
+                        
+                        <dl class="space-y-4">
                             
-                            <dl class="space-y-3">
-                                
-                                <!-- Verktøynavn -->
-                                <?php if (!empty($verktoy_navn)): ?>
-                                <div>
-                                    <dt class="text-sm font-semibold text-bim-black-900">Verktøynavn</dt>
-                                    <dd class="text-bim-black-700"><?php echo esc_html($verktoy_navn); ?></dd>
-                                </div>
-                                <?php endif; ?>
-                                
-                                <!-- Price -->
-                                <?php if (!empty($pris)): ?>
-                                <div>
-                                    <dt class="text-sm font-semibold text-bim-black-900">Pris</dt>
-                                    <dd class="text-bim-black-700"><?php echo esc_html($pris); ?></dd>
-                                </div>
-                                <?php endif; ?>
-                                
-                                <!-- Status -->
-                                <div>
-                                    <dt class="text-sm font-semibold text-bim-black-900">Status</dt>
-                                    <dd>
-                                        <span class="badge badge-hjem-success">
-                                            <?php echo get_post_status() === 'publish' ? 'Aktiv' : 'Inaktiv'; ?>
-                                        </span>
-                                    </dd>
-                                </div>
-                            </dl>
-                        </div>
+                            <!-- Verktøynavn -->
+                            <?php if (!empty($verktoy_navn)): ?>
+                            <div class="pb-4 border-b border-gray-200">
+                                <dt class="text-sm font-semibold text-gray-600 mb-1">Verktøynavn</dt>
+                                <dd class="text-gray-900 font-semibold"><?php echo esc_html($verktoy_navn); ?></dd>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <!-- Price -->
+                            <?php if (!empty($pris)): ?>
+                            <div class="pb-4 border-b border-gray-200">
+                                <dt class="text-sm font-semibold text-gray-600 mb-1">💰 Pris</dt>
+                                <dd class="text-gray-900 font-semibold"><?php echo esc_html($pris); ?></dd>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <!-- Status -->
+                            <div class="pb-4 border-b border-gray-200">
+                                <dt class="text-sm font-semibold text-gray-600 mb-1">Status</dt>
+                                <dd>
+                                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                        <?php echo get_post_status() === 'publish' ? '✓ Aktiv' : 'Inaktiv'; ?>
+                                    </span>
+                                </dd>
+                            </div>
+                            
+                            <!-- Users (demo) -->
+                            <div class="pb-4 border-b border-gray-200">
+                                <dt class="text-sm font-semibold text-gray-600 mb-1">👥 Medlemmer som bruker</dt>
+                                <dd class="text-2xl font-bold text-purple-600">45</dd>
+                                <dd class="text-xs text-gray-500">aktive brukere</dd>
+                            </div>
+                            
+                            <!-- Link -->
+                            <?php if (!empty($lenke)): ?>
+                            <div>
+                                <dt class="text-sm font-semibold text-gray-600 mb-2">🌐 Nettside</dt>
+                                <dd>
+                                    <a href="<?php echo esc_url($lenke); ?>" 
+                                       target="_blank" 
+                                       rel="noopener"
+                                       class="text-purple-600 hover:underline text-sm break-all">
+                                        <?php echo esc_html(parse_url($lenke, PHP_URL_HOST)); ?>
+                                    </a>
+                                </dd>
+                            </div>
+                            <?php endif; ?>
+                        </dl>
                     </div>
 
                     <!-- Contact Card -->
                     <?php if ($eier): ?>
-                    <div class="card-hjem bg-gradient-orange text-white">
-                        <div class="p-6">
-                            <h3 class="text-lg font-bold mb-3">
-                                📞 Kontakt leverandør
-                            </h3>
-                            <p class="mb-4 text-sm opacity-90">
-                                Vil du vite mer om <?php the_title(); ?>? Ta kontakt med leverandøren.
-                            </p>
-                            <a href="<?php echo get_permalink($eier_id); ?>" 
-                               class="btn bg-white text-bim-orange hover:bg-bim-beige-100 w-full">
-                                Kontakt <?php echo esc_html($eier->post_title); ?>
-                            </a>
-                        </div>
+                    <div class="bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-bold mb-3">
+                            📞 Kontakt leverandør
+                        </h3>
+                        <p class="mb-4 text-sm opacity-90">
+                            Vil du vite mer om <?php the_title(); ?>? Ta kontakt med leverandøren.
+                        </p>
+                        <a href="<?php echo get_permalink($eier_id); ?>" 
+                           class="block w-full px-6 py-3 bg-white text-orange-600 rounded-lg font-bold hover:bg-gray-100 transition-colors text-center">
+                            Kontakt <?php echo esc_html($eier->post_title); ?>
+                        </a>
                     </div>
                     <?php endif; ?>
 
                     <!-- Back to Catalog -->
                     <a href="<?php echo home_url('/verktoy'); ?>" 
-                       class="btn-hjem-outline w-full text-center block">
+                       class="block w-full px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-center">
                         ← Tilbake til katalog
                     </a>
 
