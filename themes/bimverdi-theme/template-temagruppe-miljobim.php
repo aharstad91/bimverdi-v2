@@ -331,8 +331,8 @@ get_header();
         
         <!-- Join CTA -->
         <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl shadow-2xl p-12 text-center text-white">
-            <h2 class="text-4xl font-bold mb-4">Vil du bli med i MiljøBIM?</h2>
-            <p class="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            <h2 class="text-4xl font-bold text-white mb-4">Vil du bli med i MiljøBIM?</h2>
+            <p class="text-xl text-white mb-8 opacity-90 max-w-2xl mx-auto">
                 Vi møtes 6-8 ganger i året for å dele kunnskap, erfaringer og utvikle beste praksis for miljø og klima i BIM.
             </p>
             <div class="flex gap-4 justify-center flex-wrap">
