@@ -183,45 +183,6 @@ $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori');
             <div class="lg:col-span-1">
                 <div class="sticky top-24 space-y-6">
                     
-                    <!-- Quick Info Card (fjernet debug-seksjon) -->
-                <?php if (current_user_can('administrator')): ?>
-                <div class="card-hjem bg-yellow-50 border-yellow-200">
-                    <div class="p-6">
-                        <h3 class="text-lg font-bold text-bim-black-900 mb-4">
-                            � Debug - Tilgjengelige felter (kun for admin)
-                        </h3>
-                        <div class="text-xs space-y-2 font-mono">
-                            <div><strong>ACF Fields:</strong></div>
-                            <div>verktoy_navn: <?php echo esc_html($verktoy_navn ?? 'N/A'); ?></div>
-                            <div>detaljert_beskrivelse: <?php echo esc_html(substr($detaljert_beskrivelse ?? '', 0, 100)); ?>...</div>
-                            <div>verktoy_lenke: <?php echo esc_html($lenke ?? 'N/A'); ?></div>
-                            <div>verktoy_pris: <?php echo esc_html($pris ?? 'N/A'); ?></div>
-                            <div>eier_leverandor: <?php echo esc_html($eier_id ?? 'N/A'); ?> <?php echo $eier ? '(' . esc_html($eier->post_title) . ')' : ''; ?></div>
-                            <div>verktoy_logo: <?php echo esc_html($logo_id ?? 'N/A'); ?></div>
-                            
-                            <div class="mt-4"><strong>All Post Meta:</strong></div>
-                            <?php 
-                            if (!empty($all_meta)):
-                                foreach ($all_meta as $key => $values): 
-                                    if (substr($key, 0, 1) !== '_'): // Skip hidden meta
-                            ?>
-                            <div><?php echo esc_html($key); ?>: <?php echo esc_html(is_array($values) ? json_encode($values) : $values[0]); ?></div>
-                            <?php 
-                                    endif;
-                                endforeach; 
-                            endif;
-                            ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-            </div>
-
-            <!-- Sidebar -->
-            <div class="lg:col-span-1">
-                <div class="sticky top-24 space-y-6">
-                    
                     <!-- Quick Info Card -->
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">
