@@ -105,7 +105,7 @@ class BIM_Verdi_Post_Types {
             'show_in_menu'          => true,
             'menu_position'         => 6,
             'menu_icon'             => 'dashicons-admin-tools',
-            'has_archive'           => true,
+            'has_archive'           => false,
             'rewrite'               => array('slug' => 'verktoy'),
             'capability_type'       => 'post',
             'show_in_rest'          => true,
