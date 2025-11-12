@@ -27,7 +27,7 @@ get_header();
             <!-- Main Content -->
             <div class="text-center mb-12">
                 <h1 class="text-5xl md:text-6xl font-bold mb-6">
-                    Kunnskap. Nettverk. Innovasjon.
+                    Kunnskap. Nettverk. Innovasjon. Markedsmuligheter.
                 </h1>
                 <p class="text-2xl md:text-3xl mb-8 opacity-95 max-w-3xl mx-auto">
                     Vi kobler bransjen med <strong>forskrifter</strong>, <strong>erfaringer</strong>, <strong>verktøy</strong> og <strong>ekspertise</strong> – alt på ett sted.
@@ -190,7 +190,7 @@ get_header();
                             <h3 class="text-3xl font-bold">TEK17</h3>
                             <span class="bg-white/20 px-4 py-2 rounded-full text-sm">Forskrift</span>
                         </div>
-                        <p class="text-lg opacity-95">Tekniske krav til byggverk – Norges gjeldende byggenorm</p>
+                        <p class="text-lg opacity-95 text-black">Tekniske krav til byggverk – Norges gjeldende byggenorm</p>
                     </div>
                     
                     <div class="p-8">
