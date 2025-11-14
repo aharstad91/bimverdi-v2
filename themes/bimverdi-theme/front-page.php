@@ -20,7 +20,7 @@ get_header();
             <!-- Badge -->
             <div class="text-center mb-6">
                 <span class="inline-block bg-white/20 px-4 py-2 rounded-full text-sm font-bold">
-                    🏢 Norges ledende BIM-nettverk
+                    🏢 Norges ledende verdinettverk for praktisk bruk av BIM
                 </span>
             </div>
             
