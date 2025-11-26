@@ -24,8 +24,8 @@ $is_demo = empty($company_id);
 
 // Get all upcoming events
 if ($is_demo) {
-    $upcoming_events = bimverdi_get_mock_events();
-    $my_registrations_ids = array(1); // Second event is registered
+    $upcoming_events = function_exists('bimverdi_get_mock_events') ? bimverdi_get_mock_events() : array();
+    $registered_events = array(1);
 } else {
     $upcoming_events = get_posts(array(
         'post_type' => 'arrangement',
@@ -46,205 +46,202 @@ if ($is_demo) {
     // Get user's current registrations
     $my_registrations = get_posts(array(
         'post_type' => 'pamelding',
-    'posts_per_page' => -1,
-    'meta_query' => array(
-        array(
-            'key' => 'pamelding_bruker',
-            'value' => $user_id,
-        )
-    ),
-));
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => 'pamelding_bruker',
+                'value' => $user_id,
+            )
+        ),
+    ));
 
-$registered_event_ids = wp_list_pluck($my_registrations, 'ID');
-$registered_events = array();
-foreach ($my_registrations as $reg) {
-    $event_id = get_post_meta($reg->ID, 'pamelding_arrangement', true);
-    if ($event_id) {
-        $registered_events[] = $event_id;
+    $registered_events = array();
+    foreach ($my_registrations as $reg) {
+        $event_id = get_post_meta($reg->ID, 'pamelding_arrangement', true);
+        if ($event_id) {
+            $registered_events[] = $event_id;
+        }
     }
 }
+
+// Start Min Side layout
+get_template_part('template-parts/minside-layout-start', null, array(
+    'current_page' => 'arrangementer',
+    'page_title' => 'Arrangementer',
+    'page_icon' => 'calendar-days',
+    'page_description' => 'Kommende kurs, seminarer og møter i BIM Verdi nettverket',
+));
 ?>
 
-<!-- Min Side Horizontal Tab Navigation -->
-<?php 
-$current_tab = 'arrangementer';
-get_template_part('template-parts/minside-tabs', null, array('current_tab' => $current_tab));
-?>
+<!-- Demo Banner -->
+<?php if ($is_demo): ?>
+    <wa-alert variant="warning" open class="mb-6">
+        <wa-icon slot="icon" name="triangle-exclamation" library="fa"></wa-icon>
+        <strong>Demo-data vises</strong><br>
+        Du ser demo-data fordi ingen faktisk bedrift er opprettet ennå.
+    </wa-alert>
+<?php endif; ?>
 
-<div class="min-h-screen bg-bim-beige-100 py-8">
-    <div class="container mx-auto px-4">
-        
-        <!-- Demo Banner -->
-        <?php if ($is_demo): ?>
-            <div class="alert alert-warning shadow-lg mb-6 bg-alert text-black">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0-11l6.364 3.682a2 2 0 010 3.464L12 21l-6.364-3.682a2 2 0 010-3.464L12 2z"></path>
-                    </svg>
-                    <div>
-                        <h3 class="font-bold">Demo-data vises</h3>
-                        <div class="text-sm">Du ser demo-data fordi ingen faktisk bedrift er opprettet ennå. Påmeldinger registreres ikke i demo-modus.</div>
-                    </div>
+<!-- My Registrations -->
+<?php if (!empty($registered_events)): ?>
+<wa-card class="mb-6 border-l-4 border-l-orange-500">
+    <div slot="header" class="flex items-center gap-2">
+        <wa-icon name="circle-check" library="fa" style="color: var(--wa-color-success-600);"></wa-icon>
+        <strong>Påmeldinger</strong>
+        <wa-badge variant="success"><?php echo count($registered_events); ?></wa-badge>
+    </div>
+    <div class="space-y-3">
+        <?php 
+        foreach ($registered_events as $event_id):
+            $event = get_post($event_id);
+            if (!$event) continue;
+            
+            $dato = get_field('arrangement_dato', $event_id);
+            $tid = get_field('arrangement_tid', $event_id);
+            $sted = get_field('arrangement_sted', $event_id);
+        ?>
+        <div class="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
+            <div class="flex-shrink-0 w-14 h-14 bg-orange-500 text-white rounded-lg flex flex-col items-center justify-center">
+                <div class="text-lg font-bold leading-none"><?php echo date('d', strtotime($dato)); ?></div>
+                <div class="text-xs uppercase"><?php echo date('M', strtotime($dato)); ?></div>
+            </div>
+            <div class="flex-grow">
+                <h3 class="font-bold text-gray-900"><?php echo esc_html($event->post_title); ?></h3>
+                <div class="text-sm text-gray-600 mt-1 flex flex-wrap gap-3">
+                    <?php if ($tid): ?>
+                        <span class="flex items-center gap-1">
+                            <wa-icon name="clock" library="fa" style="font-size: 0.75rem;"></wa-icon>
+                            <?php echo esc_html($tid); ?>
+                        </span>
+                    <?php endif; ?>
+                    <?php if ($sted): ?>
+                        <span class="flex items-center gap-1">
+                            <wa-icon name="location-dot" library="fa" style="font-size: 0.75rem;"></wa-icon>
+                            <?php echo esc_html($sted); ?>
+                        </span>
+                    <?php endif; ?>
                 </div>
             </div>
-        <?php endif; ?>
-        
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-bim-black-900">Arrangementer</h1>
+            <wa-button variant="brand" size="small" href="<?php echo get_permalink($event_id); ?>">
+                Se detaljer
+            </wa-button>
         </div>
-
-        <!-- Main Content (Full Width) -->
-        <div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="lg:col-span-3">
-                
-                <div class="mb-6">
-                    <p class="text-bim-black-700">Kommende kurs, seminarer og møter i BIM Verdi nettverket</p>
-                </div>
-
-                <!-- My Registrations -->
-                <?php if (!empty($registered_events)): ?>
-                <div class="card-hjem mb-6 border-l-4 border-l-bim-orange">
-                    <div class="card-body p-6">
-                        <h2 class="text-xl font-bold text-bim-black-900 mb-4">✓ Mine Påmeldinger</h2>
-                        <div class="space-y-3">
-                            <?php 
-                            foreach ($registered_events as $event_id) {
-                                $event = get_post($event_id);
-                                if (!$event) continue;
-                                
-                                $dato = get_field('arrangement_dato', $event_id);
-                                $tid = get_field('arrangement_tid', $event_id);
-                                $sted = get_field('arrangement_sted', $event_id);
-                            ?>
-                            <div class="flex items-start gap-4 p-4 bg-bim-orange bg-opacity-5 rounded-lg">
-                                <div class="flex-shrink-0 w-14 h-14 bg-bim-orange text-white rounded-lg flex flex-col items-center justify-center">
-                                    <div class="text-lg font-bold"><?php echo date('d', strtotime($dato)); ?></div>
-                                    <div class="text-xs uppercase"><?php echo date('M', strtotime($dato)); ?></div>
-                                </div>
-                                <div class="flex-grow">
-                                    <h3 class="font-bold text-lg text-bim-black-900"><?php echo esc_html($event->post_title); ?></h3>
-                                    <div class="text-sm text-bim-black-700 mt-1">
-                                        <?php if ($tid): ?>
-                                            <span class="mr-4">🕐 <?php echo esc_html($tid); ?></span>
-                                        <?php endif; ?>
-                                        <?php if ($sted): ?>
-                                            <span>📍 <?php echo esc_html($sted); ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                                <a href="<?php echo get_permalink($event_id); ?>" class="btn btn-sm btn-hjem-primary flex-shrink-0">
-                                    Se detaljer
-                                </a>
-                            </div>
-                            <?php } ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <!-- Upcoming Events -->
-                <?php if (!empty($upcoming_events)): ?>
-                <div class="space-y-4">
-                    <h2 class="text-2xl font-bold text-bim-black-900">Alle Arrangementer</h2>
-                    
-                    <?php foreach ($upcoming_events as $event):
-                        $dato = get_field('arrangement_dato', $event->ID);
-                        $tid = get_field('arrangement_tid', $event->ID);
-                        $sted = get_field('arrangement_sted', $event->ID);
-                        $maks_deltakere = get_field('arrangement_maks_deltakere', $event->ID);
-                        $is_registered = in_array($event->ID, $registered_events);
-                        
-                        // Count registrations for this event
-                        $registrations = new WP_Query(array(
-                            'post_type' => 'pamelding',
-                            'meta_query' => array(
-                                array(
-                                    'key' => 'pamelding_arrangement',
-                                    'value' => $event->ID,
-                                )
-                            ),
-                            'posts_per_page' => -1,
-                        ));
-                        $registration_count = $registrations->found_posts;
-                    ?>
-                    <div class="card-hjem hover:shadow-lg transition-shadow <?php echo $is_registered ? 'border-2 border-bim-orange' : ''; ?>">
-                        <div class="card-body p-6">
-                            <div class="flex gap-6 items-start">
-                                
-                                <div class="flex-shrink-0 w-20 h-20 bg-bim-purple text-white rounded-lg flex flex-col items-center justify-center">
-                                    <div class="text-2xl font-bold"><?php echo date('d', strtotime($dato)); ?></div>
-                                    <div class="text-xs uppercase font-semibold"><?php echo date('M', strtotime($dato)); ?></div>
-                                </div>
-
-                                <div class="flex-grow">
-                                    <h3 class="text-xl font-bold text-bim-black-900 mb-2">
-                                        <?php echo esc_html($event->post_title); ?>
-                                        <?php if ($is_registered): ?>
-                                            <span class="badge badge-hjem-orange text-xs ml-2">Påmeldt</span>
-                                        <?php endif; ?>
-                                    </h3>
-                                    
-                                    <div class="text-sm text-bim-black-700 space-y-1 mb-3">
-                                        <?php if ($tid): ?>
-                                            <div>🕐 <strong><?php echo esc_html($tid); ?></strong></div>
-                                        <?php endif; ?>
-                                        <?php if ($sted): ?>
-                                            <div>📍 <?php echo esc_html($sted); ?></div>
-                                        <?php endif; ?>
-                                        <?php if ($maks_deltakere): ?>
-                                            <div>👥 <?php echo $registration_count; ?>/<?php echo intval($maks_deltakere); ?> deltakere</div>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <?php if (!empty($event->post_excerpt)): ?>
-                                    <p class="text-sm text-bim-black-700 mb-3">
-                                        <?php echo wp_trim_words($event->post_excerpt, 25); ?>
-                                    </p>
-                                    <?php endif; ?>
-                                </div>
-
-                                <div class="flex-shrink-0">
-                                    <?php if ($is_registered): ?>
-                                        <button class="btn btn-outline border-bim-orange text-bim-orange" onclick="alert('Du er allerede påmeldt!')">
-                                            ✓ Påmeldt
-                                        </button>
-                                    <?php else: ?>
-                                        <form method="POST" style="display:inline;">
-                                            <button type="submit" name="register_event" value="<?php echo $event->ID; ?>" class="btn btn-hjem-primary">
-                                                Meld meg på
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                <?php else: ?>
-                
-                <div class="card-hjem text-center py-12">
-                    <div class="text-6xl mb-4">📅</div>
-                    <h3 class="text-xl font-bold text-bim-black-900 mb-2">Ingen arrangementer kommende</h3>
-                    <p class="text-bim-black-700">Nye arrangementer annonseres på BIM Verdi siden</p>
-                    <a href="<?php echo home_url('/arrangementer/'); ?>" class="btn btn-hjem-primary mt-4">
-                        Se alle arrangementer
-                    </a>
-                </div>
-
-                <?php endif; ?>
-
-            </main>
-        </div>
+        <?php endforeach; ?>
     </div>
-</div>
+</wa-card>
+<?php endif; ?>
 
-<?php get_footer(); ?>
+<!-- Upcoming Events -->
+<?php if (!empty($upcoming_events)): ?>
+<div class="space-y-4">
+    <h2 class="text-xl font-bold text-gray-900">Alle arrangementer</h2>
+    
+    <?php foreach ($upcoming_events as $event):
+        $dato = get_field('arrangement_dato', $event->ID);
+        $tid = get_field('arrangement_tid', $event->ID);
+        $sted = get_field('arrangement_sted', $event->ID);
+        $maks_deltakere = get_field('arrangement_maks_deltakere', $event->ID);
+        $is_registered = in_array($event->ID, $registered_events);
+        
+        // Count registrations for this event
+        $registrations = new WP_Query(array(
+            'post_type' => 'pamelding',
+            'meta_query' => array(
+                array(
+                    'key' => 'pamelding_arrangement',
+                    'value' => $event->ID,
+                )
+            ),
+            'posts_per_page' => -1,
+        ));
+        $registration_count = $registrations->found_posts;
+    ?>
+    <wa-card class="hover:shadow-lg transition-shadow <?php echo $is_registered ? 'border-2 border-orange-500' : ''; ?>">
+        <div class="p-6">
+            <div class="flex gap-6 items-start">
+                
+                <div class="flex-shrink-0 w-20 h-20 bg-purple-600 text-white rounded-lg flex flex-col items-center justify-center">
+                    <div class="text-2xl font-bold"><?php echo date('d', strtotime($dato)); ?></div>
+                    <div class="text-xs uppercase font-semibold"><?php echo date('M', strtotime($dato)); ?></div>
+                </div>
+
+                <div class="flex-grow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <h3 class="text-xl font-bold text-gray-900">
+                            <?php echo esc_html($event->post_title); ?>
+                        </h3>
+                        <?php if ($is_registered): ?>
+                            <wa-badge variant="success">
+                                <wa-icon slot="prefix" name="check" library="fa"></wa-icon>
+                                Påmeldt
+                            </wa-badge>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 space-y-1 mb-3">
+                        <?php if ($tid): ?>
+                            <div class="flex items-center gap-2">
+                                <wa-icon name="clock" library="fa" style="font-size: 0.875rem;"></wa-icon>
+                                <strong><?php echo esc_html($tid); ?></strong>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($sted): ?>
+                            <div class="flex items-center gap-2">
+                                <wa-icon name="location-dot" library="fa" style="font-size: 0.875rem;"></wa-icon>
+                                <?php echo esc_html($sted); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($maks_deltakere): ?>
+                            <div class="flex items-center gap-2">
+                                <wa-icon name="users" library="fa" style="font-size: 0.875rem;"></wa-icon>
+                                <?php echo $registration_count; ?>/<?php echo intval($maks_deltakere); ?> deltakere
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if (!empty($event->post_excerpt)): ?>
+                    <p class="text-sm text-gray-600">
+                        <?php echo wp_trim_words($event->post_excerpt, 25); ?>
+                    </p>
+                    <?php endif; ?>
+                </div>
+
+                <div class="flex-shrink-0">
+                    <?php if ($is_registered): ?>
+                        <wa-button variant="success" outline disabled>
+                            <wa-icon slot="prefix" name="check" library="fa"></wa-icon>
+                            Påmeldt
+                        </wa-button>
+                    <?php else: ?>
+                        <form method="POST" style="display:inline;">
+                            <wa-button type="submit" name="register_event" value="<?php echo $event->ID; ?>" variant="brand">
+                                Meld meg på
+                            </wa-button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+
+            </div>
+        </div>
+    </wa-card>
+    <?php endforeach; ?>
+</div>
+<?php else: ?>
+
+<wa-card class="text-center py-12">
+    <div class="flex flex-col items-center">
+        <wa-icon name="calendar-xmark" library="fa" style="font-size: 4rem; color: var(--wa-color-neutral-300); margin-bottom: 1rem;"></wa-icon>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Ingen kommende arrangementer</h3>
+        <p class="text-gray-600 mb-4">Nye arrangementer annonseres på BIM Verdi siden</p>
+        <wa-button variant="brand" href="<?php echo home_url('/arrangementer/'); ?>">
+            Se alle arrangementer
+        </wa-button>
+    </div>
+</wa-card>
+
+<?php endif; ?>
+
+<?php 
+get_template_part('template-parts/minside-layout-end');
+get_footer(); 
+?>

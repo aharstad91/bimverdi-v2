@@ -723,14 +723,17 @@ class BIM_Verdi_Tool_Form_Handler {
             return;
         }
         
-        // Verify company exists before saving
+        // Track valid company for later use
         $company = get_post($company_id);
-        if (!$company || $company->post_type !== 'foretak') {
-            error_log("BIM Verdi Tool Handler - INVALID COMPANY ID: {$company_id}");
-            return;
+        $valid_company = ($company && $company->post_type === 'foretak');
+        
+        if (!$valid_company) {
+            error_log("BIM Verdi Tool Handler - WARNING: Invalid company ID: {$company_id} - Will save other fields but skip eier_leverandor");
         }
         
+        // Always save basic tool fields
         update_field('verktoy_navn', $tool_data['name'], $post_id);
+        error_log("BIM Verdi - Saved verktoy_navn: " . $tool_data['name']);
         
         // Log what we're trying to save
         error_log("BIM Verdi - Saving description for tool {$post_id}: " . substr($tool_data['description'], 0, 100));
@@ -742,56 +745,147 @@ class BIM_Verdi_Tool_Form_Handler {
         error_log("BIM Verdi - Description saved: " . ($description_saved ? 'YES' : 'NO') . " (length: " . strlen($clean_description) . ")");
         
         update_field('verktoy_lenke', $tool_data['url'], $post_id);
+        error_log("BIM Verdi - Saved verktoy_lenke: " . $tool_data['url']);
         
-        // CRITICAL: Set company/owner - ALWAYS use $company_id parameter (from user meta)
-        // Field name is 'eier_leverandor' according to ACF JSON
-        // Field type is 'post_object' so it expects a post ID (integer)
-        // DO NOT use $tool_data['company_id'] as it might contain user_id by mistake
-        $company_saved = update_field('eier_leverandor', intval($company_id), $post_id);
+        // Set company/owner - only if we have a valid company
+        $company_saved = false;
+        if ($valid_company) {
+            // Field name is 'eier_leverandor' according to ACF JSON
+            // Field type is 'post_object' so it expects a post ID (integer)
+            $company_saved = update_field('eier_leverandor', intval($company_id), $post_id);
+            error_log("BIM Verdi - Saved eier_leverandor: " . $company_id . " (" . $company->post_title . ") - saved: " . ($company_saved ? 'YES' : 'NO'));
+        } else {
+            error_log("BIM Verdi - SKIPPED eier_leverandor due to invalid company ID");
+        }
         
         if (!empty($tool_data['price'])) {
             update_field('verktoy_pris', $tool_data['price'], $post_id);
         }
         
-        // Save BIM-specific fields (NEW FIELDS)
+        // Save BIM-specific fields - Convert Gravity Forms values to ACF keys
         if (!empty($tool_data['formaalstema'])) {
+            // Formålstema uses same values in GF and ACF (ByggesaksBIM, ProsjektBIM, etc.)
             $formaalstema_saved = update_field('formaalstema', sanitize_text_field($tool_data['formaalstema']), $post_id);
             error_log("BIM Verdi - Formålstema saved: " . ($formaalstema_saved ? 'YES' : 'NO') . " - Value: " . $tool_data['formaalstema']);
         }
         
         if (!empty($tool_data['bim_kompatibilitet'])) {
-            $bim_saved = update_field('bim_kompatibilitet', sanitize_text_field($tool_data['bim_kompatibilitet']), $post_id);
-            error_log("BIM Verdi - BIM-kompatibilitet saved: " . ($bim_saved ? 'YES' : 'NO') . " - Value: " . $tool_data['bim_kompatibilitet']);
+            // Convert GF label to ACF key
+            $bim_value = $this->convert_bim_kompatibilitet($tool_data['bim_kompatibilitet']);
+            $bim_saved = update_field('bim_kompatibilitet', $bim_value, $post_id);
+            error_log("BIM Verdi - BIM-kompatibilitet saved: " . ($bim_saved ? 'YES' : 'NO') . " - GF: {$tool_data['bim_kompatibilitet']} → ACF: {$bim_value}");
         }
         
         if (!empty($tool_data['type_ressurs'])) {
-            $ressurs_saved = update_field('type_ressurs', sanitize_text_field($tool_data['type_ressurs']), $post_id);
-            error_log("BIM Verdi - Type ressurs saved: " . ($ressurs_saved ? 'YES' : 'NO') . " - Value: " . $tool_data['type_ressurs']);
+            // Convert GF label to ACF key
+            $ressurs_value = $this->convert_type_ressurs($tool_data['type_ressurs']);
+            $ressurs_saved = update_field('type_ressurs', $ressurs_value, $post_id);
+            error_log("BIM Verdi - Type ressurs saved: " . ($ressurs_saved ? 'YES' : 'NO') . " - GF: {$tool_data['type_ressurs']} → ACF: {$ressurs_value}");
         }
         
         if (!empty($tool_data['type_teknologi'])) {
-            $teknologi_saved = update_field('type_teknologi', sanitize_text_field($tool_data['type_teknologi']), $post_id);
-            error_log("BIM Verdi - Type teknologi saved: " . ($teknologi_saved ? 'YES' : 'NO') . " - Value: " . $tool_data['type_teknologi']);
+            // Convert GF label to ACF key
+            $teknologi_value = $this->convert_type_teknologi($tool_data['type_teknologi']);
+            $teknologi_saved = update_field('type_teknologi', $teknologi_value, $post_id);
+            error_log("BIM Verdi - Type teknologi saved: " . ($teknologi_saved ? 'YES' : 'NO') . " - GF: {$tool_data['type_teknologi']} → ACF: {$teknologi_value}");
         }
         
         // Save Anvendelser (checkbox field - array of values)
         if (!empty($tool_data['anvendelser']) && is_array($tool_data['anvendelser'])) {
-            // Sanitize array values
-            $clean_anvendelser = array_map('sanitize_text_field', $tool_data['anvendelser']);
-            $anvendelser_saved = update_field('anvendelser', $clean_anvendelser, $post_id);
-            error_log("BIM Verdi - Anvendelser saved: " . ($anvendelser_saved ? 'YES' : 'NO') . " - Count: " . count($clean_anvendelser));
-            error_log("BIM Verdi - Anvendelser values: " . print_r($clean_anvendelser, true));
+            // Convert GF labels to ACF keys
+            $acf_anvendelser = array_map(array($this, 'convert_anvendelse'), $tool_data['anvendelser']);
+            $anvendelser_saved = update_field('anvendelser', $acf_anvendelser, $post_id);
+            error_log("BIM Verdi - Anvendelser saved: " . ($anvendelser_saved ? 'YES' : 'NO') . " - Count: " . count($acf_anvendelser));
+            error_log("BIM Verdi - Anvendelser GF: " . print_r($tool_data['anvendelser'], true));
+            error_log("BIM Verdi - Anvendelser ACF: " . print_r($acf_anvendelser, true));
         }
         
-        // Log for debugging with more details
+        // Log summary for debugging
         error_log(sprintf(
             "BIM Verdi Tool Handler - Tool %d: eier_leverandor=%d (%s), saved=%s, tool_data_company=%s",
             $post_id,
             $company_id,
-            $company->post_title,
+            $valid_company ? $company->post_title : 'INVALID',
             $company_saved ? 'YES' : 'NO',
             isset($tool_data['company_id']) ? $tool_data['company_id'] : 'NULL'
         ));
+    }
+    
+    /**
+     * Convert Gravity Forms BIM-kompatibilitet value to ACF key
+     * 
+     * @param string $gf_value Gravity Forms value (label)
+     * @return string ACF key
+     */
+    private function convert_bim_kompatibilitet($gf_value) {
+        $mapping = array(
+            'IFC-kompatibel (fullt støtte)' => 'IFC_kompatibel',
+            'IFC-eksport' => 'IFC_eksport',
+            'IFC-import' => 'IFC_import',
+            'IFC-kobling (via plugin)' => 'IFC_kobling',
+            'Planlagt IFC-støtte' => 'Planlagt',
+            'Vet ikke' => 'Vet_ikke',
+        );
+        return isset($mapping[$gf_value]) ? $mapping[$gf_value] : sanitize_text_field($gf_value);
+    }
+    
+    /**
+     * Convert Gravity Forms Type ressurs value to ACF key
+     * 
+     * @param string $gf_value Gravity Forms value (label)
+     * @return string ACF key
+     */
+    private function convert_type_ressurs($gf_value) {
+        $mapping = array(
+            'Programvare' => 'Programvare',
+            'Standard' => 'Standard',
+            'Metodikk' => 'Metodikk',
+            'Veileder' => 'Veileder',
+            'Nettside' => 'Nettside',
+            'Digital tjeneste' => 'Digital_tjeneste',
+            'Annet' => 'Annet',
+        );
+        return isset($mapping[$gf_value]) ? $mapping[$gf_value] : sanitize_text_field($gf_value);
+    }
+    
+    /**
+     * Convert Gravity Forms Type teknologi value to ACF key
+     * 
+     * @param string $gf_value Gravity Forms value (label)
+     * @return string ACF key
+     */
+    private function convert_type_teknologi($gf_value) {
+        $mapping = array(
+            'Bruker KI' => 'Bruker_KI',
+            'Ikke KI' => 'Ikke_KI',
+            'Under avklaring' => 'Under_avklaring',
+            'Annet' => 'Annet',
+        );
+        return isset($mapping[$gf_value]) ? $mapping[$gf_value] : sanitize_text_field($gf_value);
+    }
+    
+    /**
+     * Convert Gravity Forms Anvendelse value to ACF key
+     * 
+     * @param string $gf_value Gravity Forms value (label)
+     * @return string ACF key
+     */
+    private function convert_anvendelse($gf_value) {
+        $mapping = array(
+            'Design og modellering' => 'Design_modellering',
+            'GIS og kart' => 'GIS_kart',
+            'Digitalt innhold' => 'Digitalt_innhold',
+            'Prosjektledelse' => 'Prosjektledelse',
+            'Kostnadsanalyse' => 'Kostnadsanalyse',
+            'Simulering og analyse' => 'Simulering',
+            'Fasilitetsstyring (FDVU)' => 'FDVU',
+            'Feltarbeid' => 'Feltarbeid',
+            'Bærekraft' => 'Baerekraft',
+            'Kommunikasjon' => 'Kommunikasjon',
+            'Logistikk' => 'Logistikk',
+            'Kompetanse' => 'Kompetanse',
+        );
+        return isset($mapping[$gf_value]) ? $mapping[$gf_value] : sanitize_text_field($gf_value);
     }
     
     /**

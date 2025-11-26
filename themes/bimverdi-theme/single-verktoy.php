@@ -3,6 +3,7 @@
  * Single Verktøy Template
  * 
  * Displays detailed information about a single tool/software
+ * Uses Web Awesome components for modern UI
  * 
  * @package BimVerdi_Theme
  */
@@ -11,8 +12,8 @@ get_header();
 
 if (have_posts()) : while (have_posts()) : the_post();
 
-// Get ACF fields - use get_field() for ACF fields
-$eier_id = get_field('eier_leverandor'); // This is a post_object field returning ID
+// Get ACF fields
+$eier_id = get_field('eier_leverandor');
 $eier = $eier_id ? get_post($eier_id) : null;
 $verktoy_navn = get_field('verktoy_navn');
 $detaljert_beskrivelse = get_field('detaljert_beskrivelse');
@@ -21,253 +22,401 @@ $pris = get_field('verktoy_pris');
 $logo_id = get_field('verktoy_logo');
 $logo_url = $logo_id ? wp_get_attachment_url($logo_id) : '';
 
-// Get all post meta fields to see what else might be available
-$all_meta = get_post_meta(get_the_ID());
+// Get new ACF fields from form
+$formaalstema = get_field('formaalstema');
+$bim_kompatibilitet = get_field('bim_kompatibilitet');
+$type_ressurs = get_field('type_ressurs');
+$type_teknologi = get_field('type_teknologi');
+$anvendelser = get_field('anvendelser');
 
 $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori');
+
+// Helper function for readable labels
+function bimverdi_readable_label($value) {
+    $labels = [
+        // Formålstema
+        'ByggesaksBIM' => 'ByggesaksBIM',
+        'ProsjektBIM' => 'ProsjektBIM',
+        'EiendomsBIM' => 'EiendomsBIM',
+        'MiljøBIM' => 'MiljøBIM',
+        'SirkBIM' => 'SirkBIM',
+        'Opplæring' => 'Opplæring',
+        // BIM-kompatibilitet
+        'IFC_kompatibel' => 'IFC-kompatibel (fullt støtte)',
+        'IFC_eksport' => 'IFC-eksport',
+        'IFC_import' => 'IFC-import',
+        'IFC_kobling' => 'IFC-kobling (via plugin)',
+        'Planlagt_IFC' => 'Planlagt IFC-støtte',
+        // Type ressurs
+        'Programvare' => 'Programvare',
+        'Standard' => 'Standard',
+        'Metodikk' => 'Metodikk',
+        'Veileder' => 'Veileder',
+        'Nettside' => 'Nettside',
+        'Digital_tjeneste' => 'Digital tjeneste',
+        // Type teknologi
+        'Bruker_KI' => 'Bruker KI',
+        'Ikke_KI' => 'Ikke KI',
+        'Under_avklaring' => 'Under avklaring',
+        // Anvendelser
+        'Design_modellering' => 'Design og modellering',
+        'GIS_kart' => 'GIS og kart',
+        'Digitalt_innhold' => 'Digitalt innhold',
+        'Prosjektledelse' => 'Prosjektledelse',
+        'Kostnadsanalyse' => 'Kostnadsanalyse',
+        'Simulering_analyse' => 'Simulering og analyse',
+        'FDVU' => 'Fasilitetsstyring (FDVU)',
+        'Feltarbeid' => 'Feltarbeid',
+        'Bærekraft' => 'Bærekraft',
+        'Kommunikasjon' => 'Kommunikasjon',
+        'Logistikk' => 'Logistikk',
+        'Kompetanse' => 'Kompetanse',
+    ];
+    return $labels[$value] ?? str_replace('_', ' ', $value);
+}
+
+// Get icon for tema
+function bimverdi_tema_icon($tema) {
+    $icons = [
+        'ByggesaksBIM' => 'building',
+        'ProsjektBIM' => 'diagram-project',
+        'EiendomsBIM' => 'house-building',
+        'MiljøBIM' => 'leaf',
+        'SirkBIM' => 'recycle',
+        'Opplæring' => 'graduation-cap',
+    ];
+    return $icons[$tema] ?? 'cube';
+}
+
+// Get variant color for badges
+function bimverdi_tema_variant($tema) {
+    $variants = [
+        'ByggesaksBIM' => 'brand',
+        'ProsjektBIM' => 'success',
+        'EiendomsBIM' => 'warning',
+        'MiljøBIM' => 'success',
+        'SirkBIM' => 'brand',
+        'Opplæring' => 'neutral',
+    ];
+    return $variants[$tema] ?? 'neutral';
+}
 ?>
 
-<div class="min-h-screen bg-bim-beige-100">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
     
-    <!-- Hero Header -->
-    <div class="bg-gradient-to-r from-purple-600 to-orange-600 text-white py-12">
-        <div class="container mx-auto px-4 max-w-6xl">
-            <!-- Breadcrumbs -->
-            <div class="mb-6">
-                <nav class="text-sm text-white/80">
-                    <a href="<?php echo home_url(); ?>" class="hover:text-white">Hjem</a>
-                    <span class="mx-2">/</span>
-                    <a href="<?php echo home_url('/verktoy'); ?>" class="hover:text-white">Verktøy</a>
-                    <span class="mx-2">/</span>
-                    <span class="text-white"><?php the_title(); ?></span>
-                </nav>
-            </div>
-            
-            <!-- Hero Content -->
-            <div class="flex items-start gap-6">
-                <?php if ($logo_url): ?>
-                <div class="w-32 h-32 flex-shrink-0 bg-white rounded-lg overflow-hidden flex items-center justify-center p-4">
-                    <img src="<?php echo esc_url($logo_url); ?>" 
-                         alt="<?php the_title(); ?>" 
-                         class="w-full h-full object-contain">
-                </div>
-                <?php endif; ?>
-                
-                <div class="flex-1">
-                    <!-- Categories -->
-                    <?php if (!empty($kategori_terms)): ?>
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <?php foreach ($kategori_terms as $term): ?>
-                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">
-                            <?php echo esc_html($term->name); ?>
-                        </span>
-                        <?php endforeach; ?>
-                    </div>
+    <!-- Breadcrumbs -->
+    <div class="container mx-auto px-4 max-w-6xl pt-6">
+        <wa-breadcrumb>
+            <wa-breadcrumb-item href="<?php echo home_url(); ?>">
+                <wa-icon slot="prefix" name="house" library="fa"></wa-icon>
+                Hjem
+            </wa-breadcrumb-item>
+            <wa-breadcrumb-item href="<?php echo home_url('/verktoy'); ?>">Verktøykatalog</wa-breadcrumb-item>
+            <wa-breadcrumb-item><?php the_title(); ?></wa-breadcrumb-item>
+        </wa-breadcrumb>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="container mx-auto px-4 max-w-6xl py-8">
+        <wa-card class="overflow-hidden">
+            <div class="flex flex-col md:flex-row gap-6 p-6 md:p-8">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <?php if ($logo_url): ?>
+                    <wa-avatar 
+                        image="<?php echo esc_url($logo_url); ?>" 
+                        label="<?php the_title(); ?>"
+                        style="--size: 8rem;">
+                    </wa-avatar>
+                    <?php else: ?>
+                    <wa-avatar 
+                        initials="<?php echo esc_attr(substr(get_the_title(), 0, 2)); ?>"
+                        style="--size: 8rem; font-size: 2rem;">
+                    </wa-avatar>
                     <?php endif; ?>
+                </div>
+                
+                <!-- Info -->
+                <div class="flex-1 space-y-4">
+                    <!-- Badges row -->
+                    <div class="flex flex-wrap gap-2">
+                        <?php if ($formaalstema): ?>
+                        <wa-tag variant="<?php echo bimverdi_tema_variant($formaalstema); ?>" size="medium">
+                            <wa-icon slot="prefix" name="<?php echo bimverdi_tema_icon($formaalstema); ?>" library="fa"></wa-icon>
+                            <?php echo esc_html(bimverdi_readable_label($formaalstema)); ?>
+                        </wa-tag>
+                        <?php endif; ?>
+                        
+                        <?php if ($type_ressurs): ?>
+                        <wa-tag variant="neutral" size="medium">
+                            <?php echo esc_html(bimverdi_readable_label($type_ressurs)); ?>
+                        </wa-tag>
+                        <?php endif; ?>
+                        
+                        <?php if ($type_teknologi === 'Bruker_KI'): ?>
+                        <wa-tag variant="brand" size="medium">
+                            <wa-icon slot="prefix" name="microchip" library="fa"></wa-icon>
+                            KI-drevet
+                        </wa-tag>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($kategori_terms)): ?>
+                            <?php foreach ($kategori_terms as $term): ?>
+                            <wa-tag variant="neutral" size="medium"><?php echo esc_html($term->name); ?></wa-tag>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                     
-                    <h1 class="text-4xl md:text-5xl font-bold mb-3">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
                         <?php the_title(); ?>
                     </h1>
                     
-                    <!-- Company -->
                     <?php if ($eier): ?>
-                    <p class="text-xl text-black">
-                        Levert av <a href="<?php echo get_permalink($eier_id); ?>" 
-                           class="hover:underline font-semibold">
+                    <p class="text-lg text-gray-600">
+                        Levert av 
+                        <a href="<?php echo get_permalink($eier_id); ?>" class="text-orange-600 hover:underline font-semibold">
                             <?php echo esc_html($eier->post_title); ?>
                         </a>
                     </p>
                     <?php endif; ?>
+                    
+                    <!-- Action buttons -->
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <?php if (!empty($lenke)): ?>
+                        <wa-button variant="brand" size="large" href="<?php echo esc_url($lenke); ?>" target="_blank">
+                            <wa-icon slot="prefix" name="globe" library="fa"></wa-icon>
+                            Besøk nettside
+                            <wa-icon slot="suffix" name="arrow-up-right-from-square" library="fa"></wa-icon>
+                        </wa-button>
+                        <?php endif; ?>
+                        
+                        <?php if ($eier): ?>
+                        <wa-button variant="neutral" size="large" outline href="<?php echo get_permalink($eier_id); ?>">
+                            <wa-icon slot="prefix" name="envelope" library="fa"></wa-icon>
+                            Kontakt leverandør
+                        </wa-button>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-        </div>
+        </wa-card>
     </div>
-    
-    <div class="container mx-auto px-4 max-w-6xl py-12">
 
+    <div class="container mx-auto px-4 max-w-6xl pb-12">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Main Content -->
             <div class="lg:col-span-2 space-y-8">
                 
-                <!-- Description Card -->
-                <div class="bg-white rounded-lg shadow-lg p-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">📋 Om verktøyet</h2>
-                    
-                    <?php if (!empty($detaljert_beskrivelse)): ?>
+                <!-- Description -->
+                <wa-card>
+                    <div slot="header" class="flex items-center gap-2">
+                        <wa-icon name="file-lines" library="fa" style="font-size: 1.25rem;"></wa-icon>
+                        <strong>Om verktøyet</strong>
+                    </div>
                     <div class="prose max-w-none text-gray-700">
-                        <?php echo wpautop($detaljert_beskrivelse); ?>
+                        <?php if (!empty($detaljert_beskrivelse)): ?>
+                            <?php echo wpautop($detaljert_beskrivelse); ?>
+                        <?php else: ?>
+                            <p><?php the_excerpt(); ?></p>
+                        <?php endif; ?>
                     </div>
-                    <?php else: ?>
-                    <p class="text-gray-600"><?php the_excerpt(); ?></p>
-                    <?php endif; ?>
-                </div>
+                </wa-card>
 
-                <!-- CTA Buttons -->
-                <div class="flex flex-wrap gap-4">
-                    <?php if (!empty($lenke)): ?>
-                    <a href="<?php echo esc_url($lenke); ?>" 
-                       target="_blank" 
-                       rel="noopener" 
-                       class="px-8 py-4 bg-purple-600 rounded-lg font-bold hover:bg-purple-700 transition-colors text-lg flex items-center gap-2">
-                        🌐 Besøk nettside
-                    </a>
-                    <?php endif; ?>
+                <!-- Anvendelser (Use Cases) -->
+                <?php if (!empty($anvendelser) && is_array($anvendelser)): ?>
+                <wa-card>
+                    <div slot="header" class="flex items-center gap-2">
+                        <wa-icon name="layer-group" library="fa" style="font-size: 1.25rem;"></wa-icon>
+                        <strong>Bruksområder</strong>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <?php foreach ($anvendelser as $anvendelse): ?>
+                        <wa-tag variant="brand" size="medium">
+                            <?php echo esc_html(bimverdi_readable_label($anvendelse)); ?>
+                        </wa-tag>
+                        <?php endforeach; ?>
+                    </div>
+                </wa-card>
+                <?php endif; ?>
+
+                <!-- Technical Details -->
+                <wa-card>
+                    <div slot="header" class="flex items-center gap-2">
+                        <wa-icon name="gears" library="fa" style="font-size: 1.25rem;"></wa-icon>
+                        <strong>Tekniske detaljer</strong>
+                    </div>
                     
-                    <?php if ($eier): ?>
-                    <a href="<?php echo get_permalink($eier_id); ?>" 
-                       class="px-8 py-4 bg-orange-600 rounded-lg font-bold hover:bg-orange-700 transition-colors text-lg flex items-center gap-2">
-                        📧 Kontakt leverandør
-                    </a>
-                    <?php endif; ?>
-                </div>
-                
-                <!-- Features Section (demo data) -->
-                <div class="bg-white rounded-lg shadow-lg p-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">✨ Funksjoner</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- BIM Compatibility -->
+                        <?php if ($bim_kompatibilitet): ?>
                         <div class="flex items-start gap-3">
-                            <span class="text-2xl">🔷</span>
+                            <wa-icon name="cube" library="fa" style="font-size: 1.5rem; color: var(--wa-color-brand-600);"></wa-icon>
                             <div>
-                                <h3 class="font-bold text-gray-900">BIM-integrasjon</h3>
-                                <p class="text-sm text-gray-600">Full støtte for IFC og native formater</p>
+                                <h4 class="font-semibold text-gray-900">BIM-kompatibilitet</h4>
+                                <p class="text-sm text-gray-600"><?php echo esc_html(bimverdi_readable_label($bim_kompatibilitet)); ?></p>
                             </div>
                         </div>
+                        <?php endif; ?>
+                        
+                        <!-- Type Technology -->
+                        <?php if ($type_teknologi): ?>
                         <div class="flex items-start gap-3">
-                            <span class="text-2xl">☁️</span>
+                            <wa-icon name="microchip" library="fa" style="font-size: 1.5rem; color: var(--wa-color-brand-600);"></wa-icon>
                             <div>
-                                <h3 class="font-bold text-gray-900">Cloud-basert</h3>
-                                <p class="text-sm text-gray-600">Samarbeid i sanntid fra hvor som helst</p>
+                                <h4 class="font-semibold text-gray-900">Teknologi</h4>
+                                <p class="text-sm text-gray-600"><?php echo esc_html(bimverdi_readable_label($type_teknologi)); ?></p>
                             </div>
                         </div>
+                        <?php endif; ?>
+                        
+                        <!-- Type Resource -->
+                        <?php if ($type_ressurs): ?>
                         <div class="flex items-start gap-3">
-                            <span class="text-2xl">📊</span>
+                            <wa-icon name="box" library="fa" style="font-size: 1.5rem; color: var(--wa-color-brand-600);"></wa-icon>
                             <div>
-                                <h3 class="font-bold text-gray-900">Rapportering</h3>
-                                <p class="text-sm text-gray-600">Automatisk generering av rapporter</p>
+                                <h4 class="font-semibold text-gray-900">Ressurstype</h4>
+                                <p class="text-sm text-gray-600"><?php echo esc_html(bimverdi_readable_label($type_ressurs)); ?></p>
                             </div>
                         </div>
+                        <?php endif; ?>
+                        
+                        <!-- Tema -->
+                        <?php if ($formaalstema): ?>
                         <div class="flex items-start gap-3">
-                            <span class="text-2xl">🔗</span>
+                            <wa-icon name="bullseye" library="fa" style="font-size: 1.5rem; color: var(--wa-color-brand-600);"></wa-icon>
                             <div>
-                                <h3 class="font-bold text-gray-900">API-tilgang</h3>
-                                <p class="text-sm text-gray-600">Integrer med andre systemer</p>
+                                <h4 class="font-semibold text-gray-900">Formålstema</h4>
+                                <p class="text-sm text-gray-600"><?php echo esc_html(bimverdi_readable_label($formaalstema)); ?></p>
                             </div>
                         </div>
+                        <?php endif; ?>
                     </div>
-                </div>
-                
-                <!-- Related Concepts (demo - kobling til semantikk) -->
-                <div class="bg-gradient-to-r from-purple-50 to-orange-50 rounded-lg shadow-lg p-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🔗 Relaterte Begreper</h2>
-                    <p class="text-gray-700 mb-6">Dette verktøyet støtter følgende standarder og krav:</p>
-                    <div class="flex flex-wrap gap-3">
-                        <a href="<?php echo home_url('/begrep-tek17/'); ?>" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
-                            <span class="font-bold text-purple-600">TEK17</span>
-                        </a>
-                        <a href="#" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
-                            <span class="font-bold text-blue-600">IFC</span>
-                        </a>
-                        <a href="#" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
-                            <span class="font-bold text-green-600">BIM-koordinering</span>
-                        </a>
-                        <a href="#" class="bg-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
-                            <span class="font-bold text-orange-600">EPD-data</span>
-                        </a>
+                </wa-card>
+
+                <!-- Related Tools (future) -->
+                <wa-card>
+                    <div slot="header" class="flex items-center gap-2">
+                        <wa-icon name="link" library="fa" style="font-size: 1.25rem;"></wa-icon>
+                        <strong>Relaterte standarder</strong>
                     </div>
-                </div>
+                    <p class="text-gray-600 mb-4">Dette verktøyet er relevant for følgende standarder og krav:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <wa-button variant="neutral" size="small" outline href="<?php echo home_url('/begrep-tek-17/'); ?>">
+                            TEK17
+                        </wa-button>
+                        <wa-button variant="neutral" size="small" outline>
+                            IFC 4
+                        </wa-button>
+                        <wa-button variant="neutral" size="small" outline>
+                            NS 3451
+                        </wa-button>
+                        <wa-button variant="neutral" size="small" outline>
+                            BIM-koordinering
+                        </wa-button>
+                    </div>
+                </wa-card>
 
             </div>
 
             <!-- Sidebar -->
-            <div class="lg:col-span-1">
-                <div class="sticky top-24 space-y-6">
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Quick Info -->
+                <wa-card>
+                    <div slot="header" class="flex items-center gap-2">
+                        <wa-icon name="circle-info" library="fa" style="font-size: 1.25rem;"></wa-icon>
+                        <strong>Rask info</strong>
+                    </div>
                     
-                    <!-- Quick Info Card -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">
-                            ℹ️ Rask info
-                        </h3>
+                    <dl class="space-y-4">
+                        <!-- Status -->
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <dt class="text-sm text-gray-600">Status</dt>
+                            <dd>
+                                <wa-badge variant="success">
+                                    <wa-icon slot="prefix" name="check" library="fa"></wa-icon>
+                                    Aktiv
+                                </wa-badge>
+                            </dd>
+                        </div>
                         
-                        <dl class="space-y-4">
-                            
-                            <!-- Verktøynavn -->
-                            <?php if (!empty($verktoy_navn)): ?>
-                            <div class="pb-4 border-b border-gray-200">
-                                <dt class="text-sm font-semibold text-gray-600 mb-1">Verktøynavn</dt>
-                                <dd class="text-gray-900 font-semibold"><?php echo esc_html($verktoy_navn); ?></dd>
-                            </div>
-                            <?php endif; ?>
-                            
-                            <!-- Price -->
-                            <?php if (!empty($pris)): ?>
-                            <div class="pb-4 border-b border-gray-200">
-                                <dt class="text-sm font-semibold text-gray-600 mb-1">💰 Pris</dt>
-                                <dd class="text-gray-900 font-semibold"><?php echo esc_html($pris); ?></dd>
-                            </div>
-                            <?php endif; ?>
-                            
-                            <!-- Status -->
-                            <div class="pb-4 border-b border-gray-200">
-                                <dt class="text-sm font-semibold text-gray-600 mb-1">Status</dt>
-                                <dd>
-                                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
-                                        <?php echo get_post_status() === 'publish' ? '✓ Aktiv' : 'Inaktiv'; ?>
-                                    </span>
-                                </dd>
-                            </div>
-                            
-                            <!-- Users (demo) -->
-                            <div class="pb-4 border-b border-gray-200">
-                                <dt class="text-sm font-semibold text-gray-600 mb-1">👥 Medlemmer som bruker</dt>
-                                <dd class="text-2xl font-bold text-purple-600">45</dd>
-                                <dd class="text-xs text-gray-500">aktive brukere</dd>
-                            </div>
-                            
-                            <!-- Link -->
-                            <?php if (!empty($lenke)): ?>
-                            <div>
-                                <dt class="text-sm font-semibold text-gray-600 mb-2">🌐 Nettside</dt>
-                                <dd>
-                                    <a href="<?php echo esc_url($lenke); ?>" 
-                                       target="_blank" 
-                                       rel="noopener"
-                                       class="text-purple-600 hover:underline text-sm break-all">
-                                        <?php echo esc_html(parse_url($lenke, PHP_URL_HOST)); ?>
-                                    </a>
-                                </dd>
-                            </div>
-                            <?php endif; ?>
-                        </dl>
+                        <!-- Type -->
+                        <?php if ($type_ressurs): ?>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <dt class="text-sm text-gray-600">Type</dt>
+                            <dd class="font-semibold text-gray-900"><?php echo esc_html(bimverdi_readable_label($type_ressurs)); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- BIM -->
+                        <?php if ($bim_kompatibilitet): ?>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <dt class="text-sm text-gray-600">IFC-støtte</dt>
+                            <dd class="font-semibold text-gray-900 text-right text-sm"><?php echo esc_html(bimverdi_readable_label($bim_kompatibilitet)); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- Price -->
+                        <?php if (!empty($pris)): ?>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <dt class="text-sm text-gray-600">Pris</dt>
+                            <dd class="font-semibold text-gray-900"><?php echo esc_html($pris); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- Website -->
+                        <?php if (!empty($lenke)): ?>
+                        <div class="pb-3">
+                            <dt class="text-sm text-gray-600 mb-1">Nettside</dt>
+                            <dd>
+                                <a href="<?php echo esc_url($lenke); ?>" 
+                                   target="_blank" 
+                                   rel="noopener"
+                                   class="text-orange-600 hover:underline text-sm break-all inline-flex items-center gap-1">
+                                    <?php echo esc_html(parse_url($lenke, PHP_URL_HOST)); ?>
+                                    <wa-icon name="arrow-up-right-from-square" library="fa" style="font-size: 0.75rem;"></wa-icon>
+                                </a>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
+                    </dl>
+                </wa-card>
+
+                <!-- Contact Card -->
+                <?php if ($eier): ?>
+                <wa-card class="bg-gradient-to-br from-orange-50 to-orange-100">
+                    <div slot="header" class="flex items-center gap-2">
+                        <wa-icon name="building" library="fa" style="font-size: 1.25rem;"></wa-icon>
+                        <strong>Leverandør</strong>
                     </div>
-
-                    <!-- Contact Card -->
-                    <?php if ($eier): ?>
-                    <div class="bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-xl font-bold mb-3">
-                            📞 Kontakt leverandør
-                        </h3>
-                        <p class="mb-4 text-sm opacity-90 text-black">
-                            Vil du vite mer om <?php the_title(); ?>? Ta kontakt med leverandøren.
-                        </p>
-                        <a href="<?php echo get_permalink($eier_id); ?>" 
-                           class="block w-full px-6 py-3 bg-white text-orange-600 rounded-lg font-bold hover:bg-gray-100 transition-colors text-center">
-                            Kontakt <?php echo esc_html($eier->post_title); ?>
-                        </a>
+                    
+                    <div class="flex items-center gap-3 mb-4">
+                        <wa-avatar initials="<?php echo esc_attr(substr($eier->post_title, 0, 2)); ?>" style="--size: 3rem;"></wa-avatar>
+                        <div>
+                            <p class="font-semibold text-gray-900"><?php echo esc_html($eier->post_title); ?></p>
+                            <p class="text-sm text-gray-600">BIM Verdi-medlem</p>
+                        </div>
                     </div>
-                    <?php endif; ?>
+                    
+                    <div slot="footer">
+                        <wa-button variant="brand" class="w-full" href="<?php echo get_permalink($eier_id); ?>">
+                            <wa-icon slot="prefix" name="envelope" library="fa"></wa-icon>
+                            Kontakt leverandør
+                        </wa-button>
+                    </div>
+                </wa-card>
+                <?php endif; ?>
 
-                    <!-- Back to Catalog -->
-                    <a href="<?php echo home_url('/verktoy'); ?>" 
-                       class="block w-full px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-center">
-                        ← Tilbake til katalog
-                    </a>
+                <!-- Back button -->
+                <wa-button variant="neutral" outline class="w-full" href="<?php echo home_url('/verktoy'); ?>">
+                    <wa-icon slot="prefix" name="arrow-left" library="fa"></wa-icon>
+                    Tilbake til katalog
+                </wa-button>
 
-                </div>
             </div>
 
         </div>
-
     </div>
 </div>
 

@@ -49,6 +49,14 @@ function bimverdi_enqueue_assets() {
         '2.0.0'
     );
     
+    // Web Awesome CSS (default theme)
+    wp_enqueue_style(
+        'webawesome-theme',
+        get_template_directory_uri() . '/dist/webawesome/styles/themes/default.css',
+        array(),
+        '3.0.0'
+    );
+    
     // Enqueue custom JavaScript (if needed)
     wp_enqueue_script(
         'bimverdi-scripts',
@@ -59,6 +67,17 @@ function bimverdi_enqueue_assets() {
     );
 }
 add_action('wp_enqueue_scripts', 'bimverdi_enqueue_assets');
+
+/**
+ * Add Web Awesome loader script to head
+ */
+function bimverdi_add_webawesome_loader() {
+    $webawesome_path = get_template_directory_uri() . '/dist/webawesome';
+    ?>
+    <script type="module" data-webawesome="<?php echo esc_url($webawesome_path); ?>" src="<?php echo esc_url($webawesome_path . '/webawesome.loader.js'); ?>"></script>
+    <?php
+}
+add_action('wp_head', 'bimverdi_add_webawesome_loader', 5);
 
 /**
  * Load Design System

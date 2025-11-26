@@ -1,13 +1,10 @@
-<!-- 
-Template Name: Min Side Dashboard
-Description: Dashboard for logged-in members
--->
 <?php
 /**
  * Template Name: Min Side Dashboard
  * 
  * Dashboard template for BIM Verdi members
  * Shows profile info, quick actions, upcoming events, and navigation
+ * Uses Web Awesome components with new sidebar layout
  * 
  * @package BimVerdi_Theme
  */
@@ -22,7 +19,16 @@ get_header();
 
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
-$company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
+
+// Use new access control system
+$has_company = function_exists('bimverdi_user_has_company') ? bimverdi_user_has_company($user_id) : false;
+$account_type = function_exists('bimverdi_get_account_type') ? bimverdi_get_account_type($user_id) : 'profil';
+
+// Get company ID from new meta key OR legacy key
+$company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
+if (empty($company_id)) {
+    $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true); // Legacy fallback
+}
 $company = $company_id ? get_post($company_id) : null;
 
 // Use mock data if no real company exists (for demo)
@@ -34,11 +40,10 @@ if ($is_demo) {
 // Get user role
 $user_roles = $current_user->roles;
 $is_company_owner = in_array('company_owner', $user_roles);
-$is_member_coordinator = in_array('member_coordinator', $user_roles);
 
 // Profile completion percentage
 $profile_completion = 0;
-if ($company) {
+if ($company_id) {
     $total_fields = 10;
     $filled_fields = 0;
     
@@ -72,240 +77,470 @@ $upcoming_events = get_posts(array(
         )
     )
 ));
+
+// Get user's tools
+$my_tools = get_posts(array(
+    'post_type' => 'verktoy',
+    'author' => $user_id,
+    'posts_per_page' => -1,
+    'post_status' => array('publish', 'draft', 'pending'),
+));
+$my_tools_count = count($my_tools);
+
+// Get user's ideas
+$my_ideas = get_posts(array(
+    'post_type' => 'case',
+    'author' => $user_id,
+    'posts_per_page' => -1,
+));
+$my_ideas_count = count($my_ideas);
+
+// Get user's event registrations
+$my_registrations = get_posts(array(
+    'post_type' => 'pamelding',
+    'meta_key' => 'pamelding_bruker',
+    'meta_value' => $user_id,
+    'posts_per_page' => -1,
+));
+$registrations_count = count($my_registrations);
+
+// Start Min Side layout
+get_template_part('template-parts/minside-layout-start', null, array(
+    'current_page' => 'dashboard',
+    'page_title' => 'Dashboard',
+    'page_icon' => 'house',
+    'page_description' => 'Oversikt over din aktivitet i BIM Verdi',
+));
 ?>
 
-<div class="min-h-screen bg-bim-beige-100 py-8">
-    <div class="container mx-auto px-4">
-        
-        <!-- Success Message for Company Connection -->
-        <?php if (isset($_GET['foretak_koblet']) && $_GET['foretak_koblet'] == '1'): ?>
-            <div class="alert alert-success bg-green-50 border-2 border-green-500 mb-6 shadow-lg">
-                <div>
-                    <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div>
-                        <h3 class="font-bold text-lg text-green-900">Du er nå koblet til et foretak!</h3>
-                        <div class="text-sm text-green-800">
-                            Du har full tilgang til alle funksjoner i BIM Verdi medlemsportal.
+<!-- Success Messages -->
+<?php if (isset($_GET['welcome']) && $_GET['welcome'] == '1'): ?>
+    <wa-alert variant="success" open closable class="mb-6">
+        <wa-icon slot="icon" name="circle-check" library="fa"></wa-icon>
+        <strong>Velkommen til BIM Verdi! 🎉</strong><br>
+        Kontoen din er aktivert. Utforsk portalen og koble til et foretak for full tilgang.
+    </wa-alert>
+<?php elseif (isset($_GET['foretak_koblet']) && $_GET['foretak_koblet'] == '1'): ?>
+    <wa-alert variant="success" open closable class="mb-6">
+        <wa-icon slot="icon" name="circle-check" library="fa"></wa-icon>
+        <strong>Du er nå koblet til et foretak!</strong><br>
+        Du har full tilgang til alle funksjoner i BIM Verdi medlemsportal.
+    </wa-alert>
+<?php endif; ?>
+
+<!-- Access Denied Message -->
+<?php if (isset($_GET['access_denied'])): 
+    $denied_feature = sanitize_text_field($_GET['access_denied']);
+    $feature_names = array(
+        'register_tool' => 'registrere verktøy',
+        'edit_tool' => 'redigere verktøy',
+        'write_article' => 'skrive artikler',
+        'join_temagruppe' => 'velge temagrupper',
+        'company_profile' => 'redigere foretaksprofil',
+    );
+    $feature_name = isset($feature_names[$denied_feature]) ? $feature_names[$denied_feature] : $denied_feature;
+?>
+    <wa-alert variant="warning" open closable class="mb-6">
+        <wa-icon slot="icon" name="lock" library="fa"></wa-icon>
+        <strong>Tilgang krever foretak</strong><br>
+        For å <?php echo esc_html($feature_name); ?> må du først koble kontoen til et foretak.
+    </wa-alert>
+<?php endif; ?>
+
+<!-- Welcome Banner for Profile Users (without company) -->
+<?php if (!$has_company): ?>
+<div class="mb-8 rounded-xl overflow-hidden border-2 border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50">
+    <div class="p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+            <div class="flex-shrink-0">
+                <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center">
+                    <wa-icon name="rocket" library="fa" style="font-size: 2rem; color: #F59E0B;"></wa-icon>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">
+                    Velkommen, <?php echo esc_html($current_user->display_name ?: $current_user->user_login); ?>! 👋
+                </h3>
+                <p class="text-gray-700 mb-3">
+                    Du har en <strong>profil-konto</strong>. Koble til et foretak for å låse opp alle funksjoner.
+                </p>
+                
+                <!-- What you can do / What's locked -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white/60 rounded-lg p-3">
+                        <div class="text-sm font-semibold text-green-700 mb-2 flex items-center gap-2">
+                            <wa-icon name="check-circle" library="fa"></wa-icon>
+                            Tilgjengelig nå
                         </div>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>✓ Se medlemskatalogen</li>
+                            <li>✓ Utforske verktøy</li>
+                            <li>✓ Melde deg på arrangementer</li>
+                            <li>✓ Redigere din profil</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3">
+                        <div class="text-sm font-semibold text-amber-700 mb-2 flex items-center gap-2">
+                            <wa-icon name="lock" library="fa"></wa-icon>
+                            Låses opp med foretak
+                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>🔒 Registrere verktøy</li>
+                            <li>🔒 Skrive artikler</li>
+                            <li>🔒 Velge temagrupper</li>
+                            <li>🔒 Foretaksprofil</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        <?php endif; ?>
-
-        <!-- Demo Banner -->
-        <?php if ($is_demo): ?>
-            <div class="alert alert-warning shadow-lg mb-6 bg-alert text-black">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0-11l6.364 3.682a2 2 0 010 3.464L12 21l-6.364-3.682a2 2 0 010-3.464L12 2z"></path>
-                    </svg>
-                    <div>
-                        <h3 class="font-bold">Demo-data vises</h3>
-                        <div class="text-sm">Du ser demo-data fordi ingen faktisk bedrift er opprettet ennå. Dette viser hvordan Min Side vil se ut når du har registrert deg.</div>
-                    </div>
-                </div>
+            <div class="flex-shrink-0">
+                <wa-button variant="brand" size="large" href="<?php echo esc_url(home_url('/min-side/koble-foretak/')); ?>">
+                    <wa-icon slot="prefix" name="building" library="fa"></wa-icon>
+                    Koble til foretak
+                    <wa-icon slot="suffix" name="arrow-right" library="fa"></wa-icon>
+                </wa-button>
             </div>
-        <?php endif; ?>
-        
-        <!-- Welcome Header -->
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-bim-black-900 mb-2">
-                Velkommen, <?php echo esc_html($current_user->first_name ?: $current_user->display_name); ?>!
-            </h1>
-            <?php if ($company_id): ?>
-                <?php 
-                $user_rolle = get_field('foretak_rolle', 'user_' . $user_id);
-                ?>
-                <div class="flex items-center gap-2 text-lg">
-                    <p class="text-bim-black-700">
-                        <svg class="w-5 h-5 inline-block mr-1 text-bim-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                        <strong><?php echo esc_html($company->post_title); ?></strong>
-                    </p>
-                    <?php if ($user_rolle): ?>
-                        <span class="badge bg-bim-purple text-white border-0"><?php echo esc_html($user_rolle); ?></span>
-                    <?php endif; ?>
-                    <?php if ($is_company_owner): ?>
-                        <span class="badge bg-bim-orange text-white border-0">Bedriftseier</span>
-                    <?php endif; ?>
-                    <a href="<?php echo esc_url(home_url('/koble-foretak/')); ?>" class="text-sm text-bim-orange hover:underline ml-2">
-                        Se detaljer →
-                    </a>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Min Side Horizontal Tab Navigation -->
-        <?php 
-        $current_tab = 'dashboard';
-        get_template_part('template-parts/minside-tabs', null, array('current_tab' => $current_tab));
-        ?>
-
-        <!-- Main Content (Full Width) -->
-        <div>
-
-                <!-- Welcome - Next Step: Connect to Company -->
-                <?php if (!$company_id): ?>
-                <div class="alert bg-gradient-to-r from-bim-orange to-bim-purple text-white mb-6 rounded-lg shadow-lg border-0">
-                    <div>
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        <div>
-                            <h3 class="font-bold text-xl mb-2">Velkommen til BIM Verdi! 🎉</h3>
-                            <div class="text-white text-opacity-95 mb-2">
-                                Din bruker er opprettet. Neste steg er å koble deg til et foretak for å få full tilgang til medlemsportalen.
-                            </div>
-                            <div class="text-sm text-white text-opacity-90">
-                                💼 Velg ditt foretak fra listen, eller registrer et nytt hvis det ikke finnes ennå.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex-none">
-                        <a href="<?php echo esc_url(home_url('/koble-foretak/')); ?>" class="btn btn-lg bg-white text-bim-orange hover:bg-bim-beige-100 border-0">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                            </svg>
-                            Koble til Foretak
-                        </a>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-
-                <!-- Quick Actions -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-bim-black-900 mb-4">Hurtighandlinger</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        
-                        <!-- Profil Card -->
-                        <div class="card bg-base-100 shadow-xl border border-base-200">
-                            <div class="card-body">
-                                <h2 class="card-title text-bim-black-900">Profil</h2>
-                                <p class="text-sm text-bim-black-700">Administrer din brukerprofil</p>
-                                <div class="card-actions justify-end mt-4">
-                                    <a href="<?php echo esc_url(home_url('/rediger-bruker/')); ?>" class="btn btn-primary btn-sm">Rediger</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Foretak Card -->
-                        <div class="card bg-base-100 shadow-xl border border-base-200">
-                            <div class="card-body">
-                                <h2 class="card-title text-bim-black-900">Foretak</h2>
-                                <p class="text-sm text-bim-black-700"><?php echo $company_id ? 'Se foretak status' : 'Koble til foretak'; ?></p>
-                                <div class="card-actions justify-end mt-4">
-                                    <a href="<?php echo esc_url(home_url('/koble-foretak/')); ?>" class="btn btn-primary btn-sm">
-                                        <?php echo $company_id ? 'Se Status' : 'Koble Til'; ?>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Verktøy Card -->
-                        <?php 
-                        $my_tools = get_posts(array(
-                            'post_type' => 'verktoy',
-                            'author' => $user_id,
-                            'posts_per_page' => -1,
-                            'post_status' => array('publish', 'draft', 'pending'),
-                        ));
-                        $my_tools_count = count($my_tools);
-                        ?>
-                        <div class="card bg-base-100 shadow-xl border border-base-200">
-                            <div class="card-body">
-                                <h2 class="card-title text-bim-black-900">Verktøy</h2>
-                                <p class="text-3xl font-bold text-bim-purple my-2"><?php echo $my_tools_count; ?></p>
-                                <div class="card-actions justify-end mt-4">
-                                    <a href="<?php echo esc_url(home_url('/registrer-verktoy/')); ?>" class="btn btn-primary btn-sm">Lag Nytt</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Idéer Card -->
-                        <?php 
-                        $my_ideas = get_posts(array(
-                            'post_type' => 'case',
-                            'author' => $user_id,
-                            'posts_per_page' => -1,
-                        ));
-                        $my_ideas_count = count($my_ideas);
-                        ?>
-                        <div class="card bg-base-100 shadow-xl border border-base-200">
-                            <div class="card-body">
-                                <h2 class="card-title text-bim-black-900">Idéer</h2>
-                                <p class="text-3xl font-bold text-bim-purple my-2"><?php echo $my_ideas_count; ?></p>
-                                <div class="card-actions justify-end mt-4">
-                                    <a href="#" class="btn btn-primary btn-sm">Send Inn</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Arrangementer Card -->
-                        <?php 
-                        $my_registrations = get_posts(array(
-                            'post_type' => 'pamelding',
-                            'meta_key' => 'pamelding_bruker',
-                            'meta_value' => $user_id,
-                            'posts_per_page' => -1,
-                        ));
-                        $registrations_count = count($my_registrations);
-                        ?>
-                        <div class="card bg-base-100 shadow-xl border border-base-200">
-                            <div class="card-body">
-                                <h2 class="card-title text-bim-black-900">Arrangementer</h2>
-                                <p class="text-3xl font-bold text-bim-orange my-2"><?php echo $registrations_count; ?></p>
-                                <div class="card-actions justify-end mt-4">
-                                    <a href="#arrangementer" class="btn btn-primary btn-sm">Se Events</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upcoming Events -->
-                <?php if (!empty($upcoming_events)): ?>
-                <div class="card-hjem mb-6">
-                    <div class="card-body p-6">
-                        <h2 class="text-2xl font-bold text-bim-black-900 mb-4">Kommende Arrangementer</h2>
-                        <div class="space-y-4">
-                            <?php foreach ($upcoming_events as $event): 
-                                $dato = get_field('arrangement_dato', $event->ID);
-                                $tid = get_field('arrangement_tid', $event->ID);
-                                $sted = get_field('arrangement_sted', $event->ID);
-                            ?>
-                            <div class="flex items-start gap-4 p-4 bg-bim-beige-100 rounded-lg hover:bg-bim-beige-200 transition-colors">
-                                <div class="flex-shrink-0 w-16 h-16 bg-bim-orange text-white rounded-lg flex flex-col items-center justify-center">
-                                    <div class="text-2xl font-bold"><?php echo date('d', strtotime($dato)); ?></div>
-                                    <div class="text-xs uppercase"><?php echo date('M', strtotime($dato)); ?></div>
-                                </div>
-                                <div class="flex-grow">
-                                    <h3 class="font-bold text-lg text-bim-black-900"><?php echo esc_html($event->post_title); ?></h3>
-                                    <div class="text-sm text-bim-black-700 mt-1">
-                                        <?php if ($tid): ?>
-                                            <span class="mr-4">🕐 <?php echo esc_html($tid); ?></span>
-                                        <?php endif; ?>
-                                        <?php if ($sted): ?>
-                                            <span>📍 <?php echo esc_html($sted); ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <a href="<?php echo get_permalink($event->ID); ?>" class="btn btn-sm btn-hjem-primary">Se detaljer</a>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-            </main>
         </div>
     </div>
 </div>
+<?php endif; ?>
 
-<?php get_footer(); ?>
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    
+    <!-- Verktøy -->
+    <?php if ($has_company): ?>
+    <wa-card class="text-center hover:shadow-lg transition-shadow">
+        <div class="p-4">
+            <wa-icon name="wrench" library="fa" style="font-size: 2rem; color: var(--wa-color-brand-600); margin-bottom: 0.5rem;"></wa-icon>
+            <div class="text-4xl font-bold text-gray-900 mb-1"><?php echo $my_tools_count; ?></div>
+            <div class="text-sm text-gray-600 mb-3">Verktøy registrert</div>
+            <wa-button variant="brand" size="small" href="<?php echo esc_url(home_url('/min-side/registrer-verktoy/')); ?>">
+                <wa-icon slot="prefix" name="plus" library="fa"></wa-icon>
+                Legg til
+            </wa-button>
+        </div>
+    </wa-card>
+    <?php else: ?>
+    <wa-card class="text-center opacity-60">
+        <div class="p-4">
+            <wa-icon name="wrench" library="fa" style="font-size: 2rem; color: #9CA3AF; margin-bottom: 0.5rem;"></wa-icon>
+            <div class="text-4xl font-bold text-gray-400 mb-1">—</div>
+            <div class="text-sm text-gray-500 mb-3">Verktøy registrert</div>
+            <wa-badge variant="warning" class="mb-2">
+                <wa-icon slot="prefix" name="lock" library="fa"></wa-icon>
+                Krever foretak
+            </wa-badge>
+        </div>
+    </wa-card>
+    <?php endif; ?>
+    
+    <!-- Idéer -->
+    <?php if ($has_company): ?>
+    <wa-card class="text-center hover:shadow-lg transition-shadow">
+        <div class="p-4">
+            <wa-icon name="lightbulb" library="fa" style="font-size: 2rem; color: var(--wa-color-warning-500); margin-bottom: 0.5rem;"></wa-icon>
+            <div class="text-4xl font-bold text-gray-900 mb-1"><?php echo $my_ideas_count; ?></div>
+            <div class="text-sm text-gray-600 mb-3">Prosjektidéer</div>
+            <wa-button variant="warning" size="small" href="<?php echo esc_url(home_url('/min-side/prosjektideer/')); ?>">
+                <wa-icon slot="prefix" name="plus" library="fa"></wa-icon>
+                Send inn
+            </wa-button>
+        </div>
+    </wa-card>
+    <?php else: ?>
+    <wa-card class="text-center opacity-60">
+        <div class="p-4">
+            <wa-icon name="lightbulb" library="fa" style="font-size: 2rem; color: #9CA3AF; margin-bottom: 0.5rem;"></wa-icon>
+            <div class="text-4xl font-bold text-gray-400 mb-1">—</div>
+            <div class="text-sm text-gray-500 mb-3">Prosjektidéer</div>
+            <wa-badge variant="warning" class="mb-2">
+                <wa-icon slot="prefix" name="lock" library="fa"></wa-icon>
+                Krever foretak
+            </wa-badge>
+        </div>
+    </wa-card>
+    <?php endif; ?>
+    
+    <!-- Arrangementer (tilgjengelig for alle) -->
+    <wa-card class="text-center hover:shadow-lg transition-shadow">
+        <div class="p-4">
+            <wa-icon name="calendar-check" library="fa" style="font-size: 2rem; color: var(--wa-color-success-600); margin-bottom: 0.5rem;"></wa-icon>
+            <div class="text-4xl font-bold text-gray-900 mb-1"><?php echo $registrations_count; ?></div>
+            <div class="text-sm text-gray-600 mb-3">Påmeldinger</div>
+            <wa-button variant="success" size="small" href="<?php echo esc_url(home_url('/min-side/arrangementer/')); ?>">
+                <wa-icon slot="prefix" name="eye" library="fa"></wa-icon>
+                Se alle
+            </wa-button>
+        </div>
+    </wa-card>
+    
+    <!-- Profil -->
+    <?php if ($has_company): ?>
+    <wa-card class="text-center hover:shadow-lg transition-shadow">
+        <div class="p-4">
+            <wa-icon name="building" library="fa" style="font-size: 2rem; color: var(--wa-color-neutral-600); margin-bottom: 0.5rem;"></wa-icon>
+            <div class="text-4xl font-bold text-gray-900 mb-1"><?php echo $profile_completion; ?>%</div>
+            <div class="text-sm text-gray-600 mb-3">Profil komplett</div>
+            <wa-button variant="neutral" size="small" outline href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>">
+                <wa-icon slot="prefix" name="pen" library="fa"></wa-icon>
+                Rediger
+            </wa-button>
+        </div>
+    </wa-card>
+    <?php else: ?>
+    <wa-card class="text-center hover:shadow-lg transition-shadow border-2 border-amber-200 bg-amber-50">
+        <div class="p-4">
+            <wa-icon name="building" library="fa" style="font-size: 2rem; color: #F59E0B; margin-bottom: 0.5rem;"></wa-icon>
+            <div class="text-lg font-bold text-amber-800 mb-1">Ikke koblet</div>
+            <div class="text-sm text-amber-700 mb-3">Koble til foretak</div>
+            <wa-button variant="warning" size="small" href="<?php echo esc_url(home_url('/min-side/koble-foretak/')); ?>">
+                <wa-icon slot="prefix" name="link" library="fa"></wa-icon>
+                Koble
+            </wa-button>
+        </div>
+    </wa-card>
+    <?php endif; ?>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Quick Actions -->
+        <wa-card>
+            <div slot="header" class="flex items-center gap-2">
+                <wa-icon name="bolt" library="fa"></wa-icon>
+                <strong>Hurtighandlinger</strong>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Registrer verktøy (krever foretak) -->
+                <?php if ($has_company): ?>
+                <a href="<?php echo esc_url(home_url('/min-side/registrer-verktoy/')); ?>" class="group flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                        <wa-icon name="wrench" library="fa" style="font-size: 1.5rem; color: var(--wa-color-brand-600);"></wa-icon>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-900">Registrer verktøy</div>
+                        <div class="text-sm text-gray-600">Del programvare med nettverket</div>
+                    </div>
+                </a>
+                <?php else: ?>
+                <div class="flex items-center gap-4 p-4 rounded-lg border border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed">
+                    <div class="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center relative">
+                        <wa-icon name="wrench" library="fa" style="font-size: 1.5rem; color: #9CA3AF;"></wa-icon>
+                        <div class="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center">
+                            <wa-icon name="lock" library="fa" style="font-size: 0.6rem; color: white;"></wa-icon>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-500">Registrer verktøy</div>
+                        <div class="text-sm text-amber-600">Koble til foretak for tilgang</div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Utforsk verktøy (tilgjengelig for alle) -->
+                <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="group flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                        <wa-icon name="magnifying-glass" library="fa" style="font-size: 1.5rem; color: var(--wa-color-brand-600);"></wa-icon>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-900">Utforsk verktøy</div>
+                        <div class="text-sm text-gray-600">Finn nye BIM-verktøy</div>
+                    </div>
+                </a>
+                
+                <!-- Temagrupper (krever foretak) -->
+                <?php if ($has_company): ?>
+                <a href="<?php echo esc_url(home_url('/min-side/temagrupper/')); ?>" class="group flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                        <wa-icon name="users" library="fa" style="font-size: 1.5rem; color: var(--wa-color-success-600);"></wa-icon>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-900">Temagrupper</div>
+                        <div class="text-sm text-gray-600">Bli med i faggrupper</div>
+                    </div>
+                </a>
+                <?php else: ?>
+                <div class="flex items-center gap-4 p-4 rounded-lg border border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed">
+                    <div class="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center relative">
+                        <wa-icon name="users" library="fa" style="font-size: 1.5rem; color: #9CA3AF;"></wa-icon>
+                        <div class="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center">
+                            <wa-icon name="lock" library="fa" style="font-size: 0.6rem; color: white;"></wa-icon>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-500">Temagrupper</div>
+                        <div class="text-sm text-amber-600">Koble til foretak for tilgang</div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Rediger profil (tilgjengelig for alle) -->
+                <a href="<?php echo esc_url(home_url('/min-side/profil/')); ?>" class="group flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                        <wa-icon name="user-pen" library="fa" style="font-size: 1.5rem; color: #3b82f6;"></wa-icon>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-900">Rediger profil</div>
+                        <div class="text-sm text-gray-600">Oppdater din informasjon</div>
+                    </div>
+                </a>
+            </div>
+        </wa-card>
+
+        <!-- My Recent Tools -->
+        <?php if ($my_tools_count > 0): ?>
+        <wa-card>
+            <div slot="header" class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <wa-icon name="wrench" library="fa"></wa-icon>
+                    <strong>Siste verktøy</strong>
+                </div>
+                <wa-button variant="text" size="small" href="<?php echo esc_url(home_url('/min-side/verktoy/')); ?>">
+                    Se alle
+                    <wa-icon slot="suffix" name="arrow-right" library="fa"></wa-icon>
+                </wa-button>
+            </div>
+            
+            <div class="space-y-3">
+                <?php 
+                $recent_tools = array_slice($my_tools, 0, 3);
+                foreach ($recent_tools as $tool): 
+                    $tool_status = get_post_status($tool->ID);
+                    $status_variant = $tool_status === 'publish' ? 'success' : 'warning';
+                    $status_label = $tool_status === 'publish' ? 'Publisert' : 'Kladd';
+                ?>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <wa-avatar initials="<?php echo esc_attr(substr($tool->post_title, 0, 2)); ?>" style="--size: 2.5rem;"></wa-avatar>
+                        <div>
+                            <div class="font-semibold text-gray-900"><?php echo esc_html($tool->post_title); ?></div>
+                            <wa-badge variant="<?php echo $status_variant; ?>" size="small"><?php echo $status_label; ?></wa-badge>
+                        </div>
+                    </div>
+                    <wa-button variant="text" size="small" href="<?php echo get_permalink($tool->ID); ?>">
+                        <wa-icon name="eye" library="fa"></wa-icon>
+                    </wa-button>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </wa-card>
+        <?php endif; ?>
+
+    </div>
+
+    <!-- Sidebar Content -->
+    <div class="space-y-6">
+        
+        <!-- Upcoming Events -->
+        <wa-card>
+            <div slot="header" class="flex items-center gap-2">
+                <wa-icon name="calendar-days" library="fa"></wa-icon>
+                <strong>Kommende arrangementer</strong>
+            </div>
+            
+            <?php if (!empty($upcoming_events)): ?>
+            <div class="space-y-4">
+                <?php foreach ($upcoming_events as $event): 
+                    $dato = get_field('arrangement_dato', $event->ID);
+                    $tid = get_field('arrangement_tid', $event->ID);
+                    $sted = get_field('arrangement_sted', $event->ID);
+                ?>
+                <a href="<?php echo get_permalink($event->ID); ?>" class="block p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex gap-3">
+                        <div class="flex-shrink-0 w-14 h-14 bg-orange-500 text-white rounded-lg flex flex-col items-center justify-center">
+                            <div class="text-lg font-bold leading-none"><?php echo date('d', strtotime($dato)); ?></div>
+                            <div class="text-xs uppercase"><?php echo date('M', strtotime($dato)); ?></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-semibold text-gray-900 truncate"><?php echo esc_html($event->post_title); ?></div>
+                            <div class="text-sm text-gray-600">
+                                <?php if ($tid): ?>
+                                    <wa-icon name="clock" library="fa" style="font-size: 0.75rem;"></wa-icon>
+                                    <?php echo esc_html($tid); ?>
+                                <?php endif; ?>
+                                <?php if ($sted): ?>
+                                    <span class="ml-2">
+                                        <wa-icon name="location-dot" library="fa" style="font-size: 0.75rem;"></wa-icon>
+                                        <?php echo esc_html($sted); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            
+            <div slot="footer">
+                <wa-button variant="neutral" outline class="w-full" href="<?php echo esc_url(home_url('/min-side/arrangementer/')); ?>">
+                    Se alle arrangementer
+                </wa-button>
+            </div>
+            <?php else: ?>
+            <div class="text-center py-6 text-gray-500">
+                <wa-icon name="calendar-xmark" library="fa" style="font-size: 2rem; margin-bottom: 0.5rem;"></wa-icon>
+                <p>Ingen kommende arrangementer</p>
+            </div>
+            <?php endif; ?>
+        </wa-card>
+
+        <!-- Company Card -->
+        <?php if ($company): ?>
+        <wa-card class="bg-gradient-to-br from-gray-50 to-gray-100">
+            <div slot="header" class="flex items-center gap-2">
+                <wa-icon name="building" library="fa"></wa-icon>
+                <strong>Ditt foretak</strong>
+            </div>
+            
+            <div class="flex items-center gap-4 mb-4">
+                <wa-avatar initials="<?php echo esc_attr(substr($company->post_title, 0, 2)); ?>" style="--size: 4rem; font-size: 1.25rem;"></wa-avatar>
+                <div>
+                    <div class="font-bold text-lg text-gray-900"><?php echo esc_html($company->post_title); ?></div>
+                    <wa-badge variant="success" size="small">
+                        <wa-icon slot="prefix" name="check" library="fa"></wa-icon>
+                        BIM Verdi-medlem
+                    </wa-badge>
+                </div>
+            </div>
+            
+            <div slot="footer" class="flex gap-2">
+                <wa-button variant="brand" class="flex-1" href="<?php echo esc_url(get_permalink($company_id)); ?>">
+                    <wa-icon slot="prefix" name="eye" library="fa"></wa-icon>
+                    Se profil
+                </wa-button>
+                <wa-button variant="neutral" outline href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>">
+                    <wa-icon name="pen" library="fa"></wa-icon>
+                </wa-button>
+            </div>
+        </wa-card>
+        <?php endif; ?>
+
+        <!-- Help Card -->
+        <wa-card>
+            <div slot="header" class="flex items-center gap-2">
+                <wa-icon name="circle-question" library="fa"></wa-icon>
+                <strong>Trenger du hjelp?</strong>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Kontakt oss hvis du har spørsmål om medlemsportalen eller BIM Verdi-nettverket.
+            </p>
+            <wa-button variant="neutral" outline class="w-full" href="mailto:post@bimverdi.no">
+                <wa-icon slot="prefix" name="envelope" library="fa"></wa-icon>
+                Kontakt support
+            </wa-button>
+        </wa-card>
+
+    </div>
+</div>
+
+<?php 
+// End Min Side layout
+get_template_part('template-parts/minside-layout-end');
+get_footer(); 
+?>
