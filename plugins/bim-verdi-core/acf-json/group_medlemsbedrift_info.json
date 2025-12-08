@@ -138,6 +138,31 @@
             "display_format": "d.m.Y",
             "return_format": "Y-m-d",
             "first_day": 1
+        },
+        {
+            "key": "field_er_aktiv_deltaker",
+            "label": "Er aktiv deltaker",
+            "name": "er_aktiv_deltaker",
+            "type": "true_false",
+            "instructions": "Kryss av hvis bedriften er en aktiv BIM Verdi-deltaker (godkjent av admin)",
+            "required": 0,
+            "message": "Bedriften er godkjent som aktiv deltaker",
+            "default_value": 0,
+            "ui": 1,
+            "ui_on_text": "Ja",
+            "ui_off_text": "Nei"
+        },
+        {
+            "key": "field_antall_invitasjoner_tillatt",
+            "label": "Antall invitasjoner tillatt",
+            "name": "antall_invitasjoner_tillatt",
+            "type": "number",
+            "instructions": "Hvor mange tilleggskontakter kan hovedkontakten invitere? (standard: 2)",
+            "required": 0,
+            "default_value": 2,
+            "min": 0,
+            "max": 10,
+            "step": 1
         }
     ],
     "location": [
@@ -146,6 +171,13 @@
                 "param": "post_type",
                 "operator": "==",
                 "value": "medlemsbedrift"
+            }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "foretak"
             }
         ]
     ],

@@ -217,10 +217,22 @@ class BIM_Verdi_Company_Form_Handler {
         update_field('nettside', $company_data['nettside'], $post_id);
         update_field('telefon', $company_data['telefon'], $post_id);
         
-        // Set kontaktperson to current user if logged in
+        // Set hovedkontaktperson (primary contact) to current user if logged in
+        // This is used by invitation system and sidebar to identify company owner
         if ($user_id) {
-            update_field('kontaktperson', $user_id, $post_id);
+            update_field('hovedkontaktperson', $user_id, $post_id);
+            update_field('kontaktperson', $user_id, $post_id); // Legacy field
+            
+            // Also give user company_owner role for permissions
+            $user = get_user_by('id', $user_id);
+            if ($user && !in_array('administrator', $user->roles)) {
+                $user->add_role('company_owner');
+            }
         }
+        
+        // Set default values for invitation system
+        update_field('er_aktiv_deltaker', true, $post_id);
+        update_field('antall_invitasjoner_tillatt', 5, $post_id);
         
         update_field('medlemsstatus', 'pending', $post_id);
     }

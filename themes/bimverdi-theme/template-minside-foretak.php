@@ -19,23 +19,14 @@ $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 $current_company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
 
-// Handle form submission
-if (isset($_POST['koble_foretak_nonce']) && wp_verify_nonce($_POST['koble_foretak_nonce'], 'koble_foretak_action')) {
-    $selected_company_id = intval($_POST['selected_company']);
-    
-    if ($selected_company_id > 0) {
-        update_user_meta($user_id, 'bim_verdi_company_id', $selected_company_id);
-        
-        if (function_exists('update_field')) {
-            update_field('tilknyttet_foretak', $selected_company_id, 'user_' . $user_id);
-        }
-        
-        wp_redirect(add_query_arg('foretak_koblet', '1', home_url('/min-side/')));
-        exit;
-    }
+// Check if user is hovedkontakt for their company
+$is_hovedkontakt = false;
+if ($current_company_id) {
+    $hovedkontakt_id = get_field('hovedkontaktperson', $current_company_id);
+    $is_hovedkontakt = ($hovedkontakt_id == $user_id);
 }
 
-// Get all published companies
+// Get all published companies (medlemsbedrifter)
 $companies = get_posts(array(
     'post_type' => 'medlemsbedrift',
     'posts_per_page' => -1,
@@ -65,7 +56,7 @@ get_template_part('template-parts/minside-layout-start', null, array(
     'page_icon' => 'building',
     'page_description' => $current_company_id 
         ? 'Din foretakstilknytning i BIM Verdi' 
-        : 'Velg et foretak å koble deg til',
+        : 'Finn ditt foretak og be om invitasjon',
 ));
 ?>
 
@@ -276,86 +267,108 @@ get_template_part('template-parts/minside-layout-start', null, array(
             </div>
         </wa-card>
     <?php else: ?>
-        <form method="post" id="select-company-form">
-            <?php wp_nonce_field('koble_foretak_action', 'koble_foretak_nonce'); ?>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <?php foreach ($companies as $company): 
-                    $logo = get_field('logo', $company->ID);
-                    $beskrivelse = get_field('beskrivelse', $company->ID);
-                    $org_nummer = get_field('organisasjonsnummer', $company->ID);
-                ?>
-                <label class="block cursor-pointer company-label">
-                    <input 
-                        type="radio" 
-                        name="selected_company" 
-                        value="<?php echo $company->ID; ?>" 
-                        class="sr-only peer"
-                    />
-                    <wa-card class="h-full transition-all peer-checked:ring-2 peer-checked:ring-orange-500 hover:shadow-lg">
-                        <div class="p-5">
-                            <div class="flex items-start gap-4">
-                                <!-- Logo -->
-                                <div class="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                    <?php if ($logo): ?>
-                                        <img src="<?php echo esc_url($logo['url']); ?>" alt="<?php echo esc_attr($company->post_title); ?>" class="w-full h-full object-cover" />
-                                    <?php else: ?>
-                                        <wa-icon name="building" library="fa" style="font-size: 1.5rem; color: var(--wa-color-neutral-400);"></wa-icon>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <!-- Content -->
-                                <div class="flex-grow min-w-0">
-                                    <h3 class="text-lg font-bold text-gray-900 truncate">
-                                        <?php echo esc_html($company->post_title); ?>
-                                    </h3>
-                                    
-                                    <?php if ($org_nummer): ?>
-                                        <p class="text-sm text-gray-500 mb-1">Org.nr: <?php echo esc_html($org_nummer); ?></p>
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($beskrivelse): ?>
-                                        <p class="text-sm text-gray-600 line-clamp-2">
-                                            <?php echo esc_html(wp_trim_words($beskrivelse, 15)); ?>
-                                        </p>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <!-- Checkmark -->
-                                <div class="flex-shrink-0 hidden peer-checked:block">
-                                    <wa-icon name="circle-check" library="fa" style="font-size: 1.5rem; color: var(--wa-color-success-600);"></wa-icon>
-                                </div>
-                            </div>
+        <!-- Info Box about invite-only -->
+        <wa-alert variant="primary" class="mb-6">
+            <wa-icon slot="icon" name="circle-info" library="fa"></wa-icon>
+            <strong>Slik blir du koblet til et foretak:</strong><br>
+            For å bli koblet til et foretak må du kontakte hovedkontaktpersonen og be om en invitasjon. 
+            Når du mottar invitasjonen på e-post, følger du lenken for å fullføre koblingen.
+        </wa-alert>
+
+        <!-- Companies List (view-only) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <?php foreach ($companies as $company): 
+                $logo = get_field('logo', $company->ID);
+                $beskrivelse = get_field('beskrivelse', $company->ID);
+                $org_nummer = get_field('organisasjonsnummer', $company->ID);
+                $hovedkontakt_id = get_field('hovedkontaktperson', $company->ID);
+                $hovedkontakt = $hovedkontakt_id ? get_userdata($hovedkontakt_id) : null;
+                $kontakt_epost = get_field('kontakt_epost', $company->ID);
+                $er_aktiv_deltaker = get_field('er_aktiv_deltaker', $company->ID);
+            ?>
+            <wa-card class="h-full">
+                <div class="p-5">
+                    <div class="flex items-start gap-4">
+                        <!-- Logo -->
+                        <div class="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                            <?php if ($logo): ?>
+                                <img src="<?php echo esc_url($logo['url']); ?>" alt="<?php echo esc_attr($company->post_title); ?>" class="w-full h-full object-cover" />
+                            <?php else: ?>
+                                <wa-icon name="building" library="fa" style="font-size: 1.5rem; color: var(--wa-color-neutral-400);"></wa-icon>
+                            <?php endif; ?>
                         </div>
-                    </wa-card>
-                </label>
-                <?php endforeach; ?>
-            </div>
+                        
+                        <!-- Content -->
+                        <div class="flex-grow min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-lg font-bold text-gray-900 truncate">
+                                    <?php echo esc_html($company->post_title); ?>
+                                </h3>
+                                <?php if ($er_aktiv_deltaker): ?>
+                                    <wa-badge variant="success" size="small">Deltaker</wa-badge>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <?php if ($org_nummer): ?>
+                                <p class="text-sm text-gray-500 mb-1">Org.nr: <?php echo esc_html($org_nummer); ?></p>
+                            <?php endif; ?>
+                            
+                            <?php if ($beskrivelse): ?>
+                                <p class="text-sm text-gray-600 line-clamp-2 mb-3">
+                                    <?php echo esc_html(wp_trim_words($beskrivelse, 15)); ?>
+                                </p>
+                            <?php endif; ?>
+                            
+                            <!-- Hovedkontakt info and invite request -->
+                            <?php if ($hovedkontakt): ?>
+                                <div class="mt-3 pt-3 border-t border-gray-100">
+                                    <p class="text-xs text-gray-500 mb-2">
+                                        <wa-icon name="user" library="fa" class="mr-1"></wa-icon>
+                                        Hovedkontakt: <?php echo esc_html($hovedkontakt->display_name); ?>
+                                    </p>
+                                    <?php 
+                                    $invite_email = $hovedkontakt->user_email;
+                                    $subject = rawurlencode('Forespørsel om invitasjon til ' . $company->post_title . ' i BIM Verdi');
+                                    $body = rawurlencode("Hei,\n\nJeg ønsker å bli koblet til {$company->post_title} i BIM Verdi-portalen.\n\nMitt navn: {$current_user->display_name}\nMin e-post: {$current_user->user_email}\n\nKan du sende meg en invitasjon?\n\nMed vennlig hilsen,\n{$current_user->display_name}");
+                                    ?>
+                                    <wa-button variant="brand" size="small" href="mailto:<?php echo esc_attr($invite_email); ?>?subject=<?php echo $subject; ?>&body=<?php echo $body; ?>">
+                                        <wa-icon slot="prefix" name="envelope" library="fa"></wa-icon>
+                                        Be om invitasjon
+                                    </wa-button>
+                                </div>
+                            <?php elseif ($kontakt_epost): ?>
+                                <div class="mt-3 pt-3 border-t border-gray-100">
+                                    <?php 
+                                    $subject = rawurlencode('Forespørsel om invitasjon til ' . $company->post_title . ' i BIM Verdi');
+                                    $body = rawurlencode("Hei,\n\nJeg ønsker å bli koblet til {$company->post_title} i BIM Verdi-portalen.\n\nMitt navn: {$current_user->display_name}\nMin e-post: {$current_user->user_email}\n\nKan dere sende meg en invitasjon?\n\nMed vennlig hilsen,\n{$current_user->display_name}");
+                                    ?>
+                                    <wa-button variant="brand" size="small" href="mailto:<?php echo esc_attr($kontakt_epost); ?>?subject=<?php echo $subject; ?>&body=<?php echo $body; ?>">
+                                        <wa-icon slot="prefix" name="envelope" library="fa"></wa-icon>
+                                        Be om invitasjon
+                                    </wa-button>
+                                </div>
+                            <?php else: ?>
+                                <div class="mt-3 pt-3 border-t border-gray-100">
+                                    <p class="text-xs text-gray-400 italic">
+                                        <wa-icon name="circle-info" library="fa" class="mr-1"></wa-icon>
+                                        Kontaktinformasjon ikke tilgjengelig
+                                    </p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </wa-card>
+            <?php endforeach; ?>
+        </div>
 
-            <!-- Submit Button -->
-            <div class="flex gap-3 pt-4 border-t border-gray-200">
-                <wa-button type="submit" variant="brand" size="large" id="submit-btn" disabled>
-                    <wa-icon slot="prefix" name="link" library="fa"></wa-icon>
-                    Koble til valgt foretak
-                </wa-button>
-                <wa-button variant="neutral" outline href="<?php echo esc_url(home_url('/min-side/')); ?>">
-                    Avbryt
-                </wa-button>
-            </div>
-        </form>
-
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('select-company-form');
-            const submitBtn = document.getElementById('submit-btn');
-            
-            form.addEventListener('change', function(e) {
-                if (e.target.name === 'selected_company') {
-                    submitBtn.disabled = false;
-                }
-            });
-        });
-        </script>
+        <!-- Back button -->
+        <div class="flex gap-3 pt-4 border-t border-gray-200">
+            <wa-button variant="neutral" outline href="<?php echo esc_url(home_url('/min-side/')); ?>">
+                <wa-icon slot="prefix" name="arrow-left" library="fa"></wa-icon>
+                Tilbake til Min Side
+            </wa-button>
+        </div>
     <?php endif; ?>
 
 <?php endif; ?>

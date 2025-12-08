@@ -16,6 +16,14 @@ $current_page = isset($args['current_page']) ? $args['current_page'] : 'dashboar
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
+// Check if user is hovedkontakt for their company
+$user_company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
+$is_hovedkontakt = false;
+if ($user_company_id) {
+    $hovedkontakt_id = get_field('hovedkontaktperson', $user_company_id);
+    $is_hovedkontakt = ($hovedkontakt_id == $user_id);
+}
+
 // Get counts for badges
 $my_tools_count = count(get_posts(array(
     'post_type' => 'verktoy',
@@ -104,6 +112,16 @@ $nav_groups = array(
         ),
     ),
 );
+
+// Add invitations link for hovedkontakt only
+if ($is_hovedkontakt) {
+    $nav_groups['konto']['items']['invitasjoner'] = array(
+        'label' => 'Inviter kolleger',
+        'icon' => 'user-plus',
+        'url' => home_url('/min-side/invitasjoner/'),
+        'count' => null,
+    );
+}
 ?>
 
 <aside class="minside-sidebar">
