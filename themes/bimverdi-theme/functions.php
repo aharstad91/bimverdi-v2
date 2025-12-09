@@ -161,3 +161,24 @@ function bimverdi_excerpt_more($more) {
     return '...';
 }
 add_filter('excerpt_more', 'bimverdi_excerpt_more');
+
+/**
+ * Add /medlemmer/ rewrite to foretak archive
+ * This allows both /foretak/ and /medlemmer/ to show the same archive
+ */
+function bimverdi_add_medlemmer_rewrite() {
+    // Base medlemmer URL
+    add_rewrite_rule('^medlemmer/?$', 'index.php?post_type=foretak', 'top');
+    // Paged medlemmer URL
+    add_rewrite_rule('^medlemmer/page/([0-9]+)/?$', 'index.php?post_type=foretak&paged=$matches[1]', 'top');
+}
+add_action('init', 'bimverdi_add_medlemmer_rewrite');
+
+/**
+ * Flush rewrite rules on theme activation
+ */
+function bimverdi_flush_rewrites() {
+    bimverdi_add_medlemmer_rewrite();
+    flush_rewrite_rules();
+}
+add_action('after_switch_theme', 'bimverdi_flush_rewrites');

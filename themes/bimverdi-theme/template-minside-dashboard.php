@@ -401,7 +401,7 @@ get_template_part('template-parts/minside-layout-start', null, array(
                     <wa-icon name="wrench" library="fa"></wa-icon>
                     <strong>Siste verktøy</strong>
                 </div>
-                <wa-button variant="text" size="small" href="<?php echo esc_url(home_url('/min-side/verktoy/')); ?>">
+                <wa-button variant="text" size="small" href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>">
                     Se alle
                     <wa-icon slot="suffix" name="arrow-right" library="fa"></wa-icon>
                 </wa-button>

@@ -130,7 +130,7 @@ get_template_part('template-parts/minside-layout-start', null, array(
             
             // Count members in this group
             $group_members = get_posts(array(
-                'post_type' => 'medlemsbedrift',
+                'post_type' => 'foretak',
                 'tax_query' => array(
                     array(
                         'taxonomy' => 'temagruppe',

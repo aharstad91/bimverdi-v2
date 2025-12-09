@@ -60,7 +60,7 @@ $nav_groups = array(
             'verktoy' => array(
                 'label' => 'Verktøy',
                 'icon' => 'wrench',
-                'url' => home_url('/min-side/verktoy/'),
+                'url' => home_url('/min-side/mine-verktoy/'),
                 'count' => $my_tools_count,
             ),
             'artikler' => array(
