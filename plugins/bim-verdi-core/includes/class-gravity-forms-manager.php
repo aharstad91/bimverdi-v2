@@ -66,14 +66,18 @@ class BIM_Verdi_Gravity_Forms_Manager {
         require_once plugin_dir_path(__FILE__) . 'handlers/class-company-edit-form-handler.php';
         new BIM_Verdi_Company_Edit_Form_Handler();
         
+        // Load event registration form handler
+        require_once plugin_dir_path(__FILE__) . 'handlers/class-event-registration-form-handler.php';
+        new BIM_Verdi_Event_Registration_Form_Handler();
+        
+        // Load event unregistration handler
+        require_once plugin_dir_path(__FILE__) . 'handlers/class-event-unregistration-handler.php';
+        
         // Load form creation scripts (admin only)
         if (is_admin()) {
             require_once plugin_dir_path(__FILE__) . 'forms/create-company-edit-form.php';
+            require_once plugin_dir_path(__FILE__) . 'forms/create-event-registration-form.php';
         }
-        
-        // TODO: Load additional handlers as you create them:
-        // - class-event-form-handler.php
-        // - class-case-form-handler.php
     }
 }
 

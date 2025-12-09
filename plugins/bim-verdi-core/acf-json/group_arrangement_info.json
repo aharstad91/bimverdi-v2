@@ -3,44 +3,176 @@
     "title": "Arrangement Info",
     "fields": [
         {
+            "key": "field_tab_tidspunkt",
+            "label": "Tidspunkt",
+            "name": "",
+            "type": "tab",
+            "placement": "top",
+            "endpoint": 0
+        },
+        {
             "key": "field_arrangement_dato",
             "label": "Dato",
             "name": "arrangement_dato",
             "type": "date_picker",
-            "instructions": "Når arrangementet finner sted",
+            "instructions": "",
             "required": 1,
             "display_format": "d.m.Y",
             "return_format": "Y-m-d",
-            "first_day": 1
+            "first_day": 1,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            }
         },
         {
             "key": "field_tidspunkt_start",
-            "label": "Tidspunkt start",
+            "label": "Start",
             "name": "tidspunkt_start",
             "type": "time_picker",
-            "instructions": "Starttidspunkt",
+            "instructions": "",
             "required": 1,
             "display_format": "H:i",
-            "return_format": "H:i"
+            "return_format": "H:i",
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            }
         },
         {
             "key": "field_tidspunkt_slutt",
-            "label": "Tidspunkt slutt",
+            "label": "Slutt",
             "name": "tidspunkt_slutt",
             "type": "time_picker",
-            "instructions": "Sluttidspunkt",
+            "instructions": "",
             "required": 0,
             "display_format": "H:i",
-            "return_format": "H:i"
+            "return_format": "H:i",
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            }
         },
         {
-            "key": "field_sted",
-            "label": "Sted",
-            "name": "sted",
-            "type": "text",
-            "instructions": "Fysisk adresse eller 'Digital/Teams'",
+            "key": "field_pamelding_frist",
+            "label": "Påmeldingsfrist",
+            "name": "pamelding_frist",
+            "type": "date_picker",
+            "instructions": "Siste dag for på-/avmelding. La stå tom for å bruke arrangementsdato.",
+            "required": 0,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "first_day": 1,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            }
+        },
+        {
+            "key": "field_arrangement_status",
+            "label": "Status",
+            "name": "arrangement_status",
+            "type": "select",
+            "instructions": "",
             "required": 1,
-            "placeholder": "Konferanserom A, Oslo / Digital via Teams"
+            "choices": {
+                "planlagt": "📅 Planlagt",
+                "avholdt": "✅ Avholdt",
+                "avlyst": "❌ Avlyst"
+            },
+            "default_value": "planlagt",
+            "return_format": "value",
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            }
+        },
+        {
+            "key": "field_tab_lokasjon",
+            "label": "Lokasjon",
+            "name": "",
+            "type": "tab",
+            "placement": "top",
+            "endpoint": 0
+        },
+        {
+            "key": "field_arrangement_format",
+            "label": "Format",
+            "name": "arrangement_format",
+            "type": "button_group",
+            "instructions": "Hvordan gjennomføres arrangementet?",
+            "required": 1,
+            "choices": {
+                "fysisk": "🏢 Fysisk",
+                "digitalt": "💻 Digitalt",
+                "hybrid": "🔄 Hybrid"
+            },
+            "default_value": "fysisk",
+            "return_format": "value",
+            "layout": "horizontal"
+        },
+        {
+            "key": "field_fysisk_adresse",
+            "label": "Fysisk adresse",
+            "name": "fysisk_adresse",
+            "type": "text",
+            "instructions": "Adresse til lokalet der arrangementet holdes",
+            "required": 0,
+            "placeholder": "Storgata 1, 0155 Oslo",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_arrangement_format",
+                        "operator": "==",
+                        "value": "fysisk"
+                    }
+                ],
+                [
+                    {
+                        "field": "field_arrangement_format",
+                        "operator": "==",
+                        "value": "hybrid"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_motelenke",
+            "label": "Møtelenke",
+            "name": "motelenke",
+            "type": "url",
+            "instructions": "URL til digitalt møte (Teams, Zoom, etc.)",
+            "required": 0,
+            "placeholder": "https://teams.microsoft.com/...",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_arrangement_format",
+                        "operator": "==",
+                        "value": "digitalt"
+                    }
+                ],
+                [
+                    {
+                        "field": "field_arrangement_format",
+                        "operator": "==",
+                        "value": "hybrid"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_tab_innhold",
+            "label": "Innhold",
+            "name": "",
+            "type": "tab",
+            "placement": "top",
+            "endpoint": 0
         },
         {
             "key": "field_arrangement_beskrivelse",
@@ -48,58 +180,49 @@
             "name": "arrangement_beskrivelse",
             "type": "wysiwyg",
             "instructions": "Agenda, tema og formål med arrangementet",
-            "required": 1,
+            "required": 0,
             "tabs": "all",
             "toolbar": "full",
             "media_upload": 1
         },
         {
-            "key": "field_pamelding_lenke",
-            "label": "Påmeldingslenke",
-            "name": "pamelding_lenke",
-            "type": "url",
-            "instructions": "URL til påmeldingsskjema (hvis eksternt) eller la stå tom for intern påmelding",
-            "required": 0,
-            "placeholder": "https://forms.gle/..."
+            "key": "field_tab_innstillinger",
+            "label": "Innstillinger",
+            "name": "",
+            "type": "tab",
+            "placement": "top",
+            "endpoint": 0
         },
         {
             "key": "field_maks_deltakere",
-            "label": "Maks antall deltakere",
+            "label": "Maks deltakere",
             "name": "maks_deltakere",
             "type": "number",
-            "instructions": "La stå tom hvis ubegrenset",
+            "instructions": "Begrens antall plasser (la stå tom for ubegrenset)",
             "required": 0,
             "min": 1,
-            "placeholder": "50"
-        },
-        {
-            "key": "field_arrangement_status",
-            "label": "Status",
-            "name": "arrangement_status",
-            "type": "select",
-            "instructions": "Gjeldende status for arrangementet",
-            "required": 1,
-            "choices": {
-                "planlagt": "Planlagt",
-                "avholdt": "Avholdt",
-                "avlyst": "Avlyst"
-            },
-            "default_value": "planlagt",
-            "return_format": "value"
+            "placeholder": "f.eks. 50",
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            }
         },
         {
             "key": "field_prosjektleder",
-            "label": "Prosjektleder/Ansvarlig",
+            "label": "Ansvarlig",
             "name": "prosjektleder",
             "type": "user",
             "instructions": "Hvem er ansvarlig for arrangementet?",
             "required": 0,
-            "role": [
-                "member_coordinator",
-                "administrator"
-            ],
+            "role": "",
             "return_format": "id",
-            "multiple": 0
+            "multiple": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            }
         }
     ],
     "location": [
@@ -117,5 +240,6 @@
     "label_placement": "top",
     "instruction_placement": "label",
     "active": true,
-    "description": "Detaljer om arrangement/event"
+    "description": "Detaljer om arrangement/event",
+    "modified": 1734048000
 }

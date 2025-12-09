@@ -110,7 +110,7 @@ class BIM_Verdi_Taxonomies {
         
         $args = array(
             'labels'            => $labels,
-            'hierarchical'      => false,
+            'hierarchical'      => true, // True = checkbox UI in Gutenberg
             'public'            => true,
             'show_ui'           => true,
             'show_admin_column' => true,
@@ -152,7 +152,7 @@ class BIM_Verdi_Taxonomies {
         
         $args = array(
             'labels'            => $labels,
-            'hierarchical'      => false,
+            'hierarchical'      => true, // True = checkbox UI in Gutenberg
             'public'            => true,
             'show_ui'           => true,
             'show_admin_column' => true,
@@ -230,19 +230,16 @@ class BIM_Verdi_Taxonomies {
         
         // Arrangementstyper
         $arrangementstyper = array(
-            'BIMtech møte',
-            'Temagruppemøte',
-            'Seminar',
-            'Workshop',
-            'Kompetansedugnad',
-            'Konferanse',
-            'Webinar',
-            'Hackathon'
+            'BIMtech-møte' => 'Månedlige teknologimøter',
+            'Seminar' => 'Lengre faglige seminarer',
+            'Workshop' => 'Praktiske arbeidsverksteder',
+            'Nettverksmøte' => 'Uformelle nettverkstreff',
+            'Webinar' => 'Digitale presentasjoner og foredrag'
         );
         
-        foreach ($arrangementstyper as $type) {
-            if (!term_exists($type, 'arrangementstype')) {
-                wp_insert_term($type, 'arrangementstype');
+        foreach ($arrangementstyper as $name => $description) {
+            if (!term_exists($name, 'arrangementstype')) {
+                wp_insert_term($name, 'arrangementstype', array('description' => $description));
             }
         }
         

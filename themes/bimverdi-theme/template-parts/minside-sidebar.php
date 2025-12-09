@@ -45,12 +45,34 @@ $my_ideas_count = count(get_posts(array(
     'posts_per_page' => -1,
 )));
 
-$my_registrations_count = count(get_posts(array(
+// Count only active registrations for upcoming events
+$today = date('Y-m-d');
+$all_active_registrations = get_posts(array(
     'post_type' => 'pamelding',
-    'meta_key' => 'pamelding_bruker',
-    'meta_value' => $user_id,
     'posts_per_page' => -1,
-)));
+    'meta_query' => array(
+        'relation' => 'AND',
+        array(
+            'key' => 'pamelding_bruker',
+            'value' => $user_id,
+        ),
+        array(
+            'key' => 'pamelding_status',
+            'value' => 'aktiv',
+        ),
+    ),
+));
+
+$my_registrations_count = 0;
+foreach ($all_active_registrations as $reg) {
+    $event_id = get_field('pamelding_arrangement', $reg->ID);
+    if ($event_id) {
+        $event_date = get_field('arrangement_dato', $event_id);
+        if ($event_date && $event_date >= $today) {
+            $my_registrations_count++;
+        }
+    }
+}
 
 // Navigation structure grouped by function
 $nav_groups = array(

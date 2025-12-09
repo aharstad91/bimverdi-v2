@@ -1,7 +1,8 @@
 <?php
 /**
- * Template Name: Min Side - Arrangementer
+ * Template Name: DEPRECATED - Min Side Arrangementer
  * 
+ * OLD TEMPLATE - DO NOT USE
  * Events page for members - browse and register for events
  * 
  * @package BimVerdi_Theme
