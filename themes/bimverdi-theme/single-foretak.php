@@ -205,6 +205,81 @@ $is_own_company = ($current_user_company_id == $company_id);
                 </section>
                 <?php endif; ?>
                 
+                <!-- Artikler Section -->
+                <?php 
+                $company_articles = get_posts(array(
+                    'post_type' => 'artikkel',
+                    'post_status' => 'publish',
+                    'posts_per_page' => 6,
+                    'meta_query' => array(
+                        array(
+                            'key' => 'artikkel_bedrift',
+                            'value' => $company_id,
+                        ),
+                    ),
+                ));
+                
+                if (!empty($company_articles)): 
+                    $category_labels = array(
+                        'fagartikkel' => 'Fagartikkel',
+                        'case' => 'Case',
+                        'tips' => 'Tips',
+                        'nyhet' => 'Nyhet',
+                        'kommentar' => 'Kommentar',
+                    );
+                ?>
+                <section>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <wa-icon library="fa" name="fas-newspaper" class="text-2xl text-purple-600"></wa-icon>
+                            <h2 class="text-2xl font-bold text-gray-900">Artikler fra <?php echo esc_html($company_title); ?></h2>
+                        </div>
+                        <wa-badge variant="neutral"><?php echo count($company_articles); ?> artikler</wa-badge>
+                    </div>
+                    
+                    <div class="grid gap-4">
+                        <?php foreach ($company_articles as $article): 
+                            $kategori = get_field('artikkel_kategori', $article->ID);
+                            $ingress = get_field('artikkel_ingress', $article->ID);
+                            $author = get_the_author_meta('display_name', $article->post_author);
+                        ?>
+                        <wa-card>
+                            <div class="p-5">
+                                <div class="flex flex-col md:flex-row md:items-start gap-4">
+                                    <div class="flex-1">
+                                        <?php if ($kategori && isset($category_labels[$kategori])): ?>
+                                            <wa-tag variant="neutral" class="mb-2"><?php echo esc_html($category_labels[$kategori]); ?></wa-tag>
+                                        <?php endif; ?>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                                            <a href="<?php echo get_permalink($article->ID); ?>" class="hover:text-orange-600">
+                                                <?php echo esc_html($article->post_title); ?>
+                                            </a>
+                                        </h3>
+                                        <?php if ($ingress): ?>
+                                            <p class="text-gray-600 text-sm mb-3"><?php echo wp_trim_words(esc_html($ingress), 25); ?></p>
+                                        <?php endif; ?>
+                                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                                            <span>
+                                                <wa-icon library="fa" name="far-user" class="mr-1"></wa-icon>
+                                                <?php echo esc_html($author); ?>
+                                            </span>
+                                            <span>
+                                                <wa-icon library="fa" name="far-calendar" class="mr-1"></wa-icon>
+                                                <?php echo get_the_date('j. M Y', $article->ID); ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <wa-button variant="neutral" outline size="small" href="<?php echo get_permalink($article->ID); ?>">
+                                        Les artikkel
+                                    </wa-button>
+                                </div>
+                            </div>
+                        </wa-card>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+                <?php endif; ?>
+                
                 <!-- Temagrupper Section -->
                 <?php if (!empty($temagrupper) && !is_wp_error($temagrupper)): ?>
                 <section>

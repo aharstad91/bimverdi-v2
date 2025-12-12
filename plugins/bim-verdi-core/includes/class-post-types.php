@@ -44,6 +44,7 @@ class BIM_Verdi_Post_Types {
         $this->register_pamelding();
         $this->register_case();
         $this->register_prosjekt();
+        $this->register_artikkel();
     }
     
     /**
@@ -223,5 +224,43 @@ class BIM_Verdi_Post_Types {
         );
         
         register_post_type('prosjekt', $args);
+    }
+    
+    /**
+     * Register Artikkel CPT (Member Articles)
+     * For knowledge sharing and competence showcase
+     */
+    private function register_artikkel() {
+        $labels = array(
+            'name'                  => _x('Artikler', 'Post Type General Name', 'bim-verdi-core'),
+            'singular_name'         => _x('Artikkel', 'Post Type Singular Name', 'bim-verdi-core'),
+            'menu_name'             => __('Artikler', 'bim-verdi-core'),
+            'all_items'             => __('Alle artikler', 'bim-verdi-core'),
+            'add_new_item'          => __('Skriv ny artikkel', 'bim-verdi-core'),
+            'edit_item'             => __('Rediger artikkel', 'bim-verdi-core'),
+            'view_item'             => __('Vis artikkel', 'bim-verdi-core'),
+            'search_items'          => __('Søk artikler', 'bim-verdi-core'),
+            'not_found'             => __('Ingen artikler funnet', 'bim-verdi-core'),
+        );
+        
+        $args = array(
+            'label'                 => __('Artikkel', 'bim-verdi-core'),
+            'labels'                => $labels,
+            'supports'              => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
+            'public'                => true,
+            'show_ui'               => true,
+            'show_in_menu'          => true,
+            'menu_position'         => 10,
+            'menu_icon'             => 'dashicons-media-document',
+            'show_in_admin_bar'     => true,
+            'show_in_nav_menus'     => true,
+            'can_export'            => true,
+            'has_archive'           => true,
+            'rewrite'               => array('slug' => 'artikler'),
+            'capability_type'       => 'post',
+            'show_in_rest'          => true,
+        );
+        
+        register_post_type('artikkel', $args);
     }
 }

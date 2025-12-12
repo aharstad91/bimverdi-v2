@@ -1,0 +1,108 @@
+{
+    "key": "group_artikkel_info",
+    "title": "Artikkel Info",
+    "fields": [
+        {
+            "key": "field_artikkel_bedrift",
+            "label": "Tilknyttet foretak",
+            "name": "artikkel_bedrift",
+            "type": "post_object",
+            "instructions": "Hvilket foretak står bak denne artikkelen?",
+            "required": 1,
+            "post_type": [
+                "foretak"
+            ],
+            "return_format": "id",
+            "multiple": 0,
+            "allow_null": 0
+        },
+        {
+            "key": "field_artikkel_status",
+            "label": "Publiseringsstatus",
+            "name": "artikkel_status",
+            "type": "select",
+            "instructions": "Status for artikkelen i publiseringsprosessen",
+            "required": 1,
+            "choices": {
+                "utkast": "Utkast",
+                "til_godkjenning": "Til godkjenning",
+                "publisert": "Publisert",
+                "avvist": "Trenger revisjon"
+            },
+            "default_value": "utkast",
+            "return_format": "value"
+        },
+        {
+            "key": "field_artikkel_ingress",
+            "label": "Ingress",
+            "name": "artikkel_ingress",
+            "type": "textarea",
+            "instructions": "Kort oppsummering av artikkelen (vises i lister og som intro)",
+            "required": 0,
+            "rows": 3,
+            "maxlength": 300,
+            "placeholder": "En kort og fengende intro til artikkelen..."
+        },
+        {
+            "key": "field_artikkel_kategori",
+            "label": "Kategori",
+            "name": "artikkel_kategori",
+            "type": "select",
+            "instructions": "Velg hovedkategori for artikkelen",
+            "required": 0,
+            "choices": {
+                "fagartikkel": "Fagartikkel",
+                "case": "Case / Prosjekthistorie",
+                "tips": "Tips og triks",
+                "nyhet": "Nyhet",
+                "kommentar": "Kommentar / Kronikk"
+            },
+            "default_value": "fagartikkel",
+            "return_format": "value"
+        },
+        {
+            "key": "field_artikkel_temagruppe",
+            "label": "Relevant temagruppe",
+            "name": "artikkel_temagruppe",
+            "type": "taxonomy",
+            "instructions": "Velg temagruppe(r) artikkelen er relevant for",
+            "required": 0,
+            "taxonomy": "temagruppe",
+            "field_type": "checkbox",
+            "add_term": 0,
+            "save_terms": 1,
+            "load_terms": 1,
+            "return_format": "id",
+            "multiple": 1
+        },
+        {
+            "key": "field_artikkel_admin_kommentar",
+            "label": "Adminkommentar",
+            "name": "artikkel_admin_kommentar",
+            "type": "textarea",
+            "instructions": "Intern kommentar fra admin (synlig for forfatter ved revisjon)",
+            "required": 0,
+            "rows": 3,
+            "placeholder": "Tilbakemelding til forfatter..."
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "artikkel"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "side",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Felter for medlemsartikler - kunnskapsdeling fra foretak",
+    "show_in_rest": 0,
+    "modified": 1733990000
+}

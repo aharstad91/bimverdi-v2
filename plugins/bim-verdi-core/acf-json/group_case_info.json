@@ -52,16 +52,16 @@
             "label": "Status",
             "name": "case_status",
             "type": "select",
-            "instructions": "Gjeldende status på prosjektidéen",
+            "instructions": "Gjeldende status for oppfølging av prosjektidéen",
             "required": 1,
             "choices": {
-                "apen": "Åpen",
+                "ny": "Ny henvendelse",
                 "under_vurdering": "Under vurdering",
-                "godkjent": "Godkjent",
-                "avslag": "Avslag",
+                "kontaktet": "Kontaktet",
+                "i_samarbeid": "I samarbeid",
                 "arkivert": "Arkivert"
             },
-            "default_value": "apen",
+            "default_value": "ny",
             "return_format": "value"
         },
         {

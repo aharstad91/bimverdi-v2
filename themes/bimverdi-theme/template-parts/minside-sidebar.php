@@ -200,137 +200,137 @@ if ($is_hovedkontakt) {
             Nytt verktøy
         </wa-button>
     </div>
+    
+    <style>
+    .minside-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        background: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        position: sticky;
+        top: 80px; /* Adjust based on header height */
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+    }
+
+    .minside-sidebar__user {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0 1.25rem 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 0.5rem;
+    }
+
+    .minside-sidebar__user-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .minside-sidebar__user-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 0.9375rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .minside-sidebar__user-email {
+        font-size: 0.8125rem;
+        color: #6b7280;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .minside-sidebar__group {
+        margin-top: 0.75rem;
+    }
+
+    .minside-sidebar__group-label {
+        display: block;
+        padding: 0.5rem 1.25rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #9ca3af;
+    }
+
+    .minside-sidebar__nav {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .minside-sidebar__item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 1.25rem;
+        color: #4b5563;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        transition: all 0.15s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .minside-sidebar__item:hover {
+        background: #f9fafb;
+        color: #1f2937;
+    }
+
+    .minside-sidebar__item--active {
+        background: #fff7ed;
+        color: #ea580c;
+        border-left-color: #ea580c;
+    }
+
+    .minside-sidebar__item--active:hover {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+    .minside-sidebar__item wa-icon {
+        font-size: 1.125rem;
+        width: 1.25rem;
+        text-align: center;
+    }
+
+    .minside-sidebar__badge {
+        margin-left: auto;
+        font-size: 0.75rem;
+    }
+
+    .minside-sidebar__action {
+        margin-top: auto;
+        padding: 1.25rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    /* Scrollbar styling */
+    .minside-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .minside-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .minside-sidebar::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 2px;
+    }
+
+    .minside-sidebar::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+    </style>
 </aside>
-
-<style>
-.minside-sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    background: white;
-    border-right: 1px solid #e5e7eb;
-    padding: 1.5rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    position: sticky;
-    top: 80px; /* Adjust based on header height */
-    height: calc(100vh - 80px);
-    overflow-y: auto;
-}
-
-.minside-sidebar__user {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0 1.25rem 1.25rem;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 0.5rem;
-}
-
-.minside-sidebar__user-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.minside-sidebar__user-name {
-    font-weight: 600;
-    color: #1f2937;
-    font-size: 0.9375rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.minside-sidebar__user-email {
-    font-size: 0.8125rem;
-    color: #6b7280;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.minside-sidebar__group {
-    margin-top: 0.75rem;
-}
-
-.minside-sidebar__group-label {
-    display: block;
-    padding: 0.5rem 1.25rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #9ca3af;
-}
-
-.minside-sidebar__nav {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.minside-sidebar__item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 1.25rem;
-    color: #4b5563;
-    text-decoration: none;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    border-left: 3px solid transparent;
-}
-
-.minside-sidebar__item:hover {
-    background: #f9fafb;
-    color: #1f2937;
-}
-
-.minside-sidebar__item--active {
-    background: #fff7ed;
-    color: #ea580c;
-    border-left-color: #ea580c;
-}
-
-.minside-sidebar__item--active:hover {
-    background: #fff7ed;
-    color: #ea580c;
-}
-
-.minside-sidebar__item wa-icon {
-    font-size: 1.125rem;
-    width: 1.25rem;
-    text-align: center;
-}
-
-.minside-sidebar__badge {
-    margin-left: auto;
-    font-size: 0.75rem;
-}
-
-.minside-sidebar__action {
-    margin-top: auto;
-    padding: 1.25rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-/* Scrollbar styling */
-.minside-sidebar::-webkit-scrollbar {
-    width: 4px;
-}
-
-.minside-sidebar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.minside-sidebar::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 2px;
-}
-
-.minside-sidebar::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
-}
-</style>

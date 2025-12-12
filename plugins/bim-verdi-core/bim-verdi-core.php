@@ -101,6 +101,7 @@ class BIM_Verdi_Core {
         // Load admin metaboxes
         if (is_admin()) {
             require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/admin/class-event-participants-metabox.php';
+            require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/admin/class-leads-admin.php';
         }
     }
     
