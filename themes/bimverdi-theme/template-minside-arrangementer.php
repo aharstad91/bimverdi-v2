@@ -151,9 +151,10 @@ get_template_part('template-parts/minside-layout-start', null, array(
                     $temagrupper = wp_get_post_terms($event_id, 'temagruppe');
                     $arrangementstyper = wp_get_post_terms($event_id, 'arrangementstype');
                     
-                    // Avmeldingsfrist
-                    $avmelding_frist = get_field('pamelding_frist', $event_id);
-                    $can_cancel = $avmelding_frist ? (strtotime($avmelding_frist) > time()) : true;
+                    // Dynamisk avmeldingsfrist basert på format
+                    $can_cancel = function_exists('bimverdi_can_cancel_registration') 
+                        ? bimverdi_can_cancel_registration($event_id)
+                        : true;
                     
                     // Formater dato
                     $date_formatted = date_i18n('l j. F Y', strtotime($event_date));
@@ -246,6 +247,47 @@ get_template_part('template-parts/minside-layout-start', null, array(
                                             Detaljer
                                         </wa-button>
                                     </a>
+                                    
+                                    <?php 
+                                    // Kalender-knapper
+                                    if (function_exists('bimverdi_get_calendar_links')) :
+                                        $calendar_links = bimverdi_get_calendar_links($event_id);
+                                        if (!empty($calendar_links)) :
+                                    ?>
+                                        <div class="relative" x-data="{ open: false }">
+                                            <wa-button 
+                                                variant="neutral" 
+                                                size="small" 
+                                                outline
+                                                @click="open = !open"
+                                            >
+                                                <wa-icon library="fa" name="solid/calendar-plus" slot="prefix"></wa-icon>
+                                                Kalender
+                                            </wa-button>
+                                            <div 
+                                                x-show="open" 
+                                                @click.away="open = false"
+                                                class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+                                                style="display: none;"
+                                            >
+                                                <a href="<?php echo esc_url($calendar_links['ics']); ?>" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <wa-icon library="fa" name="solid/download" class="text-gray-400"></wa-icon>
+                                                    Last ned .ics
+                                                </a>
+                                                <a href="<?php echo esc_url($calendar_links['google']); ?>" target="_blank" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <wa-icon library="fa" name="brands/google" class="text-gray-400"></wa-icon>
+                                                    Google Calendar
+                                                </a>
+                                                <a href="<?php echo esc_url($calendar_links['outlook']); ?>" target="_blank" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <wa-icon library="fa" name="brands/microsoft" class="text-gray-400"></wa-icon>
+                                                    Outlook
+                                                </a>
+                                            </div>
+                                        </div>
+                                    <?php 
+                                        endif;
+                                    endif; 
+                                    ?>
                                     
                                     <?php if ($can_cancel) : ?>
                                         <wa-button 

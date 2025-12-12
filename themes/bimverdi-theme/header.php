@@ -50,7 +50,7 @@
                     <a href="<?php echo wp_login_url(); ?>" class="btn-hjem-outline">
                         Logg inn
                     </a>
-                    <a href="<?php echo esc_url(home_url('/registrer-bruker/')); ?>" class="btn-hjem-primary">
+                    <a href="<?php echo esc_url(home_url('/registrer/')); ?>" class="btn-hjem-primary">
                         Bli medlem
                     </a>
                 <?php endif; ?>

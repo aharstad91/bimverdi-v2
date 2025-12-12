@@ -3,60 +3,91 @@
  * Template Name: Verktøykatalog
  * 
  * Public tools/software catalog - browse all registered tools
- * Filterable by category and company
+ * Multi-filter by category, formålstema, and type ressurs
  * 
  * @package BimVerdi_Theme
  */
 
 get_header();
 
-// Get filter parameters
+// Get filter parameters - support multiple values for multi-select
 $search = sanitize_text_field($_GET['s'] ?? '');
-$kategori = isset($_GET['kategori']) ? intval($_GET['kategori']) : 0;
-$bedrift = isset($_GET['bedrift']) ? intval($_GET['bedrift']) : 0;
+$kategorier = isset($_GET['kategorier']) && is_array($_GET['kategorier']) 
+    ? array_map('intval', $_GET['kategorier']) 
+    : array();
+$formaalstema = isset($_GET['formaalstema']) && is_array($_GET['formaalstema']) 
+    ? array_map('sanitize_text_field', $_GET['formaalstema']) 
+    : array();
+$type_ressurs = isset($_GET['type_ressurs']) && is_array($_GET['type_ressurs']) 
+    ? array_map('sanitize_text_field', $_GET['type_ressurs']) 
+    : array();
 
-// Get all taxonomy terms and companies
-$all_kategorier = get_terms(array('taxonomy' => 'verktoykategori', 'hide_empty' => false));
-$all_bedrifter = get_posts(array(
-    'post_type' => 'foretak',
-    'posts_per_page' => -1,
-    'orderby' => 'title',
-    'order' => 'ASC',
-));
+// Get all taxonomy terms
+$all_kategorier = get_terms(array('taxonomy' => 'verktoykategori', 'hide_empty' => true));
+
+// Define filter options (matching ACF field choices)
+$formaalstema_options = array(
+    'ByggesaksBIM' => 'ByggesaksBIM',
+    'ProsjektBIM' => 'ProsjektBIM',
+    'EiendomsBIM' => 'EiendomsBIM',
+    'MiljøBIM' => 'MiljøBIM',
+    'SirkBIM' => 'SirkBIM',
+    'Opplæring' => 'Opplæring',
+    'Annet' => 'Annet',
+);
+
+$type_ressurs_options = array(
+    'Programvare' => 'Programvare',
+    'Standard' => 'Standard',
+    'Metodikk' => 'Metodikk',
+    'Veileder' => 'Veileder',
+    'Nettside' => 'Nettside',
+    'Digital_tjeneste' => 'Digital tjeneste',
+    'Annet' => 'Annet',
+);
 
 // Build query
 $args = array(
     'post_type' => 'verktoy',
-    'posts_per_page' => 12,
-    'paged' => get_query_var('paged') ?: 1,
+    'posts_per_page' => -1, // Get all for JS filtering, paginate client-side
     'orderby' => 'title',
     'order' => 'ASC',
-    'post_status' => 'publish', // Only show published tools
-    'tax_query' => array('relation' => 'AND'),
+    'post_status' => 'publish',
 );
 
-// Add search
+// Server-side filtering for initial load (supports direct URL params)
 if (!empty($search)) {
     $args['s'] = $search;
 }
 
-// Add category filter
-if ($kategori) {
-    $args['tax_query'][] = array(
-        'taxonomy' => 'verktoykategori',
-        'field' => 'term_id',
-        'terms' => $kategori,
+if (!empty($kategorier)) {
+    $args['tax_query'] = array(
+        array(
+            'taxonomy' => 'verktoykategori',
+            'field' => 'term_id',
+            'terms' => $kategorier,
+        ),
     );
 }
 
-// Add company filter
-if ($bedrift) {
-    $args['meta_query'] = array(
-        array(
-            'key' => 'verktoy_eier',
-            'value' => $bedrift,
-        )
-    );
+if (!empty($formaalstema) || !empty($type_ressurs)) {
+    $args['meta_query'] = array('relation' => 'AND');
+    
+    if (!empty($formaalstema)) {
+        $args['meta_query'][] = array(
+            'key' => 'formaalstema',
+            'value' => $formaalstema,
+            'compare' => 'IN',
+        );
+    }
+    
+    if (!empty($type_ressurs)) {
+        $args['meta_query'][] = array(
+            'key' => 'type_ressurs',
+            'value' => $type_ressurs,
+            'compare' => 'IN',
+        );
+    }
 }
 
 $tools_query = new WP_Query($args);
@@ -90,110 +121,128 @@ $tools_query = new WP_Query($args);
         <!-- Search & Filters -->
         <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">🔍 Søk & Filtrer</h2>
-            <form method="GET" class="space-y-6">
+            <form method="GET" id="verktoy-filter-form">
                 
                 <!-- Search Bar -->
-                <div class="relative">
+                <div class="relative mb-6">
                     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                     <input 
                         type="text" 
                         name="s" 
+                        id="verktoy-search"
                         value="<?php echo esc_attr($search); ?>"
                         placeholder="Søk etter verktøy..."
                         class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     >
                 </div>
 
-                <!-- Filters Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Multi-Select Filters -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     
-                    <!-- Category Filter -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-900 mb-2">📂 Kategori</label>
-                        <select name="kategori" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option value="">Alle kategorier</option>
-                            <?php foreach ($all_kategorier as $term): ?>
-                                <option value="<?php echo $term->term_id; ?>" <?php selected($kategori, $term->term_id); ?>>
-                                    <?php echo esc_html($term->name); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                    <!-- Category Filter (Checkboxes) -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="block text-sm font-bold text-gray-900 mb-3">📂 Kategori</label>
+                        <div class="space-y-2 max-h-48 overflow-y-auto">
+                            <?php if (!empty($all_kategorier) && !is_wp_error($all_kategorier)): ?>
+                                <?php foreach ($all_kategorier as $term): ?>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded">
+                                    <input type="checkbox" 
+                                           name="kategorier[]" 
+                                           value="<?php echo esc_attr($term->term_id); ?>"
+                                           class="filter-checkbox filter-kategori w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                                           <?php echo in_array($term->term_id, $kategorier) ? 'checked' : ''; ?>>
+                                    <span class="text-sm text-gray-700"><?php echo esc_html($term->name); ?></span>
+                                    <span class="text-xs text-gray-400 ml-auto">(<?php echo $term->count; ?>)</span>
+                                </label>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p class="text-sm text-gray-500 italic">Ingen kategorier</p>
+                            <?php endif; ?>
+                        </div>
                     </div>
 
-                    <!-- Company Filter -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-900 mb-2">🏢 Bedrift</label>
-                        <select name="bedrift" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option value="">Alle bedrifter</option>
-                            <?php foreach ($all_bedrifter as $post): ?>
-                                <option value="<?php echo $post->ID; ?>" <?php selected($bedrift, $post->ID); ?>>
-                                    <?php echo esc_html($post->post_title); ?>
-                                </option>
+                    <!-- Formålstema Filter (Checkboxes) -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="block text-sm font-bold text-gray-900 mb-3">🎯 Formålstema</label>
+                        <div class="space-y-2 max-h-48 overflow-y-auto">
+                            <?php foreach ($formaalstema_options as $value => $label): ?>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded">
+                                <input type="checkbox" 
+                                       name="formaalstema[]" 
+                                       value="<?php echo esc_attr($value); ?>"
+                                       class="filter-checkbox filter-formaal w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                                       <?php echo in_array($value, $formaalstema) ? 'checked' : ''; ?>>
+                                <span class="text-sm text-gray-700"><?php echo esc_html($label); ?></span>
+                            </label>
                             <?php endforeach; ?>
-                        </select>
+                        </div>
+                    </div>
+
+                    <!-- Type Ressurs Filter (Checkboxes) -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="block text-sm font-bold text-gray-900 mb-3">📦 Type ressurs</label>
+                        <div class="space-y-2 max-h-48 overflow-y-auto">
+                            <?php foreach ($type_ressurs_options as $value => $label): ?>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded">
+                                <input type="checkbox" 
+                                       name="type_ressurs[]" 
+                                       value="<?php echo esc_attr($value); ?>"
+                                       class="filter-checkbox filter-type w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                                       <?php echo in_array($value, $type_ressurs) ? 'checked' : ''; ?>>
+                                <span class="text-sm text-gray-700"><?php echo esc_html($label); ?></span>
+                            </label>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Buttons -->
-                <div class="flex gap-3 pt-4 border-t border-gray-200">
-                    <button type="submit" class="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
-                        🔍 Søk
-                    </button>
-                    <a href="<?php echo get_permalink(); ?>" class="px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
-                        Nullstill
-                    </a>
+                <!-- Results count and Reset -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <p class="text-lg font-bold text-gray-900">
+                        📊 Viser <span id="visible-count" class="text-purple-600"><?php echo $tools_query->found_posts; ?></span> 
+                        av <span class="text-gray-600"><?php echo $tools_query->found_posts; ?></span> verktøy
+                    </p>
+                    <div class="flex gap-3">
+                        <button type="button" id="reset-filters" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-sm">
+                            ✕ Nullstill filter
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
 
-        <!-- Active Filters -->
-        <?php 
-        $active_filters = array();
-        if (!empty($search)) $active_filters[] = "Søk: <strong>" . esc_html($search) . "</strong>";
-        if ($kategori) {
-            $term = get_term($kategori, 'verktoykategori');
-            $active_filters[] = "Kategori: <strong>" . esc_html($term->name) . "</strong>";
-        }
-        if ($bedrift) {
-            $bedrift_post = get_post($bedrift);
-            $active_filters[] = "Bedrift: <strong>" . esc_html($bedrift_post->post_title) . "</strong>";
-        }
-        
-        if (!empty($active_filters)): ?>
-        <div class="mb-6 flex flex-wrap gap-3 items-center">
+        <!-- Active Filters Tags -->
+        <div id="active-filters" class="mb-6 flex flex-wrap gap-2 items-center" style="display: none;">
             <span class="text-sm font-semibold text-gray-900">🏷️ Aktive filter:</span>
-            <?php foreach ($active_filters as $filter): ?>
-                <span class="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
-                    <?php echo $filter; ?>
-                </span>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-
-        <!-- Results Count -->
-        <div class="mb-8">
-            <p class="text-2xl font-bold text-gray-900">
-                📊 Viser <span class="text-purple-600"><?php echo $tools_query->found_posts; ?></span> 
-                <?php echo $tools_query->found_posts === 1 ? 'verktøy' : 'verktøy'; ?>
-            </p>
+            <div id="filter-tags"></div>
         </div>
 
         <!-- Tools Grid -->
         <?php if ($tools_query->have_posts()): ?>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div id="verktoy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <?php while ($tools_query->have_posts()): $tools_query->the_post();
                 $eier_id = get_post_meta(get_the_ID(), 'verktoy_eier', true);
+                if (!$eier_id) $eier_id = get_post_meta(get_the_ID(), 'eier_leverandor', true);
                 $eier = $eier_id ? get_post($eier_id) : null;
                 $lenke = get_post_meta(get_the_ID(), 'verktoy_lenke', true);
                 $logo_id = get_post_meta(get_the_ID(), 'verktoy_logo', true);
                 $logo_url = $logo_id ? wp_get_attachment_url($logo_id) : '';
-                $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori', array('fields' => 'names'));
+                $kategori_terms = wp_get_post_terms(get_the_ID(), 'verktoykategori', array('fields' => 'all'));
+                $kategori_ids = wp_list_pluck($kategori_terms, 'term_id');
+                $kategori_names = wp_list_pluck($kategori_terms, 'name');
+                $formaal = get_post_meta(get_the_ID(), 'formaalstema', true);
+                $type = get_post_meta(get_the_ID(), 'type_ressurs', true);
             ?>
             
-            <a href="<?php the_permalink(); ?>" class="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden group">
+            <a href="<?php the_permalink(); ?>" 
+               class="verktoy-card block bg-white rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden group"
+               data-title="<?php echo esc_attr(strtolower(get_the_title())); ?>"
+               data-kategorier="<?php echo esc_attr(implode(',', $kategori_ids)); ?>"
+               data-formaal="<?php echo esc_attr($formaal); ?>"
+               data-type="<?php echo esc_attr($type); ?>">
                 
                 <!-- Logo/Image -->
                 <?php if ($logo_url): ?>
@@ -212,15 +261,15 @@ $tools_query = new WP_Query($args);
                 <div class="p-6">
                     
                     <!-- Categories -->
-                    <?php if (!empty($kategori_terms)): ?>
+                    <?php if (!empty($kategori_names)): ?>
                     <div class="flex flex-wrap gap-2 mb-3">
-                        <?php foreach (array_slice($kategori_terms, 0, 2) as $cat): ?>
+                        <?php foreach (array_slice($kategori_names, 0, 2) as $cat): ?>
                         <span class="text-xs bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-semibold">
                             <?php echo esc_html($cat); ?>
                         </span>
                         <?php endforeach; ?>
-                        <?php if (count($kategori_terms) > 2): ?>
-                        <span class="text-xs text-gray-500 font-semibold">+<?php echo count($kategori_terms) - 2; ?></span>
+                        <?php if (count($kategori_names) > 2): ?>
+                        <span class="text-xs text-gray-500 font-semibold">+<?php echo count($kategori_names) - 2; ?></span>
                         <?php endif; ?>
                     </div>
                     <?php endif; ?>
@@ -234,9 +283,7 @@ $tools_query = new WP_Query($args);
                     <?php if ($eier): ?>
                     <div class="text-sm text-gray-700 mb-4 flex items-center gap-2">
                         <span>🏢</span>
-                        <a href="<?php echo get_permalink($eier_id); ?>" class="text-orange-600 hover:underline font-semibold">
-                            <?php echo esc_html($eier->post_title); ?>
-                        </a>
+                        <span class="text-orange-600 font-semibold"><?php echo esc_html($eier->post_title); ?></span>
                     </div>
                     <?php endif; ?>
 
@@ -302,5 +349,115 @@ $tools_query = new WP_Query($args);
 
     </div>
 </div>
+
+<!-- Live Filter Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('verktoy-search');
+    const checkboxes = document.querySelectorAll('.filter-checkbox');
+    const cards = document.querySelectorAll('.verktoy-card');
+    const visibleCount = document.getElementById('visible-count');
+    const resetBtn = document.getElementById('reset-filters');
+    const activeFiltersDiv = document.getElementById('active-filters');
+    const filterTagsDiv = document.getElementById('filter-tags');
+    
+    let debounceTimer;
+    
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        // Get all checked values for each filter type
+        const selectedKategorier = Array.from(document.querySelectorAll('.filter-kategori:checked')).map(cb => cb.value);
+        const selectedFormaal = Array.from(document.querySelectorAll('.filter-formaal:checked')).map(cb => cb.value);
+        const selectedType = Array.from(document.querySelectorAll('.filter-type:checked')).map(cb => cb.value);
+        
+        let visibleCards = 0;
+        
+        cards.forEach(card => {
+            const title = card.dataset.title || '';
+            const cardKategorier = card.dataset.kategorier ? card.dataset.kategorier.split(',') : [];
+            const cardFormaal = card.dataset.formaal || '';
+            const cardType = card.dataset.type || '';
+            
+            // Search filter
+            const matchesSearch = !searchTerm || title.includes(searchTerm);
+            
+            // Category filter (OR logic within category)
+            const matchesKategori = selectedKategorier.length === 0 || 
+                selectedKategorier.some(k => cardKategorier.includes(k));
+            
+            // Formålstema filter (OR logic)
+            const matchesFormaal = selectedFormaal.length === 0 || 
+                selectedFormaal.includes(cardFormaal);
+            
+            // Type ressurs filter (OR logic)
+            const matchesType = selectedType.length === 0 || 
+                selectedType.includes(cardType);
+            
+            // All filters must match (AND logic between filter groups)
+            const isVisible = matchesSearch && matchesKategori && matchesFormaal && matchesType;
+            
+            card.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleCards++;
+        });
+        
+        // Update count
+        visibleCount.textContent = visibleCards;
+        
+        // Update active filter tags
+        updateFilterTags(searchTerm, selectedKategorier, selectedFormaal, selectedType);
+    }
+    
+    function updateFilterTags(search, kategorier, formaal, type) {
+        const hasFilters = search || kategorier.length || formaal.length || type.length;
+        activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+        
+        if (!hasFilters) return;
+        
+        let tags = '';
+        
+        if (search) {
+            tags += `<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">🔍 "${search}"</span>`;
+        }
+        
+        kategorier.forEach(id => {
+            const label = document.querySelector(`.filter-kategori[value="${id}"]`)?.parentElement?.querySelector('span')?.textContent || id;
+            tags += `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">📂 ${label}</span>`;
+        });
+        
+        formaal.forEach(val => {
+            tags += `<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">🎯 ${val}</span>`;
+        });
+        
+        type.forEach(val => {
+            const label = val.replace('_', ' ');
+            tags += `<span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">📦 ${label}</span>`;
+        });
+        
+        filterTagsDiv.innerHTML = tags;
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(applyFilters, 200);
+    });
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', applyFilters);
+    });
+    
+    resetBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        checkboxes.forEach(cb => cb.checked = false);
+        applyFilters();
+    });
+    
+    // Initial apply if URL has params
+    if (window.location.search) {
+        applyFilters();
+    }
+});
+</script>
 
 <?php get_footer(); ?>

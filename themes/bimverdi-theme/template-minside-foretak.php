@@ -17,7 +17,15 @@ get_header();
 
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
-$current_company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
+
+// Get company ID - try multiple sources
+$current_company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
+if (empty($current_company_id)) {
+    $current_company_id = get_user_meta($user_id, 'bim_verdi_company_id', true); // Legacy
+}
+if (empty($current_company_id) && function_exists('get_field')) {
+    $current_company_id = get_field('tilknyttet_foretak', 'user_' . $user_id); // ACF
+}
 
 // Check if user is hovedkontakt for their company
 $is_hovedkontakt = false;

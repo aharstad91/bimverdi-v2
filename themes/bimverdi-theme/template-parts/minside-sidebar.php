@@ -16,8 +16,16 @@ $current_page = isset($args['current_page']) ? $args['current_page'] : 'dashboar
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
+// Get company ID - try multiple sources
+$user_company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
+if (empty($user_company_id)) {
+    $user_company_id = get_user_meta($user_id, 'bim_verdi_company_id', true); // Legacy
+}
+if (empty($user_company_id) && function_exists('get_field')) {
+    $user_company_id = get_field('tilknyttet_foretak', 'user_' . $user_id); // ACF
+}
+
 // Check if user is hovedkontakt for their company
-$user_company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
 $is_hovedkontakt = false;
 if ($user_company_id) {
     $hovedkontakt_id = get_field('hovedkontaktperson', $user_company_id);

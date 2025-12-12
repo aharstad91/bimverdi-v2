@@ -28,6 +28,60 @@ class BIM_Verdi_Company_Form_Handler {
         add_action('gform_after_submission_' . self::FORM_ID, array($this, 'handle_submission'), 10, 2);
         add_filter('gform_validation_' . self::FORM_ID, array($this, 'validate_submission'));
         add_filter('gform_confirmation_' . self::FORM_ID, array($this, 'custom_confirmation'), 10, 4);
+        
+        // Modify form labels and field order for better UX
+        add_filter('gform_pre_render_' . self::FORM_ID, array($this, 'modify_form_fields'));
+        add_filter('gform_pre_validation_' . self::FORM_ID, array($this, 'modify_form_fields'));
+        add_filter('gform_pre_submission_filter_' . self::FORM_ID, array($this, 'modify_form_fields'));
+    }
+    
+    /**
+     * Modify form fields for better UX:
+     * - Rename "Bedriftsnavn" to "Foretak"
+     * - Make "Bedriftsbeskrivelse" optional
+     * - Update placeholders
+     * 
+     * @param array $form The form object
+     * @return array Modified form
+     */
+    public function modify_form_fields($form) {
+        foreach ($form['fields'] as &$field) {
+            // Field ID 2: Bedriftsnavn → Foretak (primary search field)
+            if ($field->id == 2) {
+                $field->label = 'Foretak';
+                $field->placeholder = 'Søk på foretaksnavn...';
+                $field->description = 'Start å skrive foretaksnavnet for å søke i Brønnøysundregistrene';
+            }
+            
+            // Field ID 1: Organisasjonsnummer (make readonly-ish via description)
+            if ($field->id == 1) {
+                $field->description = 'Fylles automatisk fra BRreg-søk';
+            }
+            
+            // Field ID 3: Bedriftsbeskrivelse - make optional
+            if ($field->id == 3) {
+                $field->isRequired = false;
+                $field->label = 'Beskrivelse av foretaket';
+                $field->description = 'Valgfritt: Kort beskrivelse av virksomheten';
+            }
+            
+            // Field ID 5: Address
+            if ($field->id == 5) {
+                $field->description = 'Fylles automatisk fra BRreg';
+            }
+            
+            // Field ID 6: Postnummer
+            if ($field->id == 6) {
+                $field->description = 'Fylles automatisk fra BRreg';
+            }
+            
+            // Field ID 7: Poststed
+            if ($field->id == 7) {
+                $field->description = 'Fylles automatisk fra BRreg';
+            }
+        }
+        
+        return $form;
     }
     
     /**
