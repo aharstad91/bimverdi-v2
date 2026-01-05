@@ -20,14 +20,21 @@ get_header();
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
-// Use new access control system
-$has_company = function_exists('bimverdi_user_has_company') ? bimverdi_user_has_company($user_id) : false;
-$account_type = function_exists('bimverdi_get_account_type') ? bimverdi_get_account_type($user_id) : 'profil';
+// Use new access control system - these functions are now defined in functions.php
+$has_company = bimverdi_user_has_company($user_id);
+$account_type = bimverdi_get_account_type($user_id);
 
-// Get company ID from new meta key OR legacy key
+// Get company ID from new meta key OR legacy key OR ACF field
 $company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
 if (empty($company_id)) {
     $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true); // Legacy fallback
+}
+if (empty($company_id) && function_exists('get_field')) {
+    $company_id = get_field('tilknyttet_foretak', 'user_' . $user_id); // ACF field
+    // ACF might return an object, extract ID if needed
+    if (is_object($company_id)) {
+        $company_id = $company_id->ID;
+    }
 }
 $company = $company_id ? get_post($company_id) : null;
 

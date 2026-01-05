@@ -103,6 +103,12 @@ class BIM_Verdi_Core {
             require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/admin/class-event-participants-metabox.php';
             require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/admin/class-leads-admin.php';
         }
+        
+        // Load WP-CLI commands
+        if (defined('WP_CLI') && WP_CLI) {
+            require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/cli/class-migration-command.php';
+            require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/cli/class-validation-command.php';
+        }
     }
     
     /**
@@ -190,3 +196,15 @@ function bim_verdi_core() {
 
 // Start the plugin
 bim_verdi_core();
+
+/**
+ * Register WP-CLI commands
+ */
+if (defined('WP_CLI') && WP_CLI) {
+    require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/cli/class-migration-command.php';
+    require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/cli/class-validation-command.php';
+    
+    WP_CLI::add_command('bim-migrate', 'BIM_Verdi_Migration_Command');
+    WP_CLI::add_command('bim-validate', 'BIM_Verdi_Validation_Command');
+}
+

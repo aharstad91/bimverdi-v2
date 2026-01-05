@@ -19,6 +19,15 @@ $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
 
+// Also check ACF field
+if (empty($company_id) && function_exists('get_field')) {
+    $company_id = get_field('tilknyttet_foretak', 'user_' . $user_id);
+    // ACF might return an object, extract ID if needed
+    if (is_object($company_id)) {
+        $company_id = $company_id->ID;
+    }
+}
+
 // Check if user has a company
 if (!$company_id) {
     wp_redirect(home_url('/min-side/foretak/'));

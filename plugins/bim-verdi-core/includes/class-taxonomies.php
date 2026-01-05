@@ -208,6 +208,47 @@ class BIM_Verdi_Taxonomies {
             }
         }
         
+        // Bransjekategorier (fra FF-data)
+        $bransjekategorier = array(
+            'Byggevareprodusent' => 'Produsenter av bygningsmaterialer og komponenter',
+            'Byggevarehandel' => 'Grossister og forhandlere av byggevarer',
+            'Arkitekt/rådgiver' => 'Arkitekter, rådgivende ingeniører og konsulenter',
+            'Entreprenør/byggmester' => 'Entreprenører og byggmesterbedrifter',
+            'Bestiller/byggherre' => 'Byggherrer og prosjektbestillere',
+            'Eiendom/drift' => 'Eiendomsforvaltning og driftsorganisasjoner',
+            'Leverandør av digitale verktøy, innhold og løsninger' => 'Programvare- og IT-leverandører for byggebransjen',
+            'Tjenesteleverandør' => 'Andre tjenesteleverandører i byggenæringen',
+            'Offentlig instans' => 'Kommuner, fylkeskommuner og offentlige etater',
+            'Utdanningsinstitusjon' => 'Universiteter, høyskoler og fagskoler',
+            'Organisasjon, nettverk m.m.' => 'Bransjeorganisasjoner og nettverk',
+            'Brukere av bygg' => 'Sluttbrukere og innbyggere'
+        );
+        
+        foreach ($bransjekategorier as $name => $description) {
+            if (!term_exists($name, 'bransjekategori')) {
+                wp_insert_term($name, 'bransjekategori', array('description' => $description));
+            }
+        }
+        
+        // Kundetyper (fra FF-data)
+        $kundetyper = array(
+            'Bestiller/byggherre',
+            'Arkitekt/rådgiver',
+            'Entreprenør/byggmester',
+            'Byggevareprodusent',
+            'Byggevarehandel',
+            'Eiendom/drift',
+            'Brukere av bygg',
+            'Leverandør av digitale verktøy, innhold og løsninger',
+            'Tjenesteleverandør'
+        );
+        
+        foreach ($kundetyper as $type) {
+            if (!term_exists($type, 'kundetype')) {
+                wp_insert_term($type, 'kundetype');
+            }
+        }
+        
         // Verktøykategorier
         $verktoykategorier = array(
             'BIM Authoring/Modelling',
