@@ -85,13 +85,28 @@ $upcoming_events = get_posts(array(
     )
 ));
 
-// Get user's tools
-$my_tools = get_posts(array(
-    'post_type' => 'verktoy',
-    'author' => $user_id,
-    'posts_per_page' => -1,
-    'post_status' => array('publish', 'draft', 'pending'),
-));
+// Get user's company
+$company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
+
+// Get user's tools (only if hovedkontakt)
+$my_tools = array();
+if ($company_id) {
+    $hovedkontakt = get_field('hovedkontaktperson', $company_id);
+    if ($hovedkontakt == $user_id) {
+        $my_tools = get_posts(array(
+            'post_type' => 'verktoy',
+            'posts_per_page' => -1,
+            'post_status' => array('publish', 'draft', 'pending'),
+            'meta_query' => array(
+                array(
+                    'key' => 'eier_leverandor',
+                    'value' => $company_id,
+                    'compare' => '='
+                )
+            ),
+        ));
+    }
+}
 $my_tools_count = count($my_tools);
 
 // Get user's ideas

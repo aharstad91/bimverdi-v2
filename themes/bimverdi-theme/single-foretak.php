@@ -25,6 +25,13 @@ $nettside = get_field('nettside', $company_id);
 $kontakt_epost = get_field('kontakt_epost', $company_id);
 $er_aktiv_deltaker = get_field('er_aktiv_deltaker', $company_id);
 
+// Hent BRREG-data
+$organisasjonsform = get_field('organisasjonsform', $company_id);
+$naeringskode = get_field('naeringskode', $company_id);
+$naeringskode_beskrivelse = get_field('naeringskode_beskrivelse', $company_id);
+$antall_ansatte = get_field('antall_ansatte', $company_id);
+$kommune = get_field('kommune', $company_id);
+
 // Hent taxonomier
 $bransjekategorier = wp_get_post_terms($company_id, 'bransjekategori', array('fields' => 'all'));
 $kundetyper = wp_get_post_terms($company_id, 'kundetype', array('fields' => 'all'));
@@ -369,6 +376,39 @@ $is_own_company = ($current_user_company_id == $company_id);
                         </h3>
                         
                         <div class="space-y-4">
+                            <?php if ($org_nummer): ?>
+                            <div class="flex gap-3">
+                                <wa-icon library="fa" name="fas-id-badge" class="text-gray-400 mt-1"></wa-icon>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Organisasjonsnummer</div>
+                                    <div class="text-gray-900 font-semibold"><?php echo esc_html($org_nummer); ?></div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if ($organisasjonsform): ?>
+                            <div class="flex gap-3">
+                                <wa-icon library="fa" name="fas-building" class="text-gray-400 mt-1"></wa-icon>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Organisasjonsform</div>
+                                    <div class="text-gray-900"><?php echo esc_html($organisasjonsform); ?></div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if ($naeringskode): ?>
+                            <div class="flex gap-3">
+                                <wa-icon library="fa" name="fas-briefcase" class="text-gray-400 mt-1"></wa-icon>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Næringskode</div>
+                                    <div class="text-gray-900">
+                                        <strong><?php echo esc_html($naeringskode); ?></strong>
+                                        <?php if ($naeringskode_beskrivelse): echo '<br><span class="text-sm text-gray-600">' . esc_html($naeringskode_beskrivelse) . '</span>'; endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            
                             <?php if ($adresse || $postnummer || $poststed): ?>
                             <div class="flex gap-3">
                                 <wa-icon library="fa" name="fas-map-marker-alt" class="text-gray-400 mt-1"></wa-icon>

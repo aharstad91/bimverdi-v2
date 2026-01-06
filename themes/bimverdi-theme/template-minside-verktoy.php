@@ -18,17 +18,37 @@ get_header();
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
-// Get user's registered tools (including drafts/pending)
-$args = array(
-    'post_type' => 'verktoy',
-    'posts_per_page' => -1,
-    'author' => $user_id,
-    'post_status' => array('publish', 'draft', 'pending'),
-    'orderby' => 'date',
-    'order' => 'DESC',
-);
+// Get user's company
+$company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
 
-$user_tools = get_posts($args);
+// Get tools owned by user's company (not by author!)
+$user_tools = array();
+
+if ($company_id) {
+    // Check if user is hovedkontakt for their company
+    $hovedkontakt = get_field('hovedkontaktperson', $company_id);
+    $is_hovedkontakt = ($hovedkontakt == $user_id);
+    
+    // Only show tools if user is hovedkontakt
+    if ($is_hovedkontakt) {
+        $args = array(
+            'post_type' => 'verktoy',
+            'posts_per_page' => -1,
+            'post_status' => array('publish', 'draft', 'pending'),
+            'meta_query' => array(
+                array(
+                    'key' => 'eier_leverandor',
+                    'value' => $company_id,
+                    'compare' => '='
+                )
+            ),
+            'orderby' => 'date',
+            'order' => 'DESC',
+        );
+        
+        $user_tools = get_posts($args);
+    }
+}
 
 // Start Min Side layout
 get_template_part('template-parts/minside-layout-start', null, array(
