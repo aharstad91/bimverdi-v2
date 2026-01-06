@@ -258,7 +258,7 @@ class BIM_Verdi_Post_Types {
             'can_export'            => true,
             'has_archive'           => true,
             'hierarchical'          => false,
-            'rewrite'               => array('slug' => 'tema'),
+            'rewrite'               => array('slug' => 'temagruppe'),
             'capability_type'       => 'post',
             'show_in_rest'          => true,
         );
