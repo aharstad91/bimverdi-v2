@@ -61,26 +61,26 @@ if (strpos($current_template, 'dashboard') !== false) {
 <?php wp_body_open(); ?>
 
 <!-- Primary Header: Logo + Back Link + Logout -->
-<header class="bg-white border-b border-[#E5E0D5] sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<header class="bg-[#FBF9F5] border-b border-[#E5E0D5] sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between h-16">
             
             <!-- Logo -->
-            <div class="flex-shrink-0">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-xl font-bold text-[#1A1A1A]">
+            <div>
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-[20px] font-bold text-[#1A1A1A] leading-[28px]">
                     BIM Verdi
                 </a>
             </div>
             
             <!-- Right side: Back link + Logout -->
             <div class="flex items-center gap-6">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="flex items-center gap-2 text-sm text-[#FF8B5E] hover:text-[#FF6B3E] transition-colors">
-                    <wa-icon name="arrow-left" library="fa" style="font-size: 0.875rem;"></wa-icon>
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="flex items-center gap-2 text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     Til forsiden
                 </a>
-                <a href="<?php echo wp_logout_url(home_url()); ?>" class="flex items-center gap-2 text-sm text-[#FF8B5E] hover:text-[#FF6B3E] transition-colors">
+                <a href="<?php echo wp_logout_url(home_url()); ?>" class="flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:text-[#5A5A5A] transition-colors">
                     Logg ut
-                    <wa-icon name="arrow-right" library="fa" style="font-size: 0.875rem;"></wa-icon>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </a>
             </div>
         </div>
