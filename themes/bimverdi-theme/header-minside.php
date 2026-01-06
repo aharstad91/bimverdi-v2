@@ -105,11 +105,11 @@ if (strpos($current_template, 'dashboard') !== false) {
                     <?php endif; ?>
                 </a>
                 
-                <!-- Verktøy -->
-                <a href="<?php echo esc_url(home_url('/min-side/verktoy/')); ?>" 
+                <!-- Mine verktøy -->
+                <a href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>" 
                    class="relative flex items-center gap-2 px-4 h-12 text-sm <?php echo $current_page === 'verktoy' ? 'font-semibold text-[#1A1A1A]' : 'font-medium text-[#5A5A5A] hover:text-[#1A1A1A]'; ?> transition-colors">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 0-8.94-8.94l-3.76 3.76a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.76-3.76a2 2 0 0 1 2.83 2.83l-3.75 3.75a1 1 0 0 0 0 1.4z"></path><path d="M9.3 17.7a1 1 0 0 0 0-1.4L7.7 14.7a1 1 0 0 0-1.4 0l-3.77 3.77a6 6 0 0 0 8.94 8.94l3.76-3.76a1 1 0 0 0 0-1.4l-1.6-1.6a1 1 0 0 0-1.4 0l-3.76 3.76a2 2 0 0 1-2.83-2.83l3.75-3.75a1 1 0 0 0 0-1.4z"></path></svg>
-                    Verktøy
+                    Mine verktøy
                     <?php if ($tool_count > 0): ?>
                         <span class="inline-flex items-center justify-center px-2 h-5 text-[10px] font-bold text-[#1A1A1A] bg-[#F2F0EB] border border-[#E5E0D8] rounded-full">
                             <?php echo $tool_count; ?>
