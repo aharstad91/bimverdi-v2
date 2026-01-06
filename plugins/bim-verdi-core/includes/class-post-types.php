@@ -44,6 +44,7 @@ class BIM_Verdi_Post_Types {
         $this->register_pamelding();
         $this->register_case();
         $this->register_prosjekt();
+        $this->register_theme_group();
         $this->register_artikkel();
     }
     
@@ -224,6 +225,45 @@ class BIM_Verdi_Post_Types {
         );
         
         register_post_type('prosjekt', $args);
+    }
+    
+    /**
+     * Register Theme Group CPT (Temagrupper)
+     * Each theme group (ByggesaksBIM, ProsjektBIM, etc.) with rich content
+     */
+    private function register_theme_group() {
+        $labels = array(
+            'name'                  => _x('Temagrupper', 'Post Type General Name', 'bim-verdi-core'),
+            'singular_name'         => _x('Temagruppe', 'Post Type Singular Name', 'bim-verdi-core'),
+            'menu_name'             => __('Temagrupper', 'bim-verdi-core'),
+            'all_items'             => __('Alle temagrupper', 'bim-verdi-core'),
+            'add_new_item'          => __('Legg til ny temagruppe', 'bim-verdi-core'),
+            'edit_item'             => __('Rediger temagruppe', 'bim-verdi-core'),
+            'view_item'             => __('Vis temagruppe', 'bim-verdi-core'),
+            'search_items'          => __('Søk temagrupper', 'bim-verdi-core'),
+            'not_found'             => __('Ingen temagrupper funnet', 'bim-verdi-core'),
+        );
+        
+        $args = array(
+            'label'                 => __('Temagruppe', 'bim-verdi-core'),
+            'labels'                => $labels,
+            'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'page-attributes'),
+            'public'                => true,
+            'show_ui'               => true,
+            'show_in_menu'          => true,
+            'menu_position'         => 4,
+            'menu_icon'             => 'dashicons-networking',
+            'show_in_admin_bar'     => true,
+            'show_in_nav_menus'     => true,
+            'can_export'            => true,
+            'has_archive'           => true,
+            'hierarchical'          => false,
+            'rewrite'               => array('slug' => 'tema'),
+            'capability_type'       => 'post',
+            'show_in_rest'          => true,
+        );
+        
+        register_post_type('theme_group', $args);
     }
     
     /**
