@@ -7,77 +7,62 @@
     <?php wp_head(); ?>
 </head>
 
-<body <?php body_class('bg-bim-beige-100'); ?>>
+<body <?php body_class('bg-[#F7F5EF]'); ?>>
 <?php wp_body_open(); ?>
 
-<header class="bg-white shadow-sm sticky top-0 z-50">
-    <nav class="container mx-auto px-4">
-        <div class="flex items-center justify-between h-20">
+<!-- Public Header: Logo + Main Nav + Login button -->
+<header class="bg-white border-b border-[#E5E0D5] sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
             
             <!-- Logo -->
             <div class="flex-shrink-0">
-                <?php if (has_custom_logo()) : ?>
-                    <?php the_custom_logo(); ?>
-                <?php else : ?>
-                    <a href="<?php echo esc_url(home_url('/')); ?>" class="text-2xl font-bold text-bim-black-900">
-                        <?php bloginfo('name'); ?>
-                    </a>
-                <?php endif; ?>
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-xl font-bold text-[#1A1A1A]">
+                    BIM Verdi
+                </a>
             </div>
             
-            <!-- Primary Navigation -->
-            <div class="hidden md:block">
-                <?php
-                wp_nav_menu(array(
-                    'menu' => 31,
-                    'container' => false,
-                    'menu_class' => 'flex space-x-8',
-                    'fallback_cb' => false,
-                ));
-                ?>
-            </div>
+            <!-- Main Navigation -->
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" 
+                   class="text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
+                    Verktøy
+                </a>
+                <a href="<?php echo esc_url(home_url('/begreper/')); ?>" 
+                   class="text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
+                    Begreper
+                </a>
+                <a href="<?php echo esc_url(home_url('/temagrupper/')); ?>" 
+                   class="text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
+                    Temagrupper
+                </a>
+            </nav>
             
-            <!-- CTA Buttons -->
-            <div class="flex items-center space-x-4">
+            <!-- Right side: Login button or My Account -->
+            <div class="flex items-center gap-4">
                 <?php if (is_user_logged_in()) : ?>
-                    <a href="<?php echo esc_url(home_url('/min-side/')); ?>" class="btn-hjem-outline">
+                    <a href="<?php echo esc_url(home_url('/min-side/')); ?>" 
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white text-sm font-medium rounded-md hover:bg-[#333333] transition-colors">
                         Min side
                     </a>
-                    <a href="<?php echo wp_logout_url(home_url()); ?>" class="text-bim-black-500 hover:text-bim-orange">
-                        Logg ut
-                    </a>
                 <?php else : ?>
-                    <a href="<?php echo wp_login_url(); ?>" class="btn-hjem-outline">
+                    <a href="<?php echo wp_login_url(); ?>" 
+                       class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#1A1A1A] text-white text-sm font-medium rounded-md hover:bg-[#333333] transition-colors">
                         Logg inn
-                    </a>
-                    <a href="<?php echo esc_url(home_url('/registrer/')); ?>" class="btn-hjem-primary">
-                        Bli medlem
                     </a>
                 <?php endif; ?>
             </div>
             
             <!-- Mobile menu button -->
             <div class="md:hidden">
-                <button type="button" class="text-bim-black-900 hover:text-bim-orange focus:outline-none" id="mobile-menu-button">
+                <button type="button" class="text-[#1A1A1A] hover:text-[#5A5A5A] focus:outline-none" id="mobile-menu-button">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                 </button>
             </div>
         </div>
-        
-        <!-- Mobile Menu (hidden by default) -->
-        <div class="md:hidden hidden" id="mobile-menu">
-            <?php
-            wp_nav_menu(array(
-                'menu' => 31,
-                'container' => false,
-                'menu_class' => 'py-4 space-y-2',
-                'fallback_cb' => false,
-            ));
-            ?>
-        </div>
-    </nav>
+    </div>
 </header>
 
 <div id="content" class="site-content">

@@ -13,7 +13,7 @@ if (!is_user_logged_in()) {
     exit;
 }
 
-get_header();
+get_header('minside');
 
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;

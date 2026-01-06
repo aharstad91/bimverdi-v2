@@ -14,7 +14,7 @@ if (!is_user_logged_in()) {
     exit;
 }
 
-get_header();
+get_header('minside');
 
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
@@ -50,15 +50,10 @@ if ($company_id) {
         $user_tools = get_posts($args);
     }
 }
-
-// Start Min Side layout
-get_template_part('template-parts/minside-layout-start', null, array(
-    'current_page' => 'verktoy',
-    'page_title' => 'Mine Verktøy',
-    'page_icon' => 'wrench',
-    'page_description' => 'Oversikt over verktøy du har registrert i BIM Verdi',
-));
 ?>
+
+<!-- Main Content Container -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
 <!-- PageHeader: Title, Subtitle, Primary Action (Variant B Style) -->
 <div class="mb-12">
@@ -321,8 +316,7 @@ get_template_part('template-parts/minside-layout-start', null, array(
 }
 </style>
 
-<?php 
-get_template_part('template-parts/minside-layout-end');
-get_footer(); 
-?>
+</main>
+
+<?php get_footer(); ?>
 

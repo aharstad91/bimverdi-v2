@@ -15,7 +15,7 @@ if (!is_user_logged_in()) {
     exit;
 }
 
-get_header();
+get_header('minside');
 
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
@@ -125,15 +125,10 @@ $my_registrations = get_posts(array(
     'posts_per_page' => -1,
 ));
 $registrations_count = count($my_registrations);
-
-// Start Min Side layout
-get_template_part('template-parts/minside-layout-start', null, array(
-    'current_page' => 'dashboard',
-    'page_title' => 'Dashboard',
-    'page_icon' => 'house',
-    'page_description' => 'Oversikt over din aktivitet i BIM Verdi',
-));
 ?>
+
+<!-- Main Content Container -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
 <!-- Success Messages -->
 <?php if (isset($_GET['welcome']) && $_GET['welcome'] == '1'): ?>
@@ -561,8 +556,6 @@ get_template_part('template-parts/minside-layout-start', null, array(
     </div>
 </div>
 
-<?php 
-// End Min Side layout
-get_template_part('template-parts/minside-layout-end');
-get_footer(); 
-?>
+</main>
+
+<?php get_footer(); ?>
