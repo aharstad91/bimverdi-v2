@@ -23,20 +23,17 @@
             </div>
             
             <!-- Main Navigation -->
-            <nav class="hidden md:flex items-center gap-8">
-                <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" 
-                   class="text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
-                    Verktøy
-                </a>
-                <a href="<?php echo esc_url(home_url('/begreper/')); ?>" 
-                   class="text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
-                    Begreper
-                </a>
-                <a href="<?php echo esc_url(home_url('/temagrupper/')); ?>" 
-                   class="text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
-                    Temagrupper
-                </a>
-            </nav>
+            <?php
+            wp_nav_menu(array(
+                'theme_location' => 'primary',
+                'container' => 'nav',
+                'container_class' => 'hidden md:flex items-center gap-8 ml-12',
+                'menu_class' => 'flex items-center gap-8',
+                'fallback_cb' => false,
+                'depth' => 2,
+                'link_class' => 'text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors',
+            ));
+            ?>
             
             <!-- Right side: Login button or My Account -->
             <div class="flex items-center gap-4">
