@@ -156,13 +156,19 @@ $upcoming_events = get_posts([
                     
                     <!-- Actions -->
                     <div class="flex items-center gap-3">
-                        <a href="<?php echo get_permalink($event_id); ?>" class="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-[#1A1A1A] bg-white border border-[#E5E0D8] rounded-lg hover:border-[#1A1A1A] transition-colors">
-                            <?php _e('Les mer', 'bimverdi'); ?>
-                        </a>
+                        <?php bimverdi_button([
+                            'text'    => __('Les mer', 'bimverdi'),
+                            'variant' => 'secondary',
+                            'href'    => get_permalink($event_id),
+                            'class'   => 'flex-1',
+                        ]); ?>
                         <?php if (!$is_registered && !$is_full): ?>
-                            <a href="<?php echo home_url('/min-side/meld-pa/?arrangement=' . $event_id); ?>" class="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
-                                <?php _e('Meld på', 'bimverdi'); ?>
-                            </a>
+                            <?php bimverdi_button([
+                                'text'    => __('Meld på', 'bimverdi'),
+                                'variant' => 'primary',
+                                'href'    => home_url('/min-side/meld-pa/?arrangement=' . $event_id),
+                                'class'   => 'flex-1',
+                            ]); ?>
                         <?php endif; ?>
                     </div>
                 </div>

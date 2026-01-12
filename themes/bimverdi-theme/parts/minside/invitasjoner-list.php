@@ -1,73 +1,68 @@
 <?php
 /**
- * Template Name: Min Side - Invitasjoner
+ * Part: Invitasjoner (Invitations Management)
  * 
- * Template for hovedkontakt to manage company invitations and users
+ * Allows hovedkontakt to manage company invitations and users.
+ * Brukes på /min-side/invitasjoner/
  * 
  * @package BimVerdi_Theme
  */
 
-// Redirect if not logged in
-if (!is_user_logged_in()) {
-    wp_redirect(wp_login_url(get_permalink()));
-    exit;
-}
-
-get_header();
+defined('ABSPATH') || exit;
 
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
-$company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
-
-// Also check ACF field
-if (empty($company_id) && function_exists('get_field')) {
-    $company_id = get_field('tilknyttet_foretak', 'user_' . $user_id);
-    // ACF might return an object, extract ID if needed
-    if (is_object($company_id)) {
-        $company_id = $company_id->ID;
-    }
-}
+$company_id = bimverdi_get_user_company($user_id);
 
 // Check if user has a company
 if (!$company_id) {
-    wp_redirect(home_url('/min-side/foretak/'));
+    wp_redirect(bimverdi_minside_url('foretak') . '?ikke_koblet=1');
     exit;
 }
 
 // Check if user is hovedkontakt
-$hovedkontakt_id = get_field('hovedkontaktperson', $company_id);
-$is_hovedkontakt = ($hovedkontakt_id == $user_id);
-
-if (!$is_hovedkontakt) {
-    // Not hovedkontakt - redirect to foretak page with message
-    wp_redirect(add_query_arg('ikke_hovedkontakt', '1', home_url('/min-side/foretak/')));
+if (!bimverdi_is_hovedkontakt($user_id, $company_id)) {
+    wp_redirect(bimverdi_minside_url('foretak') . '?ikke_hovedkontakt=1');
     exit;
 }
 
 // Get company data
 $company = get_post($company_id);
-$er_aktiv_deltaker = get_field('er_aktiv_deltaker', $company_id);
+$er_aktiv_deltaker = bimverdi_is_company_active($company_id);
 
 // Get invitations handler
+if (!function_exists('bimverdi_get_invitations')) {
+    // Invitations handler not available - show error
+    get_template_part('parts/components/page-header', null, [
+        'title' => 'Inviter kolleger',
+        'description' => 'Administrer brukertilgang for ' . $company->post_title,
+    ]);
+    ?>
+    <wa-alert variant="warning" class="mb-6">
+        <strong>Invitasjonssystemet er ikke tilgjengelig</strong><br>
+        Ta kontakt på <a href="mailto:post@bimverdi.no" class="underline">post@bimverdi.no</a> for assistanse.
+    </wa-alert>
+    <?php
+    return;
+}
+
 $invitations = bimverdi_get_invitations();
 $remaining_invitations = $invitations->get_remaining_invitations($company_id);
 $pending_invitations = $invitations->get_pending_invitations($company_id);
 $all_invitations = $invitations->get_company_invitations($company_id);
 $company_users = $invitations->get_company_users($company_id);
 
-// Start Min Side layout
-get_template_part('template-parts/minside-layout-start', null, array(
-    'current_page' => 'invitasjoner',
-    'page_title' => 'Inviter kolleger',
-    'page_icon' => 'user-plus',
-    'page_description' => 'Administrer brukertilgang for ' . $company->post_title,
-));
+// Page header
+get_template_part('parts/components/page-header', null, [
+    'title' => 'Inviter kolleger',
+    'description' => 'Administrer brukertilgang for ' . $company->post_title,
+    'icon' => 'user-plus',
+]);
 ?>
 
 <?php if (!$er_aktiv_deltaker): ?>
     <!-- Company not yet approved -->
     <wa-alert variant="warning" class="mb-6">
-        <wa-icon slot="icon" name="clock" library="fa"></wa-icon>
         <strong>Foretaket er ikke godkjent ennå</strong><br>
         Du kan ikke sende invitasjoner før foretaket er godkjent av BIM Verdi.
         Ta kontakt på <a href="mailto:post@bimverdi.no" class="underline">post@bimverdi.no</a> hvis dette tar lang tid.
@@ -76,42 +71,37 @@ get_template_part('template-parts/minside-layout-start', null, array(
 
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <wa-card>
-            <div class="p-4 text-center">
-                <div class="text-3xl font-bold text-orange-600"><?php echo count($company_users); ?></div>
-                <div class="text-sm text-gray-600">Brukere tilkoblet</div>
+        <div class="bg-white rounded-lg border border-[#E5E2DB] p-4 text-center">
+            <div class="text-3xl font-bold text-[#F97316]"><?php echo count($company_users); ?></div>
+            <div class="text-sm text-[#5A5A5A]">Brukere tilkoblet</div>
+        </div>
+        <div class="bg-white rounded-lg border border-[#E5E2DB] p-4 text-center">
+            <div class="text-3xl font-bold text-[#7C3AED]"><?php echo count($pending_invitations); ?></div>
+            <div class="text-sm text-[#5A5A5A]">Ventende invitasjoner</div>
+        </div>
+        <div class="bg-white rounded-lg border border-[#E5E2DB] p-4 text-center">
+            <div class="text-3xl font-bold <?php echo $remaining_invitations > 0 ? 'text-green-600' : 'text-red-600'; ?>">
+                <?php echo $remaining_invitations; ?>
             </div>
-        </wa-card>
-        <wa-card>
-            <div class="p-4 text-center">
-                <div class="text-3xl font-bold text-purple-600"><?php echo count($pending_invitations); ?></div>
-                <div class="text-sm text-gray-600">Ventende invitasjoner</div>
-            </div>
-        </wa-card>
-        <wa-card>
-            <div class="p-4 text-center">
-                <div class="text-3xl font-bold <?php echo $remaining_invitations > 0 ? 'text-green-600' : 'text-red-600'; ?>">
-                    <?php echo $remaining_invitations; ?>
-                </div>
-                <div class="text-sm text-gray-600">Invitasjoner igjen</div>
-            </div>
-        </wa-card>
+            <div class="text-sm text-[#5A5A5A]">Invitasjoner igjen</div>
+        </div>
     </div>
 
     <!-- Send New Invitation -->
-    <wa-card class="mb-6">
-        <div slot="header" class="flex items-center gap-2">
-            <wa-icon name="paper-plane" library="fa"></wa-icon>
-            <strong>Send invitasjon</strong>
-        </div>
-        <div class="p-4">
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
+            <?php echo bimverdi_icon('send', 20); ?>
+            Send invitasjon
+        </h2>
+        
+        <div class="bg-white rounded-lg border border-[#E5E2DB] p-5">
             <?php if ($remaining_invitations > 0): ?>
                 <form id="send-invitation-form" class="space-y-4">
                     <?php wp_nonce_field('bimverdi_invitation_nonce', 'nonce'); ?>
                     <input type="hidden" name="company_id" value="<?php echo $company_id; ?>">
                     
                     <div>
-                        <label for="invite-email" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="invite-email" class="block text-sm font-medium text-[#1A1A1A] mb-2">
                             E-postadresse til kollega
                         </label>
                         <div class="flex gap-3">
@@ -121,41 +111,44 @@ get_template_part('template-parts/minside-layout-start', null, array(
                                 name="email" 
                                 placeholder="kollega@bedrift.no" 
                                 required
-                                class="flex-grow px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                class="flex-grow px-4 py-2.5 border border-[#D1CCC3] rounded-lg focus:ring-2 focus:ring-[#F97316] focus:border-[#F97316] bg-white"
                             />
-                            <wa-button type="submit" variant="brand" id="send-invite-btn">
-                                <wa-icon slot="prefix" name="paper-plane" library="fa"></wa-icon>
-                                Send invitasjon
-                            </wa-button>
+                            <?php echo bimverdi_button([
+                                'type' => 'submit',
+                                'variant' => 'primary',
+                                'icon' => 'send',
+                                'text' => 'Send invitasjon',
+                                'id' => 'send-invite-btn',
+                            ]); ?>
                         </div>
                     </div>
                     
-                    <p class="text-sm text-gray-500">
-                        <wa-icon name="circle-info" library="fa" class="mr-1"></wa-icon>
+                    <p class="text-sm text-[#5A5A5A] flex items-center gap-2">
+                        <?php echo bimverdi_icon('info', 16); ?>
                         Invitasjonen er gyldig i 7 dager. Kollegaen vil motta en e-post med lenke for å registrere seg.
                     </p>
                 </form>
                 
                 <div id="invite-result" class="mt-4 hidden"></div>
             <?php else: ?>
-                <wa-alert variant="warning">
-                    <wa-icon slot="icon" name="ban" library="fa"></wa-icon>
-                    <strong>Maksimalt antall invitasjoner brukt</strong><br>
-                    Du kan invitere maksimalt 2 tilleggskontakter. Kontakt <a href="mailto:post@bimverdi.no" class="underline">BIM Verdi</a> hvis du trenger flere.
-                </wa-alert>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <strong class="text-amber-800">Maksimalt antall invitasjoner brukt</strong><br>
+                    <span class="text-amber-700">Du kan invitere maksimalt 2 tilleggskontakter. Kontakt <a href="mailto:post@bimverdi.no" class="underline">BIM Verdi</a> hvis du trenger flere.</span>
+                </div>
             <?php endif; ?>
         </div>
-    </wa-card>
+    </section>
 
     <!-- Current Users -->
-    <wa-card class="mb-6">
-        <div slot="header" class="flex items-center gap-2">
-            <wa-icon name="users" library="fa"></wa-icon>
-            <strong>Brukere i <?php echo esc_html($company->post_title); ?></strong>
-        </div>
-        <div class="divide-y divide-gray-100">
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
+            <?php echo bimverdi_icon('users', 20); ?>
+            Brukere i <?php echo esc_html($company->post_title); ?>
+        </h2>
+        
+        <div class="bg-white rounded-lg border border-[#E5E2DB] divide-y divide-[#E5E2DB]">
             <?php if (empty($company_users)): ?>
-                <div class="p-4 text-center text-gray-500">
+                <div class="p-6 text-center text-[#5A5A5A]">
                     Ingen brukere tilkoblet ennå.
                 </div>
             <?php else: ?>
@@ -164,70 +157,73 @@ get_template_part('template-parts/minside-layout-start', null, array(
                         <div class="flex items-center gap-3">
                             <?php echo get_avatar($user->ID, 40, '', '', array('class' => 'rounded-full')); ?>
                             <div>
-                                <div class="font-medium text-gray-900">
+                                <div class="font-medium text-[#1A1A1A]">
                                     <?php echo esc_html($user->display_name); ?>
                                     <?php if ($user->is_hovedkontakt): ?>
-                                        <wa-badge variant="brand" size="small" class="ml-2">Hovedkontakt</wa-badge>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#F97316] text-white ml-2">
+                                            Hovedkontakt
+                                        </span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-sm text-gray-500"><?php echo esc_html($user->user_email); ?></div>
+                                <div class="text-sm text-[#5A5A5A]"><?php echo esc_html($user->user_email); ?></div>
                             </div>
                         </div>
                         <div>
                             <?php if (!$user->is_hovedkontakt): ?>
-                                <wa-button 
-                                    variant="danger" 
-                                    size="small" 
-                                    outline
-                                    class="remove-user-btn"
-                                    data-user-id="<?php echo $user->ID; ?>"
-                                    data-user-name="<?php echo esc_attr($user->display_name); ?>"
-                                >
-                                    <wa-icon slot="prefix" name="user-minus" library="fa"></wa-icon>
-                                    Fjern tilgang
-                                </wa-button>
+                                <?php echo bimverdi_button([
+                                    'variant' => 'danger',
+                                    'size' => 'small',
+                                    'icon' => 'user-minus',
+                                    'text' => 'Fjern tilgang',
+                                    'class' => 'remove-user-btn',
+                                    'attributes' => [
+                                        'data-user-id' => $user->ID,
+                                        'data-user-name' => esc_attr($user->display_name),
+                                    ],
+                                ]); ?>
                             <?php else: ?>
-                                <span class="text-sm text-gray-400">Kan ikke fjernes</span>
+                                <span class="text-sm text-[#9A9488]">Kan ikke fjernes</span>
                             <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-    </wa-card>
+    </section>
 
     <!-- Pending Invitations -->
     <?php if (!empty($pending_invitations)): ?>
-    <wa-card class="mb-6">
-        <div slot="header" class="flex items-center gap-2">
-            <wa-icon name="clock" library="fa"></wa-icon>
-            <strong>Ventende invitasjoner</strong>
-        </div>
-        <div class="divide-y divide-gray-100">
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
+            <?php echo bimverdi_icon('clock', 20); ?>
+            Ventende invitasjoner
+        </h2>
+        
+        <div class="bg-white rounded-lg border border-[#E5E2DB] divide-y divide-[#E5E2DB]">
             <?php foreach ($pending_invitations as $invitation): ?>
                 <div class="p-4 flex items-center justify-between">
                     <div>
-                        <div class="font-medium text-gray-900"><?php echo esc_html($invitation->email); ?></div>
-                        <div class="text-sm text-gray-500">
+                        <div class="font-medium text-[#1A1A1A]"><?php echo esc_html($invitation->email); ?></div>
+                        <div class="text-sm text-[#5A5A5A]">
                             Sendt <?php echo date('d.m.Y H:i', strtotime($invitation->created_at)); ?>
                             · Utløper <?php echo date('d.m.Y', strtotime($invitation->expires_at)); ?>
                         </div>
                     </div>
-                    <wa-button 
-                        variant="warning" 
-                        size="small" 
-                        outline
-                        class="revoke-invite-btn"
-                        data-invitation-id="<?php echo $invitation->id; ?>"
-                        data-email="<?php echo esc_attr($invitation->email); ?>"
-                    >
-                        <wa-icon slot="prefix" name="xmark" library="fa"></wa-icon>
-                        Trekk tilbake
-                    </wa-button>
+                    <?php echo bimverdi_button([
+                        'variant' => 'secondary',
+                        'size' => 'small',
+                        'icon' => 'x',
+                        'text' => 'Trekk tilbake',
+                        'class' => 'revoke-invite-btn',
+                        'attributes' => [
+                            'data-invitation-id' => $invitation->id,
+                            'data-email' => esc_attr($invitation->email),
+                        ],
+                    ]); ?>
                 </div>
             <?php endforeach; ?>
         </div>
-    </wa-card>
+    </section>
     <?php endif; ?>
 
     <!-- Invitation History -->
@@ -237,28 +233,29 @@ get_template_part('template-parts/minside-layout-start', null, array(
     });
     if (!empty($used_invitations)): 
     ?>
-    <wa-card>
-        <div slot="header" class="flex items-center gap-2">
-            <wa-icon name="history" library="fa"></wa-icon>
-            <strong>Invitasjonshistorikk</strong>
-        </div>
-        <div class="divide-y divide-gray-100">
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
+            <?php echo bimverdi_icon('history', 20); ?>
+            Invitasjonshistorikk
+        </h2>
+        
+        <div class="bg-white rounded-lg border border-[#E5E2DB] divide-y divide-[#E5E2DB]">
             <?php foreach ($used_invitations as $invitation): ?>
                 <div class="p-4 flex items-center justify-between">
                     <div>
-                        <div class="font-medium text-gray-900"><?php echo esc_html($invitation->email); ?></div>
-                        <div class="text-sm text-gray-500">
+                        <div class="font-medium text-[#1A1A1A]"><?php echo esc_html($invitation->email); ?></div>
+                        <div class="text-sm text-[#5A5A5A]">
                             Akseptert <?php echo date('d.m.Y H:i', strtotime($invitation->used_at)); ?>
                         </div>
                     </div>
-                    <wa-badge variant="success">
-                        <wa-icon slot="prefix" name="check" library="fa"></wa-icon>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                        <?php echo bimverdi_icon('check', 14); ?>
                         Akseptert
-                    </wa-badge>
+                    </span>
                 </div>
             <?php endforeach; ?>
         </div>
-    </wa-card>
+    </section>
     <?php endif; ?>
 
 <?php endif; ?>
@@ -273,8 +270,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const btn = document.getElementById('send-invite-btn');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<wa-spinner></wa-spinner> Sender...';
+            const originalText = btn.textContent;
+            btn.textContent = 'Sender...';
             btn.disabled = true;
             
             const formData = new FormData(this);
@@ -292,32 +289,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (result.success) {
                     inviteResult.innerHTML = `
-                        <wa-alert variant="success">
-                            <wa-icon slot="icon" name="check" library="fa"></wa-icon>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">
                             ${result.data.message}
-                        </wa-alert>
+                        </div>
                     `;
                     inviteForm.reset();
-                    // Reload page after 2 seconds to show updated list
                     setTimeout(() => location.reload(), 2000);
                 } else {
                     inviteResult.innerHTML = `
-                        <wa-alert variant="danger">
-                            <wa-icon slot="icon" name="xmark" library="fa"></wa-icon>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
                             ${result.data.message}
-                        </wa-alert>
+                        </div>
                     `;
                 }
             } catch (error) {
                 inviteResult.innerHTML = `
-                    <wa-alert variant="danger">
-                        <wa-icon slot="icon" name="xmark" library="fa"></wa-icon>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
                         En feil oppstod. Prøv igjen senere.
-                    </wa-alert>
+                    </div>
                 `;
             }
             
-            btn.innerHTML = originalContent;
+            btn.textContent = originalText;
             btn.disabled = false;
         });
     }
@@ -391,8 +384,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<?php 
-get_template_part('template-parts/minside-layout-end');
-get_footer(); 
-?>

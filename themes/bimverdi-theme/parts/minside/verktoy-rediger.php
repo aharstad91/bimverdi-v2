@@ -14,8 +14,8 @@ $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
 
-// Get tool ID from URL parameter
-$tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) : 0;
+// Get tool ID from URL parameter (support both 'id' and 'tool_id' for compatibility)
+$tool_id = isset($_GET['id']) ? intval($_GET['id']) : (isset($_GET['tool_id']) ? intval($_GET['tool_id']) : 0);
 
 // Redirect if no tool ID
 if (!$tool_id) {

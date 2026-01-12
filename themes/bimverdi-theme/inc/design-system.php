@@ -169,6 +169,164 @@ class BIM_Verdi_Design_System {
                BUTTONS (daisyUI overrides & custom)
                ============================================ */
             
+            /* ============================================
+               BIMVerdi Button Component (Figma Design)
+               Height: 36px, Border Radius: 8px
+               Font: Inter Medium, 14px/20px, tracking -0.15px
+               ============================================ */
+            
+            .bv-btn {
+                /* Base styles matching Figma spec */
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                padding: 0 16px;
+                border-radius: 8px;
+                font-family: 'Inter', var(--font-family);
+                font-weight: 500;
+                font-size: 14px;
+                line-height: 20px;
+                letter-spacing: -0.15px;
+                text-decoration: none;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                white-space: nowrap;
+                border: 1px solid transparent;
+            }
+            
+            .bv-btn:focus-visible {
+                outline: 2px solid var(--color-primary, #FF8B5E);
+                outline-offset: 2px;
+            }
+            
+            /* Primary variant: Filled black (#1a1a1a) */
+            .bv-btn--primary {
+                background-color: #1A1A1A;
+                color: #FFFFFF;
+                border-color: #1A1A1A;
+            }
+            
+            .bv-btn--primary:hover {
+                background-color: #333333;
+                border-color: #333333;
+            }
+            
+            .bv-btn--primary:active {
+                background-color: #000000;
+                border-color: #000000;
+            }
+            
+            /* Secondary variant: Outline with black border */
+            .bv-btn--secondary {
+                background-color: #FFFFFF;
+                color: #1A1A1A;
+                border-color: #1A1A1A;
+            }
+            
+            .bv-btn--secondary:hover {
+                background-color: #F5F5F5;
+            }
+            
+            .bv-btn--secondary:active {
+                background-color: #EBEBEB;
+            }
+            
+            /* Tertiary/Ghost variant: No border, subtle hover */
+            .bv-btn--tertiary {
+                background-color: transparent;
+                color: #1A1A1A;
+                border-color: transparent;
+            }
+            
+            .bv-btn--tertiary:hover {
+                background-color: #F5F5F5;
+            }
+            
+            /* Danger variant */
+            .bv-btn--danger {
+                background-color: #DC2626;
+                color: #FFFFFF;
+                border-color: #DC2626;
+            }
+            
+            .bv-btn--danger:hover {
+                background-color: #B91C1C;
+                border-color: #B91C1C;
+            }
+            
+            /* Size variants */
+            .bv-btn--small {
+                height: 28px;
+                padding: 0 12px;
+                font-size: 13px;
+                gap: 6px;
+            }
+            
+            .bv-btn--medium {
+                height: 36px;
+                padding: 0 16px;
+            }
+            
+            .bv-btn--large {
+                height: 44px;
+                padding: 0 24px;
+                font-size: 15px;
+                gap: 10px;
+            }
+            
+            /* Full width */
+            .bv-btn--full-width {
+                width: 100%;
+            }
+            
+            /* Disabled state */
+            .bv-btn--disabled,
+            .bv-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+            
+            /* Icon styling */
+            .bv-btn__icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            
+            .bv-btn__icon svg {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .bv-btn--small .bv-btn__icon svg {
+                width: 14px;
+                height: 14px;
+            }
+            
+            .bv-btn--large .bv-btn__icon svg {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .bv-btn__text {
+                display: inline-block;
+            }
+            
+            /* Lucide icon base styling */
+            .bv-icon {
+                display: inline-block;
+                vertical-align: middle;
+                flex-shrink: 0;
+            }
+            
+            /* ============================================
+               Legacy button styles (for backwards compat)
+               ============================================ */
+            
             .btn-hjem {
                 border-radius: var(--radius-button);
                 font-weight: 600;

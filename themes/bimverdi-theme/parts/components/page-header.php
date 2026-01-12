@@ -6,10 +6,12 @@
  *     'title'       => 'Mine verktøy',
  *     'description' => 'Administrer verktøyene du har registrert.',  // optional
  *     'actions'     => [  // optional
- *         ['text' => 'Nytt verktøy', 'url' => '/registrer-verktoy/', 'variant' => 'primary'],
- *         ['text' => 'Eksporter', 'url' => '#', 'variant' => 'secondary'],
+ *         ['text' => 'Nytt verktøy', 'url' => '/registrer-verktoy/', 'variant' => 'primary', 'icon' => 'plus'],
+ *         ['text' => 'Eksporter', 'url' => '#', 'variant' => 'secondary', 'icon' => 'download'],
  *     ],
  * ]);
+ * 
+ * Action variants: 'primary' (filled black), 'secondary' (outline)
  * 
  * @package BimVerdi_Theme
  */
@@ -32,16 +34,16 @@ $actions = $args['actions'] ?? [];
     <?php if (!empty($actions)): ?>
         <div class="flex gap-3 flex-shrink-0">
             <?php foreach ($actions as $action): 
-                $is_primary = ($action['variant'] ?? 'primary') === 'primary';
-            ?>
-                <a href="<?php echo esc_url(home_url($action['url'])); ?>" 
-                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                          <?php echo $is_primary 
-                              ? 'text-white bg-[#1A1A1A] hover:bg-[#333]' 
-                              : 'text-[#1A1A1A] bg-transparent border border-[#E5E0D8] hover:bg-[#F2F0EB]'; ?>">
-                    <?php echo esc_html($action['text']); ?>
-                </a>
-            <?php endforeach; ?>
+                $variant = $action['variant'] ?? 'primary';
+                bimverdi_button([
+                    'text'    => $action['text'],
+                    'variant' => $variant,
+                    'icon'    => $action['icon'] ?? null,
+                    'href'    => home_url($action['url']),
+                    'size'    => $action['size'] ?? 'medium',
+                    'target'  => $action['target'] ?? '',
+                ]);
+            endforeach; ?>
         </div>
     <?php endif; ?>
 </div>

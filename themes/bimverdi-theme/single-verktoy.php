@@ -1,36 +1,52 @@
 <?php
 /**
- * Single Verktøy Template v2
+ * Single Verktøy Template v3
  * 
  * Displays detailed information about a single tool/software.
- * Clean, minimal styling following UI Contract v1.
+ * Design based on UI Contract v1 - Variant B (Dividers/Whitespace)
  * 
  * @package BimVerdi_Theme
  */
 
-get_header();
+get_header('minside');
 
 if (have_posts()) : while (have_posts()) : the_post();
 
 // Get ACF fields
 $eier_id = get_field('eier_leverandor');
 $eier = $eier_id ? get_post($eier_id) : null;
-$verktoy_navn = get_field('verktoy_navn');
 $detaljert_beskrivelse = get_field('detaljert_beskrivelse');
 $lenke = get_field('verktoy_lenke');
-$pris = get_field('verktoy_pris');
 $logo_id = get_field('verktoy_logo');
 $logo_url = $logo_id ? wp_get_attachment_url($logo_id) : '';
 
-// Get new ACF fields from form
+// Get new ACF fields
 $formaalstema = get_field('formaalstema');
 $bim_kompatibilitet = get_field('bim_kompatibilitet');
 $type_ressurs = get_field('type_ressurs');
 $type_teknologi = get_field('type_teknologi');
 $anvendelser = get_field('anvendelser');
+$plattform = get_field('plattform');
+$lisensmodell = get_field('lisensmodell');
+$versjon = get_field('versjon');
+$integrasjoner = get_field('integrasjoner');
+
+// Check if current user can edit this tool
+$current_user_id = get_current_user_id();
+$can_edit = false;
+if ($current_user_id) {
+    $user_company_id = get_user_meta($current_user_id, 'bim_verdi_company_id', true);
+    if (current_user_can('manage_options')) {
+        $can_edit = true;
+    } elseif ($user_company_id && $eier_id && $user_company_id == $eier_id) {
+        $can_edit = true;
+    } elseif (get_post_field('post_author', get_the_ID()) == $current_user_id) {
+        $can_edit = true;
+    }
+}
 
 // Helper function for readable labels
-function bimverdi_v2_readable_label($value) {
+function bimverdi_v3_readable_label($value) {
     $labels = [
         // Formålstema
         'ByggesaksBIM' => 'ByggesaksBIM',
@@ -70,287 +86,263 @@ function bimverdi_v2_readable_label($value) {
         'Kommunikasjon' => 'Kommunikasjon',
         'Logistikk' => 'Logistikk',
         'Kompetanse' => 'Kompetanse',
+        // Lisensmodell
+        'Gratis' => 'Gratis',
+        'Freemium' => 'Freemium',
+        'Abonnement' => 'Abonnement',
+        'Engangskjøp' => 'Engangskjøp',
+        'Enterprise' => 'Flytende lisens (Enterprise)',
     ];
     return $labels[$value] ?? str_replace('_', ' ', $value);
 }
+
+$tool_updated = get_the_modified_date('d.m.Y');
 ?>
 
-<div class="min-h-screen bg-[#F7F5EF]">
-    
-    <!-- Breadcrumb -->
-    <div class="bg-white border-b border-[#E5E0D8]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <nav class="flex items-center text-sm text-[#5A5A5A]">
-                <a href="<?php echo home_url(); ?>" class="hover:text-[#1A1A1A]">Hjem</a>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mx-2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                <a href="<?php echo home_url('/verktoy/'); ?>" class="hover:text-[#1A1A1A]">Verktøykatalog</a>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mx-2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                <span class="text-[#1A1A1A] font-medium"><?php the_title(); ?></span>
-            </nav>
-        </div>
-    </div>
+<main class="min-h-screen bg-[#FAFAF8]">
+    <div class="max-w-7xl mx-auto px-6 py-8">
 
-    <!-- Hero Section -->
-    <div class="bg-white border-b border-[#E5E0D8]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col md:flex-row gap-6">
-                <!-- Logo -->
-                <div class="flex-shrink-0">
-                    <?php if ($logo_url): ?>
-                    <div class="w-24 h-24 bg-[#F7F5EF] rounded-lg overflow-hidden flex items-center justify-center p-3">
-                        <img src="<?php echo esc_url($logo_url); ?>" alt="<?php the_title(); ?>" class="max-w-full max-h-full object-contain">
-                    </div>
-                    <?php else: ?>
-                    <div class="w-24 h-24 bg-[#F7F5EF] rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                    </div>
-                    <?php endif; ?>
-                </div>
-                
-                <!-- Info -->
-                <div class="flex-1">
-                    <!-- Tags -->
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <?php if ($formaalstema): ?>
-                        <span class="text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2 py-1 rounded">
-                            <?php echo esc_html(bimverdi_v2_readable_label($formaalstema)); ?>
-                        </span>
-                        <?php endif; ?>
-                        <?php if ($type_ressurs): ?>
-                        <span class="text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2 py-1 rounded">
-                            <?php echo esc_html(bimverdi_v2_readable_label($type_ressurs)); ?>
-                        </span>
-                        <?php endif; ?>
-                        <?php if ($type_teknologi === 'Bruker_KI'): ?>
-                        <span class="text-xs font-medium bg-[#1A1A1A] text-white px-2 py-1 rounded">
-                            KI-drevet
-                        </span>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <h1 class="text-3xl font-bold text-[#1A1A1A] mb-2"><?php the_title(); ?></h1>
-                    
-                    <?php if ($eier): ?>
-                    <p class="text-[#5A5A5A] mb-4">
-                        Levert av 
-                        <a href="<?php echo get_permalink($eier_id); ?>" class="font-medium text-[#1A1A1A] hover:underline">
-                            <?php echo esc_html($eier->post_title); ?>
-                        </a>
-                    </p>
-                    <?php endif; ?>
-                    
-                    <!-- Action buttons -->
-                    <div class="flex flex-wrap gap-3">
-                        <?php if (!empty($lenke)): ?>
-                        <a href="<?php echo esc_url($lenke); ?>" 
-                           target="_blank" 
-                           rel="noopener"
-                           class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                            Besøk nettside
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ml-2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                        </a>
-                        <?php endif; ?>
-                        
-                        <?php if ($eier): ?>
-                        <a href="<?php echo get_permalink($eier_id); ?>" 
-                           class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-[#1A1A1A] bg-transparent border border-[#E5E0D8] hover:bg-[#F2F0EB] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                            Kontakt leverandør
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
+        <!-- Breadcrumb -->
+        <nav class="mb-6" aria-label="Brødsmulesti">
+            <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+                <li>
+                    <a href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>" class="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        Mine Verktøy
+                    </a>
+                </li>
+                <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </li>
+                <li class="text-[#1A1A1A] font-medium" aria-current="page"><?php the_title(); ?></li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-[#1A1A1A] mb-1"><?php the_title(); ?></h1>
+                <?php if ($eier): ?>
+                <p class="text-[#5A5A5A]"><?php echo esc_html($eier->post_title); ?></p>
+                <?php endif; ?>
             </div>
-        </div>
-    </div>
-
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-6">
+            <?php if ($can_edit): ?>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <?php bimverdi_button([
+                    'text' => 'Rediger',
+                    'variant' => 'secondary',
+                    'icon' => 'square-pen',
+                    'href' => home_url('/min-side/rediger-verktoy/?id=' . get_the_ID())
+                ]); ?>
+                <?php bimverdi_button([
+                    'text' => 'Administrer tilgang',
+                    'variant' => 'secondary',
+                    'icon' => 'shield-check',
+                    'href' => '#'
+                ]); ?>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Two-Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            
+            <!-- Left Column: Main Content -->
+            <div class="lg:col-span-2 space-y-10">
                 
-                <!-- Description -->
-                <div class="bg-white rounded-lg border border-[#E5E0D8] p-6">
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        Om verktøyet
-                    </h2>
-                    <div class="prose prose-sm max-w-none text-[#5A5A5A]">
+                <!-- Oversikt Section -->
+                <section>
+                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4">Oversikt</h2>
+                    
+                    <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
                         <?php if (!empty($detaljert_beskrivelse)): ?>
                             <?php echo wpautop($detaljert_beskrivelse); ?>
+                        <?php elseif (has_excerpt()): ?>
+                            <p><?php echo get_the_excerpt(); ?></p>
                         <?php else: ?>
-                            <p><?php the_excerpt(); ?></p>
+                            <p class="italic">Ingen beskrivelse tilgjengelig.</p>
                         <?php endif; ?>
                     </div>
-                </div>
-
-                <!-- Bruksområder (Use Cases) -->
-                <?php if (!empty($anvendelser) && is_array($anvendelser)): ?>
-                <div class="bg-white rounded-lg border border-[#E5E0D8] p-6">
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        Bruksområder
-                    </h2>
-                    <div class="flex flex-wrap gap-2">
-                        <?php foreach ($anvendelser as $anvendelse): ?>
-                        <span class="inline-block text-sm font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded-lg">
-                            <?php echo esc_html(bimverdi_v2_readable_label($anvendelse)); ?>
+                    
+                    <!-- Tags -->
+                    <?php if (!empty($anvendelser) || $formaalstema || $bim_kompatibilitet || $type_teknologi): ?>
+                    <div class="flex flex-wrap gap-2 pt-4 border-t border-[#E5E0D8]">
+                        <?php if (!empty($anvendelser) && is_array($anvendelser)): ?>
+                            <?php foreach ($anvendelser as $anvendelse): ?>
+                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                                <?php echo esc_html(bimverdi_v3_readable_label($anvendelse)); ?>
+                            </span>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <?php if ($bim_kompatibilitet && $bim_kompatibilitet !== 'vet_ikke'): ?>
+                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                            <?php echo esc_html(bimverdi_v3_readable_label($bim_kompatibilitet)); ?>
                         </span>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <!-- Technical Details -->
-                <div class="bg-white rounded-lg border border-[#E5E0D8] p-6">
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        Tekniske detaljer
-                    </h2>
-                    
-                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <?php if ($bim_kompatibilitet): ?>
-                        <div class="flex items-start gap-3 p-3 bg-[#F7F5EF] rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A] flex-shrink-0 mt-0.5"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-                            <div>
-                                <dt class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide">BIM-kompatibilitet</dt>
-                                <dd class="text-sm font-medium text-[#1A1A1A] mt-0.5"><?php echo esc_html(bimverdi_v2_readable_label($bim_kompatibilitet)); ?></dd>
-                            </div>
-                        </div>
                         <?php endif; ?>
-                        
-                        <?php if ($type_teknologi): ?>
-                        <div class="flex items-start gap-3 p-3 bg-[#F7F5EF] rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A] flex-shrink-0 mt-0.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-                            <div>
-                                <dt class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide">Teknologi</dt>
-                                <dd class="text-sm font-medium text-[#1A1A1A] mt-0.5"><?php echo esc_html(bimverdi_v2_readable_label($type_teknologi)); ?></dd>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <?php if ($type_ressurs): ?>
-                        <div class="flex items-start gap-3 p-3 bg-[#F7F5EF] rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A] flex-shrink-0 mt-0.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                            <div>
-                                <dt class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide">Ressurstype</dt>
-                                <dd class="text-sm font-medium text-[#1A1A1A] mt-0.5"><?php echo esc_html(bimverdi_v2_readable_label($type_ressurs)); ?></dd>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                        
                         <?php if ($formaalstema): ?>
-                        <div class="flex items-start gap-3 p-3 bg-[#F7F5EF] rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A] flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-                            <div>
-                                <dt class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide">Formålstema</dt>
-                                <dd class="text-sm font-medium text-[#1A1A1A] mt-0.5"><?php echo esc_html(bimverdi_v2_readable_label($formaalstema)); ?></dd>
-                            </div>
-                        </div>
+                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                            <?php echo esc_html(bimverdi_v3_readable_label($formaalstema)); ?>
+                        </span>
                         <?php endif; ?>
-                    </dl>
-                </div>
+                        <?php if ($type_teknologi && $type_teknologi !== 'Under_avklaring'): ?>
+                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                            <?php echo esc_html(bimverdi_v3_readable_label($type_teknologi)); ?>
+                        </span>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+                </section>
 
-            </div>
-
-            <!-- Sidebar -->
-            <div class="lg:col-span-1 space-y-6">
-                
-                <!-- Quick Info -->
-                <div class="bg-white rounded-lg border border-[#E5E0D8] p-6">
-                    <h3 class="text-sm font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        Rask info
-                    </h3>
+                <!-- Detaljer Section (Definition List) -->
+                <section class="border-t border-[#E5E0D8] pt-10">
+                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-6">Detaljer</h2>
                     
-                    <dl class="space-y-3">
-                        <div class="flex justify-between items-center py-2 border-b border-[#E5E0D8]">
-                            <dt class="text-sm text-[#5A5A5A]">Status</dt>
-                            <dd>
-                                <span class="inline-block text-xs font-medium bg-green-100 text-green-800 px-2 py-1 rounded">
-                                    Aktiv
+                    <dl class="space-y-0 divide-y divide-[#E5E0D8]">
+                        <!-- Type -->
+                        <?php if ($type_ressurs): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Type</dt>
+                            <dd class="text-sm">
+                                <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                                    <?php echo esc_html(bimverdi_v3_readable_label($type_ressurs)); ?>
                                 </span>
                             </dd>
                         </div>
+                        <?php endif; ?>
                         
-                        <?php if ($type_ressurs): ?>
-                        <div class="flex justify-between items-center py-2 border-b border-[#E5E0D8]">
-                            <dt class="text-sm text-[#5A5A5A]">Type</dt>
-                            <dd class="text-sm font-medium text-[#1A1A1A]"><?php echo esc_html(bimverdi_v2_readable_label($type_ressurs)); ?></dd>
+                        <!-- Plattform -->
+                        <?php if (!empty($plattform)): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Plattform</dt>
+                            <dd class="text-sm text-[#1A1A1A]">
+                                <?php 
+                                if (is_array($plattform)) {
+                                    $platform_labels = array_map(function($p) {
+                                        return '<span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded mr-2 mb-2">' . esc_html($p) . '</span>';
+                                    }, $plattform);
+                                    echo implode('', $platform_labels);
+                                } else {
+                                    echo '<span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">' . esc_html($plattform) . '</span>';
+                                }
+                                ?>
+                            </dd>
                         </div>
                         <?php endif; ?>
                         
-                        <?php if ($bim_kompatibilitet): ?>
-                        <div class="flex justify-between items-center py-2 border-b border-[#E5E0D8]">
-                            <dt class="text-sm text-[#5A5A5A]">IFC-støtte</dt>
-                            <dd class="text-sm font-medium text-[#1A1A1A] text-right"><?php echo esc_html(bimverdi_v2_readable_label($bim_kompatibilitet)); ?></dd>
+                        <!-- Lisensmodell -->
+                        <?php if ($lisensmodell): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Lisensmodell</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html(bimverdi_v3_readable_label($lisensmodell)); ?></dd>
                         </div>
                         <?php endif; ?>
                         
-                        <?php if (!empty($pris)): ?>
-                        <div class="flex justify-between items-center py-2 border-b border-[#E5E0D8]">
-                            <dt class="text-sm text-[#5A5A5A]">Pris</dt>
-                            <dd class="text-sm font-medium text-[#1A1A1A]"><?php echo esc_html($pris); ?></dd>
+                        <!-- Versjon -->
+                        <?php if ($versjon): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Versjon</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($versjon); ?></dd>
                         </div>
                         <?php endif; ?>
                         
+                        <!-- Integrasjoner -->
+                        <?php if ($integrasjoner): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Integrasjoner</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($integrasjoner); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- Nettside -->
                         <?php if (!empty($lenke)): ?>
-                        <div class="py-2">
-                            <dt class="text-sm text-[#5A5A5A] mb-1">Nettside</dt>
-                            <dd>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Nettside</dt>
+                            <dd class="text-sm">
                                 <a href="<?php echo esc_url($lenke); ?>" 
                                    target="_blank" 
                                    rel="noopener"
-                                   class="text-sm text-[#1A1A1A] hover:underline break-all inline-flex items-center gap-1">
-                                    <?php echo esc_html(parse_url($lenke, PHP_URL_HOST)); ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                   class="text-[#1A1A1A] hover:underline inline-flex items-center gap-1">
+                                    <?php echo esc_html(parse_url($lenke, PHP_URL_HOST) ?: $lenke); ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 </a>
                             </dd>
                         </div>
                         <?php endif; ?>
                     </dl>
-                </div>
+                </section>
 
-                <!-- Leverandør Card -->
-                <?php if ($eier): ?>
-                <div class="bg-[#F7F5EF] rounded-lg border border-[#E5E0D8] p-6">
-                    <h3 class="text-sm font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
-                        Leverandør
-                    </h3>
+            </div>
+
+            <!-- Right Column: Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- STATUS Section -->
+                <section class="bg-[#F7F5EF] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-6">Status</h3>
                     
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center font-bold text-[#5A5A5A] text-lg">
-                            <?php echo esc_html(substr($eier->post_title, 0, 2)); ?>
+                    <dl class="space-y-6">
+                        <div class="flex justify-between items-center">
+                            <dt class="text-sm text-[#5A5A5A]">Status</dt>
+                            <dd>
+                                <span class="inline-block text-xs font-medium bg-[#DCFCE7] text-[#166534] px-2.5 py-1 rounded">
+                                    Aktiv
+                                </span>
+                            </dd>
                         </div>
+                        
                         <div>
-                            <p class="font-medium text-[#1A1A1A]"><?php echo esc_html($eier->post_title); ?></p>
-                            <p class="text-xs text-[#5A5A5A]">BIM Verdi-medlem</p>
+                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Sist oppdatert
+                            </dt>
+                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo esc_html($tool_updated); ?></dd>
                         </div>
-                    </div>
-                    
-                    <a href="<?php echo get_permalink($eier_id); ?>" 
-                       class="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        Kontakt leverandør
-                    </a>
-                </div>
-                <?php endif; ?>
+                        
+                        <?php if ($eier): ?>
+                        <div>
+                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                                Eier
+                            </dt>
+                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo esc_html($eier->post_title); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                    </dl>
+                </section>
 
-                <!-- Back button -->
-                <a href="<?php echo home_url('/verktoy/'); ?>" 
-                   class="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg text-[#1A1A1A] bg-transparent border border-[#E5E0D8] hover:bg-[#F2F0EB] transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                    Tilbake til katalog
-                </a>
+                <!-- SNARVEIER Section -->
+                <section class="bg-[#F7F5EF] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-4">Snarveier</h3>
+                    
+                    <nav class="space-y-0 divide-y divide-[#E5E0D8]">
+                        <?php if (!empty($lenke)): ?>
+                        <a href="<?php echo esc_url($lenke); ?>" 
+                           target="_blank"
+                           rel="noopener"
+                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
+                            Åpne dokumentasjon
+                        </a>
+                        <?php endif; ?>
+                        
+                        <a href="#" 
+                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
+                            Rapporter feil
+                        </a>
+                        
+                        <a href="#" 
+                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
+                            Se endringslogg
+                        </a>
+                    </nav>
+                </section>
 
             </div>
 
         </div>
+
     </div>
-</div>
+</main>
 
 <?php 
 endwhile; 

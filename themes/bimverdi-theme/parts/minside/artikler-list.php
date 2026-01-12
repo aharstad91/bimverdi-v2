@@ -29,7 +29,7 @@ $articles = get_posts([
     'title' => __('Mine artikler', 'bimverdi'),
     'description' => __('Skriv og del fagartikler med nettverket', 'bimverdi'),
     'actions' => [
-        ['text' => __('Skriv ny artikkel', 'bimverdi'), 'url' => '/min-side/skriv-artikkel/', 'variant' => 'primary'],
+        ['text' => __('Skriv ny artikkel', 'bimverdi'), 'url' => '/min-side/skriv-artikkel/', 'variant' => 'primary', 'icon' => 'plus'],
     ],
 ]); ?>
 
@@ -41,6 +41,7 @@ $articles = get_posts([
         'description' => __('Del din kunnskap og erfaring med BIM Verdi-nettverket. Skriv om prosjekter, tips, eller faglige innsikter.', 'bimverdi'),
         'cta_text' => __('Skriv din første artikkel', 'bimverdi'),
         'cta_url' => '/min-side/skriv-artikkel/',
+        'cta_icon' => 'pencil',
     ]); ?>
 
 <?php else: ?>

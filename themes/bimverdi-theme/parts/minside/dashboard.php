@@ -211,9 +211,12 @@ $articles_count = count($my_articles);
     <h2 class="text-lg font-semibold text-[#1A1A1A] mb-4"><?php _e('Mitt foretak', 'bimverdi'); ?></h2>
     <div class="bg-white rounded-lg border border-[#E5E0D8] p-6 text-center">
         <p class="text-[#5A5A5A] mb-4"><?php _e('Du er ikke koblet til et foretak ennå.', 'bimverdi'); ?></p>
-        <a href="<?php echo home_url('/min-side/registrer-foretak/'); ?>" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
-            <?php _e('Registrer foretak', 'bimverdi'); ?>
-        </a>
+        <?php bimverdi_button([
+            'text'    => __('Registrer foretak', 'bimverdi'),
+            'variant' => 'primary',
+            'href'    => home_url('/min-side/registrer-foretak/'),
+            'icon'    => 'plus',
+        ]); ?>
     </div>
 </div>
 <?php endif; ?>
