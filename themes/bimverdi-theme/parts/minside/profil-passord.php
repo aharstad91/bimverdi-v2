@@ -160,12 +160,15 @@ get_template_part('parts/components/page-header', null, [
             </div>
             
             <div class="pt-4">
-                <button type="submit" 
-                        name="bimverdi_change_password" 
-                        value="1"
-                        class="w-full px-6 py-3 bg-[#1A1A1A] text-white font-medium rounded-lg hover:bg-[#333] transition-colors">
-                    Oppdater passord
-                </button>
+                <?php bimverdi_button([
+                    'text'       => __('Oppdater passord', 'bimverdi'),
+                    'variant'    => 'primary',
+                    'type'       => 'submit',
+                    'full_width' => true,
+                    'size'       => 'large',
+                    'icon'       => 'check',
+                ]); ?>
+                <input type="hidden" name="bimverdi_change_password" value="1">
             </div>
         </form>
     </div>

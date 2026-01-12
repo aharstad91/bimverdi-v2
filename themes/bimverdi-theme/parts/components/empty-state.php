@@ -51,9 +51,11 @@ $icons = [
     
     <!-- CTA Button -->
     <?php if ($cta_text && $cta_url): ?>
-        <a href="<?php echo esc_url(home_url($cta_url)); ?>" 
-           class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
-            <?php echo esc_html($cta_text); ?>
-        </a>
+        <?php bimverdi_button([
+            'text'    => $cta_text,
+            'variant' => 'primary',
+            'href'    => home_url($cta_url),
+            'icon'    => $args['cta_icon'] ?? null,
+        ]); ?>
     <?php endif; ?>
 </div>

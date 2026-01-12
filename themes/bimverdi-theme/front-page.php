@@ -178,7 +178,7 @@ get_header();
             </div>
         </div>
     </section>
-    
+
     <!-- Theme Groups Section -->
     <section class="bg-white py-20 border-t border-gray-200">
         <div class="container mx-auto px-4 md:px-8">
@@ -235,7 +235,7 @@ get_header();
             </div>
         </div>
     </section>
-    
+
     <!-- Recent Events Section -->
     <section class="bg-gray-50 py-20 border-t border-gray-200">
         <div class="container mx-auto px-4 md:px-8">
@@ -299,7 +299,7 @@ get_header();
             </a>
         </div>
     </section>
-    
+
 </main>
 
 <?php get_footer();

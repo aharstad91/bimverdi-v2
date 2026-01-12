@@ -5,13 +5,9 @@
 # Unntatt themes og plugins
 !themes/
 !themes/**
-!plugins/
-!plugins/**
 
-# Ignorer standard plugins
-plugins/index.php
-plugins/hello.php
-plugins/akismet/
+# Ignorer alle plugins (bruker bim-verdi-core via composer)
+plugins/
 
 # Ignorer common files
 **/node_modules/

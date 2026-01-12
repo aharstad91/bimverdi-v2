@@ -41,102 +41,149 @@ if ($company_id) {
     'title' => __('Mine verktøy', 'bimverdi'),
     'description' => __('Oversikt over verktøy, lisenser og tilganger for ditt foretak.', 'bimverdi'),
     'actions' => [
-        ['text' => __('Nytt verktøy', 'bimverdi'), 'url' => '/min-side/registrer-verktoy/', 'variant' => 'primary'],
+        ['text' => __('Nytt verktøy', 'bimverdi'), 'url' => '/min-side/registrer-verktoy/', 'variant' => 'primary', 'icon' => 'plus'],
     ],
 ]); ?>
 
-<?php if (empty($user_tools)): ?>
-    <!-- Empty State -->
-    <?php get_template_part('parts/components/empty-state', null, [
-        'icon' => 'wrench',
-        'title' => __('Ingen verktøy registrert ennå', 'bimverdi'),
-        'description' => __('Del dine favorittverktøy med BIM Verdi-medlemmer! Registrer programvare, plugins, eller andre nyttige verktøy du bruker i ditt daglige arbeid.', 'bimverdi'),
-        'cta_text' => __('Registrer ditt første verktøy', 'bimverdi'),
-        'cta_url' => '/min-side/registrer-verktoy/',
-    ]); ?>
-
-<?php else: ?>
-    <!-- Tools Table -->
-    <div class="bg-white rounded-lg border border-[#E5E0D8] overflow-hidden">
-        <table class="w-full text-left text-sm">
-            <thead class="bg-[#F7F5EF]">
-                <tr>
-                    <th class="px-6 py-4 font-medium text-[#5A5A5A] text-sm"><?php _e('Verktøy', 'bimverdi'); ?></th>
-                    <th class="px-4 py-4 font-medium text-[#5A5A5A] text-sm hidden sm:table-cell"><?php _e('Type', 'bimverdi'); ?></th>
-                    <th class="px-4 py-4 font-medium text-[#5A5A5A] text-sm hidden md:table-cell"><?php _e('Plattform', 'bimverdi'); ?></th>
-                    <th class="px-4 py-4 font-medium text-[#5A5A5A] text-sm"><?php _e('Status', 'bimverdi'); ?></th>
-                    <th class="px-6 py-4 font-medium text-[#5A5A5A] text-sm text-right"><?php _e('Handlinger', 'bimverdi'); ?></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-[#E5E0D8]">
-                <?php foreach ($user_tools as $tool): 
-                    $logo = get_field('logo', $tool->ID);
-                    $tool_status = get_post_status($tool->ID);
-                    $status_class = $tool_status === 'publish' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
-                    $status_label = $tool_status === 'publish' ? __('Publisert', 'bimverdi') : ($tool_status === 'pending' ? __('Venter', 'bimverdi') : __('Kladd', 'bimverdi'));
-                ?>
-                <tr class="hover:bg-[#F7F5EF] transition-colors">
-                    <!-- Verktøy Name -->
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-[#F2F0EB] rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                <?php if ($logo): ?>
-                                    <img src="<?php echo esc_url($logo['sizes']['thumbnail']); ?>" alt="" class="w-full h-full object-cover" />
-                                <?php else: ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                                <?php endif; ?>
-                            </div>
-                            <div>
-                                <a href="<?php echo get_permalink($tool->ID); ?>" class="font-medium text-[#1A1A1A] hover:text-[#5A5A5A]">
-                                    <?php echo esc_html($tool->post_title); ?>
-                                </a>
-                                <p class="text-xs text-[#5A5A5A]"><?php echo esc_html(get_field('vendor', $tool->ID) ?: __('Leverandør ikke angitt', 'bimverdi')); ?></p>
-                            </div>
+<!-- Tools Table -->
+<div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+        <thead>
+            <tr class="border-b border-[#E5E0D8]">
+                <th class="py-3 pr-4 text-xs font-medium text-[#5A5A5A]"><?php _e('Verktøy', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A] hidden sm:table-cell"><?php _e('Type', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A] hidden md:table-cell"><?php _e('Plattform', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A]"><?php _e('Status', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A] hidden lg:table-cell"><?php _e('Sist oppdatert', 'bimverdi'); ?></th>
+                <th class="pl-4 py-3 text-xs font-medium text-[#5A5A5A] text-right"><?php _e('Handlinger', 'bimverdi'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($user_tools)): ?>
+            <!-- Empty row with message -->
+            <tr>
+                <td colspan="6" class="py-8 text-center text-[#5A5A5A]">
+                    <?php _e('Ingen verktøy registrert ennå.', 'bimverdi'); ?>
+                </td>
+            </tr>
+            <?php else: ?>
+            <?php foreach ($user_tools as $tool): 
+                $logo = get_field('logo', $tool->ID);
+                $tool_status = get_post_status($tool->ID);
+                $status_class = $tool_status === 'publish' ? 'bg-[#DCFCE7] text-[#166534]' : ($tool_status === 'pending' ? 'bg-[#FEF9C3] text-[#854D0E]' : 'bg-[#FEE2E2] text-[#991B1B]');
+                $status_label = $tool_status === 'publish' ? __('Aktiv', 'bimverdi') : ($tool_status === 'pending' ? __('Venter', 'bimverdi') : __('Kladd', 'bimverdi'));
+                $updated_date = get_the_modified_date('d.m.Y', $tool->ID);
+            ?>
+            <tr class="border-b border-[#E5E0D8] hover:bg-[#FAFAF8] transition-colors group">
+                <!-- Verktøy Name & Vendor -->
+                <td class="py-4 pr-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-[#F2F0EB] rounded flex items-center justify-center flex-shrink-0 overflow-hidden self-center">
+                            <?php if ($logo): ?>
+                                <img src="<?php echo esc_url(is_array($logo) ? ($logo['sizes']['thumbnail'] ?? $logo['url']) : $logo); ?>" alt="" class="w-full h-full object-cover" />
+                            <?php else: ?>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#9D8F7F]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            <?php endif; ?>
                         </div>
-                    </td>
+                        <div class="min-w-0 flex-1">
+                            <a href="<?php echo get_permalink($tool->ID); ?>" class="font-medium text-[#1A1A1A] hover:text-[#F97316] transition-colors block leading-tight">
+                                <?php echo esc_html($tool->post_title); ?>
+                            </a>
+                            <p class="text-xs text-[#5A5A5A] mt-0.5"><?php echo esc_html(get_field('vendor', $tool->ID) ?: ''); ?></p>
+                        </div>
+                    </div>
+                </td>
 
-                    <!-- Type -->
-                    <td class="px-4 py-4 hidden sm:table-cell">
-                        <?php $type = get_field('type_verktoey', $tool->ID); ?>
-                        <?php if ($type): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2 py-1 rounded">
-                                <?php echo esc_html($type); ?>
-                            </span>
-                        <?php endif; ?>
-                    </td>
-
-                    <!-- Plattform -->
-                    <td class="px-4 py-4 hidden md:table-cell text-sm text-[#5A5A5A]">
-                        <?php 
-                        $plattformer = get_field('plattform', $tool->ID);
-                        if ($plattformer && is_array($plattformer)) {
-                            echo esc_html(implode(', ', array_slice($plattformer, 0, 2)));
-                            if (count($plattformer) > 2) echo ' +' . (count($plattformer) - 2);
-                        }
-                        ?>
-                    </td>
-
-                    <!-- Status -->
-                    <td class="px-4 py-4">
-                        <span class="inline-block text-xs font-medium <?php echo $status_class; ?> px-2 py-1 rounded">
-                            <?php echo $status_label; ?>
+                <!-- Type -->
+                <td class="px-4 py-4 hidden sm:table-cell align-middle">
+                    <?php $type = get_field('type_verktoey', $tool->ID); ?>
+                    <?php if ($type): ?>
+                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2.5 py-1 rounded">
+                            <?php echo esc_html($type); ?>
                         </span>
-                    </td>
+                    <?php endif; ?>
+                </td>
 
-                    <!-- Actions -->
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                            <a href="<?php echo get_permalink($tool->ID); ?>" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="<?php _e('Se', 'bimverdi'); ?>">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </a>
-                            <a href="<?php echo home_url('/min-side/rediger-verktoy/?id=' . $tool->ID); ?>" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="<?php _e('Rediger', 'bimverdi'); ?>">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                <!-- Plattform -->
+                <td class="px-4 py-4 hidden md:table-cell align-middle text-sm text-[#5A5A5A]">
+                    <?php 
+                    $plattformer = get_field('plattform', $tool->ID);
+                    if ($plattformer && is_array($plattformer)) {
+                        echo esc_html(implode(', ', array_slice($plattformer, 0, 3)));
+                        if (count($plattformer) > 3) echo ' +' . (count($plattformer) - 3);
+                    }
+                    ?>
+                </td>
+
+                <!-- Status -->
+                <td class="px-4 py-4 align-middle">
+                    <span class="inline-block text-xs font-medium <?php echo $status_class; ?> px-2.5 py-1 rounded-full">
+                        <?php echo $status_label; ?>
+                    </span>
+                </td>
+
+                <!-- Sist oppdatert -->
+                <td class="px-4 py-4 hidden lg:table-cell align-middle text-sm text-[#5A5A5A]">
+                    <?php echo $updated_date; ?>
+                </td>
+
+                <!-- Actions -->
+                <td class="pl-4 py-4 text-right align-middle">
+                    <div class="flex items-center justify-end gap-1">
+                        <a href="<?php echo get_permalink($tool->ID); ?>" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="<?php esc_attr_e('Se', 'bimverdi'); ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </a>
+                        <a href="<?php echo home_url('/min-side/rediger-verktoy/?id=' . $tool->ID); ?>" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="<?php esc_attr_e('Rediger', 'bimverdi'); ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+    
+    <?php if (!empty($user_tools)): ?>
+    <!-- Tool count -->
+    <div class="flex justify-end py-3 text-xs text-[#5A5A5A]">
+        <?php printf(_n('Viser %d av %d verktøy', 'Viser %d av %d verktøy', count($user_tools), 'bimverdi'), count($user_tools), count($user_tools)); ?>
     </div>
+    <?php endif; ?>
+</div>
+
+<?php if (empty($user_tools)): ?>
+<!-- MAL / PLACEHOLDER Section (Per UI-CONTRACT) -->
+<div class="border-t border-[#E5E0D8] mt-16 pt-10">
+    <div class="text-center mb-8">
+        <span class="inline-block text-xs font-bold uppercase tracking-wider text-[#9D8F7F] bg-[#F7F5EF] px-3 py-1 rounded">
+            <?php _e('MAL / PLACEHOLDER', 'bimverdi'); ?>
+        </span>
+    </div>
+    
+    <div class="max-w-lg mx-auto text-center py-12 px-6 bg-[#FAFAF8] rounded-lg border border-dashed border-[#D6D1C6]">
+        <div class="w-16 h-16 bg-[#F2F0EB] rounded-lg flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[#9D8F7F]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <h3 class="text-lg font-semibold text-[#1A1A1A] mb-2"><?php _e('Ingen verktøy aktivert', 'bimverdi'); ?></h3>
+        <p class="text-sm text-[#5A5A5A] mb-6 leading-relaxed">
+            <?php _e('Du har foreløpig ikke tilgang til noen verktøy. Kom i gang ved å opprette et nytt prosjekt eller søk i katalogen.', 'bimverdi'); ?>
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <?php bimverdi_button([
+                'text'    => __('Utforsk verktøykatalogen', 'bimverdi'),
+                'variant' => 'primary',
+                'href'    => home_url('/verktoy/'),
+                'icon'    => 'search',
+            ]); ?>
+            <?php bimverdi_button([
+                'text'    => __('Les mer', 'bimverdi'),
+                'variant' => 'secondary',
+                'href'    => home_url('/min-side/registrer-verktoy/'),
+                'icon'    => 'arrow-right',
+                'icon_position' => 'right',
+            ]); ?>
+        </div>
+    </div>
+</div>
 <?php endif; ?>

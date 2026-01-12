@@ -80,9 +80,21 @@ function bimverdi_add_webawesome_loader() {
 add_action('wp_head', 'bimverdi_add_webawesome_loader', 5);
 
 /**
+ * Load Min Side Helpers
+ * Provides routing, auth, and navigation helpers for /min-side/*
+ */
+require_once get_template_directory() . '/inc/minside-helpers.php';
+
+/**
  * Load Design System
  */
 require_once get_template_directory() . '/inc/design-system.php';
+
+/**
+ * Load Button Component
+ * Provides bimverdi_button() and bimverdi_icon() functions
+ */
+require_once get_template_directory() . '/parts/components/button.php';
 
 /**
  * Load Card Components
@@ -121,30 +133,9 @@ function bimverdi_widgets_init() {
 add_action('widgets_init', 'bimverdi_widgets_init');
 
 /**
- * Redirect to Min Side after login
+ * NOTE: Login redirect and Min Side protection are now in inc/minside-helpers.php
+ * The functions bimverdi_login_redirect() and bimverdi_protect_minside() are defined there.
  */
-function bimverdi_login_redirect($redirect_to, $request, $user) {
-    // Check if user has company_owner or company_user role
-    if (isset($user->roles) && (in_array('company_owner', $user->roles) || in_array('company_user', $user->roles))) {
-        return home_url('/min-side/');
-    }
-    return $redirect_to;
-}
-add_filter('login_redirect', 'bimverdi_login_redirect', 10, 3);
-
-/**
- * Restrict Min Side access to logged-in members only
- */
-function bimverdi_protect_minside() {
-    // Check if we're on a Min Side page
-    if (is_page_template('template-minside-dashboard.php') || is_page('min-side')) {
-        if (!is_user_logged_in()) {
-            // Redirect to login with return URL
-            auth_redirect();
-        }
-    }
-}
-add_action('template_redirect', 'bimverdi_protect_minside');
 
 /**
  * Custom excerpt length
