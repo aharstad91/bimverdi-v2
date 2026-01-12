@@ -182,3 +182,103 @@ function bimverdi_flush_rewrites() {
     flush_rewrite_rules();
 }
 add_action('after_switch_theme', 'bimverdi_flush_rewrites');
+
+/**
+ * Add custom class to menu items
+ */
+function bimverdi_nav_menu_link_attributes($atts, $item, $args, $depth) {
+    if (isset($args->link_class)) {
+        $atts['class'] = $atts['class'] ?? '';
+        $atts['class'] .= ' ' . $args->link_class;
+    }
+    return $atts;
+}
+add_filter('nav_menu_link_attributes', 'bimverdi_nav_menu_link_attributes', 10, 4);
+
+/**
+ * Add custom classes to menu items for dropdown styling
+ */
+function bimverdi_nav_menu_css_class($classes, $item, $args, $depth) {
+    if ($depth === 0 && in_array('menu-item-has-children', $classes)) {
+        $classes[] = 'dropdown-parent';
+    }
+    return $classes;
+}
+add_filter('nav_menu_css_class', 'bimverdi_nav_menu_css_class', 10, 4);
+
+/**
+ * Enqueue dropdown menu styles
+ */
+function bimverdi_enqueue_menu_styles() {
+    ?>
+    <style>
+    /* Dropdown menu styling - Variant B */
+    .menu-item {
+        position: relative;
+    }
+    
+    .menu-item.dropdown-parent > a::after {
+        content: '';
+        display: inline-block;
+        width: 0;
+        height: 0;
+        margin-left: 6px;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid currentColor;
+        opacity: 0.5;
+        vertical-align: middle;
+    }
+    
+    .sub-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 240px;
+        margin-top: 0.5rem;
+        padding: 0.5rem 0;
+        background: white;
+        border: 1px solid #E5E0D5;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition: all 0.2s ease;
+        z-index: 100;
+    }
+    
+    .menu-item:hover > .sub-menu,
+    .menu-item:focus-within > .sub-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .sub-menu .menu-item {
+        display: block;
+    }
+    
+    .sub-menu a {
+        display: block;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        color: #5A5A5A !important;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+    
+    .sub-menu a:hover,
+    .sub-menu a:focus {
+        background-color: #F7F5EF;
+        color: #1A1A1A !important;
+    }
+    
+    /* Submenu item styling */
+    .sub-menu .menu-item {
+        padding: 0;
+    }
+    </style>
+    <?php
+}
+add_action('wp_head', 'bimverdi_enqueue_menu_styles');
