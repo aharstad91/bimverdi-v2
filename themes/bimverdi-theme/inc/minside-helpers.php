@@ -376,7 +376,12 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'verktoy'             => 'verktoy-list',
             'verktoy/registrer'   => 'verktoy-registrer',
             'verktoy/rediger'     => 'verktoy-rediger',
-            
+
+            // Knowledge Sources (Kunnskapskilder)
+            'kunnskapskilder'           => 'kunnskapskilder-list',
+            'kunnskapskilder/registrer' => 'kunnskapskilder-registrer',
+            'kunnskapskilder/rediger'   => 'kunnskapskilder-rediger',
+
             // Articles
             'artikler'            => 'artikler-list',
             'artikler/skriv'      => 'artikler-skriv',
@@ -466,6 +471,12 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'icon' => 'wrench',
                 'badge' => $tool_count > 0 ? $tool_count : null,
                 'routes' => ['verktoy', 'verktoy/registrer', 'verktoy/rediger'],
+            ],
+            'kunnskapskilder' => [
+                'label' => 'Kunnskapskilder',
+                'url' => bimverdi_minside_url('kunnskapskilder'),
+                'icon' => 'book-open',
+                'routes' => ['kunnskapskilder', 'kunnskapskilder/registrer', 'kunnskapskilder/rediger'],
             ],
             'artikler' => [
                 'label' => 'Artikler',

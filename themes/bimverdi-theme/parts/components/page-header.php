@@ -35,11 +35,16 @@ $actions = $args['actions'] ?? [];
         <div class="flex gap-3 flex-shrink-0">
             <?php foreach ($actions as $action): 
                 $variant = $action['variant'] ?? 'primary';
+                // Support both full URLs (from bimverdi_minside_url) and relative paths
+                $url = $action['url'];
+                if (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://') && !str_starts_with($url, '#')) {
+                    $url = home_url($url);
+                }
                 bimverdi_button([
                     'text'    => $action['text'],
                     'variant' => $variant,
                     'icon'    => $action['icon'] ?? null,
-                    'href'    => home_url($action['url']),
+                    'href'    => $url,
                     'size'    => $action['size'] ?? 'medium',
                     'target'  => $action['target'] ?? '',
                 ]);
