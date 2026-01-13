@@ -1,0 +1,125 @@
+{
+    "key": "group_case_info",
+    "title": "Prosjektidé Info",
+    "fields": [
+        {
+            "key": "field_case_kort_beskrivelse",
+            "label": "Kort beskrivelse",
+            "name": "kort_beskrivelse",
+            "type": "textarea",
+            "instructions": "Oppsummer prosjektidéen i 1-2 setninger (maks 200 tegn)",
+            "required": 1,
+            "rows": 3,
+            "maxlength": 200,
+            "placeholder": "Vi ønsker å utvikle..."
+        },
+        {
+            "key": "field_case_detaljert_beskrivelse",
+            "label": "Detaljert beskrivelse",
+            "name": "detaljert_beskrivelse",
+            "type": "wysiwyg",
+            "instructions": "Beskriv prosjektet i detalj: formål, mål, metode, forventet resultat",
+            "required": 1,
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 1
+        },
+        {
+            "key": "field_innsendt_av",
+            "label": "Innsendt av",
+            "name": "innsendt_av",
+            "type": "user",
+            "instructions": "Hvem sendte inn denne idéen?",
+            "required": 1,
+            "return_format": "id",
+            "multiple": 0
+        },
+        {
+            "key": "field_case_bedrift",
+            "label": "Bedrift",
+            "name": "bedrift",
+            "type": "post_object",
+            "instructions": "Hvilken bedrift står bak?",
+            "required": 1,
+            "post_type": [
+                "foretak"
+            ],
+            "return_format": "id",
+            "multiple": 0
+        },
+        {
+            "key": "field_case_status",
+            "label": "Status",
+            "name": "case_status",
+            "type": "select",
+            "instructions": "Gjeldende status på prosjektidéen",
+            "required": 1,
+            "choices": {
+                "apen": "Åpen",
+                "under_vurdering": "Under vurdering",
+                "godkjent": "Godkjent",
+                "avslag": "Avslag",
+                "arkivert": "Arkivert"
+            },
+            "default_value": "apen",
+            "return_format": "value"
+        },
+        {
+            "key": "field_tilbakemelding",
+            "label": "Tilbakemelding fra BIM Verdi",
+            "name": "tilbakemelding",
+            "type": "wysiwyg",
+            "instructions": "Vurdering og tilbakemelding fra BIM Verdi team",
+            "required": 0,
+            "tabs": "all",
+            "toolbar": "basic",
+            "media_upload": 0
+        },
+        {
+            "key": "field_dato_sendt",
+            "label": "Dato sendt inn",
+            "name": "dato_sendt",
+            "type": "date_picker",
+            "instructions": "Når ble idéen sendt inn?",
+            "required": 1,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "first_day": 1
+        },
+        {
+            "key": "field_estimert_budsjett",
+            "label": "Estimert budsjett",
+            "name": "estimert_budsjett",
+            "type": "number",
+            "instructions": "Anslått kostnad i NOK (hvis kjent)",
+            "required": 0,
+            "min": 0,
+            "placeholder": "50000"
+        },
+        {
+            "key": "field_potensielle_partnere",
+            "label": "Potensielle partnere",
+            "name": "potensielle_partnere",
+            "type": "textarea",
+            "instructions": "Hvilke andre bedrifter kan være interessert?",
+            "required": 0,
+            "rows": 3
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "case"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true,
+    "description": "Informasjon om prosjektidéer sendt inn av medlemmer"
+}

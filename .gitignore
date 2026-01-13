@@ -6,8 +6,9 @@
 !themes/
 !themes/**
 
-# Ignorer alle plugins (bruker bim-verdi-core via composer)
-plugins/
+# Ignorer alle plugins unntatt egenutviklede
+plugins/*
+!plugins/bim-verdi-core/
 
 # Ignorer common files
 **/node_modules/

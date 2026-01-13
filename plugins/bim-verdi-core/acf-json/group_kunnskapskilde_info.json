@@ -1,0 +1,161 @@
+{
+    "key": "group_kunnskapskilde_info",
+    "title": "Kunnskapskilde Info",
+    "fields": [
+        {
+            "key": "field_kunnskapskilde_navn",
+            "label": "Navn",
+            "name": "kunnskapskilde_navn",
+            "type": "text",
+            "instructions": "Navnet på kunnskapskilden (standard, veileder, rapport, etc.)",
+            "required": 1,
+            "placeholder": "NS-EN ISO 19650-1:2018"
+        },
+        {
+            "key": "field_kunnskapskilde_kort_beskrivelse",
+            "label": "Kort beskrivelse",
+            "name": "kort_beskrivelse",
+            "type": "textarea",
+            "instructions": "En kort beskrivelse av hva kunnskapskilden omhandler (maks 300 tegn)",
+            "required": 1,
+            "rows": 3,
+            "maxlength": 300,
+            "placeholder": "Beskrivelse av innhold og formål..."
+        },
+        {
+            "key": "field_kunnskapskilde_detaljert_beskrivelse",
+            "label": "Detaljert beskrivelse",
+            "name": "detaljert_beskrivelse",
+            "type": "wysiwyg",
+            "instructions": "Fullstendig beskrivelse av kunnskapskilden",
+            "required": 0,
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 1
+        },
+        {
+            "key": "field_kunnskapskilde_ekstern_lenke",
+            "label": "Ekstern lenke",
+            "name": "ekstern_lenke",
+            "type": "url",
+            "instructions": "Direkte lenke til kunnskapskilden (unik - kan ikke dupliseres i systemet)",
+            "required": 1,
+            "placeholder": "https://www.standard.no/..."
+        },
+        {
+            "key": "field_kunnskapskilde_sharepoint_lenke",
+            "label": "Sharepoint-lenke",
+            "name": "sharepoint_lenke",
+            "type": "url",
+            "instructions": "Intern Sharepoint-lenke (kun for medlemmer)",
+            "required": 0,
+            "placeholder": "https://bimverdi.sharepoint.com/..."
+        },
+        {
+            "key": "field_kunnskapskilde_utgiver",
+            "label": "Utgiver",
+            "name": "utgiver",
+            "type": "text",
+            "instructions": "Hvem har utgitt kilden? (f.eks. Standard Norge, buildingSMART, Direktoratet for byggkvalitet)",
+            "required": 1,
+            "placeholder": "Standard Norge"
+        },
+        {
+            "key": "field_kunnskapskilde_spraak",
+            "label": "Språk",
+            "name": "spraak",
+            "type": "select",
+            "instructions": "Hvilket språk er kilden skrevet på?",
+            "required": 1,
+            "choices": {
+                "norsk": "Norsk",
+                "engelsk": "Engelsk",
+                "svensk": "Svensk",
+                "dansk": "Dansk",
+                "flerspraklig": "Flerspråklig"
+            },
+            "default_value": "norsk",
+            "return_format": "value"
+        },
+        {
+            "key": "field_kunnskapskilde_versjon",
+            "label": "Versjon",
+            "name": "versjon",
+            "type": "text",
+            "instructions": "Versjonsnummer eller utgave",
+            "required": 0,
+            "placeholder": "1.0 / 2023-utgave"
+        },
+        {
+            "key": "field_kunnskapskilde_aar",
+            "label": "År",
+            "name": "utgivelsesaar",
+            "type": "number",
+            "instructions": "Utgivelsesår",
+            "required": 0,
+            "min": 1900,
+            "max": 2100,
+            "placeholder": "2023"
+        },
+        {
+            "key": "field_kunnskapskilde_kildetype",
+            "label": "Kildetype",
+            "name": "kildetype",
+            "type": "select",
+            "instructions": "Hva slags type kilde er dette?",
+            "required": 1,
+            "choices": {
+                "standard": "Standard (ISO, NS, etc.)",
+                "veileder": "Veileder/Retningslinje",
+                "mal": "Mal/Template",
+                "forskningsrapport": "Forskningsrapport",
+                "casestudie": "Casestudie",
+                "opplaering": "Opplæringsmateriell",
+                "dokumentasjon": "Verktøydokumentasjon",
+                "nettressurs": "Nettressurs/Database",
+                "annet": "Annet"
+            },
+            "default_value": "standard",
+            "return_format": "value"
+        },
+        {
+            "key": "field_kunnskapskilde_registrert_av",
+            "label": "Registrert av",
+            "name": "registrert_av",
+            "type": "user",
+            "instructions": "Hvem registrerte denne kunnskapskilden",
+            "required": 0,
+            "role": "",
+            "return_format": "id"
+        },
+        {
+            "key": "field_kunnskapskilde_tilknyttet_bedrift",
+            "label": "Tilknyttet medlemsbedrift",
+            "name": "tilknyttet_bedrift",
+            "type": "post_object",
+            "instructions": "Medlemsbedriften som registrerte kilden",
+            "required": 0,
+            "post_type": [
+                "foretak"
+            ],
+            "return_format": "id",
+            "multiple": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "kunnskapskilde"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true,
+    "description": "Informasjon om kunnskapskilder (standarder, veiledere, etc.)"
+}

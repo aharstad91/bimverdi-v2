@@ -1,0 +1,159 @@
+{
+    "key": "group_medlemsbedrift_info",
+    "title": "Medlemsbedrift Info",
+    "fields": [
+        {
+            "key": "field_organisasjonsnummer",
+            "label": "Organisasjonsnummer",
+            "name": "organisasjonsnummer",
+            "type": "text",
+            "instructions": "9 siffer (f.eks. 123456789)",
+            "required": 1,
+            "maxlength": 9,
+            "placeholder": "123456789"
+        },
+        {
+            "key": "field_bedriftsnavn",
+            "label": "Bedriftsnavn",
+            "name": "bedriftsnavn",
+            "type": "text",
+            "instructions": "Offisielt bedriftsnavn",
+            "required": 1,
+            "placeholder": "Bedrift AS"
+        },
+        {
+            "key": "field_bedriftsbeskrivelse",
+            "label": "Bedriftsbeskrivelse",
+            "name": "bedriftsbeskrivelse",
+            "type": "textarea",
+            "instructions": "Kort beskrivelse av bedriften og hva dere gjør",
+            "required": 0,
+            "rows": 5,
+            "placeholder": "Vi er en ledende leverandør av..."
+        },
+        {
+            "key": "field_logo",
+            "label": "Logo",
+            "name": "logo",
+            "type": "image",
+            "instructions": "Last opp bedriftens logo (maks 2MB, PNG eller JPG)",
+            "required": 0,
+            "return_format": "array",
+            "preview_size": "medium",
+            "library": "all",
+            "max_size": 2,
+            "mime_types": "jpg,jpeg,png,svg"
+        },
+        {
+            "key": "field_adresse",
+            "label": "Adresse",
+            "name": "adresse",
+            "type": "text",
+            "instructions": "Gateadresse",
+            "required": 0,
+            "placeholder": "Eksempelveien 1"
+        },
+        {
+            "key": "field_postnummer",
+            "label": "Postnummer",
+            "name": "postnummer",
+            "type": "text",
+            "instructions": "4 siffer",
+            "required": 0,
+            "maxlength": 4,
+            "placeholder": "0123"
+        },
+        {
+            "key": "field_poststed",
+            "label": "Poststed",
+            "name": "poststed",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "placeholder": "Oslo"
+        },
+        {
+            "key": "field_kontakt_epost",
+            "label": "Kontakt e-post",
+            "name": "kontakt_epost",
+            "type": "email",
+            "instructions": "Hovedkontakt for bedriften",
+            "required": 1,
+            "placeholder": "post@bedrift.no"
+        },
+        {
+            "key": "field_telefon",
+            "label": "Telefon",
+            "name": "telefon",
+            "type": "text",
+            "instructions": "8 siffer (uten +47)",
+            "required": 0,
+            "placeholder": "12345678"
+        },
+        {
+            "key": "field_webside",
+            "label": "Nettside",
+            "name": "webside",
+            "type": "url",
+            "instructions": "Bedriftens hjemmeside",
+            "required": 0,
+            "placeholder": "https://www.bedrift.no"
+        },
+        {
+            "key": "field_hovedkontaktperson",
+            "label": "Hovedkontaktperson",
+            "name": "hovedkontaktperson",
+            "type": "user",
+            "instructions": "Velg bruker som er hovedkontakt for bedriften",
+            "required": 0,
+            "role": [
+                "company_owner",
+                "company_user"
+            ],
+            "return_format": "id",
+            "multiple": 0
+        },
+        {
+            "key": "field_medlemsstatus",
+            "label": "Medlemsstatus",
+            "name": "medlemsstatus",
+            "type": "radio",
+            "instructions": "Type medlemskap",
+            "required": 1,
+            "choices": {
+                "deltaker": "Deltaker",
+                "partner": "Partner"
+            },
+            "default_value": "deltaker",
+            "layout": "horizontal",
+            "return_format": "value"
+        },
+        {
+            "key": "field_medlemskap_start",
+            "label": "Medlemskap startet",
+            "name": "medlemskap_start",
+            "type": "date_picker",
+            "instructions": "Når ble bedriften medlem?",
+            "required": 0,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "first_day": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "medlemsbedrift"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true,
+    "description": "Grunnleggende informasjon om medlemsbedriften"
+}
