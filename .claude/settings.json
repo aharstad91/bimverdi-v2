@@ -20,6 +20,15 @@
             "command": "/Applications/MAMP/htdocs/bimverdi-v2/wp-content/.claude/hooks/design-mode.sh"
           }
         ]
+      },
+      {
+        "matcher": "@minside",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Applications/MAMP/htdocs/bimverdi-v2/wp-content/.claude/hooks/minside-mode.sh"
+          }
+        ]
       }
     ]
   }
