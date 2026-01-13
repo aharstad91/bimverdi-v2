@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Applications/MAMP/htdocs/bimverdi-v2/wp-content/.claude/hooks/session-init.sh"
+          }
+        ]
+      }
+    ],
+    "UserInputSubmit": [
+      {
+        "matcher": "@design",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Applications/MAMP/htdocs/bimverdi-v2/wp-content/.claude/hooks/design-mode.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
