@@ -18,3 +18,9 @@ plugins/*
 
 # Shared context - not deployed to production
 shared-context/
+
+# Claude Code skills (versjonskontrollert)
+!.claude/
+!.claude/skills/
+!.claude/skills/**
+.claude/local-dev.json
