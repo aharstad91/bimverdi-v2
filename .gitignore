@@ -2,9 +2,13 @@
 *
 !.gitignore
 
-# Unntatt themes og plugins
+# Unntatt themes, mu-plugins og plugins
 !themes/
 !themes/**
+
+# Must-use plugins (egenutviklede)
+!mu-plugins/
+!mu-plugins/**
 
 # Ignorer alle plugins unntatt egenutviklede
 plugins/*
