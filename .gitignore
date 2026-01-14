@@ -14,7 +14,11 @@ plugins/*
 **/node_modules/
 **/vendor/
 **/.DS_Store
-**/dist/
+
+# Ignorer dist UNNTATT theme dist (kompilert CSS)
+plugins/**/dist/
+!themes/bimverdi-theme/dist/
+!themes/bimverdi-theme/dist/**
 
 # Shared context - not deployed to production
 shared-context/
