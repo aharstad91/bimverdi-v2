@@ -48,27 +48,22 @@ Claude Chat oppdaterer også session-log.md. **Les alltid filen** for å se om C
 
 ## Deployment Workflow (GitHub → Servebolt)
 
-### VIKTIG: Tailwind CSS må bygges før push!
+### ⚠️ OBLIGATORISK: Tailwind CSS SKAL bygges før HVER commit!
 
-Tailwind genererer kun CSS for klasser som faktisk brukes i koden. Hvis du legger til nye Tailwind-klasser (spesielt arbitrary values som `bg-[#1A1A1A]`), **må du bygge CSS før push**:
+> **CLAUDE: Kjør ALLTID `npm run build` før git commit når du har endret template-filer (.php)!**
+> Dette er IKKE valgfritt. Nye Tailwind-klasser havner ikke i prod uten dette steget.
 
 ```bash
-# 1. Bygg Tailwind CSS
+# ALLTID denne rekkefølgen ved commit:
 cd /Applications/MAMP/htdocs/bimverdi-v2/wp-content/themes/bimverdi-theme
 npm run build
-
-# 2. Sjekk at nye klasser er med (eksempel)
-grep "1A1A1A" dist/style.css
-
-# 3. Stage, commit og push
 cd /Applications/MAMP/htdocs/bimverdi-v2/wp-content
 git add .
-git commit -m "feat: Description of changes"
+git commit -m "feat: Description"
 git push origin main
-
-# 4. Deploy på Servebolt
-# Gå til Servebolt → Git → Deploy Now
 ```
+
+Tailwind genererer kun CSS for klasser som faktisk brukes i koden. Arbitrary values som `bg-[#1A1A1A]` krever kompilering.
 
 ### Hva blir deployet?
 
