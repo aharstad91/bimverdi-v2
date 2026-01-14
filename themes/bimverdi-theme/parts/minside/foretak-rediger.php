@@ -83,7 +83,7 @@ get_template_part('parts/components/page-header', null, [
 ]);
 ?>
 
-<!-- Form Container (960px centered per UI-CONTRACT.md) -->
+<!-- Form Container (960px centered per _claude/ui-contract.md) -->
 <div class="max-w-3xl mx-auto">
     
     <!-- Company Info Badge -->

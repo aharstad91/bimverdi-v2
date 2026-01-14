@@ -113,7 +113,7 @@ $temagrupper = get_terms(array(
     <?php if ($articles->have_posts()) : ?>
         
         <!-- Articles grid -->
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" style="grid-auto-rows: 1fr;">
             <?php while ($articles->have_posts()) : $articles->the_post();
                 $kategori = get_field('artikkel_kategori');
                 $ingress = get_field('artikkel_ingress');
@@ -123,9 +123,27 @@ $temagrupper = get_terms(array(
                 $category_info = isset($category_labels[$kategori]) ? $category_labels[$kategori] : null;
             ?>
             
-            <wa-card class="flex flex-col">
+            <wa-card class="flex flex-col h-full">
+                <?php
+                // Featured image or fallback
+                $has_thumbnail = has_post_thumbnail();
+                $thumbnail_url = $has_thumbnail ? get_the_post_thumbnail_url(get_the_ID(), 'medium_large') : '';
+                ?>
+                <div class="aspect-[16/9] bg-[#EFE9DE] overflow-hidden">
+                    <?php if ($has_thumbnail) : ?>
+                        <img src="<?php echo esc_url($thumbnail_url); ?>"
+                             alt="<?php the_title_attribute(); ?>"
+                             class="w-full h-full object-cover">
+                    <?php else : ?>
+                        <div class="w-full h-full flex items-center justify-center">
+                            <svg class="w-12 h-12 text-[#D6D1C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                            </svg>
+                        </div>
+                    <?php endif; ?>
+                </div>
                 <div class="p-5 flex flex-col flex-1">
-                    
+
                     <!-- Category & Date -->
                     <div class="flex items-center justify-between mb-3">
                         <?php if ($category_info) : ?>
@@ -140,18 +158,24 @@ $temagrupper = get_terms(array(
                     </div>
                     
                     <!-- Title -->
-                    <h2 class="text-lg font-semibold text-gray-900 mb-2">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                         <a href="<?php the_permalink(); ?>" class="hover:text-orange-600">
                             <?php the_title(); ?>
                         </a>
                     </h2>
-                    
-                    <!-- Ingress -->
-                    <?php if ($ingress) : ?>
-                        <p class="text-gray-600 text-sm mb-4 flex-1">
-                            <?php echo wp_trim_words(esc_html($ingress), 20); ?>
-                        </p>
-                    <?php endif; ?>
+
+                    <!-- Ingress / Excerpt -->
+                    <p class="text-gray-600 text-sm mb-4 flex-1 line-clamp-3">
+                        <?php
+                        if ($ingress) {
+                            echo wp_trim_words(esc_html($ingress), 25);
+                        } elseif (has_excerpt()) {
+                            echo wp_trim_words(get_the_excerpt(), 25);
+                        } else {
+                            echo wp_trim_words(get_the_content(), 25);
+                        }
+                        ?>
+                    </p>
                     
                     <!-- Author & Company -->
                     <div class="mt-auto pt-4 border-t border-gray-100">

@@ -1,10 +1,10 @@
 <?php
 /**
  * Single Arrangement Template
- * 
- * Displays detailed information about a single event with registration functionality
- * Uses Web Awesome components for modern UI
- * 
+ *
+ * Displays detailed information about a single event
+ * Design follows ui-contract.md - Variant B (dividers/whitespace)
+ *
  * @package BimVerdi_Theme
  */
 
@@ -14,414 +14,447 @@ if (have_posts()) : while (have_posts()) : the_post();
 
 $arrangement_id = get_the_ID();
 
-// Get ACF fields
+// Get ACF fields - Basic info
+$arrangement_status_toggle = get_field('arrangement_status_toggle') ?: 'kommende';
+$arrangement_type = get_field('arrangement_type') ?: 'digitalt';
 $dato = get_field('arrangement_dato');
+$slutt_dato = get_field('slutt_dato');
 $tid_start = get_field('tidspunkt_start');
 $tid_slutt = get_field('tidspunkt_slutt');
-$pamelding_frist = get_field('pamelding_frist');
-$format = get_field('arrangement_format');
-$fysisk_adresse = get_field('fysisk_adresse');
-$motelenke = get_field('motelenke');
-$beskrivelse = get_field('arrangement_beskrivelse');
+$pameldingsfrist = get_field('pameldingsfrist');
+$status = get_field('arrangement_status') ?: 'planlagt';
+
+// Location fields
+$sted_adresse = get_field('sted_adresse');
+$sted_by = get_field('sted_by');
+$online_lenke = get_field('online_lenke');
+
+// Registration
+$pamelding_url = get_field('pamelding_url');
 $maks_deltakere = get_field('maks_deltakere');
-$status = get_field('arrangement_status');
+
+// Metadata
+$formal_tema = get_field('formal_tema');
+$malsetting = get_field('malsetting');
+$passer_for = get_field('passer_for');
+$arrangor = get_field('arrangor');
+$adgang = get_field('adgang');
 $prosjektleder_id = get_field('prosjektleder');
+
+// Post-event resources
+$opptak_url = get_field('opptak_url');
+$dokumentasjon_url = get_field('dokumentasjon_url');
 
 // Get featured image
 $featured_image = get_the_post_thumbnail_url($arrangement_id, 'large');
 
 // Get taxonomies
-$arrangementstyper = wp_get_post_terms($arrangement_id, 'arrangementstype', array('fields' => 'all'));
 $temagrupper = wp_get_post_terms($arrangement_id, 'temagruppe', array('fields' => 'all'));
+$arrangementstyper = wp_get_post_terms($arrangement_id, 'arrangementstype', array('fields' => 'all'));
 
-// Count registrations
-$registrations = get_posts(array(
-    'post_type' => 'pamelding',
-    'posts_per_page' => -1,
-    'meta_query' => array(
-        array(
-            'key' => 'pamelding_arrangement',
-            'value' => $arrangement_id,
-        ),
-        array(
-            'key' => 'pamelding_status',
-            'value' => 'aktiv',
-        ),
-    ),
-));
-$antall_pameldte = count($registrations);
-
-// Check capacity
-$har_ledig_plass = true;
-$plasser_igjen = null;
-if ($maks_deltakere) {
-    $plasser_igjen = $maks_deltakere - $antall_pameldte;
-    $har_ledig_plass = $plasser_igjen > 0;
-}
-
-// Check if user is registered
-$bruker_er_pameldt = false;
-$bruker_pamelding_id = null;
-if (is_user_logged_in()) {
-    $current_user_id = get_current_user_id();
-    foreach ($registrations as $reg) {
-        if (get_field('pamelding_bruker', $reg->ID) == $current_user_id) {
-            $bruker_er_pameldt = true;
-            $bruker_pamelding_id = $reg->ID;
-            break;
-        }
-    }
-}
+// Check if event is past
+$is_past = ($arrangement_status_toggle === 'tidligere');
 
 // Check registration deadline
-$frist_dato = $pamelding_frist ?: $dato;
-$frist_passert = strtotime($frist_dato) < strtotime('today');
-
-// Check if event is in the past
-$arrangement_passert = strtotime($dato) < strtotime('today');
-
-// Format helpers
-function bimverdi_format_icon($format) {
-    $icons = [
-        'fysisk' => 'location-dot',
-        'digitalt' => 'video',
-        'hybrid' => 'laptop-house',
-    ];
-    return $icons[$format] ?? 'calendar';
+$frist_passert = false;
+if ($pameldingsfrist) {
+    $frist_passert = strtotime($pameldingsfrist) < time();
+} elseif ($dato) {
+    $frist_passert = strtotime($dato) < strtotime('today');
 }
 
-function bimverdi_format_label($format) {
-    $labels = [
+// Helper functions
+function bimverdi_arr_get_type_icon($type) {
+    $icons = array(
+        'fysisk' => '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+        'digitalt' => '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
+        'hybrid' => '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>',
+    );
+    return $icons[$type] ?? $icons['digitalt'];
+}
+
+function bimverdi_arr_get_type_label($type) {
+    $labels = array(
         'fysisk' => 'Fysisk arrangement',
         'digitalt' => 'Digitalt arrangement',
         'hybrid' => 'Hybrid (fysisk + digitalt)',
-    ];
-    return $labels[$format] ?? $format;
+    );
+    return $labels[$type] ?? 'Digitalt';
 }
 
-function bimverdi_status_variant($status) {
-    $variants = [
-        'planlagt' => 'success',
-        'avholdt' => 'neutral',
-        'avlyst' => 'danger',
-    ];
-    return $variants[$status] ?? 'neutral';
+function bimverdi_arr_get_adgang_label($adgang) {
+    $labels = array(
+        'alle' => 'Åpent for alle',
+        'medlemmer' => 'Kun medlemmer',
+        'deltakere' => 'Kun deltakere/partnere',
+        'invitert' => 'Kun inviterte',
+    );
+    return $labels[$adgang] ?? '';
 }
 
-function bimverdi_status_label($status) {
-    $labels = [
-        'planlagt' => 'Planlagt',
-        'avholdt' => 'Avholdt',
-        'avlyst' => 'Avlyst',
-    ];
-    return $labels[$status] ?? $status;
+// Format date display
+$date_display = date_i18n('j. F Y', strtotime($dato));
+if ($slutt_dato && $slutt_dato !== $dato) {
+    $date_display = date_i18n('j.', strtotime($dato)) . ' – ' . date_i18n('j. F Y', strtotime($slutt_dato));
 }
 
-// Check avmeldingsfrist (48 timer før)
-$kan_avmelde = true;
-$avmeldingsfrist_formatert = '';
-if ($bruker_er_pameldt) {
-    $arrangement_datetime = strtotime($dato . ' ' . $tid_start);
-    $avmeldingsfrist = $arrangement_datetime - (48 * 60 * 60);
-    $kan_avmelde = time() < $avmeldingsfrist;
-    $avmeldingsfrist_formatert = date_i18n('H:i j. F', $avmeldingsfrist);
+// Format time display
+$time_display = $tid_start;
+if ($tid_slutt) {
+    $time_display .= ' – ' . $tid_slutt;
 }
 
+// Generate Google Maps embed URL
+$maps_embed_url = '';
+if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'hybrid')) {
+    $maps_embed_url = 'https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=' . urlencode($sted_adresse . ', ' . $sted_by);
+}
 ?>
 
-<div class="min-h-screen bg-gradient-to-b from-bim-beige-50 to-white py-8">
-    <div class="container mx-auto px-4 max-w-5xl">
-        
+<div class="min-h-screen bg-[#FAFAF8]">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
         <!-- Breadcrumb -->
-        <nav class="mb-6">
-            <wa-breadcrumb>
-                <wa-breadcrumb-item href="<?php echo home_url(); ?>">Hjem</wa-breadcrumb-item>
-                <wa-breadcrumb-item href="<?php echo home_url('/arrangementer/'); ?>">Arrangementer</wa-breadcrumb-item>
-                <wa-breadcrumb-item><?php echo esc_html(get_the_title()); ?></wa-breadcrumb-item>
-            </wa-breadcrumb>
+        <nav class="mb-8">
+            <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+                <li><a href="<?php echo home_url(); ?>" class="hover:text-[#1A1A1A]">Hjem</a></li>
+                <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </li>
+                <li><a href="<?php echo home_url('/arrangement/'); ?>" class="hover:text-[#1A1A1A]">Arrangementer</a></li>
+                <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </li>
+                <li class="text-[#1A1A1A] font-medium truncate max-w-xs"><?php the_title(); ?></li>
+            </ol>
         </nav>
 
-        <!-- Status Banner for cancelled/past events -->
+        <!-- Status Banner -->
         <?php if ($status === 'avlyst'): ?>
-        <wa-alert variant="danger" open class="mb-6">
-            <wa-icon slot="icon" name="circle-xmark" library="fa"></wa-icon>
-            <strong>Dette arrangementet er avlyst</strong>
-        </wa-alert>
-        <?php elseif ($status === 'avholdt' || $arrangement_passert): ?>
-        <wa-alert variant="neutral" open class="mb-6">
-            <wa-icon slot="icon" name="clock-rotate-left" library="fa"></wa-icon>
-            <strong>Dette arrangementet er gjennomført</strong>
-        </wa-alert>
+        <div class="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#772015" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <span class="font-semibold text-[#772015]">Dette arrangementet er avlyst</span>
+        </div>
+        <?php elseif ($is_past): ?>
+        <div class="mb-6 px-4 py-3 bg-[#F2F0EB] border border-[#D6D1C6] rounded-lg flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+            <span class="font-semibold text-[#5A5A5A]">Dette arrangementet er gjennomført</span>
+        </div>
         <?php endif; ?>
 
-        <!-- Hero Section with Image -->
-        <div class="relative mb-8 rounded-2xl overflow-hidden shadow-lg">
-            <?php if ($featured_image): ?>
-                <div class="h-64 md:h-80 bg-cover bg-center" style="background-image: url('<?php echo esc_url($featured_image); ?>');">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                </div>
-            <?php else: ?>
-                <div class="h-64 md:h-80 bg-gradient-to-br from-bim-orange-500 to-bim-purple-600">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                </div>
-            <?php endif; ?>
-            
+        <!-- Hero Section -->
+        <?php if ($featured_image): ?>
+        <div class="relative mb-8 rounded-xl overflow-hidden h-64 md:h-80">
+            <img src="<?php echo esc_url($featured_image); ?>" alt="" class="w-full h-full object-cover">
+
             <!-- Date badge -->
-            <div class="absolute top-6 left-6 bg-white rounded-xl shadow-lg p-4 text-center min-w-[80px]">
-                <div class="text-3xl font-bold text-bim-orange-600"><?php echo date('d', strtotime($dato)); ?></div>
-                <div class="text-sm uppercase font-medium text-gray-600"><?php echo date('M', strtotime($dato)); ?></div>
-                <div class="text-xs text-gray-400"><?php echo date('Y', strtotime($dato)); ?></div>
+            <div class="absolute top-4 left-4 bg-white rounded-lg px-4 py-3 text-center">
+                <div class="text-2xl font-bold text-[#FF8B5E] leading-none"><?php echo date('d', strtotime($dato)); ?></div>
+                <div class="text-xs uppercase text-[#5A5A5A]"><?php echo date_i18n('M', strtotime($dato)); ?></div>
             </div>
-            
+
             <!-- Status badge -->
-            <div class="absolute top-6 right-6">
-                <wa-badge variant="<?php echo bimverdi_status_variant($status); ?>" size="large">
-                    <?php echo bimverdi_status_label($status); ?>
-                </wa-badge>
+            <?php if ($status === 'avlyst'): ?>
+            <div class="absolute top-4 right-4">
+                <span class="inline-flex items-center text-xs font-semibold text-white bg-[#772015] px-3 py-1 rounded">Avlyst</span>
             </div>
-            
-            <!-- Title overlay -->
-            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <div class="flex flex-wrap gap-2 mb-3">
-                    <?php if (!empty($arrangementstyper)): ?>
-                        <?php foreach ($arrangementstyper as $type): ?>
-                            <wa-badge variant="neutral"><?php echo esc_html($type->name); ?></wa-badge>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                    <?php if (!empty($temagrupper)): ?>
-                        <?php foreach ($temagrupper as $gruppe): ?>
-                            <wa-badge variant="brand"><?php echo esc_html($gruppe->name); ?></wa-badge>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-                <h1 class="text-3xl md:text-4xl font-bold"><?php the_title(); ?></h1>
+            <?php elseif ($is_past): ?>
+            <div class="absolute top-4 right-4">
+                <span class="inline-flex items-center text-xs font-semibold text-white bg-[#5A5A5A] px-3 py-1 rounded">Avholdt</span>
             </div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
 
         <div class="grid md:grid-cols-3 gap-8">
             <!-- Main Content -->
-            <div class="md:col-span-2 space-y-6">
-                
-                <!-- Quick Info Cards -->
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <!-- Date & Time -->
-                    <wa-card>
-                        <div class="flex items-start gap-4 p-4">
-                            <div class="w-12 h-12 bg-bim-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <wa-icon name="calendar-days" library="fa" style="font-size: 1.5rem; color: var(--wa-color-brand-600);"></wa-icon>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-500 mb-1">Dato og tid</div>
-                                <div class="font-bold text-gray-900">
-                                    <?php echo date('j. F Y', strtotime($dato)); ?>
-                                </div>
-                                <div class="text-gray-600">
-                                    <?php echo esc_html($tid_start); ?>
-                                    <?php if ($tid_slutt): ?>
-                                        - <?php echo esc_html($tid_slutt); ?>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </wa-card>
-                    
-                    <!-- Location -->
-                    <wa-card>
-                        <div class="flex items-start gap-4 p-4">
-                            <div class="w-12 h-12 bg-bim-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <wa-icon name="<?php echo bimverdi_format_icon($format); ?>" library="fa" style="font-size: 1.5rem; color: var(--wa-color-primary-600);"></wa-icon>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-500 mb-1"><?php echo bimverdi_format_label($format); ?></div>
-                                <?php if ($format === 'fysisk' || $format === 'hybrid'): ?>
-                                    <div class="font-bold text-gray-900"><?php echo esc_html($fysisk_adresse); ?></div>
-                                <?php endif; ?>
-                                <?php if (($format === 'digitalt' || $format === 'hybrid') && $motelenke): ?>
-                                    <?php if ($bruker_er_pameldt): ?>
-                                        <a href="<?php echo esc_url($motelenke); ?>" target="_blank" class="text-bim-orange-600 hover:underline flex items-center gap-1">
-                                            <wa-icon name="video" library="fa" style="font-size: 0.875rem;"></wa-icon>
-                                            Åpne møtelenke
-                                        </a>
-                                    <?php else: ?>
-                                        <div class="text-gray-500 italic text-sm">Møtelenke vises etter påmelding</div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </wa-card>
-                </div>
-                
-                <!-- Description -->
-                <wa-card>
-                    <div slot="header" class="font-bold">Om arrangementet</div>
-                    <div class="prose max-w-none">
-                        <?php if ($beskrivelse): ?>
-                            <?php echo wp_kses_post($beskrivelse); ?>
-                        <?php else: ?>
-                            <?php the_content(); ?>
-                        <?php endif; ?>
+            <div class="md:col-span-2 space-y-8">
+
+                <!-- Title and Badges -->
+                <header>
+                    <!-- Temagruppe badges -->
+                    <?php if (!empty($temagrupper)): ?>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <?php foreach ($temagrupper as $gruppe): ?>
+                            <a href="<?php echo get_term_link($gruppe); ?>" class="inline-flex items-center text-xs font-medium text-[#FF8B5E] bg-[#FFF5F0] border border-[#FFBFA8] px-2.5 py-1 rounded hover:bg-[#FFECE4] transition-colors">
+                                <?php echo esc_html($gruppe->name); ?>
+                            </a>
+                        <?php endforeach; ?>
+                        <?php foreach ($arrangementstyper as $type): ?>
+                            <span class="inline-flex items-center text-xs font-medium text-[#5A5A5A] bg-[#F2F0EB] px-2.5 py-1 rounded">
+                                <?php echo esc_html($type->name); ?>
+                            </span>
+                        <?php endforeach; ?>
                     </div>
-                </wa-card>
-                
+                    <?php endif; ?>
+
+                    <h1 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4"><?php the_title(); ?></h1>
+
+                    <!-- Quick info row -->
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[#5A5A5A]">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><?php echo esc_html($date_display); ?></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span><?php echo esc_html($time_display); ?></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <?php echo bimverdi_arr_get_type_icon($arrangement_type); ?>
+                            <span><?php echo bimverdi_arr_get_type_label($arrangement_type); ?></span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Divider -->
+                <div class="border-t border-[#D6D1C6]"></div>
+
+                <!-- Main Content (Gutenberg) -->
+                <section>
+                    <div class="prose prose-lg max-w-none text-[#1A1A1A]">
+                        <?php the_content(); ?>
+                    </div>
+                </section>
+
+                <!-- Location Section (Fysisk/Hybrid) -->
+                <?php if (($arrangement_type === 'fysisk' || $arrangement_type === 'hybrid') && $sted_adresse): ?>
+                <section>
+                    <div class="border-t border-[#D6D1C6] pt-8">
+                        <h2 class="text-xl font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Sted
+                        </h2>
+
+                        <div class="space-y-4">
+                            <div>
+                                <p class="font-semibold text-[#1A1A1A]"><?php echo esc_html($sted_adresse); ?></p>
+                                <?php if ($sted_by): ?>
+                                <p class="text-[#5A5A5A]"><?php echo esc_html($sted_by); ?></p>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Google Maps Embed -->
+                            <div class="rounded-lg overflow-hidden border border-[#D6D1C6]">
+                                <iframe
+                                    src="https://maps.google.com/maps?q=<?php echo urlencode($sted_adresse . ($sted_by ? ', ' . $sted_by : '')); ?>&output=embed"
+                                    width="100%"
+                                    height="300"
+                                    style="border:0;"
+                                    allowfullscreen=""
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade">
+                                </iframe>
+                            </div>
+
+                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($sted_adresse . ($sted_by ? ', ' . $sted_by : '')); ?>" target="_blank" class="inline-flex items-center gap-2 text-sm font-medium text-[#FF8B5E] hover:opacity-70 transition-opacity">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                Åpne i Google Maps
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <?php endif; ?>
+
+                <!-- Digital Meeting Link (Digitalt/Hybrid) -->
+                <?php if (($arrangement_type === 'digitalt' || $arrangement_type === 'hybrid') && $online_lenke && !$is_past): ?>
+                <section>
+                    <div class="border-t border-[#D6D1C6] pt-8">
+                        <h2 class="text-xl font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+                            Digital deltakelse
+                        </h2>
+
+                        <?php bimverdi_button([
+                            'text'    => 'Åpne møtelenke',
+                            'variant' => 'primary',
+                            'href'    => $online_lenke,
+                            'target'  => '_blank',
+                        ]); ?>
+                    </div>
+                </section>
+                <?php endif; ?>
+
+                <!-- Post-event Resources (Opptak/Dokumentasjon) -->
+                <?php if ($is_past && ($opptak_url || $dokumentasjon_url)): ?>
+                <section>
+                    <div class="border-t border-[#D6D1C6] pt-8">
+                        <h2 class="text-xl font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Ressurser
+                        </h2>
+
+                        <div class="flex flex-wrap gap-4">
+                            <?php if ($opptak_url): ?>
+                                <?php bimverdi_button([
+                                    'text'    => 'Se opptak',
+                                    'variant' => 'primary',
+                                    'href'    => $opptak_url,
+                                    'target'  => '_blank',
+                                ]); ?>
+                            <?php endif; ?>
+
+                            <?php if ($dokumentasjon_url): ?>
+                                <?php bimverdi_button([
+                                    'text'    => 'Last ned dokumentasjon',
+                                    'variant' => 'secondary',
+                                    'icon'    => 'download',
+                                    'href'    => $dokumentasjon_url,
+                                    'target'  => '_blank',
+                                ]); ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </section>
+                <?php endif; ?>
+
             </div>
-            
+
             <!-- Sidebar -->
             <div class="space-y-6">
-                
+
                 <!-- Registration Card -->
-                <wa-card class="border-2 border-bim-orange-200">
-                    <div slot="header" class="font-bold flex items-center justify-between">
-                        <span>Påmelding</span>
-                        <?php if ($maks_deltakere && !$har_ledig_plass): ?>
-                            <wa-badge variant="warning">Fulltegnet</wa-badge>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <?php if ($status === 'avlyst'): ?>
-                            <wa-alert variant="danger" open>
-                                <wa-icon slot="icon" name="circle-xmark" library="fa"></wa-icon>
-                                Arrangementet er avlyst
-                            </wa-alert>
-                            
-                        <?php elseif ($status === 'avholdt' || $arrangement_passert): ?>
-                            <wa-alert variant="neutral" open>
-                                <wa-icon slot="icon" name="clock-rotate-left" library="fa"></wa-icon>
-                                Arrangementet er gjennomført
-                            </wa-alert>
-                            
-                        <?php elseif ($bruker_er_pameldt): ?>
-                            <wa-alert variant="success" open>
-                                <wa-icon slot="icon" name="circle-check" library="fa"></wa-icon>
-                                <strong>Du er påmeldt!</strong>
-                            </wa-alert>
-                            
-                            <?php if ($kan_avmelde): ?>
-                                <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" id="avmelding-form">
-                                    <input type="hidden" name="action" value="bimverdi_avmeld_arrangement">
-                                    <input type="hidden" name="pamelding_id" value="<?php echo $bruker_pamelding_id; ?>">
-                                    <input type="hidden" name="arrangement_id" value="<?php echo $arrangement_id; ?>">
-                                    <?php wp_nonce_field('avmeld_arrangement_' . $bruker_pamelding_id); ?>
-                                    
-                                    <wa-button variant="danger" outline class="w-full" type="submit" onclick="return confirm('Er du sikker på at du vil melde deg av?');">
-                                        <wa-icon slot="prefix" name="user-minus" library="fa"></wa-icon>
-                                        Meld deg av
-                                    </wa-button>
-                                </form>
-                                <p class="text-xs text-gray-500 text-center">
-                                    Avmeldingsfrist: <?php echo $avmeldingsfrist_formatert; ?>
-                                </p>
-                            <?php else: ?>
-                                <wa-alert variant="warning" open>
-                                    <wa-icon slot="icon" name="clock" library="fa"></wa-icon>
-                                    Avmeldingsfristen er passert (48 timer før)
-                                </wa-alert>
-                            <?php endif; ?>
-                            
-                        <?php elseif (!$har_ledig_plass): ?>
-                            <wa-alert variant="warning" open>
-                                <wa-icon slot="icon" name="users" library="fa"></wa-icon>
-                                <strong>Arrangementet er fulltegnet</strong>
-                            </wa-alert>
-                            
-                        <?php elseif ($frist_passert): ?>
-                            <wa-alert variant="warning" open>
-                                <wa-icon slot="icon" name="clock" library="fa"></wa-icon>
-                                <strong>Påmeldingsfristen er passert</strong>
-                            </wa-alert>
-                            
-                        <?php elseif (!is_user_logged_in()): ?>
-                            <p class="text-gray-600 text-sm">
-                                Du må være innlogget for å melde deg på.
-                            </p>
-                            <wa-button variant="brand" class="w-full" href="<?php echo wp_login_url(get_permalink()); ?>">
-                                <wa-icon slot="prefix" name="right-to-bracket" library="fa"></wa-icon>
-                                Logg inn for å melde deg på
-                            </wa-button>
-                            
-                        <?php else: ?>
-                            <!-- Registration Form -->
-                            <div id="pamelding-skjema">
-                                <?php 
-                                // Display Gravity Forms registration form with arrangement_id in URL
-                                if (function_exists('gravity_form')) {
-                                    $current_url = add_query_arg('arrangement_id', $arrangement_id, get_permalink());
-                                    ?>
-                                    <script>
-                                        // Ensure arrangement_id is added to form action URL
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            var form = document.querySelector('#gform_9');
-                                            if (form && !form.action.includes('arrangement_id')) {
-                                                form.action = form.action + (form.action.includes('?') ? '&' : '?') + 'arrangement_id=<?php echo $arrangement_id; ?>';
-                                            }
-                                        });
-                                    </script>
-                                    <?php
-                                    gravity_form(9, false, false, false, array('arrangement_id' => $arrangement_id), true);
-                                } else {
-                                    // Fallback simple form
-                                    ?>
-                                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                        <input type="hidden" name="action" value="bimverdi_pamelding_arrangement">
-                                        <input type="hidden" name="arrangement_id" value="<?php echo $arrangement_id; ?>">
-                                        <?php wp_nonce_field('pamelding_arrangement_' . $arrangement_id); ?>
-                                        
-                                        <wa-button variant="brand" class="w-full" type="submit">
-                                            <wa-icon slot="prefix" name="user-plus" library="fa"></wa-icon>
-                                            Meld deg på
-                                        </wa-button>
-                                    </form>
-                                    <?php
-                                }
-                                ?>
+                <?php if (!$is_past && $status !== 'avlyst'): ?>
+                <div class="bg-[#F2F0EB] rounded-xl p-6">
+                    <h3 class="font-bold text-[#1A1A1A] mb-4">Påmelding</h3>
+
+                    <?php if ($frist_passert): ?>
+                        <p class="text-[#5A5A5A] text-sm mb-4">Påmeldingsfristen har gått ut.</p>
+                    <?php elseif ($pamelding_url): ?>
+                        <?php bimverdi_button([
+                            'text'       => 'Meld deg på',
+                            'variant'    => 'primary',
+                            'icon'       => 'user',
+                            'href'       => $pamelding_url,
+                            'target'     => '_blank',
+                            'full_width' => true,
+                        ]); ?>
+                    <?php else: ?>
+                        <p class="text-[#5A5A5A] text-sm">Kontakt arrangør for påmelding.</p>
+                    <?php endif; ?>
+
+                    <?php if ($pameldingsfrist && !$frist_passert): ?>
+                    <p class="text-xs text-[#5A5A5A] mt-3 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Frist: <?php echo date_i18n('j. F Y H:i', strtotime($pameldingsfrist)); ?>
+                    </p>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+
+                <!-- Details Section -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-[#1A1A1A]">Detaljer</h3>
+
+                    <div class="space-y-3 text-sm">
+                        <!-- Dato -->
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <div>
+                                <div class="text-[#5A5A5A]">Dato</div>
+                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($date_display); ?></div>
                             </div>
-                        <?php endif; ?>
-                        
-                        <!-- Registration deadline -->
-                        <?php if ($pamelding_frist && !$frist_passert && !$bruker_er_pameldt && $status === 'planlagt'): ?>
-                            <p class="text-sm text-gray-500 flex items-center gap-2">
-                                <wa-icon name="clock" library="fa" style="font-size: 0.875rem;"></wa-icon>
-                                Påmeldingsfrist: <?php echo date('j. F Y', strtotime($pamelding_frist)); ?>
-                            </p>
-                        <?php endif; ?>
-                    </div>
-                </wa-card>
-                
-                <!-- Organizer Card -->
-                <?php if ($prosjektleder_id): 
-                    $prosjektleder = get_userdata($prosjektleder_id);
-                    if ($prosjektleder):
-                ?>
-                <wa-card>
-                    <div slot="header" class="font-bold">Arrangør</div>
-                    <div class="flex items-center gap-3">
-                        <wa-avatar 
-                            initials="<?php echo esc_attr(strtoupper(substr($prosjektleder->display_name, 0, 2))); ?>"
-                            style="--size: 3rem;">
-                        </wa-avatar>
-                        <div>
-                            <div class="font-medium text-gray-900"><?php echo esc_html($prosjektleder->display_name); ?></div>
-                            <div class="text-sm text-gray-500"><?php echo esc_html($prosjektleder->user_email); ?></div>
                         </div>
+
+                        <!-- Tid -->
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <div>
+                                <div class="text-[#5A5A5A]">Tidspunkt</div>
+                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($time_display); ?></div>
+                            </div>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0 mt-0.5 text-[#5A5A5A]"><?php echo bimverdi_arr_get_type_icon($arrangement_type); ?></div>
+                            <div>
+                                <div class="text-[#5A5A5A]">Format</div>
+                                <div class="text-[#1A1A1A] font-medium"><?php echo bimverdi_arr_get_type_label($arrangement_type); ?></div>
+                            </div>
+                        </div>
+
+                        <!-- Adgang -->
+                        <?php if ($adgang): ?>
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <div>
+                                <div class="text-[#5A5A5A]">Adgang</div>
+                                <div class="text-[#1A1A1A] font-medium"><?php echo bimverdi_arr_get_adgang_label($adgang); ?></div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Arrangør -->
+                        <?php if ($arrangor): ?>
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
+                            <div>
+                                <div class="text-[#5A5A5A]">Arrangør</div>
+                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($arrangor); ?></div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Passer for -->
+                        <?php if ($passer_for): ?>
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                            <div>
+                                <div class="text-[#5A5A5A]">Passer for</div>
+                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($passer_for); ?></div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
-                </wa-card>
-                <?php endif; endif; ?>
-                
-                <!-- Share Card -->
-                <wa-card>
-                    <div slot="header" class="font-bold">Del arrangement</div>
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t border-[#D6D1C6]"></div>
+
+                <!-- Formål og Målsetting -->
+                <?php if ($formal_tema || $malsetting): ?>
+                <div class="space-y-4">
+                    <?php if ($formal_tema): ?>
+                    <div>
+                        <h4 class="font-semibold text-[#1A1A1A] mb-2">Formål</h4>
+                        <p class="text-sm text-[#5A5A5A]"><?php echo nl2br(esc_html($formal_tema)); ?></p>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($malsetting): ?>
+                    <div>
+                        <h4 class="font-semibold text-[#1A1A1A] mb-2">Målsetting</h4>
+                        <p class="text-sm text-[#5A5A5A]"><?php echo nl2br(esc_html($malsetting)); ?></p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t border-[#D6D1C6]"></div>
+                <?php endif; ?>
+
+                <!-- Share -->
+                <div>
+                    <h4 class="font-semibold text-[#1A1A1A] mb-3">Del arrangement</h4>
                     <div class="flex gap-2">
-                        <wa-button variant="neutral" size="small" onclick="navigator.clipboard.writeText(window.location.href); alert('Lenke kopiert!');">
-                            <wa-icon slot="prefix" name="link" library="fa"></wa-icon>
-                            Kopier lenke
-                        </wa-button>
-                        <wa-button variant="neutral" size="small" href="mailto:?subject=<?php echo rawurlencode(get_the_title()); ?>&body=<?php echo rawurlencode(get_permalink()); ?>">
-                            <wa-icon slot="prefix" name="envelope" library="fa"></wa-icon>
-                            E-post
-                        </wa-button>
+                        <?php bimverdi_button([
+                            'text'    => 'Kopier lenke',
+                            'variant' => 'secondary',
+                            'size'    => 'small',
+                            'icon'    => 'link',
+                            'onclick' => "navigator.clipboard.writeText(window.location.href); alert('Lenke kopiert!');",
+                        ]); ?>
+                        <?php bimverdi_button([
+                            'text'    => 'E-post',
+                            'variant' => 'secondary',
+                            'size'    => 'small',
+                            'icon'    => 'mail',
+                            'href'    => 'mailto:?subject=' . rawurlencode(get_the_title()) . '&body=' . rawurlencode(get_permalink()),
+                        ]); ?>
                     </div>
-                </wa-card>
-                
+                </div>
+
             </div>
         </div>
 

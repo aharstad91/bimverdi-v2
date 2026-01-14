@@ -3,11 +3,42 @@
     "title": "Arrangement Info",
     "fields": [
         {
+            "key": "field_arrangement_status_toggle",
+            "label": "Arrangementsvisning",
+            "name": "arrangement_status_toggle",
+            "type": "button_group",
+            "instructions": "Bestemmer om arrangementet vises under \"Kommende\" eller \"Tidligere\" på arkivsiden.",
+            "required": 1,
+            "choices": {
+                "kommende": "Kommende",
+                "tidligere": "Tidligere/Avholdt"
+            },
+            "default_value": "kommende",
+            "return_format": "value",
+            "layout": "horizontal"
+        },
+        {
+            "key": "field_arrangement_type",
+            "label": "Arrangement-type",
+            "name": "arrangement_type",
+            "type": "button_group",
+            "instructions": "Velg om arrangementet er fysisk, digitalt eller hybrid.",
+            "required": 1,
+            "choices": {
+                "fysisk": "Fysisk",
+                "digitalt": "Digitalt",
+                "hybrid": "Hybrid"
+            },
+            "default_value": "digitalt",
+            "return_format": "value",
+            "layout": "horizontal"
+        },
+        {
             "key": "field_arrangement_dato",
-            "label": "Dato",
+            "label": "Startdato",
             "name": "arrangement_dato",
             "type": "date_picker",
-            "instructions": "Når arrangementet finner sted",
+            "instructions": "Dato arrangementet finner sted",
             "required": 1,
             "display_format": "d.m.Y",
             "return_format": "Y-m-d",
@@ -24,6 +55,17 @@
             "return_format": "H:i"
         },
         {
+            "key": "field_slutt_dato",
+            "label": "Sluttdato",
+            "name": "slutt_dato",
+            "type": "date_picker",
+            "instructions": "Sluttdato (kun hvis arrangementet går over flere dager)",
+            "required": 0,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "first_day": 1
+        },
+        {
             "key": "field_tidspunkt_slutt",
             "label": "Tidspunkt slutt",
             "name": "tidspunkt_slutt",
@@ -34,33 +76,151 @@
             "return_format": "H:i"
         },
         {
-            "key": "field_sted",
-            "label": "Sted",
-            "name": "sted",
-            "type": "text",
-            "instructions": "Fysisk adresse eller 'Digital/Teams'",
-            "required": 1,
-            "placeholder": "Konferanserom A, Oslo / Digital via Teams"
-        },
-        {
-            "key": "field_arrangement_beskrivelse",
-            "label": "Beskrivelse",
-            "name": "arrangement_beskrivelse",
-            "type": "wysiwyg",
-            "instructions": "Agenda, tema og formål med arrangementet",
-            "required": 1,
-            "tabs": "all",
-            "toolbar": "full",
-            "media_upload": 1
-        },
-        {
-            "key": "field_pamelding_lenke",
-            "label": "Påmeldingslenke",
-            "name": "pamelding_lenke",
-            "type": "url",
-            "instructions": "URL til påmeldingsskjema (hvis eksternt) eller la stå tom for intern påmelding",
+            "key": "field_pameldingsfrist",
+            "label": "Påmeldingsfrist",
+            "name": "pameldingsfrist",
+            "type": "date_time_picker",
+            "instructions": "Frist for å melde seg på",
             "required": 0,
-            "placeholder": "https://forms.gle/..."
+            "display_format": "d.m.Y H:i",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1
+        },
+        {
+            "key": "field_pamelding_url",
+            "label": "Ekstern påmeldings-URL",
+            "name": "pamelding_url",
+            "type": "url",
+            "instructions": "Lenke til ekstern påmelding (f.eks. Eventbrite, Google Forms). Vises som påmeldingsknapp.",
+            "required": 0,
+            "placeholder": "https://..."
+        },
+        {
+            "key": "field_online_lenke",
+            "label": "Møtelenke (Teams/Zoom)",
+            "name": "online_lenke",
+            "type": "url",
+            "instructions": "Lenke til digitalt møte",
+            "required": 0,
+            "placeholder": "https://teams.microsoft.com/...",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_arrangement_type",
+                        "operator": "==",
+                        "value": "digitalt"
+                    }
+                ],
+                [
+                    {
+                        "field": "field_arrangement_type",
+                        "operator": "==",
+                        "value": "hybrid"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_sted_adresse",
+            "label": "Adresse",
+            "name": "sted_adresse",
+            "type": "text",
+            "instructions": "Full gateadresse for fysisk arrangement",
+            "required": 0,
+            "placeholder": "Storgata 1, 0155 Oslo",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_arrangement_type",
+                        "operator": "==",
+                        "value": "fysisk"
+                    }
+                ],
+                [
+                    {
+                        "field": "field_arrangement_type",
+                        "operator": "==",
+                        "value": "hybrid"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_sted_by",
+            "label": "By",
+            "name": "sted_by",
+            "type": "text",
+            "instructions": "By/sted (vises i kortvisning)",
+            "required": 0,
+            "placeholder": "Oslo",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_arrangement_type",
+                        "operator": "==",
+                        "value": "fysisk"
+                    }
+                ],
+                [
+                    {
+                        "field": "field_arrangement_type",
+                        "operator": "==",
+                        "value": "hybrid"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_formal_tema",
+            "label": "Formål/Tema",
+            "name": "formal_tema",
+            "type": "textarea",
+            "instructions": "Beskriv formålet med arrangementet",
+            "required": 0,
+            "rows": 3
+        },
+        {
+            "key": "field_malsetting",
+            "label": "Målsetting",
+            "name": "malsetting",
+            "type": "textarea",
+            "instructions": "Hva ønsker vi å oppnå?",
+            "required": 0,
+            "rows": 3
+        },
+        {
+            "key": "field_passer_for",
+            "label": "Passer for",
+            "name": "passer_for",
+            "type": "text",
+            "instructions": "Hvem passer arrangementet for?",
+            "required": 0,
+            "placeholder": "BIM-koordinatorer, prosjektledere, arkitekter"
+        },
+        {
+            "key": "field_arrangor",
+            "label": "Arrangør",
+            "name": "arrangor",
+            "type": "text",
+            "instructions": "Hvem arrangerer?",
+            "required": 0,
+            "placeholder": "BIM Verdi / Temagruppe X"
+        },
+        {
+            "key": "field_adgang",
+            "label": "Adgang",
+            "name": "adgang",
+            "type": "select",
+            "instructions": "Hvem har adgang til arrangementet?",
+            "required": 0,
+            "choices": {
+                "alle": "Åpent for alle",
+                "medlemmer": "Kun medlemmer",
+                "deltakere": "Kun deltakere/partnere",
+                "invitert": "Kun inviterte"
+            },
+            "default_value": "medlemmer",
+            "return_format": "value"
         },
         {
             "key": "field_maks_deltakere",
@@ -73,15 +233,50 @@
             "placeholder": "50"
         },
         {
+            "key": "field_opptak_url",
+            "label": "Opptak-URL",
+            "name": "opptak_url",
+            "type": "url",
+            "instructions": "Lenke til opptak av arrangementet (vises kun etter fullført)",
+            "required": 0,
+            "placeholder": "https://vimeo.com/...",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_arrangement_status_toggle",
+                        "operator": "==",
+                        "value": "tidligere"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_dokumentasjon_url",
+            "label": "Dokumentasjon-URL",
+            "name": "dokumentasjon_url",
+            "type": "url",
+            "instructions": "Lenke til presentasjoner, notater eller annen dokumentasjon",
+            "required": 0,
+            "placeholder": "https://docs.google.com/...",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_arrangement_status_toggle",
+                        "operator": "==",
+                        "value": "tidligere"
+                    }
+                ]
+            ]
+        },
+        {
             "key": "field_arrangement_status",
             "label": "Status",
             "name": "arrangement_status",
             "type": "select",
-            "instructions": "Gjeldende status for arrangementet",
+            "instructions": "Administrativ status (planlagt, avlyst)",
             "required": 1,
             "choices": {
                 "planlagt": "Planlagt",
-                "avholdt": "Avholdt",
                 "avlyst": "Avlyst"
             },
             "default_value": "planlagt",

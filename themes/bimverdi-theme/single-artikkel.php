@@ -101,10 +101,21 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
         </div>
     </div>
     
+    <!-- Featured image -->
+    <?php if (has_post_thumbnail()) : ?>
+        <div class="container mx-auto px-4 -mt-4">
+            <div class="max-w-4xl mx-auto">
+                <img src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'large')); ?>"
+                     alt="<?php the_title_attribute(); ?>"
+                     class="w-full h-auto rounded-lg shadow-sm">
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Content -->
     <div class="container mx-auto px-4 py-8 lg:py-12">
         <div class="max-w-3xl mx-auto">
-            
+
             <!-- Article content -->
             <div class="prose prose-lg max-w-none">
                 <?php the_content(); ?>

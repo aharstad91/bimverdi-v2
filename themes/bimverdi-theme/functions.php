@@ -175,13 +175,21 @@ function bimverdi_flush_rewrites() {
 add_action('after_switch_theme', 'bimverdi_flush_rewrites');
 
 /**
- * Add custom class to menu items
+ * Add custom class to menu items + fix relative URLs for subdirectory installs
  */
 function bimverdi_nav_menu_link_attributes($atts, $item, $args, $depth) {
+    // Add custom link class if specified
     if (isset($args->link_class)) {
         $atts['class'] = $atts['class'] ?? '';
         $atts['class'] .= ' ' . $args->link_class;
     }
+
+    // Fix relative URLs (starting with /) for subdirectory installs
+    // Converts /deltakere to /bimverdi-v2/deltakere (or full home_url)
+    if (isset($atts['href']) && strpos($atts['href'], '/') === 0 && strpos($atts['href'], '//') !== 0) {
+        $atts['href'] = home_url($atts['href']);
+    }
+
     return $atts;
 }
 add_filter('nav_menu_link_attributes', 'bimverdi_nav_menu_link_attributes', 10, 4);

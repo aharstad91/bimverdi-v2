@@ -78,7 +78,7 @@ class BIM_Verdi_Post_Types {
             'show_in_nav_menus'     => true,
             'can_export'            => true,
             'has_archive'           => true,
-            'rewrite'               => array('slug' => 'foretak'),
+            'rewrite'               => array('slug' => 'deltakere'),
             'capability_type'       => 'post',
             'show_in_rest'          => true,
         );
@@ -173,11 +173,11 @@ class BIM_Verdi_Post_Types {
             'menu_position'         => 7,
             'menu_icon'             => 'dashicons-calendar-alt',
             'has_archive'           => true,
-            'rewrite'               => array('slug' => 'arrangementer'),
+            'rewrite'               => array('slug' => 'arrangement'),
             'capability_type'       => 'post',
             'show_in_rest'          => true,
         );
-        
+
         register_post_type('arrangement', $args);
     }
     

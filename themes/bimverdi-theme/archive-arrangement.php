@@ -1,47 +1,24 @@
 <?php
 /**
  * Archive Arrangement Template
- * 
- * Displays all events - upcoming in grid, past in list format
- * Uses Web Awesome components for modern UI
- * 
+ *
+ * Displays events - upcoming in grid, past in list format
+ * Design based on /deltakere/ archive
+ *
  * @package BimVerdi_Theme
  */
 
 get_header();
 
-// Get filters from URL
-$type_filter = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : '';
-$temagruppe_filter = isset($_GET['temagruppe']) ? sanitize_text_field($_GET['temagruppe']) : '';
-
-// Build tax query if filters active
-$tax_query = array();
-if ($type_filter) {
-    $tax_query[] = array(
-        'taxonomy' => 'arrangementstype',
-        'field' => 'slug',
-        'terms' => $type_filter,
-    );
-}
-if ($temagruppe_filter) {
-    $tax_query[] = array(
-        'taxonomy' => 'temagruppe',
-        'field' => 'slug',
-        'terms' => $temagruppe_filter,
-    );
-}
-
-// Query upcoming events
+// Query upcoming events (based on toggle, not date)
 $upcoming_args = array(
     'post_type' => 'arrangement',
     'posts_per_page' => -1,
     'meta_query' => array(
         'relation' => 'AND',
         array(
-            'key' => 'arrangement_dato',
-            'value' => date('Y-m-d'),
-            'compare' => '>=',
-            'type' => 'DATE'
+            'key' => 'arrangement_status_toggle',
+            'value' => 'kommende',
         ),
         array(
             'key' => 'arrangement_status',
@@ -52,336 +29,174 @@ $upcoming_args = array(
     'orderby' => 'meta_value',
     'order' => 'ASC',
 );
-if (!empty($tax_query)) {
-    $upcoming_args['tax_query'] = $tax_query;
-}
 $upcoming_events = new WP_Query($upcoming_args);
 
-// Query past events
+// Query past events (based on toggle)
 $past_args = array(
     'post_type' => 'arrangement',
-    'posts_per_page' => 20,
+    'posts_per_page' => -1,
     'meta_query' => array(
         'relation' => 'OR',
         array(
-            'key' => 'arrangement_dato',
-            'value' => date('Y-m-d'),
-            'compare' => '<',
-            'type' => 'DATE'
+            'key' => 'arrangement_status_toggle',
+            'value' => 'tidligere',
         ),
         array(
             'key' => 'arrangement_status',
-            'value' => 'avholdt',
+            'value' => 'avlyst',
         ),
     ),
     'meta_key' => 'arrangement_dato',
     'orderby' => 'meta_value',
     'order' => 'DESC',
 );
-if (!empty($tax_query)) {
-    $past_args['tax_query'] = $tax_query;
-}
 $past_events = new WP_Query($past_args);
 
-// Get all terms for filters
-$arrangementstyper = get_terms(array(
-    'taxonomy' => 'arrangementstype',
-    'hide_empty' => false,
-));
-
-$temagrupper = get_terms(array(
-    'taxonomy' => 'temagruppe',
-    'hide_empty' => false,
-));
-
-// Get filter names for display
-$active_filters = array();
-if ($type_filter) {
-    $type_term = get_term_by('slug', $type_filter, 'arrangementstype');
-    if ($type_term) {
-        $active_filters[] = $type_term->name;
-    }
-}
-if ($temagruppe_filter) {
-    $temagruppe_term = get_term_by('slug', $temagruppe_filter, 'temagruppe');
-    if ($temagruppe_term) {
-        $active_filters[] = $temagruppe_term->name;
-    }
-}
-$has_filters = !empty($active_filters);
-
-// Helper functions
-function bimverdi_format_badge_icon($format) {
-    $icons = [
-        'fysisk' => 'location-dot',
-        'digitalt' => 'video',
-        'hybrid' => 'laptop-house',
-    ];
-    return $icons[$format] ?? 'calendar';
+/**
+ * Get arrangement type icon (Lucide)
+ */
+function bimverdi_get_type_icon($type) {
+    $icons = array(
+        'fysisk' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+        'digitalt' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
+        'hybrid' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>',
+    );
+    return $icons[$type] ?? $icons['digitalt'];
 }
 
-function bimverdi_format_short_label($format) {
-    $labels = [
+/**
+ * Get arrangement type label
+ */
+function bimverdi_get_type_label($type) {
+    $labels = array(
         'fysisk' => 'Fysisk',
         'digitalt' => 'Digitalt',
         'hybrid' => 'Hybrid',
-    ];
-    return $labels[$format] ?? $format;
+    );
+    return $labels[$type] ?? 'Digitalt';
 }
-
 ?>
 
-<div class="min-h-screen bg-gradient-to-b from-bim-beige-50 to-white py-8">
-    <div class="container mx-auto px-4 max-w-6xl">
-        
-        <?php // Show unregistration success message ?>
-        <?php if (isset($_GET['avmelding_success']) && $_GET['avmelding_success'] == '1'): ?>
-            <div class="mb-6">
-                <wa-alert variant="success" open closable>
-                    <wa-icon slot="icon" name="circle-check" library="fa"></wa-icon>
-                    <strong>Du er nå avmeldt!</strong> Du kan melde deg på igjen når som helst.
-                </wa-alert>
-            </div>
-        <?php endif; ?>
-        
-        <!-- Hero Section -->
-        <div class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Arrangementer</h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Kurs, seminarer, workshops og nettverksmøter i BIM Verdi. 
+<div class="min-h-screen bg-[#FAFAF8]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+        <!-- Page Header -->
+        <div class="mb-10">
+            <h1 class="text-4xl font-bold text-[#1A1A1A] mb-3">Arrangementer</h1>
+            <p class="text-[#5A5A5A] text-lg">
+                Kurs, seminarer, workshops og nettverksmøter i BIM Verdi.
                 Meld deg på og få faglig påfyll sammen med andre i nettverket.
             </p>
-        </div>
-
-        <!-- Filter Section -->
-        <div class="mb-8">
-            <wa-card>
-                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                    
-                    <!-- Stats -->
-                    <div class="flex items-center gap-4 text-sm text-gray-600">
-                        <span class="flex items-center gap-2">
-                            <wa-icon library="fa" name="solid/calendar-plus" class="text-bim-orange"></wa-icon>
-                            <strong><?php echo $upcoming_events->found_posts; ?></strong> kommende
-                        </span>
-                        <span class="flex items-center gap-2">
-                            <wa-icon library="fa" name="solid/clock-rotate-left" class="text-gray-400"></wa-icon>
-                            <strong><?php echo $past_events->found_posts; ?></strong> tidligere
-                        </span>
-                    </div>
-                    
-                    <!-- Dropdown Filters -->
-                    <div class="flex flex-wrap gap-3 items-center">
-                        <?php if ($has_filters): ?>
-                            <a href="<?php echo remove_query_arg(array('type', 'temagruppe')); ?>" 
-                               class="text-sm text-red-600 hover:text-red-700 flex items-center gap-1">
-                                <wa-icon library="fa" name="solid/xmark"></wa-icon>
-                                Nullstill filter
-                            </a>
-                        <?php endif; ?>
-                        
-                        <select class="rounded-lg border-gray-300 text-sm" onchange="window.location.href=this.value;">
-                            <option value="<?php echo remove_query_arg('type'); ?>">Alle typer</option>
-                            <?php foreach ($arrangementstyper as $type): ?>
-                                <option value="<?php echo add_query_arg('type', $type->slug); ?>" <?php selected($type_filter, $type->slug); ?>>
-                                    <?php echo esc_html($type->name); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        
-                        <select class="rounded-lg border-gray-300 text-sm" onchange="window.location.href=this.value;">
-                            <option value="<?php echo remove_query_arg('temagruppe'); ?>">Alle temagrupper</option>
-                            <?php foreach ($temagrupper as $gruppe): ?>
-                                <option value="<?php echo add_query_arg('temagruppe', $gruppe->slug); ?>" <?php selected($temagruppe_filter, $gruppe->slug); ?>>
-                                    <?php echo esc_html($gruppe->name); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                </div>
-            </wa-card>
         </div>
 
         <!-- ============================================ -->
         <!-- KOMMENDE ARRANGEMENTER (GRID) -->
         <!-- ============================================ -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <wa-icon library="fa" name="solid/calendar-plus" class="text-bim-orange"></wa-icon>
-                Kommende arrangementer
-                <?php if ($upcoming_events->have_posts()): ?>
-                    <wa-badge variant="brand"><?php echo $upcoming_events->found_posts; ?></wa-badge>
-                <?php endif; ?>
-            </h2>
-            
-            <?php if ($upcoming_events->have_posts()): ?>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <?php while ($upcoming_events->have_posts()): $upcoming_events->the_post(); 
-                        $event_id = get_the_ID();
-                        $dato = get_field('arrangement_dato');
-                        $tid_start = get_field('tidspunkt_start');
-                        $tid_slutt = get_field('tidspunkt_slutt');
-                        $format = get_field('arrangement_format');
-                        $fysisk_adresse = get_field('fysisk_adresse');
-                        $maks_deltakere = get_field('maks_deltakere');
-                        $status = get_field('arrangement_status');
-                        $featured_image = get_the_post_thumbnail_url($event_id, 'medium');
-                        
-                        // Count registrations
-                        $registrations = get_posts(array(
-                            'post_type' => 'pamelding',
-                            'posts_per_page' => -1,
-                            'fields' => 'ids',
-                            'meta_query' => array(
-                                array('key' => 'pamelding_arrangement', 'value' => $event_id),
-                                array('key' => 'pamelding_status', 'value' => 'aktiv'),
-                            ),
-                        ));
-                        $antall_pameldte = count($registrations);
-                        $er_fullt = $maks_deltakere && $antall_pameldte >= $maks_deltakere;
-                        
-                        // Check if user is registered
-                        $bruker_er_pameldt = false;
-                        if (is_user_logged_in()) {
-                            $current_user_id = get_current_user_id();
-                            foreach ($registrations as $reg_id) {
-                                if (get_field('pamelding_bruker', $reg_id) == $current_user_id) {
-                                    $bruker_er_pameldt = true;
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        // Get terms
-                        $event_types = wp_get_post_terms($event_id, 'arrangementstype');
-                        $event_temagrupper = wp_get_post_terms($event_id, 'temagruppe');
-                        
-                        // Time formatting
-                        $time_str = $tid_start;
-                        if ($tid_slutt) $time_str .= ' – ' . $tid_slutt;
-                    ?>
-                    
-                    <wa-card class="overflow-hidden hover:shadow-lg transition-shadow">
-                        <!-- Card Image -->
-                        <div class="relative h-40 bg-gradient-to-br from-bim-orange-100 to-bim-purple-100">
-                            <?php if ($featured_image): ?>
-                                <img src="<?php echo esc_url($featured_image); ?>" alt="" class="w-full h-full object-cover">
-                            <?php endif; ?>
-                            
-                            <!-- Date badge -->
-                            <div class="absolute top-3 left-3 bg-white rounded-lg shadow px-3 py-2 text-center">
-                                <div class="text-xl font-bold text-bim-orange leading-none"><?php echo date('d', strtotime($dato)); ?></div>
-                                <div class="text-xs uppercase text-gray-500"><?php echo date_i18n('M', strtotime($dato)); ?></div>
-                            </div>
-                            
-                            <!-- Status badges -->
-                            <div class="absolute top-3 right-3 flex flex-col gap-1">
-                                <?php if ($status === 'avlyst'): ?>
-                                    <wa-badge variant="danger">Avlyst</wa-badge>
-                                <?php elseif ($er_fullt): ?>
-                                    <wa-badge variant="warning">Fulltegnet</wa-badge>
-                                <?php endif; ?>
-                                
-                                <wa-badge variant="neutral">
-                                    <wa-icon name="<?php echo bimverdi_format_badge_icon($format); ?>" library="fa" style="margin-right: 0.25rem; font-size: 0.75rem;"></wa-icon>
-                                    <?php echo bimverdi_format_short_label($format); ?>
-                                </wa-badge>
-                            </div>
-                        </div>
-                        
-                        <!-- Card Content -->
-                        <div class="p-4">
-                            <!-- Tags -->
-                            <div class="flex flex-wrap gap-1 mb-2">
-                                <?php foreach ($event_temagrupper as $gruppe): ?>
-                                    <span class="text-xs bg-bim-orange-100 text-bim-orange-700 px-2 py-0.5 rounded">
-                                        <?php echo esc_html($gruppe->name); ?>
-                                    </span>
-                                <?php endforeach; ?>
-                                <?php foreach ($event_types as $type): ?>
-                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                                        <?php echo esc_html($type->name); ?>
-                                    </span>
-                                <?php endforeach; ?>
-                            </div>
-                            
-                            <!-- Title -->
-                            <h3 class="font-bold text-gray-900 mb-2 line-clamp-2">
-                                <a href="<?php the_permalink(); ?>" class="hover:text-bim-orange transition-colors">
-                                    <?php the_title(); ?>
-                                </a>
-                            </h3>
-                            
-                            <!-- Meta -->
-                            <div class="text-sm text-gray-500 space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <wa-icon name="clock" library="fa" style="font-size: 0.75rem;"></wa-icon>
-                                    <?php echo esc_html($time_str); ?>
-                                </div>
-                                
-                                <?php if (($format === 'fysisk' || $format === 'hybrid') && $fysisk_adresse): ?>
-                                    <div class="flex items-center gap-2">
-                                        <wa-icon name="location-dot" library="fa" style="font-size: 0.75rem;"></wa-icon>
-                                        <span class="truncate"><?php echo esc_html($fysisk_adresse); ?></span>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        
-                        <!-- Card Footer -->
-                        <div slot="footer" class="flex justify-between items-center">
-                            <a href="<?php the_permalink(); ?>" class="text-bim-orange hover:text-bim-orange-700 font-medium text-sm flex items-center gap-1">
-                                Les mer
-                                <wa-icon name="arrow-right" library="fa" style="font-size: 0.75rem;"></wa-icon>
-                            </a>
-                            
-                            <?php if ($status !== 'avlyst'): ?>
-                                <?php if ($bruker_er_pameldt): ?>
-                                    <wa-badge variant="success">
-                                        <wa-icon name="check" library="fa" style="margin-right: 0.25rem;"></wa-icon>
-                                        Påmeldt
-                                    </wa-badge>
-                                <?php elseif (!$er_fullt): ?>
-                                    <wa-button variant="brand" size="small" href="<?php the_permalink(); ?>#pamelding-skjema">
-                                        Meld på
-                                    </wa-button>
-                                <?php else: ?>
-                                    <wa-badge variant="warning">Fulltegnet</wa-badge>
-                                <?php endif; ?>
-                            <?php endif; ?>
-                        </div>
-                    </wa-card>
-                    
-                    <?php endwhile; wp_reset_postdata(); ?>
-                </div>
-            <?php else: ?>
-                <!-- Empty state for upcoming -->
-                <wa-card class="text-center py-12">
-                    <wa-icon name="calendar-xmark" library="fa" style="font-size: 4rem; color: var(--wa-color-gray-300);"></wa-icon>
-                    <h3 class="text-xl font-bold text-gray-700 mt-4 mb-2">
-                        <?php if ($has_filters): ?>
-                            Ingen kommende arrangementer funnet
-                        <?php else: ?>
-                            Ingen kommende arrangementer
-                        <?php endif; ?>
-                    </h3>
-                    <p class="text-gray-500 mb-4">
-                        <?php if ($has_filters): ?>
-                            Ingen kommende arrangementer matcher filteret: <strong><?php echo esc_html(implode(' + ', $active_filters)); ?></strong>
-                        <?php else: ?>
-                            Det er ikke planlagt noen arrangementer for øyeblikket. Sjekk tilbake snart!
-                        <?php endif; ?>
-                    </p>
-                    <?php if ($has_filters): ?>
-                        <a href="<?php echo remove_query_arg(array('type', 'temagruppe')); ?>">
-                            <wa-button variant="neutral" outline>
-                                <wa-icon library="fa" name="solid/xmark" slot="prefix"></wa-icon>
-                                Nullstill filter
-                            </wa-button>
-                        </a>
+        <section class="mb-16">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-[#1A1A1A] flex items-center gap-3">
+                    Kommende arrangementer
+                    <?php if ($upcoming_events->have_posts()): ?>
+                        <span class="inline-flex items-center text-sm font-medium text-white bg-[#FF8B5E] px-2.5 py-0.5 rounded">
+                            <?php echo $upcoming_events->found_posts; ?>
+                        </span>
                     <?php endif; ?>
-                </wa-card>
+                </h2>
+            </div>
+
+            <?php if ($upcoming_events->have_posts()): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php while ($upcoming_events->have_posts()): $upcoming_events->the_post();
+                    $event_id = get_the_ID();
+                    $dato = get_field('arrangement_dato');
+                    $tid_start = get_field('tidspunkt_start');
+                    $tid_slutt = get_field('tidspunkt_slutt');
+                    $arrangement_type = get_field('arrangement_type') ?: 'digitalt';
+                    $sted_by = get_field('sted_by');
+                    $featured_image = get_the_post_thumbnail_url($event_id, 'medium');
+
+                    // Get temagrupper
+                    $temagrupper = wp_get_post_terms($event_id, 'temagruppe', array('fields' => 'all'));
+                    $first_temagruppe = !empty($temagrupper) ? $temagrupper[0]->name : '';
+
+                    // Format time
+                    $time_str = $tid_start;
+                    if ($tid_slutt) $time_str .= ' – ' . $tid_slutt;
+                ?>
+
+                <!-- Card - matching deltakere design -->
+                <div class="bg-[#F2F0EB] rounded-xl p-8 flex flex-col justify-between h-[285px]">
+
+                    <!-- Top Section -->
+                    <div>
+                        <!-- Header: Date Badge + Type Badge -->
+                        <div class="flex items-start justify-between mb-6">
+                            <!-- Date Badge -->
+                            <div class="w-12 h-12 rounded-lg bg-white flex flex-col items-center justify-center flex-shrink-0">
+                                <span class="text-lg font-bold text-[#FF8B5E] leading-none"><?php echo date('d', strtotime($dato)); ?></span>
+                                <span class="text-[10px] uppercase text-[#5A5A5A] leading-none mt-0.5"><?php echo date_i18n('M', strtotime($dato)); ?></span>
+                            </div>
+
+                            <!-- Type Badge -->
+                            <span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#1A1A1A] border border-[#1A1A1A] px-2.5 py-0.5 rounded">
+                                <?php echo bimverdi_get_type_icon($arrangement_type); ?>
+                                <?php echo bimverdi_get_type_label($arrangement_type); ?>
+                            </span>
+                        </div>
+
+                        <!-- Title -->
+                        <h3 class="text-xl font-bold text-[#1A1A1A] mb-2 leading-tight tracking-tight line-clamp-2">
+                            <?php the_title(); ?>
+                        </h3>
+
+                        <!-- Time and Location -->
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#5A5A5A]">
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span><?php echo esc_html($time_str); ?></span>
+                            </div>
+                            <?php if ($sted_by): ?>
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <span><?php echo esc_html($sted_by); ?></span>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Footer Section -->
+                    <div class="flex items-center justify-between pt-4 border-t border-[rgba(214,209,198,0.3)]">
+                        <!-- Temagruppe Label -->
+                        <?php if ($first_temagruppe): ?>
+                        <span class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wider truncate max-w-[150px]">
+                            <?php echo esc_html($first_temagruppe); ?>
+                        </span>
+                        <?php else: ?>
+                        <span></span>
+                        <?php endif; ?>
+
+                        <!-- Link -->
+                        <a href="<?php the_permalink(); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity">
+                            Se arrangement
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <?php endwhile; wp_reset_postdata(); ?>
+            </div>
+
+            <?php else: ?>
+
+            <!-- Empty state for upcoming -->
+            <div class="py-16 text-center">
+                <div class="w-16 h-16 bg-[#F2F0EB] rounded-lg flex items-center justify-center mx-auto mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[#9D8F7F]"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <h2 class="text-lg font-semibold text-[#1A1A1A] mb-2">Ingen kommende arrangementer</h2>
+                <p class="text-sm text-[#5A5A5A]">Det er ikke planlagt noen arrangementer for øyeblikket. Sjekk tilbake snart!</p>
+            </div>
+
             <?php endif; ?>
         </section>
 
@@ -390,106 +205,100 @@ function bimverdi_format_short_label($format) {
         <!-- ============================================ -->
         <?php if ($past_events->have_posts()): ?>
         <section>
-            <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-3">
-                <wa-icon library="fa" name="solid/clock-rotate-left" class="text-gray-400"></wa-icon>
-                Tidligere arrangementer
-                <wa-badge variant="neutral"><?php echo $past_events->found_posts; ?></wa-badge>
-            </h2>
-            
-            <div class="space-y-3">
-                <?php while ($past_events->have_posts()): $past_events->the_post(); 
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-[#5A5A5A] flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#9D8F7F]"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                    Tidligere arrangementer
+                    <span class="text-sm font-normal text-[#9D8F7F]">(<?php echo $past_events->found_posts; ?>)</span>
+                </h2>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-[#D6D1C6] mb-4"></div>
+
+            <div class="space-y-0 divide-y divide-[#D6D1C6]">
+                <?php while ($past_events->have_posts()): $past_events->the_post();
                     $event_id = get_the_ID();
                     $dato = get_field('arrangement_dato');
                     $tid_start = get_field('tidspunkt_start');
-                    $format = get_field('arrangement_format');
-                    $fysisk_adresse = get_field('fysisk_adresse');
-                    
-                    // Get terms
-                    $event_types = wp_get_post_terms($event_id, 'arrangementstype');
-                    $event_temagrupper = wp_get_post_terms($event_id, 'temagruppe');
+                    $arrangement_type = get_field('arrangement_type') ?: 'digitalt';
+                    $status = get_field('arrangement_status');
+                    $opptak_url = get_field('opptak_url');
+                    $dokumentasjon_url = get_field('dokumentasjon_url');
+
+                    // Get temagrupper
+                    $temagrupper = wp_get_post_terms($event_id, 'temagruppe', array('fields' => 'all'));
                 ?>
-                
-                <wa-card class="overflow-hidden opacity-75 hover:opacity-100 transition-opacity">
-                    <div class="p-4">
-                        <div class="flex flex-col md:flex-row md:items-center gap-4">
-                            
-                            <!-- Dato -->
-                            <div class="flex-shrink-0 text-center text-gray-400 w-14">
-                                <div class="text-lg font-semibold"><?php echo date('d', strtotime($dato)); ?></div>
-                                <div class="text-xs uppercase"><?php echo date_i18n('M Y', strtotime($dato)); ?></div>
-                            </div>
-                            
-                            <!-- Tittel og info -->
-                            <div class="flex-1 min-w-0">
-                                <a href="<?php the_permalink(); ?>" class="font-semibold text-gray-700 hover:text-bim-orange transition-colors block truncate">
-                                    <?php the_title(); ?>
-                                </a>
-                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mt-1">
-                                    <span class="flex items-center gap-1">
-                                        <wa-icon library="fa" name="regular/clock" style="font-size: 0.7rem;"></wa-icon>
-                                        <?php echo esc_html($tid_start); ?>
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        <wa-icon library="fa" name="<?php echo bimverdi_format_badge_icon($format); ?>" style="font-size: 0.7rem;"></wa-icon>
-                                        <?php echo bimverdi_format_short_label($format); ?>
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Tags -->
-                            <div class="flex flex-wrap gap-1">
-                                <?php foreach ($event_temagrupper as $gruppe): ?>
-                                    <wa-tag variant="neutral" size="small"><?php echo esc_html($gruppe->name); ?></wa-tag>
-                                <?php endforeach; ?>
-                                <?php foreach ($event_types as $type): ?>
-                                    <wa-tag variant="neutral" size="small"><?php echo esc_html($type->name); ?></wa-tag>
-                                <?php endforeach; ?>
-                            </div>
-                            
-                            <!-- Status -->
-                            <div class="flex-shrink-0">
-                                <wa-tag variant="neutral" size="small">
-                                    <wa-icon library="fa" name="solid/check" slot="prefix"></wa-icon>
-                                    Avholdt
-                                </wa-tag>
-                            </div>
-                            
-                            <!-- Link -->
-                            <div class="flex-shrink-0">
-                                <a href="<?php the_permalink(); ?>">
-                                    <wa-button variant="neutral" size="small" outline>
-                                        <wa-icon library="fa" name="solid/arrow-right" slot="prefix"></wa-icon>
-                                        Se
-                                    </wa-button>
-                                </a>
-                            </div>
-                            
+
+                <div class="py-4 flex flex-col md:flex-row md:items-center gap-4">
+
+                    <!-- Date -->
+                    <div class="flex-shrink-0 text-center text-[#9D8F7F] w-14">
+                        <div class="text-lg font-semibold"><?php echo date('d', strtotime($dato)); ?></div>
+                        <div class="text-xs uppercase"><?php echo date_i18n('M Y', strtotime($dato)); ?></div>
+                    </div>
+
+                    <!-- Title and meta -->
+                    <div class="flex-1 min-w-0">
+                        <a href="<?php the_permalink(); ?>" class="font-semibold text-[#1A1A1A] hover:opacity-70 transition-opacity block truncate">
+                            <?php the_title(); ?>
+                        </a>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#5A5A5A] mt-1">
+                            <span class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <?php echo esc_html($tid_start); ?>
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <?php echo bimverdi_get_type_icon($arrangement_type); ?>
+                                <?php echo bimverdi_get_type_label($arrangement_type); ?>
+                            </span>
                         </div>
                     </div>
-                </wa-card>
-                
+
+                    <!-- Temagruppe tags -->
+                    <div class="flex flex-wrap gap-1.5">
+                        <?php foreach ($temagrupper as $gruppe): ?>
+                            <a href="<?php echo get_term_link($gruppe); ?>" class="text-xs font-medium text-[#5A5A5A] bg-[#F2F0EB] px-2 py-0.5 rounded hover:bg-[#E5E1D8] transition-colors">
+                                <?php echo esc_html($gruppe->name); ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Status or Actions -->
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <?php if ($status === 'avlyst'): ?>
+                            <span class="text-xs font-medium text-[#772015] bg-red-50 px-2 py-0.5 rounded">
+                                Avlyst
+                            </span>
+                        <?php else: ?>
+                            <?php if ($opptak_url): ?>
+                                <a href="<?php echo esc_url($opptak_url); ?>" target="_blank" class="inline-flex items-center gap-1 text-xs font-medium text-[#FF8B5E] hover:opacity-70 transition-opacity">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    Opptak
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($dokumentasjon_url): ?>
+                                <a href="<?php echo esc_url($dokumentasjon_url); ?>" target="_blank" class="inline-flex items-center gap-1 text-xs font-medium text-[#5A5A5A] hover:opacity-70 transition-opacity">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                    Dokumenter
+                                </a>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Link -->
+                    <div class="flex-shrink-0">
+                        <a href="<?php the_permalink(); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity">
+                            Se
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                        </a>
+                    </div>
+
+                </div>
+
                 <?php endwhile; wp_reset_postdata(); ?>
             </div>
-            
-            <?php if ($past_events->found_posts > 20): ?>
-                <div class="text-center mt-6">
-                    <p class="text-sm text-gray-500">Viser de 20 siste av <?php echo $past_events->found_posts; ?> tidligere arrangementer</p>
-                </div>
-            <?php endif; ?>
         </section>
-        <?php elseif ($has_filters): ?>
-            <!-- Empty state for past with filters -->
-            <section>
-                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-3">
-                    <wa-icon library="fa" name="solid/clock-rotate-left" class="text-gray-400"></wa-icon>
-                    Tidligere arrangementer
-                </h2>
-                <wa-card class="text-center py-8">
-                    <p class="text-gray-500">
-                        Ingen tidligere arrangementer matcher filteret: <strong><?php echo esc_html(implode(' + ', $active_filters)); ?></strong>
-                    </p>
-                </wa-card>
-            </section>
         <?php endif; ?>
 
     </div>
