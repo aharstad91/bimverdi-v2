@@ -28,3 +28,7 @@ shared-context/
 !.claude/**
 .claude/local-dev.json
 .claude/settings.local.json
+
+# Prosjektdokumentasjon for Claude
+!_claude/
+!_claude/**
