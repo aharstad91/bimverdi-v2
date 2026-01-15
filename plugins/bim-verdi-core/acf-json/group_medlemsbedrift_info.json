@@ -145,7 +145,7 @@
             {
                 "param": "post_type",
                 "operator": "==",
-                "value": "medlemsbedrift"
+                "value": "foretak"
             }
         ]
     ],

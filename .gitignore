@@ -13,6 +13,7 @@
 # Ignorer alle plugins unntatt egenutviklede
 plugins/*
 !plugins/bim-verdi-core/
+!plugins/bim-verdi-core/**
 
 # Ignorer common files
 **/node_modules/
