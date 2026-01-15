@@ -35,15 +35,25 @@ Commit when it makes sense:
 
 ## When to Push
 
-**Always ask the user before pushing.**
+⚠️ **KRITISK: ALDRI push uten eksplisitt tillatelse fra brukeren.**
 
-Example:
-> "I've committed the changes locally. Ready to push when you've validated."
+Commit er OK, men push krever brukerens godkjenning.
 
-This allows the user to:
-- Test the changes locally first
-- Review what will be pushed
-- Decide on timing
+**Korrekt workflow:**
+1. Gjør endringer og commit lokalt
+2. Si: "Endringene er committet lokalt. Klar til å pushe når du har validert."
+3. **Vent** på at brukeren sier "push" eller lignende
+4. Først da: `git push`
+
+**IKKE gjør dette:**
+- ❌ Commit og push i samme operasjon uten å spørre
+- ❌ Anta at push er OK fordi commit ble godkjent
+- ❌ Bruke `git commit && git push` automatisk
+
+**Hvorfor dette er viktig:**
+- Brukeren trenger å teste endringene lokalt først
+- Brukeren vil se hva som pushes til produksjon
+- Gir kontroll over timing for deploy
 
 ## Co-Authored-By
 

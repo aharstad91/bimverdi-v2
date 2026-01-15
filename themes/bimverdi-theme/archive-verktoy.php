@@ -173,86 +173,39 @@ $is_logged_in = is_user_logged_in();
         <!-- Tools Grid -->
         <?php if ($tools_query->have_posts()): ?>
 
-        <div id="verktoy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div id="verktoy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             <?php while ($tools_query->have_posts()): $tools_query->the_post();
                 $eier_id = get_post_meta(get_the_ID(), 'eier_leverandor', true);
                 $eier = $eier_id ? get_post($eier_id) : null;
-                $lenke = get_post_meta(get_the_ID(), 'verktoy_lenke', true);
-                $logo_id = get_post_meta(get_the_ID(), 'verktoy_logo', true);
-                $logo_url = $logo_id ? wp_get_attachment_url($logo_id) : '';
                 $formaal = get_post_meta(get_the_ID(), 'formaalstema', true);
                 $type = get_post_meta(get_the_ID(), 'type_ressurs', true);
             ?>
 
-            <div class="verktoy-card bg-white rounded-lg border border-[#E5E0D8] overflow-hidden hover:border-[#1A1A1A] transition-colors group"
+            <a href="<?php the_permalink(); ?>"
+               class="verktoy-card group block bg-[#F2F0EB] rounded-xl p-6 hover:bg-[#EBE8E1] transition-colors"
                data-title="<?php echo esc_attr(strtolower(get_the_title())); ?>"
                data-formaal="<?php echo esc_attr($formaal); ?>"
                data-type="<?php echo esc_attr($type); ?>">
 
-                <!-- Logo/Image -->
-                <div class="h-40 bg-[#F7F5EF] overflow-hidden flex items-center justify-center p-6">
-                    <?php if ($logo_url): ?>
-                        <img src="<?php echo esc_url($logo_url); ?>"
-                             alt="<?php the_title(); ?>"
-                             class="max-h-full max-w-full object-contain">
-                    <?php else: ?>
-                        <div class="w-16 h-16 bg-[#E5E0D8] rounded-lg flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                        </div>
-                    <?php endif; ?>
+                <!-- Icon -->
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9D8F7F" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                 </div>
 
-                <!-- Content -->
-                <div class="p-5">
+                <!-- Title -->
+                <h3 class="text-base font-semibold text-[#1A1A1A] mb-2 line-clamp-2 group-hover:text-[#333]">
+                    <?php the_title(); ?>
+                </h3>
 
-                    <!-- Tags -->
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <?php if ($formaal): ?>
-                        <span class="text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2 py-1 rounded">
-                            <?php echo esc_html($formaal); ?>
-                        </span>
-                        <?php endif; ?>
-                        <?php if ($type): ?>
-                        <span class="text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2 py-1 rounded">
-                            <?php echo esc_html(str_replace('_', ' ', $type)); ?>
-                        </span>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Title -->
-                    <h3 class="text-lg font-bold text-[#1A1A1A] mb-1 group-hover:text-[#5A5A5A] transition-colors">
-                        <?php the_title(); ?>
-                    </h3>
-
-                    <!-- Company -->
-                    <?php if ($eier): ?>
-                    <p class="text-sm text-[#5A5A5A] mb-3">
-                        <?php echo esc_html($eier->post_title); ?>
-                    </p>
-                    <?php endif; ?>
-
-                    <!-- Description -->
-                    <p class="text-sm text-[#5A5A5A] mb-4 line-clamp-2">
-                        <?php echo esc_html(wp_trim_words(get_the_excerpt(), 15)); ?>
-                    </p>
-
-                    <!-- Actions -->
-                    <div class="flex gap-2 pt-4 border-t border-[#E5E0D8]">
-                        <a href="<?php the_permalink(); ?>"
-                           class="flex-1 px-4 py-2 text-sm font-medium text-center text-[#1A1A1A] bg-[#F2F0EB] rounded-lg hover:bg-[#E5E0D8] transition-colors">
-                            Se detaljer
-                        </a>
-                        <?php if (!empty($lenke)): ?>
-                        <a href="<?php echo esc_url($lenke); ?>"
-                           target="_blank"
-                           rel="noopener"
-                           class="px-4 py-2 text-sm font-medium text-center text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
-                            Besøk
-                        </a>
-                        <?php endif; ?>
-                    </div>
+                <!-- Footer -->
+                <div class="flex items-center justify-between pt-4 mt-4 border-t border-[#D6D1C6]/40">
+                    <span class="text-xs text-[#5A5A5A]"><?php echo $eier ? esc_html($eier->post_title) : ''; ?></span>
+                    <span class="inline-flex items-center gap-1 text-sm font-medium text-[#1A1A1A] group-hover:gap-2 transition-all">
+                        Se detaljer
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
                 </div>
-            </div>
+            </a>
 
             <?php endwhile; wp_reset_postdata(); ?>
         </div>

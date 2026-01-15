@@ -39,19 +39,14 @@ $bransjekategorier = wp_get_post_terms($company_id, 'bransjekategori', array('fi
 $kundetyper = wp_get_post_terms($company_id, 'kundetype', array('fields' => 'all'));
 $temagrupper = wp_get_post_terms($company_id, 'temagruppe', array('fields' => 'all'));
 
-// Hent foretakets verktøy (ACF-felt: eier_leverandor)
+// Hent foretakets verktøy (ACF post_object lagrer ID som integer)
 $company_tools = get_posts(array(
     'post_type' => 'verktoy',
     'meta_query' => array(
-        'relation' => 'OR',
         array(
             'key' => 'eier_leverandor',
             'value' => $company_id,
-        ),
-        array(
-            'key' => 'eier_leverandor',
-            'value' => '"' . $company_id . '"',
-            'compare' => 'LIKE',
+            'compare' => '=',
         ),
     ),
     'posts_per_page' => -1,
@@ -220,31 +215,24 @@ $company_kunnskapskilder = get_posts(array(
                     </div>
 
                     <?php if (!empty($company_tools)): ?>
-                    <div class="space-y-0 divide-y divide-[#E5E0D8]">
-                        <?php foreach ($company_tools as $tool):
-                            $tool_excerpt = $tool->post_excerpt ?: wp_trim_words($tool->post_content, 20, '...');
-                            $tool_categories = wp_get_post_terms($tool->ID, 'verktoykategori', array('fields' => 'names'));
-                        ?>
-                        <a href="<?php echo get_permalink($tool->ID); ?>" class="block py-5 hover:bg-[#F7F5EF] -mx-2 px-2 rounded transition-colors">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-medium text-[#1A1A1A] mb-1"><?php echo esc_html($tool->post_title); ?></h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <?php foreach ($company_tools as $tool): ?>
+                        <a href="<?php echo get_permalink($tool->ID); ?>" class="group block bg-[#F2F0EB] rounded-xl p-6 hover:bg-[#EBE8E1] transition-colors">
+                            <!-- Icon -->
+                            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9D8F7F" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            </div>
 
-                                    <?php if (!empty($tool_categories)): ?>
-                                    <div class="flex flex-wrap gap-1.5 mb-2">
-                                        <?php foreach (array_slice($tool_categories, 0, 2) as $cat): ?>
-                                        <span class="text-xs bg-[#F2F0EB] text-[#5A5A5A] px-2 py-0.5 rounded">
-                                            <?php echo esc_html($cat); ?>
-                                        </span>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <?php endif; ?>
+                            <!-- Title -->
+                            <h3 class="text-base font-semibold text-[#1A1A1A] mb-2 line-clamp-2 group-hover:text-[#333]"><?php echo esc_html($tool->post_title); ?></h3>
 
-                                    <?php if ($tool_excerpt): ?>
-                                    <p class="text-sm text-[#5A5A5A] line-clamp-2"><?php echo esc_html($tool_excerpt); ?></p>
-                                    <?php endif; ?>
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#9D8F7F] flex-shrink-0 mt-1"><path d="m9 18 6-6-6-6"/></svg>
+                            <!-- Footer -->
+                            <div class="flex items-center justify-between pt-4 mt-4 border-t border-[#D6D1C6]/40">
+                                <span class="text-xs text-[#5A5A5A]"><?php echo esc_html($company_title); ?></span>
+                                <span class="inline-flex items-center gap-1 text-sm font-medium text-[#1A1A1A] group-hover:gap-2 transition-all">
+                                    Se detaljer
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                                </span>
                             </div>
                         </a>
                         <?php endforeach; ?>
@@ -280,8 +268,8 @@ $company_kunnskapskilder = get_posts(array(
                     <?php endif; ?>
                 </section>
 
-                <!-- Artikler Section -->
-                <?php if (!empty($company_articles)):
+                <!-- Artikler Section (vises alltid) -->
+                <?php
                     $category_labels = array(
                         'fagartikkel' => 'Fagartikkel',
                         'case' => 'Case',
@@ -289,49 +277,62 @@ $company_kunnskapskilder = get_posts(array(
                         'nyhet' => 'Nyhet',
                         'kommentar' => 'Kommentar',
                     );
+                    $article_count = count($company_articles);
                 ?>
                 <section class="border-t border-[#E5E0D8] pt-10">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-[#1A1A1A]">Artikler</h2>
-                        <span class="text-sm text-[#5A5A5A]"><?php echo count($company_articles); ?> artikler</span>
+                        <?php if ($article_count > 0): ?>
+                        <span class="text-sm text-[#5A5A5A]"><?php echo $article_count; ?> artikler</span>
+                        <?php endif; ?>
                     </div>
 
-                    <div class="space-y-0 divide-y divide-[#E5E0D8]">
+                    <?php if (!empty($company_articles)): ?>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <?php foreach ($company_articles as $article):
                             $kategori = get_field('artikkel_kategori', $article->ID);
                             $ingress = get_field('artikkel_ingress', $article->ID);
                             $author = get_the_author_meta('display_name', $article->post_author);
                         ?>
-                        <a href="<?php echo get_permalink($article->ID); ?>" class="block py-5 hover:bg-[#F7F5EF] -mx-2 px-2 rounded transition-colors">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <?php if ($kategori && isset($category_labels[$kategori])): ?>
-                                    <span class="inline-block text-xs bg-[#F2F0EB] text-[#5A5A5A] px-2 py-0.5 rounded mb-2">
-                                        <?php echo esc_html($category_labels[$kategori]); ?>
-                                    </span>
-                                    <?php endif; ?>
-
-                                    <h3 class="font-medium text-[#1A1A1A] mb-1"><?php echo esc_html($article->post_title); ?></h3>
-
-                                    <?php if ($ingress): ?>
-                                    <p class="text-sm text-[#5A5A5A] line-clamp-2 mb-2"><?php echo wp_trim_words(esc_html($ingress), 25); ?></p>
-                                    <?php endif; ?>
-
-                                    <div class="flex items-center gap-4 text-xs text-[#9D8F7F]">
-                                        <span><?php echo esc_html($author); ?></span>
-                                        <span><?php echo get_the_date('j. M Y', $article->ID); ?></span>
-                                    </div>
+                        <div class="bg-[#F2F0EB] rounded-xl p-6 flex flex-col justify-between min-h-[200px]">
+                            <div>
+                                <!-- Icon -->
+                                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9D8F7F" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#9D8F7F] flex-shrink-0 mt-1"><path d="m9 18 6-6-6-6"/></svg>
+
+                                <!-- Category Tag -->
+                                <?php if ($kategori && isset($category_labels[$kategori])): ?>
+                                <span class="inline-block text-xs bg-white/60 text-[#5A5A5A] px-2 py-0.5 rounded mb-3">
+                                    <?php echo esc_html($category_labels[$kategori]); ?>
+                                </span>
+                                <?php endif; ?>
+
+                                <!-- Title -->
+                                <h3 class="font-bold text-[#1A1A1A] mb-2 line-clamp-2"><?php echo esc_html($article->post_title); ?></h3>
                             </div>
-                        </a>
+
+                            <!-- Footer -->
+                            <div class="flex items-center justify-between pt-3 border-t border-[rgba(214,209,198,0.3)]">
+                                <span class="text-xs text-[#5A5A5A]"><?php echo get_the_date('j. M Y', $article->ID); ?></span>
+                                <a href="<?php echo get_permalink($article->ID); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity">
+                                    Les artikkel
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                                </a>
+                            </div>
+                        </div>
                         <?php endforeach; ?>
                     </div>
+                    <?php else: ?>
+                    <p class="text-[#5A5A5A] text-sm">
+                        Ingen publiserte artikler ennå.
+                        <a href="<?php echo home_url('/artikler/'); ?>" class="text-[#FF8B5E] hover:underline">Del deres erfaringer med nettverket!</a>
+                    </p>
+                    <?php endif; ?>
                 </section>
-                <?php endif; ?>
 
-                <!-- Kunnskapskilder Section -->
-                <?php if (!empty($company_kunnskapskilder)):
+                <!-- Kunnskapskilder Section (vises alltid) -->
+                <?php
                     $kildetype_labels = array(
                         'standard' => 'Standard',
                         'veileder' => 'Veileder',
@@ -343,60 +344,60 @@ $company_kunnskapskilder = get_posts(array(
                         'nettressurs' => 'Nettressurs',
                         'annet' => 'Annet',
                     );
+                    $kilde_count = count($company_kunnskapskilder);
                 ?>
                 <section class="border-t border-[#E5E0D8] pt-10">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-[#1A1A1A]">Kunnskapskilder</h2>
-                        <span class="text-sm text-[#5A5A5A]"><?php echo count($company_kunnskapskilder); ?> kilder</span>
+                        <?php if ($kilde_count > 0): ?>
+                        <span class="text-sm text-[#5A5A5A]"><?php echo $kilde_count; ?> kilder</span>
+                        <?php endif; ?>
                     </div>
 
-                    <div class="space-y-0 divide-y divide-[#E5E0D8]">
+                    <?php if (!empty($company_kunnskapskilder)): ?>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <?php foreach ($company_kunnskapskilder as $kilde):
                             $kildetype = get_field('kildetype', $kilde->ID);
                             $kort_beskrivelse = get_field('kort_beskrivelse', $kilde->ID);
                             $utgiver = get_field('utgiver', $kilde->ID);
                             $ekstern_lenke = get_field('ekstern_lenke', $kilde->ID);
                         ?>
-                        <div class="py-5">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <?php if ($kildetype && isset($kildetype_labels[$kildetype])): ?>
-                                    <span class="inline-block text-xs bg-[#F0FDFA] text-[#0D9488] px-2 py-0.5 rounded mb-2">
-                                        <?php echo esc_html($kildetype_labels[$kildetype]); ?>
-                                    </span>
-                                    <?php endif; ?>
-
-                                    <h3 class="font-medium text-[#1A1A1A] mb-1">
-                                        <a href="<?php echo get_permalink($kilde->ID); ?>" class="hover:text-[#0D9488] transition-colors">
-                                            <?php echo esc_html($kilde->post_title); ?>
-                                        </a>
-                                    </h3>
-
-                                    <?php if ($kort_beskrivelse): ?>
-                                    <p class="text-sm text-[#5A5A5A] line-clamp-2 mb-2"><?php echo wp_trim_words(esc_html($kort_beskrivelse), 25); ?></p>
-                                    <?php endif; ?>
-
-                                    <?php if ($utgiver): ?>
-                                    <span class="text-xs text-[#9D8F7F]"><?php echo esc_html($utgiver); ?></span>
-                                    <?php endif; ?>
+                        <div class="bg-[#F2F0EB] rounded-xl p-6 flex flex-col justify-between min-h-[200px]">
+                            <div>
+                                <!-- Icon -->
+                                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9D8F7F" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                                 </div>
 
-                                <div class="flex items-center gap-2 flex-shrink-0">
-                                    <?php if ($ekstern_lenke): ?>
-                                    <a href="<?php echo esc_url($ekstern_lenke); ?>" target="_blank" rel="noopener" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="Åpne ekstern lenke">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                                    </a>
-                                    <?php endif; ?>
-                                    <a href="<?php echo get_permalink($kilde->ID); ?>" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="Se detaljer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-                                    </a>
-                                </div>
+                                <!-- Type Tag -->
+                                <?php if ($kildetype && isset($kildetype_labels[$kildetype])): ?>
+                                <span class="inline-block text-xs bg-[#F0FDFA] text-[#0D9488] px-2 py-0.5 rounded mb-3">
+                                    <?php echo esc_html($kildetype_labels[$kildetype]); ?>
+                                </span>
+                                <?php endif; ?>
+
+                                <!-- Title -->
+                                <h3 class="font-bold text-[#1A1A1A] mb-2 line-clamp-2"><?php echo esc_html($kilde->post_title); ?></h3>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="flex items-center justify-between pt-3 border-t border-[rgba(214,209,198,0.3)]">
+                                <span class="text-xs text-[#5A5A5A]"><?php echo $utgiver ? esc_html($utgiver) : esc_html($company_title); ?></span>
+                                <a href="<?php echo get_permalink($kilde->ID); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity">
+                                    Se kilde
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                                </a>
                             </div>
                         </div>
                         <?php endforeach; ?>
                     </div>
+                    <?php else: ?>
+                    <p class="text-[#5A5A5A] text-sm">
+                        Ingen koblede kunnskapskilder ennå.
+                        <a href="<?php echo home_url('/kunnskapskilder/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk kunnskapsbiblioteket!</a>
+                    </p>
+                    <?php endif; ?>
                 </section>
-                <?php endif; ?>
 
                 <!-- Ansatte Section -->
                 <?php if (!empty($company_users) && count($company_users) > 0): ?>
