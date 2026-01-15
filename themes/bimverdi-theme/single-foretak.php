@@ -39,16 +39,22 @@ $bransjekategorier = wp_get_post_terms($company_id, 'bransjekategori', array('fi
 $kundetyper = wp_get_post_terms($company_id, 'kundetype', array('fields' => 'all'));
 $temagrupper = wp_get_post_terms($company_id, 'temagruppe', array('fields' => 'all'));
 
-// Hent foretakets verktøy
+// Hent foretakets verktøy (ACF-felt: eier_leverandor)
 $company_tools = get_posts(array(
     'post_type' => 'verktoy',
     'meta_query' => array(
+        'relation' => 'OR',
         array(
-            'key' => 'verktoy_eier',
+            'key' => 'eier_leverandor',
             'value' => $company_id,
-        )
+        ),
+        array(
+            'key' => 'eier_leverandor',
+            'value' => '"' . $company_id . '"',
+            'compare' => 'LIKE',
+        ),
     ),
-    'posts_per_page' => 6,
+    'posts_per_page' => -1,
     'post_status' => 'publish',
 ));
 
@@ -204,14 +210,16 @@ $company_kunnskapskilder = get_posts(array(
                     <?php endif; ?>
                 </section>
 
-                <!-- Verktøy Section -->
-                <?php if (!empty($company_tools)): ?>
+                <!-- Verktøy Section (vises alltid) -->
                 <section class="border-t border-[#E5E0D8] pt-10">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-[#1A1A1A]">Verktøy</h2>
+                        <?php if ($tool_count > 0): ?>
                         <span class="text-sm text-[#5A5A5A]"><?php echo $tool_count; ?> verktøy</span>
+                        <?php endif; ?>
                     </div>
 
+                    <?php if (!empty($company_tools)): ?>
                     <div class="space-y-0 divide-y divide-[#E5E0D8]">
                         <?php foreach ($company_tools as $tool):
                             $tool_excerpt = $tool->post_excerpt ?: wp_trim_words($tool->post_content, 20, '...');
@@ -241,8 +249,36 @@ $company_kunnskapskilder = get_posts(array(
                         </a>
                         <?php endforeach; ?>
                     </div>
+                    <?php else: ?>
+                    <p class="text-[#5A5A5A] text-sm">
+                        Ingen registrerte verktøy ennå. Tilbyr dere digitale løsninger?
+                        <a href="<?php echo home_url('/verktoy/'); ?>" class="text-[#FF8B5E] hover:underline">Registrer dem i verktøykatalogen!</a>
+                    </p>
+                    <?php endif; ?>
                 </section>
-                <?php endif; ?>
+
+                <!-- Temagrupper Section (vises alltid) -->
+                <section class="border-t border-[#E5E0D8] pt-10">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-bold text-[#1A1A1A]">Temagrupper</h2>
+                    </div>
+
+                    <?php if (!empty($temagrupper) && !is_wp_error($temagrupper)): ?>
+                    <div class="flex flex-wrap gap-2">
+                        <?php foreach ($temagrupper as $gruppe): ?>
+                        <a href="<?php echo get_term_link($gruppe); ?>" class="inline-flex items-center gap-2 text-sm font-medium bg-[#ECFDF5] text-[#059669] px-4 py-2 rounded-lg hover:bg-[#D1FAE5] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                            <?php echo esc_html($gruppe->name); ?>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
+                    <p class="text-[#5A5A5A] text-sm">
+                        Ikke koblet til temagrupper ennå.
+                        <a href="<?php echo home_url('/temagruppe/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk våre temagrupper og bli med!</a>
+                    </p>
+                    <?php endif; ?>
+                </section>
 
                 <!-- Artikler Section -->
                 <?php if (!empty($company_articles)):
