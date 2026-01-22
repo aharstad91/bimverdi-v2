@@ -29,7 +29,7 @@ $articles = get_posts([
     'title' => __('Mine artikler', 'bimverdi'),
     'description' => __('Skriv og del fagartikler med nettverket', 'bimverdi'),
     'actions' => [
-        ['text' => __('Skriv ny artikkel', 'bimverdi'), 'url' => '/min-side/skriv-artikkel/', 'variant' => 'primary', 'icon' => 'plus'],
+        ['text' => __('Skriv ny artikkel', 'bimverdi'), 'url' => bimverdi_minside_url('artikler/skriv'), 'variant' => 'primary', 'icon' => 'plus'],
     ],
 ]); ?>
 
@@ -40,7 +40,7 @@ $articles = get_posts([
         'title' => __('Du har ingen artikler ennå', 'bimverdi'),
         'description' => __('Del din kunnskap og erfaring med BIM Verdi-nettverket. Skriv om prosjekter, tips, eller faglige innsikter.', 'bimverdi'),
         'cta_text' => __('Skriv din første artikkel', 'bimverdi'),
-        'cta_url' => '/min-side/skriv-artikkel/',
+        'cta_url' => bimverdi_minside_url('artikler/skriv'),
         'cta_icon' => 'pencil',
     ]); ?>
 
@@ -123,7 +123,7 @@ $articles = get_posts([
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                         </a>
                                     <?php endif; ?>
-                                    <a href="<?php echo home_url('/min-side/rediger-artikkel/?id=' . $article->ID); ?>" class="p-2 rounded hover:bg-[#F2F0EB] transition-colors" title="<?php esc_attr_e('Rediger', 'bimverdi'); ?>">
+                                    <a href="<?php echo esc_url(bimverdi_minside_url('artikler/rediger') . '?id=' . $article->ID); ?>" class="p-2 rounded hover:bg-[#F2F0EB] transition-colors" title="<?php esc_attr_e('Rediger', 'bimverdi'); ?>">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     </a>
                                 </div>

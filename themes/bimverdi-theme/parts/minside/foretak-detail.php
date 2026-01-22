@@ -34,7 +34,7 @@ if ($company_id) {
     'title' => __('Mitt foretak', 'bimverdi'),
     'description' => $company ? get_the_title($company_id) : __('Administrer foretaksinformasjon', 'bimverdi'),
     'actions' => $company && $is_hovedkontakt ? [
-        ['text' => __('Rediger foretak', 'bimverdi'), 'url' => '/min-side/rediger-foretak/', 'variant' => 'primary'],
+        ['text' => __('Rediger foretak', 'bimverdi'), 'url' => bimverdi_minside_url('foretak/rediger'), 'variant' => 'primary'],
     ] : [],
 ]); ?>
 
@@ -189,11 +189,19 @@ if ($company_id) {
             <div>
                 <h3 class="text-sm font-semibold text-[#5A5A5A] uppercase tracking-wide mb-3"><?php _e('Snarveier', 'bimverdi'); ?></h3>
                 <div class="space-y-2">
-                    <a href="<?php echo home_url('/min-side/rediger-foretak/'); ?>" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#E5E0D8] hover:border-[#1A1A1A] transition-colors">
+                    <a href="<?php echo esc_url(bimverdi_minside_url('foretak/team')); ?>" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#E5E0D8] hover:border-[#1A1A1A] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Administrer team', 'bimverdi'); ?></span>
+                    </a>
+                    <a href="<?php echo esc_url(bimverdi_minside_url('foretak/rediger')); ?>" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#E5E0D8] hover:border-[#1A1A1A] transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Rediger foretak', 'bimverdi'); ?></span>
                     </a>
-                    <a href="<?php echo home_url('/min-side/mine-verktoy/'); ?>" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#E5E0D8] hover:border-[#1A1A1A] transition-colors">
+                    <a href="<?php echo esc_url(bimverdi_minside_url('invitasjoner')); ?>" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#E5E0D8] hover:border-[#1A1A1A] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                        <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Inviter kolleger', 'bimverdi'); ?></span>
+                    </a>
+                    <a href="<?php echo esc_url(bimverdi_minside_url('verktoy')); ?>" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#E5E0D8] hover:border-[#1A1A1A] transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
                         <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Administrer verktøy', 'bimverdi'); ?></span>
                     </a>

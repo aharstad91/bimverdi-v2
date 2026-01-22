@@ -263,17 +263,27 @@ class BIMVerdi_Company_Invitations {
      * @return array
      */
     public function get_company_users($company_id) {
+        // Query users with either the new or legacy meta key
         $users = get_users(array(
-            'meta_key' => 'bim_verdi_company_id',
-            'meta_value' => $company_id,
+            'meta_query' => array(
+                'relation' => 'OR',
+                array(
+                    'key' => 'bimverdi_company_id',
+                    'value' => $company_id,
+                ),
+                array(
+                    'key' => 'bim_verdi_company_id',
+                    'value' => $company_id,
+                ),
+            ),
         ));
-        
+
         // Add role info
         $hovedkontakt_id = get_field('hovedkontaktperson', $company_id);
         foreach ($users as &$user) {
             $user->is_hovedkontakt = ($user->ID == $hovedkontakt_id);
         }
-        
+
         return $users;
     }
     
@@ -781,34 +791,39 @@ BIM Verdi',
      * @return bool|WP_Error
      */
     public function remove_user_access($target_user_id, $requesting_user_id) {
-        $user_company_id = get_user_meta($target_user_id, 'bim_verdi_company_id', true);
-        
+        // Check both meta keys for company ID (new key first, then legacy)
+        $user_company_id = get_user_meta($target_user_id, 'bimverdi_company_id', true);
+        if (!$user_company_id) {
+            $user_company_id = get_user_meta($target_user_id, 'bim_verdi_company_id', true);
+        }
+
         if (!$user_company_id) {
             return new WP_Error('not_linked', 'Bruker er ikke koblet til noe foretak');
         }
-        
+
         // Check if requesting user can manage this company
         if (!$this->can_send_invitations($requesting_user_id, $user_company_id)) {
             return new WP_Error('not_authorized', 'Du har ikke tillatelse til å fjerne brukere fra dette foretaket');
         }
-        
+
         // Cannot remove hovedkontakt
         $hovedkontakt_id = get_field('hovedkontaktperson', $user_company_id);
         if ($target_user_id == $hovedkontakt_id) {
             return new WP_Error('cannot_remove_hovedkontakt', 'Kan ikke fjerne hovedkontaktperson');
         }
-        
-        // Remove company link
+
+        // Remove company link (both keys)
+        delete_user_meta($target_user_id, 'bimverdi_company_id');
         delete_user_meta($target_user_id, 'bim_verdi_company_id');
-        
+
         if (function_exists('delete_field')) {
             delete_field('tilknyttet_foretak', 'user_' . $target_user_id);
         }
-        
+
         // Change role back to subscriber
         $user = new WP_User($target_user_id);
         $user->set_role('subscriber');
-        
+
         return true;
     }
     

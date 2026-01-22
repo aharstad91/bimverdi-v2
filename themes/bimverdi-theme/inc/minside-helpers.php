@@ -385,13 +385,18 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             // Articles
             'artikler'            => 'artikler-list',
             'artikler/skriv'      => 'artikler-skriv',
+            'artikler/rediger'    => 'artikler-rediger',
             
             // Events
             'arrangementer'       => 'arrangementer-list',
             
             // Project Ideas
             'prosjektideer'       => 'prosjektideer-list',
-            
+            'prosjektideer/ny'    => 'prosjektideer-ny',
+
+            // Company Team (hovedkontakt only)
+            'foretak/team'        => 'foretak-team',
+
             // Invitations (hovedkontakt only)
             'invitasjoner'        => 'invitasjoner-list',
             
@@ -403,6 +408,7 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'rediger-profil'      => 'profil-rediger',
             'endre-passord'       => 'profil-passord',
             'skriv-artikkel'      => 'artikler-skriv',
+            'rediger-artikkel'    => 'artikler-rediger',
         ];
     }
 }
