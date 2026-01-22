@@ -107,15 +107,21 @@ require_once get_template_directory() . '/template-parts/cards.php';
 require_once get_template_directory() . '/inc/mock-data.php';
 
 /**
- * Load ACF Field Groups
+ * Load ACF Field Groups (with graceful fallback if file missing)
  */
-require_once get_template_directory() . '/inc/acf/temagruppe-fields.php';
+$acf_temagruppe_fields = get_template_directory() . '/inc/acf/temagruppe-fields.php';
+if (file_exists($acf_temagruppe_fields)) {
+    require_once $acf_temagruppe_fields;
+}
 
 /**
  * Dummy Data Generator for Temagrupper (temporary - remove after use)
  * Usage: Visit /wp-admin/?generate_temagruppe_dummydata=1 as admin
  */
-require_once get_template_directory() . '/inc/dummy-data-temagrupper.php';
+$dummy_data_file = get_template_directory() . '/inc/dummy-data-temagrupper.php';
+if (file_exists($dummy_data_file)) {
+    require_once $dummy_data_file;
+}
 
 /**
  * Register Widget Areas
