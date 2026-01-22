@@ -446,6 +446,132 @@ function bimverdi_sync_brreg_on_foretak_save($post_id, $post, $update) {
 }
 
 /**
+ * =============================================================================
+ * MIGRERING: Synk alle eksisterende foretak med Brreg-data
+ * =============================================================================
+ * Kjør én gang via: /wp-admin/?bimverdi_sync_all_foretak=1
+ * Krever admin-tilgang.
+ */
+add_action('admin_init', 'bimverdi_maybe_sync_all_foretak');
+
+function bimverdi_maybe_sync_all_foretak() {
+    if (!isset($_GET['bimverdi_sync_all_foretak']) || $_GET['bimverdi_sync_all_foretak'] !== '1') {
+        return;
+    }
+
+    if (!current_user_can('manage_options')) {
+        wp_die('Du har ikke tilgang til denne funksjonen.');
+    }
+
+    // Hent alle foretak
+    $foretak = get_posts(array(
+        'post_type' => 'foretak',
+        'post_status' => 'any',
+        'posts_per_page' => -1,
+    ));
+
+    $results = array(
+        'total' => count($foretak),
+        'synced' => 0,
+        'skipped' => 0,
+        'errors' => array(),
+    );
+
+    foreach ($foretak as $post) {
+        $org_nr = get_field('organisasjonsnummer', $post->ID);
+
+        if (!$org_nr || !preg_match('/^\d{9}$/', $org_nr)) {
+            $results['skipped']++;
+            $results['errors'][] = "ID {$post->ID}: Mangler gyldig org.nr";
+            continue;
+        }
+
+        // Hent fra Brreg API
+        $api_url = 'https://data.brreg.no/enhetsregisteret/api/enheter/' . $org_nr;
+        $response = wp_remote_get($api_url, array(
+            'timeout' => 10,
+            'headers' => array('Accept' => 'application/json'),
+        ));
+
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            $results['skipped']++;
+            $results['errors'][] = "ID {$post->ID}: API-feil for org.nr {$org_nr}";
+            continue;
+        }
+
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+
+        if (!$data || !isset($data['organisasjonsnummer'])) {
+            $results['skipped']++;
+            continue;
+        }
+
+        // Lagre til ACF-felt
+        do_action('bimverdi_brreg_sync');
+
+        if (!empty($data['navn'])) {
+            update_field('bedriftsnavn', $data['navn'], $post->ID);
+        }
+
+        if (isset($data['forretningsadresse'])) {
+            $addr = $data['forretningsadresse'];
+            if (!empty($addr['adresse'])) {
+                update_field('adresse', implode(', ', $addr['adresse']), $post->ID);
+            }
+            if (!empty($addr['postnummer'])) {
+                update_field('postnummer', $addr['postnummer'], $post->ID);
+            }
+            if (!empty($addr['poststed'])) {
+                update_field('poststed', $addr['poststed'], $post->ID);
+            }
+            update_field('land', $addr['land'] ?? 'Norge', $post->ID);
+        }
+
+        $results['synced']++;
+
+        // Liten pause for å ikke overbelaste API
+        usleep(100000); // 0.1 sekund
+    }
+
+    // Vis resultat
+    set_transient('bimverdi_sync_results', $results, 60);
+    wp_redirect(admin_url('edit.php?post_type=foretak&bimverdi_sync_done=1'));
+    exit;
+}
+
+// Vis resultat-melding
+add_action('admin_notices', function() {
+    if (!isset($_GET['bimverdi_sync_done'])) {
+        return;
+    }
+
+    $results = get_transient('bimverdi_sync_results');
+    delete_transient('bimverdi_sync_results');
+
+    if (!$results) {
+        return;
+    }
+
+    echo '<div class="notice notice-success is-dismissible">';
+    echo '<p><strong>Brreg-synk fullført!</strong></p>';
+    echo '<ul>';
+    echo '<li>Totalt: ' . $results['total'] . ' foretak</li>';
+    echo '<li>Synket: ' . $results['synced'] . '</li>';
+    echo '<li>Hoppet over: ' . $results['skipped'] . '</li>';
+    echo '</ul>';
+
+    if (!empty($results['errors'])) {
+        echo '<details><summary>Feil (' . count($results['errors']) . ')</summary><ul>';
+        foreach (array_slice($results['errors'], 0, 10) as $error) {
+            echo '<li>' . esc_html($error) . '</li>';
+        }
+        echo '</ul></details>';
+    }
+
+    echo '</div>';
+});
+
+/**
  * Enqueue BRreg autocomplete JavaScript
  */
 add_action('wp_enqueue_scripts', function() {
