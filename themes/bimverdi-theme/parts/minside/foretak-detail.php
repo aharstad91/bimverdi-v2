@@ -106,13 +106,26 @@ if ($company_id) {
                 <h3 class="text-lg font-semibold text-[#1A1A1A] mb-4"><?php _e('Kontaktinformasjon', 'bimverdi'); ?></h3>
                 <div class="bg-white rounded-lg border border-[#E5E0D8] divide-y divide-[#E5E0D8]">
                     
-                    <?php $adresse = get_field('adresse', $company_id); ?>
-                    <?php if ($adresse): ?>
+                    <?php
+                    $adresse = get_field('adresse', $company_id);
+                    $postnummer = get_field('postnummer', $company_id);
+                    $poststed = get_field('poststed', $company_id);
+                    $land = get_field('land', $company_id);
+                    ?>
+                    <?php if ($adresse || $postnummer || $poststed): ?>
                     <div class="flex items-start gap-3 p-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A] flex-shrink-0 mt-0.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         <div>
                             <p class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide mb-1"><?php _e('Adresse', 'bimverdi'); ?></p>
-                            <p class="text-sm text-[#1A1A1A]"><?php echo esc_html($adresse); ?></p>
+                            <?php if ($adresse): ?>
+                                <p class="text-sm text-[#1A1A1A]"><?php echo esc_html($adresse); ?></p>
+                            <?php endif; ?>
+                            <?php if ($postnummer || $poststed): ?>
+                                <p class="text-sm text-[#1A1A1A]"><?php echo esc_html(trim($postnummer . ' ' . $poststed)); ?></p>
+                            <?php endif; ?>
+                            <?php if ($land && $land !== 'Norge'): ?>
+                                <p class="text-sm text-[#1A1A1A]"><?php echo esc_html($land); ?></p>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <?php endif; ?>

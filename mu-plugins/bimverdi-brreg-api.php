@@ -268,6 +268,8 @@ function bimverdi_brreg_format_company($data) {
         $company['poststed'] = $addr['poststed'] ?? '';
         $company['kommune'] = $addr['kommune'] ?? '';
         $company['kommunenummer'] = $addr['kommunenummer'] ?? '';
+        $company['land'] = $addr['land'] ?? 'Norge';
+        $company['landkode'] = $addr['landkode'] ?? 'NO';
     }
     
     // Postadresse (if different)
@@ -296,6 +298,151 @@ function bimverdi_brreg_format_company($data) {
     $company['under_tvangsavvikling'] = $data['underTvangsavviklingEllerTvangsopplosning'] ?? false;
     
     return $company;
+}
+
+/**
+ * =============================================================================
+ * GRAVITY FORMS: Auto-sync Brreg data til ACF-felt ved foretak-opprettelse
+ * =============================================================================
+ * Når et foretak opprettes via Gravity Forms, hent full data fra Brreg
+ * og lagre til ACF-feltene for å sikre at alt er korrekt.
+ */
+add_action('gform_advancedpostcreation_post_after_creation', 'bimverdi_sync_brreg_on_foretak_creation', 10, 4);
+
+function bimverdi_sync_brreg_on_foretak_creation($post_id, $feed, $entry, $form) {
+    // Sjekk at det er et foretak
+    $post = get_post($post_id);
+    if (!$post || $post->post_type !== 'foretak') {
+        return;
+    }
+
+    // Hent org.nr fra entry eller ACF
+    $org_nr = '';
+
+    // Prøv å finne org.nr i entry (Field 1 i Form 2)
+    foreach ($entry as $key => $value) {
+        if (is_numeric($key) && preg_match('/^\d{9}$/', trim($value))) {
+            $org_nr = trim($value);
+            break;
+        }
+    }
+
+    // Fallback: hent fra ACF
+    if (!$org_nr) {
+        $org_nr = get_field('organisasjonsnummer', $post_id);
+    }
+
+    if (!$org_nr || !preg_match('/^\d{9}$/', $org_nr)) {
+        error_log('BIM Verdi: Kunne ikke finne gyldig org.nr for foretak ' . $post_id);
+        return;
+    }
+
+    // Hent data fra Brreg API
+    $api_url = 'https://data.brreg.no/enhetsregisteret/api/enheter/' . $org_nr;
+
+    $response = wp_remote_get($api_url, array(
+        'timeout' => 10,
+        'headers' => array('Accept' => 'application/json'),
+    ));
+
+    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+        error_log('BIM Verdi: Kunne ikke hente Brreg-data for org.nr ' . $org_nr);
+        return;
+    }
+
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+
+    if (!$data || !isset($data['organisasjonsnummer'])) {
+        return;
+    }
+
+    // Oppdater ACF-felt med Brreg-data
+    // Marker at dette er en Brreg-synk (bypass protection)
+    do_action('bimverdi_brreg_sync');
+
+    // Organisasjonsnummer
+    update_field('organisasjonsnummer', $data['organisasjonsnummer'], $post_id);
+
+    // Bedriftsnavn
+    if (!empty($data['navn'])) {
+        update_field('bedriftsnavn', $data['navn'], $post_id);
+
+        // Oppdater også post_title hvis den er annerledes
+        if ($post->post_title !== $data['navn']) {
+            wp_update_post(array(
+                'ID' => $post_id,
+                'post_title' => $data['navn'],
+            ));
+        }
+    }
+
+    // Adresse
+    if (isset($data['forretningsadresse'])) {
+        $addr = $data['forretningsadresse'];
+
+        if (!empty($addr['adresse'])) {
+            update_field('adresse', implode(', ', $addr['adresse']), $post_id);
+        }
+        if (!empty($addr['postnummer'])) {
+            update_field('postnummer', $addr['postnummer'], $post_id);
+        }
+        if (!empty($addr['poststed'])) {
+            update_field('poststed', $addr['poststed'], $post_id);
+        }
+        if (!empty($addr['land'])) {
+            update_field('land', $addr['land'], $post_id);
+        } else {
+            update_field('land', 'Norge', $post_id);
+        }
+    }
+
+    // Hjemmeside (hvis tilgjengelig fra Brreg)
+    if (!empty($data['hjemmeside']) && empty(get_field('webside', $post_id))) {
+        update_field('webside', $data['hjemmeside'], $post_id);
+    }
+
+    error_log('BIM Verdi: Synket Brreg-data for foretak ' . $post_id . ' (' . $data['navn'] . ')');
+}
+
+/**
+ * Alternativ hook for standard post creation (ikke Advanced Post Creation)
+ */
+add_action('save_post_foretak', 'bimverdi_sync_brreg_on_foretak_save', 20, 3);
+
+function bimverdi_sync_brreg_on_foretak_save($post_id, $post, $update) {
+    // Ikke kjør på autosave
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    // Ikke kjør ved revisjon
+    if (wp_is_post_revision($post_id)) {
+        return;
+    }
+
+    // Kun ved første opprettelse (ikke update)
+    if ($update) {
+        return;
+    }
+
+    // Sjekk om Brreg-felt allerede er fylt ut
+    $bedriftsnavn = get_field('bedriftsnavn', $post_id);
+    $postnummer = get_field('postnummer', $post_id);
+
+    // Hvis begge er fylt ut, anta at synk allerede er gjort
+    if (!empty($bedriftsnavn) && !empty($postnummer)) {
+        return;
+    }
+
+    // Hent org.nr
+    $org_nr = get_field('organisasjonsnummer', $post_id);
+    if (!$org_nr || !preg_match('/^\d{9}$/', $org_nr)) {
+        return;
+    }
+
+    // Trigger synk (gjenbruk logikken)
+    bimverdi_sync_brreg_on_foretak_creation($post_id, null, array(), null);
 }
 
 /**

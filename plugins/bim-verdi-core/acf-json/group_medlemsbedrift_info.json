@@ -7,19 +7,21 @@
             "label": "Organisasjonsnummer",
             "name": "organisasjonsnummer",
             "type": "text",
-            "instructions": "9 siffer (f.eks. 123456789)",
+            "instructions": "🔒 Synkes fra Brreg – kan ikke redigeres",
             "required": 1,
             "maxlength": 9,
-            "placeholder": "123456789"
+            "placeholder": "",
+            "readonly": 1
         },
         {
             "key": "field_bedriftsnavn",
             "label": "Bedriftsnavn",
             "name": "bedriftsnavn",
             "type": "text",
-            "instructions": "Offisielt bedriftsnavn",
-            "required": 1,
-            "placeholder": "Bedrift AS"
+            "instructions": "🔒 Synkes fra Brreg – kan ikke redigeres",
+            "required": 0,
+            "placeholder": "",
+            "readonly": 1
         },
         {
             "key": "field_bedriftsbeskrivelse",
@@ -49,28 +51,41 @@
             "label": "Adresse",
             "name": "adresse",
             "type": "text",
-            "instructions": "Gateadresse",
+            "instructions": "🔒 Synkes fra Brreg – kan ikke redigeres",
             "required": 0,
-            "placeholder": "Eksempelveien 1"
+            "placeholder": "",
+            "readonly": 1
         },
         {
             "key": "field_postnummer",
             "label": "Postnummer",
             "name": "postnummer",
             "type": "text",
-            "instructions": "4 siffer",
+            "instructions": "🔒 Synkes fra Brreg – kan ikke redigeres",
             "required": 0,
             "maxlength": 4,
-            "placeholder": "0123"
+            "placeholder": "",
+            "readonly": 1
         },
         {
             "key": "field_poststed",
             "label": "Poststed",
             "name": "poststed",
             "type": "text",
-            "instructions": "",
+            "instructions": "🔒 Synkes fra Brreg – kan ikke redigeres",
             "required": 0,
-            "placeholder": "Oslo"
+            "placeholder": "",
+            "readonly": 1
+        },
+        {
+            "key": "field_land",
+            "label": "Land",
+            "name": "land",
+            "type": "text",
+            "instructions": "🔒 Synkes fra Brreg. Sett manuelt kun for utenlandske foretak.",
+            "required": 0,
+            "placeholder": "",
+            "default_value": "Norge"
         },
         {
             "key": "field_kontakt_epost",
@@ -86,9 +101,9 @@
             "label": "Telefon",
             "name": "telefon",
             "type": "text",
-            "instructions": "8 siffer (uten +47)",
+            "instructions": "Inkluder landkode (f.eks. +47 12345678)",
             "required": 0,
-            "placeholder": "12345678"
+            "placeholder": "+47 12345678"
         },
         {
             "key": "field_webside",
@@ -122,6 +137,7 @@
             "required": 1,
             "choices": {
                 "deltaker": "Deltaker",
+                "prosjektdeltaker": "Prosjektdeltaker",
                 "partner": "Partner"
             },
             "default_value": "deltaker",

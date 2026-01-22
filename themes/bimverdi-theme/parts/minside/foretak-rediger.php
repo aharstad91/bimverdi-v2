@@ -50,6 +50,12 @@ $bedriftsnavn = get_field('bedriftsnavn', $company_id) ?: $company->post_title;
 $org_nummer = get_field('organisasjonsnummer', $company_id);
 $logo_id = get_field('logo', $company_id);
 $logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'thumbnail') : '';
+
+// Get Brreg-synced fields (locked)
+$adresse = get_field('adresse', $company_id);
+$postnummer = get_field('postnummer', $company_id);
+$poststed = get_field('poststed', $company_id);
+$land = get_field('land', $company_id);
 ?>
 
 <!-- Breadcrumb -->
@@ -89,8 +95,8 @@ get_template_part('parts/components/page-header', null, [
     <!-- Company Info Badge -->
     <div class="mb-8 p-4 bg-[#F7F5EF] border border-[#EFE9DE] rounded-lg flex items-center gap-4">
         <?php if ($logo_url): ?>
-            <img src="<?php echo esc_url($logo_url); ?>" 
-                 alt="<?php echo esc_attr($bedriftsnavn); ?>" 
+            <img src="<?php echo esc_url($logo_url); ?>"
+                 alt="<?php echo esc_attr($bedriftsnavn); ?>"
                  class="w-16 h-16 rounded-lg object-contain bg-white border border-[#E5E0D5]">
         <?php else: ?>
             <div class="w-16 h-16 rounded-lg bg-white border border-[#E5E0D5] flex items-center justify-center">
@@ -109,6 +115,50 @@ get_template_part('parts/components/page-header', null, [
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Locked Brreg Data Section -->
+    <div class="mb-8 p-6 bg-[#F9F9F9] border border-[#E5E0D5] rounded-lg">
+        <div class="flex items-center gap-2 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <h3 class="font-semibold text-[#1A1A1A]">Offisielle data fra Brønnøysundregistrene</h3>
+        </div>
+        <p class="text-sm text-[#5A5A5A] mb-4">
+            Disse opplysningene hentes automatisk fra Brønnøysundregistrene og kan ikke redigeres her.
+            For å oppdatere disse må du melde endring til Brønnøysundregistrene.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1">Bedriftsnavn</p>
+                <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($bedriftsnavn); ?></p>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1">Organisasjonsnummer</p>
+                <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($org_nummer); ?></p>
+            </div>
+            <?php if ($adresse): ?>
+            <div>
+                <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1">Adresse</p>
+                <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($adresse); ?></p>
+            </div>
+            <?php endif; ?>
+            <?php if ($postnummer || $poststed): ?>
+            <div>
+                <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1">Poststed</p>
+                <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html(trim($postnummer . ' ' . $poststed)); ?></p>
+            </div>
+            <?php endif; ?>
+            <?php if ($land && $land !== 'Norge'): ?>
+            <div>
+                <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1">Land</p>
+                <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($land); ?></p>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
     
     <!-- Gravity Form -->
     <div class="bg-white border border-[#E5E0D5] rounded-lg p-8">
@@ -117,8 +167,11 @@ get_template_part('parts/components/page-header', null, [
                 <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>
             </svg>
-            Oppdater foretaksinformasjon
+            Redigerbar informasjon
         </h2>
+        <p class="text-sm text-[#5A5A5A] mb-6">
+            Oppdater beskrivelse, logo, kontaktinformasjon og nettside for foretaket.
+        </p>
         
         <?php
         // Display Gravity Form ID 7 [System] - Redigering av foretak
@@ -144,7 +197,7 @@ get_template_part('parts/components/page-header', null, [
             </svg>
             Hjelp
         </h3>
-        
+
         <div class="space-y-4 text-sm text-[#5A5A5A]">
             <div class="flex gap-3 items-start">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 flex-shrink-0">
@@ -161,6 +214,13 @@ get_template_part('parts/components/page-header', null, [
                     <path d="M12 8h.01"/>
                 </svg>
                 <p>Kun hovedkontakt kan redigere foretaksinformasjon.</p>
+            </div>
+            <div class="flex gap-3 items-start">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 flex-shrink-0">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <p><strong>Låste felt:</strong> Bedriftsnavn, org.nr, adresse og poststed hentes fra Brønnøysundregistrene og kan ikke redigeres her.</p>
             </div>
             <div class="flex gap-3 items-start">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 flex-shrink-0">
