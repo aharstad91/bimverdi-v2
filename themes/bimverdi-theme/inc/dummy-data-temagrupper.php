@@ -7,7 +7,9 @@
  *
  * Usage:
  * 1. Include this file in functions.php: require_once get_template_directory() . '/inc/dummy-data-temagrupper.php';
- * 2. Visit: yoursite.com/wp-admin/?generate_temagruppe_dummydata=1
+ * 2. Visit one of these URLs:
+ *    - /wp-admin/?generate_temagruppe_dummydata=1      (ALL dummy data - creates new posts)
+ *    - /wp-admin/?generate_fagradgiver_dummydata=1    (ONLY fagrådgivere - updates existing theme_groups)
  * 3. Remove the require_once line after data is created
  *
  * @package BimVerdi_Theme
@@ -16,7 +18,51 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Generate dummy data when admin visits special URL
+ * Generate ONLY fagrådgiver dummy data (no new posts created)
+ */
+add_action('admin_init', function() {
+    if (!isset($_GET['generate_fagradgiver_dummydata']) || !current_user_can('manage_options')) {
+        return;
+    }
+
+    $fagradgiver_data = bimverdi_get_fagradgiver_data();
+    $count = 0;
+
+    // Get all theme_group posts
+    $theme_groups = get_posts([
+        'post_type' => 'theme_group',
+        'posts_per_page' => -1,
+        'post_status' => 'publish',
+    ]);
+
+    foreach ($theme_groups as $tg) {
+        $tg_title = $tg->post_title;
+
+        if (isset($fagradgiver_data[$tg_title]) && function_exists('update_field')) {
+            $fagradgiver = $fagradgiver_data[$tg_title];
+
+            update_field('fagansvarlig_navn', $fagradgiver['navn'], $tg->ID);
+            update_field('fagansvarlig_tittel', $fagradgiver['tittel'], $tg->ID);
+            update_field('fagansvarlig_linkedin', $fagradgiver['linkedin'], $tg->ID);
+
+            // Try to find matching foretak by name
+            if (!empty($fagradgiver['bedrift'])) {
+                $foretak = get_page_by_title($fagradgiver['bedrift'], OBJECT, 'foretak');
+                if ($foretak) {
+                    update_field('fagansvarlig_bedrift', $foretak->ID, $tg->ID);
+                }
+            }
+
+            $count++;
+        }
+    }
+
+    $message = sprintf('Fagrådgiver-data oppdatert for %d temagrupper.', $count);
+    wp_die($message . '<br><br><a href="' . admin_url() . '">Tilbake til admin</a>');
+});
+
+/**
+ * Generate ALL dummy data when admin visits special URL
  */
 add_action('admin_init', function() {
     if (!isset($_GET['generate_temagruppe_dummydata']) || !current_user_can('manage_options')) {
@@ -41,7 +87,42 @@ add_action('admin_init', function() {
         'arrangementer' => 0,
         'verktoy' => 0,
         'artikler' => 0,
+        'fagradgivere' => 0,
     ];
+
+    // ============================================
+    // FAGRÅDGIVERE - Update theme_group CPT posts
+    // ============================================
+    $fagradgiver_data = bimverdi_get_fagradgiver_data();
+
+    // Get all theme_group posts
+    $theme_groups = get_posts([
+        'post_type' => 'theme_group',
+        'posts_per_page' => -1,
+        'post_status' => 'publish',
+    ]);
+
+    foreach ($theme_groups as $tg) {
+        $tg_title = $tg->post_title;
+
+        if (isset($fagradgiver_data[$tg_title]) && function_exists('update_field')) {
+            $fagradgiver = $fagradgiver_data[$tg_title];
+
+            update_field('fagansvarlig_navn', $fagradgiver['navn'], $tg->ID);
+            update_field('fagansvarlig_tittel', $fagradgiver['tittel'], $tg->ID);
+            update_field('fagansvarlig_linkedin', $fagradgiver['linkedin'], $tg->ID);
+
+            // Try to find matching foretak by name
+            if (!empty($fagradgiver['bedrift'])) {
+                $foretak = get_page_by_title($fagradgiver['bedrift'], OBJECT, 'foretak');
+                if ($foretak) {
+                    update_field('fagansvarlig_bedrift', $foretak->ID, $tg->ID);
+                }
+            }
+
+            $results['fagradgivere']++;
+        }
+    }
 
     foreach ($temagrupper as $temagruppe) {
         $temagruppe_navn = $temagruppe->name;
@@ -184,11 +265,12 @@ add_action('admin_init', function() {
 
     // Show results
     $message = sprintf(
-        'Dummydata opprettet: %d kunnskapskilder, %d arrangementer, %d verktoy, %d artikler',
+        'Dummydata opprettet: %d kunnskapskilder, %d arrangementer, %d verktoy, %d artikler, %d fagradgivere',
         $results['kunnskapskilder'],
         $results['arrangementer'],
         $results['verktoy'],
-        $results['artikler']
+        $results['artikler'],
+        $results['fagradgivere']
     );
 
     wp_die($message . '<br><br><a href="' . admin_url() . '">Tilbake til admin</a>');
@@ -388,4 +470,49 @@ function bimverdi_get_artikler_for_temagruppe($temagruppe_navn) {
     ];
 
     return $data[$temagruppe_navn] ?? [];
+}
+
+/**
+ * Get fagrådgiver data for theme groups
+ * Note: These are fictional people for demo purposes
+ */
+function bimverdi_get_fagradgiver_data() {
+    return [
+        'ByggesaksBIM' => [
+            'navn' => '[Claude - dummydata] Kari Nordmann',
+            'tittel' => 'Senior BIM-rådgiver',
+            'bedrift' => '', // Will try to match existing foretak
+            'linkedin' => 'https://www.linkedin.com/in/example/',
+        ],
+        'ProsjektBIM' => [
+            'navn' => '[Claude - dummydata] Erik Hansen',
+            'tittel' => 'BIM-koordinator',
+            'bedrift' => '',
+            'linkedin' => 'https://www.linkedin.com/in/example/',
+        ],
+        'EiendomsBIM' => [
+            'navn' => '[Claude - dummydata] Marte Olsen',
+            'tittel' => 'Digital tvilling-spesialist',
+            'bedrift' => '',
+            'linkedin' => 'https://www.linkedin.com/in/example/',
+        ],
+        'MiljoBIM' => [
+            'navn' => '[Claude - dummydata] Lars Pedersen',
+            'tittel' => 'Miljørådgiver',
+            'bedrift' => '',
+            'linkedin' => 'https://www.linkedin.com/in/example/',
+        ],
+        'SirkBIM' => [
+            'navn' => '[Claude - dummydata] Ingrid Berg',
+            'tittel' => 'Sirkulærøkonomi-rådgiver',
+            'bedrift' => '',
+            'linkedin' => 'https://www.linkedin.com/in/example/',
+        ],
+        'BIMtech' => [
+            'navn' => '[Claude - dummydata] Anders Johansen',
+            'tittel' => 'Senior utvikler / BIM-teknolog',
+            'bedrift' => '',
+            'linkedin' => 'https://www.linkedin.com/in/example/',
+        ],
+    ];
 }

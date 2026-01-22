@@ -120,10 +120,10 @@ $current_status = $status_config[$status] ?? $status_config['aktiv'];
         </dl>
     </div>
 
-    <!-- Card 2: Fagansvarlig -->
+    <!-- Card 2: Fagradgiver -->
     <div class="bg-white rounded-lg border border-[#E5E0D8] p-6">
         <h3 class="text-sm font-semibold text-[#5A5A5A] uppercase tracking-wide mb-4">
-            Fagansvarlig
+            Fagradgiver
         </h3>
 
         <?php if ($fagansvarlig_navn) : ?>
@@ -183,7 +183,7 @@ $current_status = $status_config[$status] ?? $status_config['aktiv'];
         </div>
         <?php else : ?>
         <p class="text-sm text-[#5A5A5A]">
-            Fagansvarlig er ikke satt enna.
+            Fagradgiver er ikke satt enna.
         </p>
         <?php endif; ?>
     </div>
