@@ -107,6 +107,17 @@ require_once get_template_directory() . '/template-parts/cards.php';
 require_once get_template_directory() . '/inc/mock-data.php';
 
 /**
+ * Load ACF Field Groups
+ */
+require_once get_template_directory() . '/inc/acf/temagruppe-fields.php';
+
+/**
+ * Dummy Data Generator for Temagrupper (temporary - remove after use)
+ * Usage: Visit /wp-admin/?generate_temagruppe_dummydata=1 as admin
+ */
+require_once get_template_directory() . '/inc/dummy-data-temagrupper.php';
+
+/**
  * Register Widget Areas
  */
 function bimverdi_widgets_init() {

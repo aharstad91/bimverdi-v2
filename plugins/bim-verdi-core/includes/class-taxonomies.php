@@ -118,7 +118,7 @@ class BIM_Verdi_Taxonomies {
             'show_in_rest'      => true,
         );
         
-        register_taxonomy('temagruppe', array('foretak', 'arrangement', 'prosjekt', 'kunnskapskilde'), $args);
+        register_taxonomy('temagruppe', array('foretak', 'arrangement', 'prosjekt', 'kunnskapskilde', 'artikkel'), $args);
     }
     
     /**
