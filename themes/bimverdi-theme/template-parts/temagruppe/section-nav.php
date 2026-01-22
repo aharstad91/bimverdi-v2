@@ -22,7 +22,7 @@ if (count($sections) < 2) {
 }
 ?>
 
-<nav class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-[#E5E0D8] -mx-4 px-4 mb-8" aria-label="Sidenavigasjon">
+<nav class="sticky top-0 z-40 bg-[#FAFAF8] border-b border-[#D6D1C6] -mx-4 px-4" aria-label="Sidenavigasjon">
     <div class="max-w-[1280px] mx-auto">
         <ul class="flex items-center gap-1 overflow-x-auto py-3 -mb-px scrollbar-hide" role="tablist">
             <?php foreach ($sections as $id => $label) : ?>
@@ -61,9 +61,9 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Offset for sticky header */
+/* Offset for sticky nav */
 [id^="section-"] {
-    scroll-margin-top: 80px;
+    scroll-margin-top: 60px;
 }
 </style>
 

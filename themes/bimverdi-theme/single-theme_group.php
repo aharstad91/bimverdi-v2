@@ -162,7 +162,7 @@ $temagruppe_data = [
         <?php get_template_part('template-parts/temagruppe/section-nav', null, ['sections' => $nav_sections]); ?>
 
         <!-- Section: Deltakende foretak -->
-        <div id="section-foretak" class="border-t border-[#D6D1C6] pt-10 mb-10">
+        <div id="section-foretak" class="pt-8 mb-10">
             <?php get_template_part('template-parts/temagruppe/deltakerliste', null, $temagruppe_data); ?>
         </div>
 

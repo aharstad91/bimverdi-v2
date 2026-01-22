@@ -22,8 +22,8 @@ $hero_illustrasjon = $args['hero_illustrasjon'] ?? null;
 $hero_image_url = $hero_illustrasjon ? wp_get_attachment_image_url($hero_illustrasjon, 'large') : null;
 ?>
 
-<section class="bg-[#F7F5EF] border-b border-[#D6D1C6]">
-    <div class="max-w-[1280px] mx-auto px-4 py-8 lg:py-12">
+<section class="bg-[#FAFAF8]">
+    <div class="max-w-[1280px] mx-auto px-4 pt-8 lg:pt-12">
 
         <!-- Breadcrumb -->
         <nav class="mb-6" aria-label="Breadcrumb">

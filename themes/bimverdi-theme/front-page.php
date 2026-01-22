@@ -2,7 +2,7 @@
 /**
  * Front Page Template
  *
- * Homepage for BIM Verdi - hybrid av prod og v2
+ * Homepage for BIM Verdi - komprimert design
  * Variant B "oatmeal" design med varm palett
  */
 
@@ -13,61 +13,37 @@ if (!defined('ABSPATH')) {
 get_header();
 ?>
 
-<!-- Hero Section -->
+<!-- Hero Section - Left aligned -->
 <section class="bg-[#F7F5EF] text-[#1A1A1A] pt-16 pb-20">
     <div class="max-w-6xl mx-auto px-4 md:px-8">
-        <div class="max-w-4xl mx-auto text-center">
+        <div class="max-w-3xl">
 
             <!-- Badge -->
             <div class="mb-6">
-                <span class="inline-block bg-[#EFE9DE] px-4 py-2 rounded-full text-sm font-semibold text-[#5A5A5A]">
-                    NORGES LEDENDE NETTVERK FOR PRAKTISK BRUK AV BIM OG AI
+                <span class="inline-flex items-center gap-2 bg-[#EFE9DE] pl-4 pr-3 py-2 rounded-full text-sm text-[#5A5A5A]">
+                    Norges ledende nettverk for praktisk bruk av BIM og AI
+                    <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="font-semibold text-[#1A1A1A] hover:underline flex items-center gap-1">Les mer <span>&rsaquo;</span></a>
                 </span>
             </div>
 
             <!-- Main Headline -->
-            <h1 class="text-5xl md:text-6xl font-bold mb-8 leading-tight text-[#1A1A1A]">
-                Vi digitaliserer sammen<br>i praktiske prosjekter
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-[#1A1A1A]">
+                Vi digitaliserer sammen i praktiske prosjekter.
             </h1>
 
             <!-- Subtitle -->
-            <p class="text-lg md:text-xl text-[#5A5A5A] mb-12 max-w-2xl mx-auto leading-relaxed">
-                BIM Verdi er et bransjenettverk som kobler sammen aktører i byggenæringen for å dele kunnskap, erfaringer og verktøy. Vi jobber praktisk med digitalisering gjennom temagrupper og pilotprosjekter.
+            <p class="text-lg md:text-xl text-[#5A5A5A] mb-10 max-w-2xl leading-relaxed">
+                BIM Verdi er et bransjenettverk som kobler sammen aktører i byggenæringen for å dele kunnskap, erfaringer og verktøy.
             </p>
 
             <!-- CTA Buttons -->
-            <div class="flex flex-wrap gap-4 justify-center mb-16">
-                <a href="<?php echo esc_url(home_url('/bli-medlem/')); ?>" class="px-8 py-3 bg-[#FF8B5E] text-white rounded font-semibold hover:bg-[#e67a4d] transition-colors">
+            <div class="flex flex-wrap items-center gap-6">
+                <a href="<?php echo esc_url(home_url('/bli-medlem/')); ?>" class="px-6 py-3 bg-[#1A1A1A] text-white rounded-full font-medium hover:bg-[#333] transition-colors">
                     Bli med i nettverket
                 </a>
-                <a href="<?php echo esc_url(home_url('/medlemmer/')); ?>" class="px-8 py-3 bg-[#EFE9DE] text-[#1A1A1A] rounded font-semibold hover:bg-[#E5DFD0] transition-colors">
-                    Se medlemmer
+                <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="text-[#1A1A1A] font-medium hover:underline flex items-center gap-1">
+                    Se hvordan det fungerer <span>&rarr;</span>
                 </a>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-[#D6D1C6]">
-
-                <div class="text-center">
-                    <div class="text-4xl md:text-5xl font-bold text-[#1A1A1A] mb-2">70+</div>
-                    <p class="text-sm text-[#5A5A5A] font-semibold">MEDLEMSBEDRIFTER</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="text-4xl md:text-5xl font-bold text-[#1A1A1A] mb-2">7</div>
-                    <p class="text-sm text-[#5A5A5A] font-semibold">TEMAGRUPPER</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="text-4xl md:text-5xl font-bold text-[#1A1A1A] mb-2">10+</div>
-                    <p class="text-sm text-[#5A5A5A] font-semibold">ÅRS ERFARING</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="text-4xl md:text-5xl font-bold text-[#1A1A1A] mb-2">50+</div>
-                    <p class="text-sm text-[#5A5A5A] font-semibold">ARRANGEMENTER</p>
-                </div>
-
             </div>
 
         </div>
@@ -76,181 +52,145 @@ get_header();
 
 <main class="bg-[#F7F5EF]">
 
-    <!-- Theme Groups Section -->
-    <section class="py-20 border-t border-[#D6D1C6]">
+    <!-- Nytt i Nettverket Section - 2-column -->
+    <section class="py-16 border-t border-[#D6D1C6]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="flex justify-between items-center mb-12">
-                <h2 class="text-4xl font-bold text-[#1A1A1A]">Våre Temagrupper</h2>
-                <a href="<?php echo esc_url(home_url('/temagrupper/')); ?>" class="text-[#1A1A1A] font-semibold hover:underline">Se alle →</a>
+
+            <!-- Section header -->
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold text-[#1A1A1A] mb-2">Nytt i nettverket</h2>
+                <p class="text-[#5A5A5A]">De siste tilskuddene til medlemsbasen og verktøykatalogen.</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
 
+                <!-- Medlemsbedrifter -->
                 <?php
-                $theme_groups = array(
-                    array(
-                        'title' => 'Modellkvalitet',
-                        'description' => 'Fokus på bestpraksis for BIM-modellering og datakvalitet',
-                        'icon' => '📐',
-                        'slug' => 'modellkvalitet',
-                    ),
-                    array(
-                        'title' => 'ByggesaksBIM',
-                        'description' => 'Digitalisering av byggesaksflyt og offentlig dialog',
-                        'icon' => '📋',
-                        'slug' => 'byggesaksbim',
-                    ),
-                    array(
-                        'title' => 'ProsjektBIM',
-                        'description' => 'BIM i prosjektstyring og samarbeid',
-                        'icon' => '🚀',
-                        'slug' => 'prosjektbim',
-                    ),
-                    array(
-                        'title' => 'EiendomsBIM',
-                        'description' => 'BIM for eiendomsforvaltning og drift',
-                        'icon' => '🏢',
-                        'slug' => 'eiendomsbim',
-                    ),
-                    array(
-                        'title' => 'MiljøBIM',
-                        'description' => 'BIM for miljø- og bærekraftanalyse',
-                        'icon' => '🌱',
-                        'slug' => 'miljobim',
-                    ),
-                    array(
-                        'title' => 'SirkBIM',
-                        'description' => 'Sirkulærøkonomi og gjenbruk i BIM',
-                        'icon' => '♻️',
-                        'slug' => 'sirkbim',
-                    ),
-                    array(
-                        'title' => 'BIMtech',
-                        'description' => 'Teknologi, API-er og integrasjoner',
-                        'icon' => '⚙️',
-                        'slug' => 'bimtech',
-                    ),
-                );
-
-                foreach ($theme_groups as $group):
-                    ?>
-                    <div class="bg-white rounded-lg p-6 border border-[#D6D1C6] hover:shadow-md transition-all">
-                        <div class="text-4xl mb-4"><?php echo $group['icon']; ?></div>
-                        <h3 class="text-xl font-bold mb-3 text-[#1A1A1A]"><?php echo esc_html($group['title']); ?></h3>
-                        <p class="text-[#5A5A5A] text-sm mb-4"><?php echo esc_html($group['description']); ?></p>
-                        <a href="<?php echo esc_url(home_url('/temagrupper/' . $group['slug'] . '/')); ?>"
-                           class="text-[#1A1A1A] font-semibold hover:underline">Les mer →</a>
-                    </div>
-                    <?php
-                endforeach;
+                $companies = get_posts(array(
+                    'post_type' => 'foretak',
+                    'posts_per_page' => 5,
+                    'post_status' => 'publish',
+                    'orderby' => 'date',
+                    'order' => 'DESC',
+                ));
+                $total_companies = wp_count_posts('foretak')->publish;
                 ?>
+                <div>
+                    <div class="flex justify-between items-baseline mb-2">
+                        <h3 class="text-lg font-bold text-[#1A1A1A]">Medlemsbedrifter</h3>
+                        <a href="<?php echo esc_url(home_url('/medlemmer/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] flex items-center gap-1">Se alle (<?php echo $total_companies; ?>) <span>&rarr;</span></a>
+                    </div>
+                    <?php if (!empty($companies)): ?>
+                    <div>
+                        <?php foreach ($companies as $index => $company): ?>
+                        <a href="<?php echo esc_url(get_permalink($company)); ?>"
+                           class="flex items-center justify-between py-3 hover:bg-[#EFE9DE] transition-colors border-b border-[#D6D1C6]">
+                            <span class="text-[#1A1A1A]"><?php echo esc_html($company->post_title); ?></span>
+                            <span class="text-[#D6D1C6]">&rarr;</span>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
+                    <p class="text-[#5A5A5A] py-4">Ingen deltakere ennå.</p>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Verktøy -->
+                <?php
+                $tools = get_posts(array(
+                    'post_type' => 'verktoy',
+                    'posts_per_page' => 5,
+                    'post_status' => 'publish',
+                    'orderby' => 'date',
+                    'order' => 'DESC',
+                ));
+                $total_tools = wp_count_posts('verktoy')->publish;
+                ?>
+                <div>
+                    <div class="flex justify-between items-baseline mb-2">
+                        <h3 class="text-lg font-bold text-[#1A1A1A]">Verktøy</h3>
+                        <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] flex items-center gap-1">Se alle (<?php echo $total_tools; ?>) <span>&rarr;</span></a>
+                    </div>
+                    <?php if (!empty($tools)): ?>
+                    <div>
+                        <?php foreach ($tools as $index => $tool): ?>
+                        <a href="<?php echo esc_url(get_permalink($tool)); ?>"
+                           class="flex items-center justify-between py-3 hover:bg-[#EFE9DE] transition-colors border-b border-[#D6D1C6]">
+                            <span class="text-[#1A1A1A]"><?php echo esc_html($tool->post_title); ?></span>
+                            <span class="text-[#D6D1C6]">&rarr;</span>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
+                    <p class="text-[#5A5A5A] py-4">Ingen verktøy ennå.</p>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <!-- Recent Events Section -->
-    <section class="py-20 border-t border-[#D6D1C6]">
+    <!-- Kunnskapskilder Section - 50/50 split -->
+    <section class="py-16 border-t border-[#D6D1C6]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="flex justify-between items-center mb-12">
-                <h2 class="text-4xl font-bold text-[#1A1A1A]">Kommende Arrangementer</h2>
-                <a href="<?php echo esc_url(home_url('/arrangementer/')); ?>" class="text-[#1A1A1A] font-semibold hover:underline">Se alle →</a>
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-start">
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Left: Text content -->
+                <div class="md:pr-8">
+                    <h2 class="text-3xl font-bold text-[#1A1A1A] mb-4">Se helheten i regelverket</h2>
+                    <p class="text-lg text-[#5A5A5A] mb-6 leading-relaxed">
+                        Vi samler og strukturerer kunnskap fra TEK17, standarder og veiledere. Se hvordan kravene henger sammen med verktøy og bransjepraksis.
+                    </p>
+                    <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>" class="inline-block px-6 py-3 bg-[#1A1A1A] text-white rounded-full font-medium hover:bg-[#333] transition-colors">
+                        Utforsk kunnskapskilder
+                    </a>
+                </div>
+
+                <!-- Right: List with card -->
                 <?php
-                $events = get_posts(array(
-                    'post_type' => 'arrangement',
-                    'posts_per_page' => 3,
-                    'meta_query' => array(
-                        array(
-                            'key' => 'arrangement_status_toggle',
-                            'value' => 'kommende',
-                            'compare' => '=',
-                        ),
-                    ),
-                    'meta_key' => 'arrangement_dato',
-                    'orderby' => 'meta_value',
-                    'order' => 'ASC',
+                $sources = get_posts(array(
+                    'post_type' => 'kunnskapskilde',
+                    'posts_per_page' => 5,
+                    'post_status' => 'publish',
+                    'orderby' => 'date',
+                    'order' => 'DESC',
                 ));
-
-                // Fallback if no events with 'kommende' status, get any upcoming events
-                if (empty($events)) {
-                    $events = get_posts(array(
-                        'post_type' => 'arrangement',
-                        'posts_per_page' => 3,
-                        'meta_key' => 'arrangement_dato',
-                        'orderby' => 'meta_value',
-                        'order' => 'ASC',
-                    ));
-                }
-
-                if (!empty($events)):
-                    foreach ($events as $event):
-                        $event_date = get_field('arrangement_dato', $event->ID) ?: get_field('dato', $event->ID) ?: date('Y-m-d', strtotime($event->post_date));
-                        $event_type = wp_get_post_terms($event->ID, 'arrangementstype', array('fields' => 'names'));
-                        $thumbnail = get_the_post_thumbnail_url($event->ID, 'medium');
-                        ?>
-                        <div class="bg-white rounded-lg overflow-hidden border border-[#D6D1C6] hover:shadow-md transition-all">
-                            <?php if ($thumbnail): ?>
-                                <div class="aspect-video bg-[#EFE9DE]">
-                                    <img src="<?php echo esc_url($thumbnail); ?>" alt="<?php echo esc_attr($event->post_title); ?>" class="w-full h-full object-cover">
-                                </div>
-                            <?php else: ?>
-                                <div class="aspect-video bg-[#EFE9DE] flex items-center justify-center">
-                                    <span class="text-4xl">📅</span>
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="p-6">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div class="inline-block bg-[#1A1A1A] text-white text-xs font-bold px-3 py-1 rounded">
-                                        <?php
-                                        $date_obj = DateTime::createFromFormat('Y-m-d', $event_date) ?: DateTime::createFromFormat('Ymd', $event_date);
-                                        if ($date_obj) {
-                                            echo strtoupper($date_obj->format('d. M'));
-                                        } else {
-                                            echo esc_html($event_date);
-                                        }
-                                        ?>
-                                    </div>
-                                    <?php if (!empty($event_type)): ?>
-                                        <span class="text-xs bg-[#EFE9DE] text-[#5A5A5A] px-2 py-1 rounded"><?php echo esc_html($event_type[0]); ?></span>
-                                    <?php endif; ?>
-                                </div>
-                                <h3 class="font-bold text-[#1A1A1A] mb-2 text-lg"><?php echo esc_html($event->post_title); ?></h3>
-                                <p class="text-sm text-[#5A5A5A] mb-4"><?php echo wp_trim_words($event->post_excerpt ?: strip_tags($event->post_content), 20); ?></p>
-                                <a href="<?php echo esc_url(get_permalink($event)); ?>" class="text-[#1A1A1A] font-semibold text-sm hover:underline">
-                                    Meld deg på →
-                                </a>
-                            </div>
-                        </div>
-                        <?php
-                    endforeach;
-                else:
-                    ?>
-                    <div class="md:col-span-3 text-center text-[#5A5A5A] py-12">
-                        <span class="text-5xl mb-4 block">📅</span>
-                        <p class="text-lg">Ingen arrangementer planlagt akkurat nå.</p>
-                        <p class="text-sm mt-2">Sjekk tilbake snart for kommende arrangementer.</p>
-                    </div>
-                    <?php
-                endif;
+                $total_sources = wp_count_posts('kunnskapskilde')->publish;
                 ?>
+                <div>
+                    <div class="flex justify-between items-baseline mb-2">
+                        <h3 class="text-lg font-bold text-[#1A1A1A]">Kunnskapskilder</h3>
+                        <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] flex items-center gap-1">Se alle (<?php echo $total_sources; ?>) <span>&rarr;</span></a>
+                    </div>
+                    <?php if (!empty($sources)): ?>
+                    <div>
+                        <?php foreach ($sources as $index => $source): ?>
+                        <a href="<?php echo esc_url(get_permalink($source)); ?>"
+                           class="flex items-center justify-between py-3 hover:bg-[#EFE9DE] -mx-2 px-2 rounded transition-colors <?php echo $index < count($sources) - 1 ? 'border-b border-[#D6D1C6]' : ''; ?>">
+                            <span class="text-[#1A1A1A]"><?php echo esc_html($source->post_title); ?></span>
+                            <span class="text-[#D6D1C6]">&rarr;</span>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
+                    <p class="text-[#5A5A5A] py-4">Ingen kunnskapskilder ennå.</p>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </div>
     </section>
 
     <!-- Seneste Nytt Section -->
-    <section class="py-20 border-t border-[#D6D1C6]">
+    <section class="py-16 border-t border-[#D6D1C6]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="flex justify-between items-center mb-12">
-                <h2 class="text-4xl font-bold text-[#1A1A1A]">Seneste Nytt</h2>
-                <a href="<?php echo esc_url(home_url('/artikler/')); ?>" class="text-[#1A1A1A] font-semibold hover:underline">Se alle →</a>
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-[#1A1A1A]">Seneste Nytt</h2>
+                <a href="<?php echo esc_url(home_url('/artikler/')); ?>" class="text-[#1A1A1A] font-medium hover:underline flex items-center gap-1">Se alle <span>&rarr;</span></a>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <?php
-                // Try artikkel CPT first, fallback to posts
                 $articles = get_posts(array(
                     'post_type' => 'artikkel',
                     'posts_per_page' => 4,
@@ -259,7 +199,6 @@ get_header();
                     'order' => 'DESC',
                 ));
 
-                // Fallback to regular posts if no articles
                 if (empty($articles)) {
                     $articles = get_posts(array(
                         'post_type' => 'post',
@@ -282,15 +221,17 @@ get_header();
                                 </div>
                             <?php else: ?>
                                 <div class="aspect-video bg-[#EFE9DE] rounded-lg flex items-center justify-center mb-4">
-                                    <span class="text-4xl">📰</span>
+                                    <svg class="w-12 h-12 text-[#D6D1C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                                    </svg>
                                 </div>
                             <?php endif; ?>
 
                             <div class="text-sm text-[#5A5A5A] mb-2"><?php echo esc_html($date); ?></div>
                             <h3 class="font-bold text-[#1A1A1A] mb-2 group-hover:text-[#5A5A5A] transition-colors"><?php echo esc_html($article->post_title); ?></h3>
-                            <p class="text-sm text-[#5A5A5A] mb-3"><?php echo wp_trim_words($article->post_excerpt ?: strip_tags($article->post_content), 15); ?></p>
-                            <a href="<?php echo esc_url(get_permalink($article)); ?>" class="text-[#1A1A1A] font-semibold text-sm hover:underline">
-                                Les mer →
+                            <p class="text-sm text-[#5A5A5A] mb-3 line-clamp-2"><?php echo wp_trim_words($article->post_excerpt ?: strip_tags($article->post_content), 15); ?></p>
+                            <a href="<?php echo esc_url(get_permalink($article)); ?>" class="text-[#1A1A1A] font-medium text-sm hover:underline flex items-center gap-1">
+                                Les mer <span>&rarr;</span>
                             </a>
                         </div>
                         <?php
@@ -298,7 +239,9 @@ get_header();
                 else:
                     ?>
                     <div class="md:col-span-4 text-center text-[#5A5A5A] py-12">
-                        <span class="text-5xl mb-4 block">📰</span>
+                        <svg class="w-16 h-16 mx-auto text-[#D6D1C6] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                        </svg>
                         <p class="text-lg">Ingen artikler publisert ennå.</p>
                     </div>
                     <?php
@@ -308,159 +251,240 @@ get_header();
         </div>
     </section>
 
-    <!-- Nye i Nettverket Section -->
-    <section class="py-20 border-t border-[#D6D1C6]">
+    <!-- Våre Temagrupper Section - Redesigned -->
+    <section class="py-16 border-t border-[#D6D1C6]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <h2 class="text-4xl font-bold text-[#1A1A1A] mb-12">Nye i Nettverket</h2>
+            <h2 class="text-3xl font-bold text-[#1A1A1A] text-center mb-12">Våre Temagrupper</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                <!-- Nye deltakere -->
-                <div>
-                    <h3 class="text-xl font-bold text-[#1A1A1A] mb-6 flex items-center gap-2">
-                        <span class="text-2xl">🏢</span>
-                        Nye deltakere
-                    </h3>
-                    <?php
-                    $companies = get_posts(array(
-                        'post_type' => 'foretak',
-                        'posts_per_page' => 5,
-                        'post_status' => 'publish',
-                        'orderby' => 'date',
-                        'order' => 'DESC',
-                    ));
+                <?php
+                $theme_groups = array(
+                    array(
+                        'title' => 'Modellkvalitet',
+                        'description' => 'Fokus på MMI, standarder og kvalitetssikring av modeller for bedre samhandling.',
+                        'icon' => 'layers',
+                        'slug' => 'modellkvalitet',
+                    ),
+                    array(
+                        'title' => 'ByggesaksBIM',
+                        'description' => 'Digitalisering av byggesaksprosessen og bruk av BIM mot offentlige myndigheter.',
+                        'icon' => 'building',
+                        'slug' => 'byggesaksbim',
+                    ),
+                    array(
+                        'title' => 'ProsjektBIM',
+                        'description' => 'Beste praksis for BIM-koordinering og ledelse i store byggeprosjekter.',
+                        'icon' => 'mountain',
+                        'slug' => 'prosjektbim',
+                    ),
+                    array(
+                        'title' => 'EiendomsBIM',
+                        'description' => 'FDV-dokumentasjon og bruk av BIM i driftsfasen for eiendomsforvaltere.',
+                        'icon' => 'box',
+                        'slug' => 'eiendomsbim',
+                    ),
+                    array(
+                        'title' => 'MiljøBIM',
+                        'description' => 'Bruk av BIM for klimagassregnskap, ombruk og bærekraftige materialvalg.',
+                        'icon' => 'refresh',
+                        'slug' => 'miljobim',
+                    ),
+                    array(
+                        'title' => 'BIMtech',
+                        'description' => 'Utforsking av ny teknologi, API-er, skripting og innovasjon i bransjen.',
+                        'icon' => 'zap',
+                        'slug' => 'bimtech',
+                    ),
+                );
 
-                    if (!empty($companies)):
-                        ?>
-                        <div class="bg-white rounded-lg border border-[#D6D1C6] overflow-hidden">
-                            <table class="w-full">
-                                <tbody>
-                                    <?php foreach ($companies as $index => $company): ?>
-                                        <tr class="<?php echo $index < count($companies) - 1 ? 'border-b border-[#D6D1C6]' : ''; ?>">
-                                            <td class="px-4 py-3">
-                                                <a href="<?php echo esc_url(get_permalink($company)); ?>" class="text-[#1A1A1A] font-medium hover:underline">
-                                                    <?php echo esc_html($company->post_title); ?>
-                                                </a>
-                                            </td>
-                                            <td class="px-4 py-3 text-right">
-                                                <a href="<?php echo esc_url(get_permalink($company)); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A]">
-                                                    →
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                foreach ($theme_groups as $group):
+                    // Icon SVGs
+                    $icons = array(
+                        'layers' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
+                        'building' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
+                        'mountain' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21l6-6 4 4 8-8M17 21h4v-4"/>',
+                        'box' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>',
+                        'refresh' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>',
+                        'zap' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+                    );
+                ?>
+                <a href="<?php echo esc_url(home_url('/temagrupper/' . $group['slug'] . '/')); ?>"
+                   class="block border border-[#D6D1C6] rounded-lg p-6 hover:bg-[#EFE9DE] transition-colors group">
+
+                    <!-- Header row: icon left, arrow right -->
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-12 h-12 rounded-full bg-[#EFE9DE] flex items-center justify-center">
+                            <svg class="w-5 h-5 text-[#1A1A1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <?php echo $icons[$group['icon']]; ?>
+                            </svg>
                         </div>
-                        <?php
-                    else:
-                        ?>
-                        <div class="bg-white rounded-lg border border-[#D6D1C6] p-6 text-center text-[#5A5A5A]">
-                            <p>Ingen nye deltakere å vise.</p>
-                        </div>
-                        <?php
-                    endif;
-                    ?>
-                </div>
+                        <span class="text-[#D6D1C6] group-hover:text-[#5A5A5A] transition-colors">&rarr;</span>
+                    </div>
 
-                <!-- Nyeste verktøy -->
-                <div>
-                    <h3 class="text-xl font-bold text-[#1A1A1A] mb-6 flex items-center gap-2">
-                        <span class="text-2xl">🔧</span>
-                        Nyeste verktøy
-                    </h3>
-                    <?php
-                    // Get tools, excluding drafts and posts with "test" in title
-                    $tools = get_posts(array(
-                        'post_type' => 'verktoy',
-                        'posts_per_page' => 10, // Get more to filter
-                        'post_status' => 'publish',
-                        'orderby' => 'date',
-                        'order' => 'DESC',
-                    ));
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-[#1A1A1A] mb-2"><?php echo esc_html($group['title']); ?></h3>
 
-                    // Filter out tools with "test" in title
-                    $filtered_tools = array_filter($tools, function($tool) {
-                        return stripos($tool->post_title, 'test') === false;
-                    });
+                    <!-- Description -->
+                    <p class="text-[#5A5A5A] text-sm mb-4 line-clamp-2"><?php echo esc_html($group['description']); ?></p>
 
-                    // Take only first 5
-                    $filtered_tools = array_slice($filtered_tools, 0, 5);
-
-                    if (!empty($filtered_tools)):
-                        ?>
-                        <div class="bg-white rounded-lg border border-[#D6D1C6] overflow-hidden">
-                            <table class="w-full">
-                                <tbody>
-                                    <?php
-                                    $tool_count = count($filtered_tools);
-                                    $i = 0;
-                                    foreach ($filtered_tools as $tool):
-                                        $i++;
-                                    ?>
-                                        <tr class="<?php echo $i < $tool_count ? 'border-b border-[#D6D1C6]' : ''; ?>">
-                                            <td class="px-4 py-3">
-                                                <a href="<?php echo esc_url(get_permalink($tool)); ?>" class="text-[#1A1A1A] font-medium hover:underline">
-                                                    <?php echo esc_html($tool->post_title); ?>
-                                                </a>
-                                            </td>
-                                            <td class="px-4 py-3 text-right">
-                                                <a href="<?php echo esc_url(get_permalink($tool)); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A]">
-                                                    →
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <?php
-                    else:
-                        ?>
-                        <div class="bg-white rounded-lg border border-[#D6D1C6] p-6 text-center text-[#5A5A5A]">
-                            <p>Ingen verktøy å vise.</p>
-                        </div>
-                        <?php
-                    endif;
-                    ?>
-                </div>
-
+                    <!-- Read more link -->
+                    <span class="text-[#1A1A1A] font-medium text-sm">Les mer</span>
+                </a>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
 
-    <!-- LinkedIn Placeholder Section -->
-    <section class="py-20 border-t border-[#D6D1C6]">
+    <!-- Kommende Arrangementer Section - List format -->
+    <section class="py-16 border-t border-[#D6D1C6]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="max-w-2xl mx-auto text-center">
-                <h2 class="text-3xl font-bold text-[#1A1A1A] mb-6">Følg oss på LinkedIn</h2>
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-[#1A1A1A]">Kommende Arrangementer</h2>
+                <a href="<?php echo esc_url(home_url('/arrangementer/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] font-medium">Se alle</a>
+            </div>
 
-                <div class="bg-white rounded-lg border border-[#D6D1C6] p-12">
-                    <div class="text-6xl mb-4">
-                        <svg class="w-16 h-16 mx-auto text-[#0077B5]" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+            <?php
+            $events = get_posts(array(
+                'post_type' => 'arrangement',
+                'posts_per_page' => 3,
+                'meta_query' => array(
+                    array(
+                        'key' => 'arrangement_status_toggle',
+                        'value' => 'kommende',
+                        'compare' => '=',
+                    ),
+                ),
+                'meta_key' => 'arrangement_dato',
+                'orderby' => 'meta_value',
+                'order' => 'ASC',
+            ));
+
+            if (empty($events)) {
+                $events = get_posts(array(
+                    'post_type' => 'arrangement',
+                    'posts_per_page' => 3,
+                    'meta_key' => 'arrangement_dato',
+                    'orderby' => 'meta_value',
+                    'order' => 'ASC',
+                ));
+            }
+
+            if (!empty($events)):
+            ?>
+            <div class="border border-[#D6D1C6] rounded-lg overflow-hidden">
+                <?php
+                $event_count = count($events);
+                $e = 0;
+                foreach ($events as $event):
+                    $e++;
+                    $event_date = get_field('arrangement_dato', $event->ID) ?: get_field('dato', $event->ID) ?: date('Y-m-d', strtotime($event->post_date));
+                    $event_time_start = get_field('arrangement_tid_start', $event->ID) ?: get_field('tid_start', $event->ID) ?: '';
+                    $event_time_end = get_field('arrangement_tid_slutt', $event->ID) ?: get_field('tid_slutt', $event->ID) ?: '';
+                    $event_type = wp_get_post_terms($event->ID, 'arrangementstype', array('fields' => 'names'));
+                    $event_format = get_field('arrangement_format', $event->ID) ?: get_field('format', $event->ID) ?: '';
+
+                    // Parse date
+                    $date_obj = DateTime::createFromFormat('Y-m-d', $event_date) ?: DateTime::createFromFormat('Ymd', $event_date);
+                    $day = $date_obj ? $date_obj->format('d') : '';
+                    $month = $date_obj ? strtoupper($date_obj->format('M')) : '';
+
+                    // Norwegian month names
+                    $month_map = array('JAN' => 'JAN', 'FEB' => 'FEB', 'MAR' => 'MAR', 'APR' => 'APR', 'MAY' => 'MAI', 'JUN' => 'JUN', 'JUL' => 'JUL', 'AUG' => 'AUG', 'SEP' => 'SEP', 'OCT' => 'OKT', 'NOV' => 'NOV', 'DEC' => 'DES');
+                    $month = isset($month_map[$month]) ? $month_map[$month] : $month;
+                ?>
+                <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 px-6 py-5 <?php echo $e < $event_count ? 'border-b border-[#D6D1C6]' : ''; ?>">
+
+                    <!-- Date -->
+                    <div class="flex-shrink-0 w-20">
+                        <div class="text-sm font-bold text-[#5A5A5A]"><?php echo esc_html($day . '. ' . $month); ?></div>
+                    </div>
+
+                    <!-- Event details -->
+                    <div class="flex-grow">
+                        <h3 class="font-bold text-[#1A1A1A] mb-1"><?php echo esc_html($event->post_title); ?></h3>
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-[#5A5A5A]">
+                            <?php if ($event_format || !empty($event_type)): ?>
+                            <span class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                <?php echo esc_html($event_format ?: (!empty($event_type) ? $event_type[0] : '')); ?>
+                            </span>
+                            <?php endif; ?>
+                            <?php if ($event_time_start): ?>
+                            <span class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <?php echo esc_html($event_time_start); ?><?php echo $event_time_end ? ' - ' . esc_html($event_time_end) : ''; ?>
+                            </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- CTA button -->
+                    <div class="flex-shrink-0">
+                        <a href="<?php echo esc_url(get_permalink($event)); ?>"
+                           class="inline-block px-5 py-2 border border-[#1A1A1A] text-[#1A1A1A] rounded font-medium text-sm hover:bg-[#1A1A1A] hover:text-white transition-colors">
+                            Meld deg på
+                        </a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <div class="border border-[#D6D1C6] rounded-lg p-12 text-center">
+                <svg class="w-16 h-16 mx-auto text-[#D6D1C6] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="text-lg text-[#5A5A5A]">Ingen arrangementer planlagt akkurat nå.</p>
+                <p class="text-sm text-[#5A5A5A] mt-2">Sjekk tilbake snart for kommende arrangementer.</p>
+            </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- Hvorfor dette er viktig Section -->
+    <section class="py-16 border-t border-[#D6D1C6]">
+        <div class="max-w-6xl mx-auto px-4 md:px-8">
+            <h2 class="text-3xl font-bold text-[#1A1A1A] text-center mb-12">Hvorfor dette er viktig</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+
+                <!-- Ett søk -->
+                <div>
+                    <div class="w-16 h-16 rounded-full bg-[#EFE9DE] flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-7 h-7 text-[#1A1A1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </div>
-                    <p class="text-[#5A5A5A] text-lg mb-6">LinkedIn-feed kommer snart</p>
-                    <a href="https://www.linkedin.com/company/bim-verdi/" target="_blank" rel="noopener noreferrer" class="inline-block px-6 py-3 bg-[#0077B5] text-white rounded font-semibold hover:bg-[#005885] transition-colors">
-                        Følg BIM Verdi på LinkedIn
-                    </a>
+                    <h3 class="text-xl font-bold text-[#1A1A1A] mb-3">Ett søk</h3>
+                    <p class="text-[#5A5A5A]">Samler informasjon fra spredte kilder i ett enkelt grensesnitt. Spar tid på å lete etter dokumentasjon.</p>
                 </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Call to Action Section -->
-    <section class="py-20 border-t border-[#D6D1C6]">
-        <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="bg-[#1A1A1A] rounded-2xl py-16 px-8 text-center">
-                <h2 class="text-4xl font-bold mb-4 text-white">Klar til å bli medlem?</h2>
-                <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-                    Bli del av et fagnettverk som jobber for bedre og mer effektiv digitalisering av byggenæringen. Få tilgang til temagrupper, arrangementer, verktøyoversikt og et aktivt nettverk av fagfolk.
-                </p>
-                <a href="<?php echo esc_url(home_url('/bli-medlem/')); ?>" class="inline-block px-8 py-3 bg-[#FF8B5E] text-white rounded font-semibold hover:bg-[#e67a4d] transition-colors">
-                    Bli med i nettverket
-                </a>
+                <!-- Alltid oppdatert -->
+                <div>
+                    <div class="w-16 h-16 rounded-full bg-[#EFE9DE] flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-7 h-7 text-[#1A1A1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-[#1A1A1A] mb-3">Alltid oppdatert</h3>
+                    <p class="text-[#5A5A5A]">Vi overvåker endringer i regelverk og standarder, slik at du alltid jobber med gyldige versjoner.</p>
+                </div>
+
+                <!-- Smart kobling -->
+                <div>
+                    <div class="w-16 h-16 rounded-full bg-[#EFE9DE] flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-7 h-7 text-[#1A1A1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-[#1A1A1A] mb-3">Smart kobling</h3>
+                    <p class="text-[#5A5A5A]">Vi kobler teori med praksis ved å vise hvilke verktøy som støtter hvilke krav og prosesser.</p>
+                </div>
+
             </div>
         </div>
     </section>

@@ -2,8 +2,8 @@
 /**
  * Temagruppe Info Bar
  *
- * Horizontal row with three equal cards: Status, Fagansvarlig, and CTA.
- * Dashboard-style layout for the theme group page.
+ * Two-column layout: Intro text (66%) + Fagradgiver/CTA sidebar (33%)
+ * Placed directly under the hero section to create connection at the top.
  *
  * @package BimVerdi_Theme
  *
@@ -54,78 +54,26 @@ if ($fagansvarlig_navn) {
     }
 }
 
-// Status configuration
-$status_config = [
-    'aktiv' => [
-        'label' => 'Aktiv',
-        'color' => '#22C55E',
-        'bg' => '#DCFCE7',
-    ],
-    'planlegging' => [
-        'label' => 'Under planlegging',
-        'color' => '#EAB308',
-        'bg' => '#FEF9C3',
-    ],
-    'pause' => [
-        'label' => 'Pause',
-        'color' => '#6B7280',
-        'bg' => '#F3F4F6',
-    ],
-];
-
-$current_status = $status_config[$status] ?? $status_config['aktiv'];
+// Dummy intro text (will be replaced by ACF field later)
+$intro_tekst = get_field('intro_tekst', $post_id);
+if (empty($intro_tekst)) {
+    $intro_tekst = 'Denne temagruppen samler aktorer som jobber med ' . strtolower($temagruppe_navn) . '-relaterte problemstillinger. Vi deler erfaringer, utvikler felles losninger, og bidrar til a heve kompetansen i bransjen gjennom workshops, moter og samarbeidsprosjekter.';
+}
 ?>
 
-<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-16">
 
-    <!-- Card 1: Status -->
-    <div class="bg-white rounded-lg border border-[#E5E0D8] p-6">
-        <h3 class="text-sm font-semibold text-[#5A5A5A] uppercase tracking-wide mb-4">
-            Status
-        </h3>
-
-        <!-- Status Badge -->
-        <div class="mb-4">
-            <span
-                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium"
-                style="background-color: <?php echo esc_attr($current_status['bg']); ?>; color: <?php echo esc_attr($current_status['color']); ?>;"
-            >
-                <span class="w-2 h-2 rounded-full" style="background-color: <?php echo esc_attr($current_status['color']); ?>;"></span>
-                <?php echo esc_html($current_status['label']); ?>
-            </span>
-        </div>
-
-        <!-- Info List -->
-        <dl class="space-y-3">
-            <?php if ($motefrekvens) : ?>
-            <div class="flex justify-between items-start">
-                <dt class="text-sm text-[#5A5A5A]">Motefrekvens</dt>
-                <dd class="text-sm font-medium text-[#1A1A1A] text-right"><?php echo esc_html($motefrekvens); ?></dd>
-            </div>
-            <?php endif; ?>
-
-            <div class="flex justify-between items-start">
-                <dt class="text-sm text-[#5A5A5A]">Deltakere</dt>
-                <dd class="text-sm font-medium text-[#1A1A1A]">
-                    <?php echo esc_html($member_count); ?> bedrifter
-                </dd>
-            </div>
-
-            <div class="flex justify-between items-start">
-                <dt class="text-sm text-[#5A5A5A]">Kommende moter</dt>
-                <dd class="text-sm font-medium text-[#1A1A1A]">
-                    <?php echo esc_html($event_count); ?> planlagt
-                </dd>
-            </div>
-        </dl>
+    <!-- Left Column: Introduction (2/3 width) -->
+    <div class="lg:col-span-2">
+        <p class="text-lg text-[#5A5A5A] leading-relaxed">
+            <?php echo esc_html($intro_tekst); ?>
+        </p>
     </div>
 
-    <!-- Card 2: Fagradgiver -->
-    <div class="bg-white rounded-lg border border-[#E5E0D8] p-6">
-        <h3 class="text-sm font-semibold text-[#5A5A5A] uppercase tracking-wide mb-4">
-            Fagradgiver
-        </h3>
+    <!-- Right Column: Fagradgiver + CTA (1/3 width) -->
+    <div class="lg:col-span-1 space-y-6">
 
+        <!-- Fagradgiver -->
         <?php if ($fagansvarlig_navn) : ?>
         <div class="flex items-start gap-4">
             <!-- Profile Image -->
@@ -134,11 +82,11 @@ $current_status = $status_config[$status] ?? $status_config['aktiv'];
                 <img
                     src="<?php echo esc_url($bilde_url); ?>"
                     alt="<?php echo esc_attr($fagansvarlig_navn); ?>"
-                    class="w-14 h-14 rounded-full object-cover"
+                    class="w-12 h-12 rounded-full object-cover"
                     loading="lazy"
                 >
                 <?php else : ?>
-                <div class="w-14 h-14 rounded-full bg-[#FF8B5E] flex items-center justify-center text-white font-semibold text-base">
+                <div class="w-12 h-12 rounded-full bg-[#FF8B5E] flex items-center justify-center text-white font-semibold text-sm">
                     <?php echo esc_html($initials); ?>
                 </div>
                 <?php endif; ?>
@@ -146,68 +94,50 @@ $current_status = $status_config[$status] ?? $status_config['aktiv'];
 
             <!-- Info -->
             <div class="min-w-0">
+                <p class="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1">Fagradgiver</p>
+
                 <?php if ($fagansvarlig_linkedin) : ?>
                 <a
                     href="<?php echo esc_url($fagansvarlig_linkedin); ?>"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-base font-semibold text-[#1A1A1A] hover:text-[#FF8B5E] hover:underline inline-flex items-center gap-1.5"
+                    class="text-sm font-semibold text-[#1A1A1A] hover:text-[#FF8B5E] hover:underline inline-flex items-center gap-1.5"
                 >
                     <?php echo esc_html($fagansvarlig_navn); ?>
                     <?php echo bimverdi_icon('linkedin', 14); ?>
                 </a>
                 <?php else : ?>
-                <p class="text-base font-semibold text-[#1A1A1A]">
+                <p class="text-sm font-semibold text-[#1A1A1A]">
                     <?php echo esc_html($fagansvarlig_navn); ?>
                 </p>
                 <?php endif; ?>
 
                 <?php if ($fagansvarlig_tittel) : ?>
-                <p class="text-sm text-[#5A5A5A] mt-0.5">
+                <p class="text-sm text-[#5A5A5A]">
                     <?php echo esc_html($fagansvarlig_tittel); ?>
-                </p>
-                <?php endif; ?>
-
-                <?php if ($bedrift_navn) : ?>
-                <p class="text-sm text-[#5A5A5A] mt-0.5">
-                    <?php if ($bedrift_url) : ?>
-                    <a href="<?php echo esc_url($bedrift_url); ?>" class="hover:text-[#1A1A1A] hover:underline">
-                        <?php echo esc_html($bedrift_navn); ?>
-                    </a>
-                    <?php else : ?>
-                    <?php echo esc_html($bedrift_navn); ?>
-                    <?php endif; ?>
                 </p>
                 <?php endif; ?>
             </div>
         </div>
-        <?php else : ?>
-        <p class="text-sm text-[#5A5A5A]">
-            Fagradgiver er ikke satt enna.
-        </p>
         <?php endif; ?>
-    </div>
 
-    <!-- Card 3: CTA -->
-    <div class="bg-[#F7F5EF] rounded-lg border border-[#E5E0D8] p-6 flex flex-col">
-        <h3 class="text-sm font-semibold text-[#5A5A5A] uppercase tracking-wide mb-4">
-            Bli med
-        </h3>
+        <!-- CTA Button -->
+        <div>
+            <?php
+            bimverdi_button([
+                'text' => 'Bli med i gruppen',
+                'variant' => 'primary',
+                'icon' => 'arrow-right',
+                'icon_position' => 'right',
+                'href' => home_url('/min-side/'),
+                'full_width' => true,
+            ]);
+            ?>
+            <p class="text-xs text-[#888888] mt-2">
+                Via din bedriftsprofil i Min Side
+            </p>
+        </div>
 
-        <p class="text-sm text-[#5A5A5A] mb-4 flex-1">
-            Registrer interesse for <?php echo esc_html($temagruppe_navn); ?> via din bedriftsprofil i Min Side.
-        </p>
-
-        <?php
-        bimverdi_button([
-            'text' => 'Ga til Min Side',
-            'variant' => 'primary',
-            'icon' => 'arrow-right',
-            'icon_position' => 'right',
-            'href' => home_url('/min-side/'),
-            'full_width' => true,
-        ]);
-        ?>
     </div>
 
 </section>
