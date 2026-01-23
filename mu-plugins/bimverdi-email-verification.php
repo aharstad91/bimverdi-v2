@@ -494,7 +494,10 @@ class BIMVerdi_Email_Verification {
     
     /**
      * Get verification email HTML
-     * 
+     *
+     * Clean, professional email design matching the auth pages aesthetic.
+     * Avoids spam triggers: no excessive formatting, clear sender identity.
+     *
      * @param string $email
      * @param string $verification_url
      * @return string
@@ -502,104 +505,102 @@ class BIMVerdi_Email_Verification {
     private function get_verification_email_html($email, $verification_url) {
         ob_start();
         ?>
-        <!DOCTYPE html>
-        <html lang="no">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Aktiver din BIM Verdi-konto</title>
-        </head>
-        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #FDF6E3; color: #1F2937;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #FDF6E3;">
-                <tr>
-                    <td style="padding: 40px 20px;">
-                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                            
-                            <!-- Header -->
-                            <tr>
-                                <td style="background: linear-gradient(135deg, #F97316 0%, #EA580C 100%); padding: 40px 30px; text-align: center;">
-                                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
-                                        🏗️ BIM Verdi
-                                    </h1>
-                                </td>
-                            </tr>
-                            
-                            <!-- Content -->
-                            <tr>
-                                <td style="padding: 40px 30px;">
-                                    
-                                    <!-- Icon -->
-                                    <div style="text-align: center; margin-bottom: 30px;">
-                                        <div style="display: inline-block; background-color: #FEF3C7; border-radius: 50%; padding: 20px;">
-                                            <span style="font-size: 48px;">✉️</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <h2 style="margin: 0 0 20px 0; color: #1F2937; font-size: 24px; text-align: center;">
-                                        Din BIM Verdi-konto er nesten klar!
-                                    </h2>
-                                    
-                                    <p style="margin: 0 0 20px 0; color: #4B5563; font-size: 16px; line-height: 1.6; text-align: center;">
-                                        Du er på vei til å bli en del av Norges ledende BIM-nettverk! 
-                                        Vi trenger bare å <strong>bekrefte e-postadressen din</strong> for å aktivere kontoen.
-                                    </p>
-                                    
-                                    <!-- CTA Button -->
-                                    <div style="text-align: center; margin: 30px 0;">
-                                        <a href="<?php echo esc_url($verification_url); ?>" 
-                                           style="display: inline-block; background-color: #F97316; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: 600; transition: background-color 0.2s;">
-                                            Aktiver kontoen min →
-                                        </a>
-                                    </div>
-                                    
-                                    <p style="margin: 30px 0 0 0; color: #9CA3AF; font-size: 14px; text-align: center;">
-                                        Lenken er gyldig i 24 timer.
-                                    </p>
-                                    
-                                    <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 30px 0;">
-                                    
-                                    <!-- Why account section -->
-                                    <h3 style="margin: 0 0 15px 0; color: #1F2937; font-size: 16px;">
-                                        Hvorfor trenger jeg en konto?
-                                    </h3>
-                                    
-                                    <p style="margin: 0 0 20px 0; color: #6B7280; font-size: 14px; line-height: 1.6;">
-                                        Med en BIM Verdi-konto kan du delta i nettverkets aktiviteter,
-                                        melde deg på arrangementer og få tilgang til deltakerportalen.
-                                        Når du kobler kontoen til et foretak, får du også tilgang til verktøyregistrering,
-                                        artikkelskriving og mer.
-                                    </p>
-                                    
-                                    <!-- Fallback link -->
-                                    <p style="margin: 20px 0 0 0; color: #9CA3AF; font-size: 12px; text-align: center;">
-                                        Fungerer ikke knappen? Kopier denne lenken til nettleseren:<br>
-                                        <a href="<?php echo esc_url($verification_url); ?>" style="color: #F97316; word-break: break-all;">
-                                            <?php echo esc_html($verification_url); ?>
-                                        </a>
-                                    </p>
-                                    
-                                </td>
-                            </tr>
-                            
-                            <!-- Footer -->
-                            <tr>
-                                <td style="background-color: #F9FAFB; padding: 20px 30px; text-align: center;">
-                                    <p style="margin: 0; color: #9CA3AF; font-size: 12px;">
-                                        © <?php echo date('Y'); ?> BIM Verdi. Alle rettigheter forbeholdt.
-                                    </p>
-                                    <p style="margin: 10px 0 0 0; color: #9CA3AF; font-size: 12px;">
-                                        Du mottar denne e-posten fordi noen registrerte seg med <?php echo esc_html($email); ?> på BIM Verdi.<br>
-                                        Hvis dette ikke var deg, kan du trygt ignorere denne e-posten.
-                                    </p>
-                                </td>
-                            </tr>
-                            
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </body>
-        </html>
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bekreft e-postadressen din</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #F5F3EE; color: #1A1A1A;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F5F3EE;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 520px; margin: 0 auto;">
+
+                    <!-- Logo -->
+                    <tr>
+                        <td style="text-align: center; padding-bottom: 32px;">
+                            <span style="font-size: 20px; font-weight: 700; color: #1A1A1A;">BIM Verdi</span>
+                        </td>
+                    </tr>
+
+                    <!-- Main Card -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);">
+                                <tr>
+                                    <td style="padding: 40px;">
+
+                                        <!-- Greeting -->
+                                        <p style="margin: 0 0 24px 0; color: #1A1A1A; font-size: 16px; line-height: 1.6;">
+                                            Hei!
+                                        </p>
+
+                                        <p style="margin: 0 0 24px 0; color: #1A1A1A; font-size: 16px; line-height: 1.6;">
+                                            Takk for at du registrerte deg på BIM Verdi. For å fullføre registreringen,
+                                            trenger vi at du bekrefter e-postadressen din.
+                                        </p>
+
+                                        <!-- CTA Button - Clean, professional -->
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 32px 0;">
+                                            <tr>
+                                                <td align="center">
+                                                    <a href="<?php echo esc_url($verification_url); ?>"
+                                                       style="display: inline-block; background-color: #1A1A1A; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 500;">
+                                                        Bekreft e-postadressen
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <p style="margin: 0 0 16px 0; color: #6B6B6B; font-size: 14px; line-height: 1.6;">
+                                            Lenken er gyldig i 24 timer. Etter at du har bekreftet, kan du fullføre
+                                            registreringen ved å velge et passord.
+                                        </p>
+
+                                        <!-- Separator -->
+                                        <hr style="border: none; border-top: 1px solid #E8E8E8; margin: 24px 0;">
+
+                                        <!-- What you get -->
+                                        <p style="margin: 0 0 12px 0; color: #1A1A1A; font-size: 14px; font-weight: 600;">
+                                            Med en BIM Verdi-konto kan du:
+                                        </p>
+                                        <ul style="margin: 0 0 16px 0; padding-left: 20px; color: #6B6B6B; font-size: 14px; line-height: 1.8;">
+                                            <li>Melde deg på arrangementer og workshops</li>
+                                            <li>Få tilgang til deltakerportalen</li>
+                                            <li>Registrere BIM-verktøy (når koblet til foretak)</li>
+                                            <li>Skrive og dele artikler</li>
+                                        </ul>
+
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 24px 0; text-align: center;">
+                            <p style="margin: 0 0 8px 0; color: #9B9B9B; font-size: 12px;">
+                                Fungerer ikke knappen? Kopier og lim inn denne lenken i nettleseren:
+                            </p>
+                            <p style="margin: 0 0 16px 0; color: #6B6B6B; font-size: 12px; word-break: break-all;">
+                                <?php echo esc_url($verification_url); ?>
+                            </p>
+                            <p style="margin: 0; color: #9B9B9B; font-size: 11px;">
+                                Du mottar denne e-posten fordi <?php echo esc_html($email); ?> ble brukt til å registrere seg på BIM Verdi.<br>
+                                Hvis dette ikke var deg, kan du trygt ignorere denne e-posten.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
         <?php
         return ob_get_clean();
     }

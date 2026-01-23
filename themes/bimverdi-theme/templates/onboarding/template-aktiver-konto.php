@@ -2,10 +2,10 @@
 /**
  * Template Name: Aktiver Konto
  *
- * Side for å fullføre brukerregistrering etter email-verifisering.
- * URL-format: /aktiver-konto/?email=xxx&token=xxx
- *
- * UI Contract: Variant B (beige bakgrunn, ingen gradient)
+ * Complete user registration after email verification.
+ * Two-column layout matching login/register pages.
+ * Standalone page without site header/footer.
+ * URL: /aktiver-konto/?email=xxx&token=xxx
  *
  * @package BIMVerdi
  */
@@ -62,52 +62,535 @@ if (is_user_logged_in()) {
     wp_redirect(home_url('/min-side/'));
     exit;
 }
-
-get_header();
 ?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aktiver konto - <?php bloginfo('name'); ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <?php wp_head(); ?>
+    <style>
+        :root {
+            --bv-bg-page: #F5F3EE;
+            --bv-bg-card: #FFFFFF;
+            --bv-text-primary: #1A1A1A;
+            --bv-text-secondary: #6B6B6B;
+            --bv-text-muted: #9B9B9B;
+            --bv-accent: #E07A5F;
+            --bv-accent-hover: #C96A52;
+            --bv-btn-primary-bg: #1A1A1A;
+            --bv-btn-primary-text: #FFFFFF;
+            --bv-btn-primary-hover: #333333;
+            --bv-btn-secondary-bg: #FFFFFF;
+            --bv-btn-secondary-text: #1A1A1A;
+            --bv-btn-secondary-border: #1A1A1A;
+            --bv-border-light: #E8E8E8;
+            --bv-border-focus: #1A1A1A;
+            --bv-space-xs: 8px;
+            --bv-space-sm: 16px;
+            --bv-space-md: 24px;
+            --bv-space-lg: 32px;
+            --bv-space-xl: 48px;
+            --bv-space-2xl: 64px;
+            --bv-font-family: 'Inter', -apple-system, sans-serif;
+            --bv-text-sm: 14px;
+            --bv-text-base: 16px;
+            --bv-text-lg: 18px;
+            --bv-text-xl: 20px;
+            --bv-text-2xl: 24px;
+            --bv-text-3xl: 32px;
+            --bv-radius-md: 8px;
+            --bv-radius-lg: 12px;
+            --bv-shadow-card: 0 4px 24px rgba(0,0,0,0.08);
+            --bv-transition-normal: 250ms ease;
+        }
 
-<main class="min-h-screen bg-[#F7F5EF] py-12 px-4">
-    <div class="max-w-md mx-auto">
+        .bv-auth-page * { box-sizing: border-box; }
 
-        <!-- Logo/Brand -->
-        <div class="text-center mb-8">
-            <a href="<?php echo home_url('/'); ?>" class="inline-block">
-                <span class="text-2xl font-bold text-[#1A1A1A]">BIM Verdi</span>
-            </a>
+        .bv-auth-page {
+            font-family: var(--bv-font-family);
+            font-size: var(--bv-text-base);
+            line-height: 1.5;
+            color: var(--bv-text-primary);
+            background-color: var(--bv-bg-page);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            margin: 0;
+            padding: 0;
+        }
+
+        .auth-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--bv-space-xl);
+            gap: var(--bv-space-2xl);
+            align-items: center;
+        }
+
+        .auth-value { padding-right: var(--bv-space-xl); }
+
+        .auth-logo {
+            font-size: var(--bv-text-xl);
+            font-weight: 700;
+            color: var(--bv-text-primary);
+            margin-bottom: var(--bv-space-xl);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .auth-value h1 {
+            font-size: var(--bv-text-3xl);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--bv-space-sm);
+        }
+
+        .auth-value .lead {
+            font-size: var(--bv-text-lg);
+            color: var(--bv-text-secondary);
+            margin-bottom: var(--bv-space-lg);
+        }
+
+        .steps-list {
+            list-style: none;
+            margin: 0 0 var(--bv-space-lg) 0;
+            padding: 0 0 var(--bv-space-lg) 0;
+            border-bottom: 1px solid var(--bv-border-light);
+        }
+
+        .steps-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--bv-space-sm);
+            margin-bottom: var(--bv-space-sm);
+            font-size: var(--bv-text-base);
+            color: var(--bv-text-secondary);
+        }
+
+        .steps-list li:last-child { margin-bottom: 0; }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--bv-text-primary);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-number.completed {
+            background: #22C55E;
+        }
+
+        .step-content strong {
+            display: block;
+            color: var(--bv-text-primary);
+            font-weight: 600;
+        }
+
+        .auth-help {
+            font-size: var(--bv-text-sm);
+            color: var(--bv-text-secondary);
+        }
+
+        .auth-help a {
+            color: var(--bv-text-primary);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .auth-help a:hover { text-decoration: underline; }
+
+        .auth-form-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .auth-card {
+            background: var(--bv-bg-card);
+            border-radius: var(--bv-radius-lg);
+            box-shadow: var(--bv-shadow-card);
+            padding: var(--bv-space-xl);
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .auth-card-header {
+            text-align: center;
+            margin-bottom: var(--bv-space-lg);
+        }
+
+        .auth-card-header h2 {
+            font-size: var(--bv-text-2xl);
+            font-weight: 700;
+            margin: 0 0 var(--bv-space-xs) 0;
+        }
+
+        .auth-card-header p {
+            color: var(--bv-text-secondary);
+            font-size: var(--bv-text-sm);
+            margin: 0;
+        }
+
+        .success-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto var(--bv-space-md);
+            border-radius: 50%;
+            background: #DCFCE7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22C55E;
+        }
+
+        .form-group { margin-bottom: var(--bv-space-md); }
+
+        .form-label {
+            display: block;
+            font-size: var(--bv-text-sm);
+            font-weight: 500;
+            margin-bottom: var(--bv-space-xs);
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--bv-text-muted);
+            margin-top: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--bv-space-sm);
+            font-size: var(--bv-text-base);
+            font-family: inherit;
+            border: 1px solid var(--bv-border-light);
+            border-radius: var(--bv-radius-md);
+            background: var(--bv-bg-card);
+            transition: border-color var(--bv-transition-normal);
+        }
+
+        .form-input::placeholder {
+            color: var(--bv-text-muted);
+            font-style: italic;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--bv-border-focus);
+        }
+
+        .form-input.locked {
+            background: var(--bv-bg-page);
+            color: var(--bv-text-secondary);
+            cursor: not-allowed;
+        }
+
+        .email-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: var(--bv-space-sm);
+            background: var(--bv-bg-page);
+            border: 1px solid var(--bv-border-light);
+            border-radius: var(--bv-radius-md);
+        }
+
+        .email-display svg {
+            flex-shrink: 0;
+            color: var(--bv-text-secondary);
+        }
+
+        .email-display span {
+            flex: 1;
+            color: var(--bv-text-primary);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: var(--bv-space-sm);
+            font-size: var(--bv-text-base);
+            font-weight: 500;
+            font-family: inherit;
+            border-radius: var(--bv-radius-md);
+            cursor: pointer;
+            transition: all var(--bv-transition-normal);
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--bv-btn-primary-bg);
+            color: var(--bv-btn-primary-text);
+            border: none;
+        }
+
+        .btn-primary:hover { background: var(--bv-btn-primary-hover); }
+
+        .btn-secondary {
+            background: var(--bv-btn-secondary-bg);
+            color: var(--bv-btn-secondary-text);
+            border: 1px solid var(--bv-btn-secondary-border);
+            margin-top: var(--bv-space-sm);
+        }
+
+        .btn-secondary:hover { background: var(--bv-bg-page); }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: var(--bv-space-md);
+        }
+
+        .auth-footer a {
+            color: var(--bv-accent);
+            font-size: var(--bv-text-sm);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--bv-space-xs);
+        }
+
+        .auth-footer a:hover { color: var(--bv-accent-hover); }
+
+        .auth-footer-links {
+            margin-top: var(--bv-space-md);
+            padding-top: var(--bv-space-md);
+            border-top: 1px solid var(--bv-border-light);
+            text-align: center;
+        }
+
+        .auth-footer-links p {
+            font-size: var(--bv-text-sm);
+            color: var(--bv-text-secondary);
+            margin: 0 0 var(--bv-space-xs) 0;
+        }
+
+        .auth-footer-links a {
+            color: var(--bv-text-primary);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .auth-footer-links a:hover { text-decoration: underline; }
+
+        /* Alert messages */
+        .alert {
+            padding: var(--bv-space-sm);
+            border-radius: var(--bv-radius-md);
+            margin-bottom: var(--bv-space-md);
+            font-size: var(--bv-text-sm);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--bv-space-xs);
+        }
+
+        .alert-error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+        }
+
+        .alert-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Error state card */
+        .error-card {
+            text-align: center;
+        }
+
+        .error-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto var(--bv-space-md);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-icon.expired { background: #FEF2F2; color: #DC2626; }
+        .error-icon.used { background: #FEF3C7; color: #D97706; }
+        .error-icon.invalid { background: #FEF2F2; color: #DC2626; }
+
+        /* Gravity Forms overrides */
+        .gform_wrapper .gform_body { padding: 0 !important; }
+        .gform_wrapper .gform_fields { padding: 0 !important; }
+        .gform_wrapper .gfield { margin-bottom: var(--bv-space-md) !important; }
+        .gform_wrapper .gfield_label {
+            font-size: var(--bv-text-sm) !important;
+            font-weight: 500 !important;
+            color: var(--bv-text-primary) !important;
+            margin-bottom: var(--bv-space-xs) !important;
+        }
+        .gform_wrapper .gfield_required { color: #DC2626 !important; }
+        .gform_wrapper input[type="text"],
+        .gform_wrapper input[type="password"] {
+            width: 100% !important;
+            padding: var(--bv-space-sm) !important;
+            font-size: var(--bv-text-base) !important;
+            font-family: inherit !important;
+            border: 1px solid var(--bv-border-light) !important;
+            border-radius: var(--bv-radius-md) !important;
+            background: var(--bv-bg-card) !important;
+            transition: border-color var(--bv-transition-normal) !important;
+        }
+        .gform_wrapper input[type="text"]::placeholder,
+        .gform_wrapper input[type="password"]::placeholder {
+            color: var(--bv-text-muted) !important;
+            font-style: italic !important;
+        }
+        .gform_wrapper input:focus {
+            outline: none !important;
+            border-color: var(--bv-border-focus) !important;
+        }
+        .gform_wrapper .gfield_description {
+            font-size: 12px !important;
+            color: var(--bv-text-muted) !important;
+            margin-top: 4px !important;
+        }
+        .gform_wrapper .ginput_container_password {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: var(--bv-space-sm) !important;
+        }
+        .gform_wrapper .ginput_container_password > span {
+            width: 100% !important;
+        }
+        .gform_wrapper .gform_footer {
+            margin-top: var(--bv-space-md) !important;
+            padding: 0 !important;
+        }
+        .gform_wrapper .gform_button {
+            width: 100% !important;
+            padding: var(--bv-space-sm) !important;
+            background: var(--bv-btn-primary-bg) !important;
+            color: var(--bv-btn-primary-text) !important;
+            font-size: var(--bv-text-base) !important;
+            font-weight: 500 !important;
+            border: none !important;
+            border-radius: var(--bv-radius-md) !important;
+            cursor: pointer !important;
+        }
+        .gform_wrapper .gform_button:hover {
+            background: var(--bv-btn-primary-hover) !important;
+        }
+        .gform_wrapper .gfield_visibility_hidden {
+            display: none !important;
+        }
+        .gform_wrapper .validation_message {
+            color: #DC2626 !important;
+            font-size: 12px !important;
+            margin-top: 4px !important;
+        }
+        .gform_wrapper .gfield_error input {
+            border-color: #DC2626 !important;
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                grid-template-columns: 1fr;
+                padding: var(--bv-space-md);
+                gap: var(--bv-space-lg);
+            }
+
+            .auth-value {
+                padding-right: 0;
+                text-align: center;
+            }
+
+            .steps-list li {
+                text-align: left;
+            }
+
+            .auth-card { padding: var(--bv-space-lg); }
+        }
+    </style>
+</head>
+<body class="bv-auth-page">
+    <div class="auth-container">
+        <div class="auth-value">
+            <a href="<?php echo home_url('/'); ?>" class="auth-logo">BIM Verdi</a>
+
+            <?php if ($is_valid): ?>
+                <h1>Fullfør registreringen</h1>
+                <p class="lead">Du er nesten i mål. Oppgi navn og velg et passord for å aktivere kontoen din.</p>
+
+                <ul class="steps-list">
+                    <li>
+                        <span class="step-number completed">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <span class="step-content">
+                            <strong>E-post bekreftet</strong>
+                            Vi har verifisert e-postadressen din
+                        </span>
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        <span class="step-content">
+                            <strong>Fullfør profilen</strong>
+                            Oppgi navn og velg passord
+                        </span>
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        <span class="step-content">
+                            <strong>Utforsk portalen</strong>
+                            Koble til foretak, registrer verktøy og mer
+                        </span>
+                    </li>
+                </ul>
+            <?php else: ?>
+                <h1>Noe gikk galt</h1>
+                <p class="lead">Vi kunne ikke validere verifiseringslenken din. Dette kan skyldes at lenken har utløpt eller allerede er brukt.</p>
+            <?php endif; ?>
+
+            <p class="auth-help">Trenger du hjelp? <a href="<?php echo home_url('/kontakt/'); ?>">Kontakt oss</a></p>
         </div>
 
-        <!-- Main Card -->
-        <div class="bg-white border border-[#E5E0D5] rounded-lg">
-            <div class="p-8">
-
+        <div class="auth-form-wrapper">
+            <div class="auth-card">
                 <?php if ($is_valid): ?>
                     <!-- Valid Token - Show Form -->
-
-                    <div class="text-center mb-6">
-                        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="auth-card-header">
+                        <div class="success-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                                 <polyline points="22 4 12 14.01 9 11.01"/>
                             </svg>
                         </div>
-                        <h1 class="text-2xl font-bold text-[#1A1A1A]">
-                            Fullfør registreringen
-                        </h1>
-                        <p class="text-[#5A5A5A] mt-2">
-                            Fortell oss litt om deg selv og velg et passord.
-                        </p>
+                        <h2>E-post bekreftet</h2>
+                        <p>Fullfør registreringen for å aktivere kontoen</p>
                     </div>
 
                     <!-- Email Display (locked) -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-[#1A1A1A] mb-2">E-postadresse</label>
-                        <div class="flex items-center gap-3 p-3 bg-[#F7F5EF] rounded-lg border border-[#E5E0D5]">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="form-group">
+                        <label class="form-label">E-postadresse</label>
+                        <div class="email-display">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="5" width="18" height="14" rx="2"/>
                                 <polyline points="3 7 12 13 21 7"/>
                             </svg>
-                            <span class="text-[#1A1A1A]"><?php echo esc_html($email); ?></span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto">
+                            <span><?php echo esc_html($email); ?></span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                             </svg>
@@ -115,51 +598,52 @@ get_header();
                     </div>
 
                     <!-- Gravity Form -->
-                    <div class="bimverdi-verify-form-wrapper">
+                    <div class="bimverdi-verify-form">
                         <?php
                         if (function_exists('gravity_form')) {
-                            // Get form ID from settings (default: 6)
                             $verify_form_id = (int) get_option('bimverdi_verify_form_id', 6);
-
-                            // Form with pre-populated email and token
                             gravity_form(
-                                $verify_form_id,       // Form ID
-                                false,                 // Display title
-                                false,                 // Display description
-                                false,                 // Display inactive
-                                array(                 // Field values
+                                $verify_form_id,
+                                false,
+                                false,
+                                false,
+                                array(
                                     'email' => $email,
                                     'token' => $token,
                                 ),
-                                true,                  // AJAX
-                                0,                     // Tab index
-                                true                   // Echo
+                                true,
+                                0,
+                                true
                             );
                         } else {
-                            echo '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">';
-                            echo 'Gravity Forms er ikke aktivert. Kontakt administrator.';
+                            echo '<div class="alert alert-error">';
+                            echo '<svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+                            echo '<span>Gravity Forms er ikke aktivert. Kontakt administrator.</span>';
                             echo '</div>';
                         }
                         ?>
                     </div>
 
+                    <div class="auth-footer-links">
+                        <p>Har du allerede en konto? <a href="<?php echo home_url('/logg-inn/'); ?>">Logg inn</a></p>
+                    </div>
+
                 <?php else: ?>
                     <!-- Invalid Token - Show Error -->
-
-                    <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
+                    <div class="error-card">
+                        <div class="error-icon <?php echo esc_attr($error_code === 'expired' ? 'expired' : ($error_code === 'already_used' ? 'used' : 'invalid')); ?>">
                             <?php if ($error_code === 'expired'): ?>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/>
                                     <polyline points="12 6 12 12 16 14"/>
                                 </svg>
                             <?php elseif ($error_code === 'already_used'): ?>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                                     <polyline points="22 4 12 14.01 9 11.01"/>
                                 </svg>
                             <?php else: ?>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/>
                                     <line x1="12" y1="8" x2="12" y2="12"/>
                                     <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -167,169 +651,45 @@ get_header();
                             <?php endif; ?>
                         </div>
 
-                        <h1 class="text-2xl font-bold text-[#1A1A1A] mb-4">
+                        <h2 style="margin-bottom: var(--bv-space-sm);">
                             <?php
                             if ($error_code === 'expired') {
                                 echo 'Lenken har utløpt';
                             } elseif ($error_code === 'already_used') {
-                                echo 'Allerede verifisert';
+                                echo 'Allerede aktivert';
                             } else {
-                                echo 'Noe gikk galt';
+                                echo 'Ugyldig lenke';
                             }
                             ?>
-                        </h1>
+                        </h2>
 
-                        <p class="text-[#5A5A5A] mb-6">
+                        <p style="color: var(--bv-text-secondary); margin-bottom: var(--bv-space-lg);">
                             <?php echo esc_html($error_message); ?>
                         </p>
 
-                        <!-- Action buttons based on error type -->
-                        <div class="space-y-3">
-                            <?php if ($error_code === 'already_used'): ?>
-                                <a href="<?php echo home_url('/logg-inn/'); ?>"
-                                   class="w-full block text-center px-6 py-3 bg-[#1A1A1A] text-white font-medium rounded-lg hover:bg-[#333333] transition-colors">
-                                    Logg inn
-                                </a>
-                            <?php else: ?>
-                                <a href="<?php echo home_url('/registrer/'); ?>"
-                                   class="w-full block text-center px-6 py-3 bg-[#1A1A1A] text-white font-medium rounded-lg hover:bg-[#333333] transition-colors">
-                                    Registrer deg på nytt
-                                </a>
-                            <?php endif; ?>
+                        <?php if ($error_code === 'already_used'): ?>
+                            <a href="<?php echo home_url('/logg-inn/'); ?>" class="btn btn-primary">Logg inn</a>
+                        <?php else: ?>
+                            <a href="<?php echo home_url('/registrer/'); ?>" class="btn btn-primary">Registrer deg på nytt</a>
+                        <?php endif; ?>
 
-                            <a href="<?php echo home_url('/'); ?>"
-                               class="w-full block text-center px-6 py-3 border border-[#E5E0D5] text-[#1A1A1A] font-medium rounded-lg hover:bg-[#F7F5EF] transition-colors">
-                                Gå til forsiden
-                            </a>
-                        </div>
+                        <a href="<?php echo home_url('/'); ?>" class="btn btn-secondary">Gå til forsiden</a>
                     </div>
-
                 <?php endif; ?>
+            </div>
 
+            <div class="auth-footer">
+                <a href="<?php echo home_url('/'); ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Tilbake til forsiden
+                </a>
             </div>
         </div>
-
-        <!-- Help Links -->
-        <div class="text-center mt-6 space-y-2">
-            <p class="text-sm text-[#5A5A5A]">
-                Har du allerede en konto?
-                <a href="<?php echo home_url('/logg-inn/'); ?>" class="text-[#1A1A1A] hover:underline font-medium">
-                    Logg inn
-                </a>
-            </p>
-            <p class="text-sm text-[#888888]">
-                Trenger du hjelp?
-                <a href="<?php echo home_url('/kontakt/'); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] hover:underline">
-                    Kontakt oss
-                </a>
-            </p>
-        </div>
-
     </div>
-</main>
 
-<style>
-/* Custom styles for the verification form - UI Contract compliant */
-.bimverdi-verify-form-wrapper .gform_wrapper {
-    margin: 0;
-    padding: 0;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gform_body {
-    padding: 0;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gfield {
-    margin-bottom: 1.25rem;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gfield_label {
-    font-weight: 500;
-    color: #1A1A1A;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper input[type="text"],
-.bimverdi-verify-form-wrapper .gform_wrapper input[type="password"] {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #E5E0D5;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    color: #1A1A1A;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper input[type="text"]:focus,
-.bimverdi-verify-form-wrapper .gform_wrapper input[type="password"]:focus {
-    outline: none;
-    border-color: #1A1A1A;
-    box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.1);
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gfield_description {
-    font-size: 0.75rem;
-    color: #888888;
-    margin-top: 0.25rem;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gform_footer {
-    margin-top: 1.5rem;
-    padding: 0;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gform_button {
-    width: 100%;
-    padding: 0.75rem 1.5rem;
-    background-color: #1A1A1A;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gform_button:hover {
-    background-color: #333333;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .gform_button:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #F7F5EF, 0 0 0 4px #1A1A1A;
-}
-
-/* Password visibility toggle */
-.bimverdi-verify-form-wrapper .gform_wrapper .gfield_password_visibility {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #888888;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .ginput_container_password {
-    position: relative;
-}
-
-/* Validation errors */
-.bimverdi-verify-form-wrapper .gform_wrapper .gfield_error input {
-    border-color: #dc2626;
-}
-
-.bimverdi-verify-form-wrapper .gform_wrapper .validation_message {
-    color: #dc2626;
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-}
-
-/* Hide hidden fields completely */
-.bimverdi-verify-form-wrapper .gform_wrapper .gfield_visibility_hidden {
-    display: none !important;
-}
-</style>
-
-<?php get_footer(); ?>
+    <?php wp_footer(); ?>
+</body>
+</html>

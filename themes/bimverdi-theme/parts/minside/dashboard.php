@@ -78,11 +78,17 @@ $articles_count = count($my_articles);
 ]); ?>
 
 <!-- Success Messages -->
-<?php if (isset($_GET['welcome']) && $_GET['welcome'] == '1'): ?>
-    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+<?php if (isset($_GET['welcome']) && $_GET['welcome'] == '1'):
+    $first_name = $current_user->first_name ?: $current_user->display_name;
+?>
+    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
         <p class="text-sm text-green-800">
-            <strong><?php _e('Velkommen til BIM Verdi!', 'bimverdi'); ?></strong> 
-            <?php _e('Kontoen din er aktivert.', 'bimverdi'); ?>
+            <strong><?php printf(__('Velkommen, %s!', 'bimverdi'), esc_html($first_name)); ?></strong>
+            <?php _e('Kontoen din er nå aktivert.', 'bimverdi'); ?>
         </p>
     </div>
 <?php endif; ?>

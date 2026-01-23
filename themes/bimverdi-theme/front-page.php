@@ -38,7 +38,7 @@ get_header();
 
             <!-- CTA Buttons -->
             <div class="flex flex-wrap items-center gap-6">
-                <a href="<?php echo esc_url(home_url('/bli-medlem/')); ?>" class="px-6 py-3 bg-[#1A1A1A] text-white rounded-full font-medium hover:bg-[#333] transition-colors">
+                <a href="<?php echo esc_url(home_url('/logg-inn/')); ?>" class="px-6 py-3 bg-[#1A1A1A] text-white rounded-full font-medium hover:bg-[#333] transition-colors">
                     Bli med i nettverket
                 </a>
                 <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="text-[#1A1A1A] font-medium hover:underline flex items-center gap-1">

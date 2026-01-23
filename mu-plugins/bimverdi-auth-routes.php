@@ -238,7 +238,7 @@ class BIMVerdi_Auth_Routes {
 
         // Verify nonce
         if (!wp_verify_nonce($_POST['_wpnonce'] ?? '', 'bimverdi_login')) {
-            wp_redirect(add_query_arg('error', 'nonce', home_url('/logg-inn/')));
+            wp_redirect(add_query_arg('login_error', 'nonce', home_url('/logg-inn/')));
             exit;
         }
 
@@ -248,7 +248,7 @@ class BIMVerdi_Auth_Routes {
         $redirect_to = $_POST['redirect_to'] ?? home_url('/min-side/');
 
         if (empty($username) || empty($password)) {
-            wp_redirect(add_query_arg('error', 'empty', home_url('/logg-inn/')));
+            wp_redirect(add_query_arg('login_error', 'empty', home_url('/logg-inn/')));
             exit;
         }
 
@@ -271,7 +271,7 @@ class BIMVerdi_Auth_Routes {
             }
 
             wp_redirect(add_query_arg([
-                'error' => $error_code,
+                'login_error' => $error_code,
                 'username' => urlencode($username),
             ], home_url('/logg-inn/')));
             exit;
