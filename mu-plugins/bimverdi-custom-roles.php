@@ -312,7 +312,7 @@ function bimverdi_show_membership_in_profile($user) {
 add_action('template_redirect', 'bimverdi_min_side_access_control');
 function bimverdi_min_side_access_control() {
     if (is_page('min-side') && !is_user_logged_in()) {
-        wp_redirect(wp_login_url(get_permalink()));
+        wp_redirect(home_url('/logg-inn/?redirect_to=' . urlencode(get_permalink())));
         exit;
     }
 }

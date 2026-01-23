@@ -215,11 +215,11 @@
             "required": 0,
             "choices": {
                 "alle": "Åpent for alle",
-                "medlemmer": "Kun medlemmer",
+                "medlemmer": "Kun deltakere",
                 "deltakere": "Kun deltakere/partnere",
                 "invitert": "Kun inviterte"
             },
-            "default_value": "medlemmer",
+            "default_value": "deltakere",
             "return_format": "value"
         },
         {

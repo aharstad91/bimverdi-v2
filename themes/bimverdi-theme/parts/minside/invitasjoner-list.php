@@ -45,16 +45,13 @@ $er_aktiv_deltaker = bimverdi_is_company_active($company_id);
 
 // Get invitations handler
 if (!function_exists('bimverdi_get_invitations')) {
-    get_template_part('parts/components/page-header', null, [
-        'title' => 'Inviter kolleger',
-        'description' => 'Administrer brukertilgang for ' . $company->post_title,
-    ]);
     ?>
     <div class="p-4 bg-amber-50 border-l-4 border-amber-400 text-amber-800">
         <strong>Invitasjonssystemet er ikke tilgjengelig</strong><br>
         Ta kontakt på <a href="mailto:post@bimverdi.no" class="underline">post@bimverdi.no</a> for assistanse.
     </div>
     <?php
+    get_template_part('parts/components/account-layout-end');
     return;
 }
 
@@ -85,13 +82,13 @@ $remaining_invitations = max(0, $max_tilleggskontakter - $total_used);
 
 // Get company name safely
 $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
+?>
 
-// Page header
-get_template_part('parts/components/page-header', null, [
+<!-- Account Layout with Sidenav -->
+<?php get_template_part('parts/components/account-layout', null, [
     'title' => __('Inviter kolleger', 'bimverdi'),
     'description' => sprintf(__('Administrer brukertilgang for %s', 'bimverdi'), esc_html($company_name)),
-]);
-?>
+]); ?>
 
 <?php if (!$er_aktiv_deltaker): ?>
     <!-- Company not yet approved -->
@@ -389,3 +386,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<?php get_template_part('parts/components/account-layout-end'); ?>

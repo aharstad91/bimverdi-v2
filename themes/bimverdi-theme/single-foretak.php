@@ -437,7 +437,7 @@ $company_kunnskapskilder = get_posts(array(
 
                     <dl class="space-y-6">
                         <div class="flex justify-between items-center">
-                            <dt class="text-sm text-[#5A5A5A]">Medlemsstatus</dt>
+                            <dt class="text-sm text-[#5A5A5A]">Deltakerstatus</dt>
                             <dd>
                                 <?php if ($er_aktiv_deltaker): ?>
                                 <span class="inline-block text-xs font-medium bg-[#DCFCE7] text-[#166534] px-2.5 py-1 rounded">
@@ -550,12 +550,12 @@ $company_kunnskapskilder = get_posts(array(
                     </dl>
                 </section>
 
-                <!-- CTA: Bli medlem -->
+                <!-- CTA: Bli deltaker -->
                 <?php if (!is_user_logged_in()): ?>
                 <section class="bg-[#1A1A1A] rounded-lg p-5 text-center">
-                    <h3 class="text-sm font-bold text-white mb-2">Bli medlem i BIM Verdi</h3>
+                    <h3 class="text-sm font-bold text-white mb-2">Bli deltaker i BIM Verdi</h3>
                     <p class="text-xs text-[#9D8F7F] mb-4">
-                        Få tilgang til nettverket og verktøy fra alle medlemsbedrifter.
+                        Få tilgang til nettverket og verktøy fra alle deltakere.
                     </p>
                     <a href="<?php echo home_url('/registrer/'); ?>" class="inline-flex items-center justify-center w-full px-4 py-2.5 bg-[#FF8B5E] text-white text-sm font-medium rounded-lg hover:bg-[#E67A4D] transition-colors">
                         Registrer deg gratis

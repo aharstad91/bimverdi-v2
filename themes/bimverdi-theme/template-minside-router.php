@@ -24,7 +24,7 @@ if (!function_exists('bimverdi_get_current_route')) {
 
 // Authentication check (also done in helpers, but belt-and-braces)
 if (!is_user_logged_in()) {
-    wp_redirect(wp_login_url(bimverdi_minside_url()));
+    wp_redirect(home_url('/logg-inn/?redirect_to=' . urlencode(bimverdi_minside_url())));
     exit;
 }
 

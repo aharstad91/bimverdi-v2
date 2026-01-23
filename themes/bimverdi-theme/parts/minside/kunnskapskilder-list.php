@@ -192,7 +192,7 @@ if (empty($user_kunnskapskilder)) {
         </div>
         <h3 class="text-lg font-semibold text-[#1A1A1A] mb-2"><?php _e('Ingen kunnskapskilder registrert', 'bimverdi'); ?></h3>
         <p class="text-sm text-[#5A5A5A] mb-6 leading-relaxed">
-            <?php _e('Del kunnskapskilder som standarder, veiledere og rapporter med andre medlemmer. Registrer din første kunnskapskilde nå.', 'bimverdi'); ?>
+            <?php _e('Del kunnskapskilder som standarder, veiledere og rapporter med andre deltakere. Registrer din første kunnskapskilde nå.', 'bimverdi'); ?>
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <?php bimverdi_button([

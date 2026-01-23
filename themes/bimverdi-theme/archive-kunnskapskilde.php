@@ -344,8 +344,8 @@ $is_logged_in = is_user_logged_in();
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
             </div>
             <h3 class="text-lg font-bold text-[#1A1A1A] mb-2">Vil du bidra?</h3>
-            <p class="text-[#5A5A5A] mb-4">Logg inn for å registrere egne kunnskapskilder og få tilgang til medlemsinnhold</p>
-            <a href="<?php echo wp_login_url(get_post_type_archive_link('kunnskapskilde')); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors">
+            <p class="text-[#5A5A5A] mb-4">Logg inn for å registrere egne kunnskapskilder og få tilgang til deltakerinnhold</p>
+            <a href="<?php echo home_url('/logg-inn/?redirect_to=' . urlencode(get_post_type_archive_link('kunnskapskilde'))); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors">
                 Logg inn
             </a>
         </div>

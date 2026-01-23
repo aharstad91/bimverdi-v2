@@ -1,14 +1,14 @@
 <?php
 /**
  * Template Name: Aktiver Konto
- * 
+ *
  * Side for å fullføre brukerregistrering etter email-verifisering.
  * URL-format: /aktiver-konto/?email=xxx&token=xxx
- * 
+ *
+ * UI Contract: Variant B (beige bakgrunn, ingen gradient)
+ *
  * @package BIMVerdi
  */
-
-get_header();
 
 // Get parameters from URL
 $email = isset($_GET['email']) ? sanitize_email(urldecode($_GET['email'])) : '';
@@ -24,7 +24,7 @@ if (empty($email) || empty($token)) {
     $error_code = 'missing_params';
 } else {
     // Use our verification system
-    if (function_exists('BIMVerdi_Email_Verification')) {
+    if (class_exists('BIMVerdi_Email_Verification')) {
         $verifier = new BIMVerdi_Email_Verification();
         $result = $verifier->verify_token($token, $email);
         $is_valid = $result['valid'];
@@ -36,12 +36,12 @@ if (empty($email) || empty($token)) {
         // Fallback validation
         global $wpdb;
         $table_name = $wpdb->prefix . 'bimverdi_pending_registrations';
-        
+
         $pending = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$table_name} WHERE token = %s AND email = %s",
             $token, $email
         ));
-        
+
         if (!$pending) {
             $error_message = 'Ugyldig verifiseringslenke. Vennligst registrer deg på nytt.';
             $error_code = 'invalid_token';
@@ -62,54 +62,65 @@ if (is_user_logged_in()) {
     wp_redirect(home_url('/min-side/'));
     exit;
 }
+
+get_header();
 ?>
 
-<main class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-12 px-4">
+<main class="min-h-screen bg-[#F7F5EF] py-12 px-4">
     <div class="max-w-md mx-auto">
-        
+
         <!-- Logo/Brand -->
         <div class="text-center mb-8">
             <a href="<?php echo home_url('/'); ?>" class="inline-block">
-                <span class="text-3xl font-bold text-gray-900">🏗️ BIM Verdi</span>
+                <span class="text-2xl font-bold text-[#1A1A1A]">BIM Verdi</span>
             </a>
         </div>
-        
+
         <!-- Main Card -->
-        <wa-card class="shadow-lg">
+        <div class="bg-white border border-[#E5E0D5] rounded-lg">
             <div class="p-8">
-                
+
                 <?php if ($is_valid): ?>
                     <!-- Valid Token - Show Form -->
-                    
+
                     <div class="text-center mb-6">
                         <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                            <wa-icon name="check-circle" library="fa" class="text-green-600 text-3xl"></wa-icon>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
                         </div>
-                        <h1 class="text-2xl font-bold text-gray-900">
+                        <h1 class="text-2xl font-bold text-[#1A1A1A]">
                             Fullfør registreringen
                         </h1>
-                        <p class="text-gray-600 mt-2">
+                        <p class="text-[#5A5A5A] mt-2">
                             Fortell oss litt om deg selv og velg et passord.
                         </p>
                     </div>
-                    
+
                     <!-- Email Display (locked) -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">E-postadresse</label>
-                        <div class="flex items-center gap-3 p-3 bg-gray-100 rounded-lg border border-gray-200">
-                            <wa-icon name="envelope" library="fa" class="text-gray-500"></wa-icon>
-                            <span class="text-gray-700"><?php echo esc_html($email); ?></span>
-                            <wa-icon name="lock" library="fa" class="text-gray-400 ml-auto text-sm"></wa-icon>
+                        <label class="block text-sm font-medium text-[#1A1A1A] mb-2">E-postadresse</label>
+                        <div class="flex items-center gap-3 p-3 bg-[#F7F5EF] rounded-lg border border-[#E5E0D5]">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                <polyline points="3 7 12 13 21 7"/>
+                            </svg>
+                            <span class="text-[#1A1A1A]"><?php echo esc_html($email); ?></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
                         </div>
                     </div>
-                    
+
                     <!-- Gravity Form -->
                     <div class="bimverdi-verify-form-wrapper">
-                        <?php 
+                        <?php
                         if (function_exists('gravity_form')) {
                             // Get form ID from settings (default: 6)
                             $verify_form_id = (int) get_option('bimverdi_verify_form_id', 6);
-                            
+
                             // Form with pre-populated email and token
                             gravity_form(
                                 $verify_form_id,       // Form ID
@@ -125,30 +136,39 @@ if (is_user_logged_in()) {
                                 true                   // Echo
                             );
                         } else {
-                            echo '<wa-alert variant="danger" open>';
-                            echo '<wa-icon slot="icon" name="exclamation-triangle" library="fa"></wa-icon>';
+                            echo '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">';
                             echo 'Gravity Forms er ikke aktivert. Kontakt administrator.';
-                            echo '</wa-alert>';
+                            echo '</div>';
                         }
                         ?>
                     </div>
-                    
+
                 <?php else: ?>
                     <!-- Invalid Token - Show Error -->
-                    
+
                     <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
                             <?php if ($error_code === 'expired'): ?>
-                                <wa-icon name="clock" library="fa" class="text-red-600 text-3xl"></wa-icon>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
                             <?php elseif ($error_code === 'already_used'): ?>
-                                <wa-icon name="check-double" library="fa" class="text-amber-600 text-3xl"></wa-icon>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
                             <?php else: ?>
-                                <wa-icon name="exclamation-triangle" library="fa" class="text-red-600 text-3xl"></wa-icon>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
                             <?php endif; ?>
                         </div>
-                        
-                        <h1 class="text-2xl font-bold text-gray-900 mb-2">
-                            <?php 
+
+                        <h1 class="text-2xl font-bold text-[#1A1A1A] mb-4">
+                            <?php
                             if ($error_code === 'expired') {
                                 echo 'Lenken har utløpt';
                             } elseif ($error_code === 'already_used') {
@@ -158,58 +178,58 @@ if (is_user_logged_in()) {
                             }
                             ?>
                         </h1>
-                        
-                        <p class="text-gray-600 mb-6">
+
+                        <p class="text-[#5A5A5A] mb-6">
                             <?php echo esc_html($error_message); ?>
                         </p>
-                        
+
                         <!-- Action buttons based on error type -->
                         <div class="space-y-3">
                             <?php if ($error_code === 'already_used'): ?>
-                                <wa-button variant="brand" href="<?php echo wp_login_url(home_url('/min-side/')); ?>" class="w-full">
-                                    <wa-icon slot="prefix" name="sign-in-alt" library="fa"></wa-icon>
+                                <a href="<?php echo home_url('/logg-inn/'); ?>"
+                                   class="w-full block text-center px-6 py-3 bg-[#1A1A1A] text-white font-medium rounded-lg hover:bg-[#333333] transition-colors">
                                     Logg inn
-                                </wa-button>
+                                </a>
                             <?php else: ?>
-                                <wa-button variant="brand" href="<?php echo home_url('/registrer/'); ?>" class="w-full">
-                                    <wa-icon slot="prefix" name="user-plus" library="fa"></wa-icon>
+                                <a href="<?php echo home_url('/registrer/'); ?>"
+                                   class="w-full block text-center px-6 py-3 bg-[#1A1A1A] text-white font-medium rounded-lg hover:bg-[#333333] transition-colors">
                                     Registrer deg på nytt
-                                </wa-button>
+                                </a>
                             <?php endif; ?>
-                            
-                            <wa-button variant="neutral" outline href="<?php echo home_url('/'); ?>" class="w-full">
-                                <wa-icon slot="prefix" name="home" library="fa"></wa-icon>
+
+                            <a href="<?php echo home_url('/'); ?>"
+                               class="w-full block text-center px-6 py-3 border border-[#E5E0D5] text-[#1A1A1A] font-medium rounded-lg hover:bg-[#F7F5EF] transition-colors">
                                 Gå til forsiden
-                            </wa-button>
+                            </a>
                         </div>
                     </div>
-                    
+
                 <?php endif; ?>
-                
+
             </div>
-        </wa-card>
-        
+        </div>
+
         <!-- Help Links -->
         <div class="text-center mt-6 space-y-2">
-            <p class="text-sm text-gray-600">
-                Har du allerede en konto? 
-                <a href="<?php echo wp_login_url(); ?>" class="text-orange-600 hover:text-orange-700 font-medium">
+            <p class="text-sm text-[#5A5A5A]">
+                Har du allerede en konto?
+                <a href="<?php echo home_url('/logg-inn/'); ?>" class="text-[#1A1A1A] hover:underline font-medium">
                     Logg inn
                 </a>
             </p>
-            <p class="text-sm text-gray-500">
-                Trenger du hjelp? 
-                <a href="<?php echo home_url('/kontakt/'); ?>" class="text-orange-600 hover:text-orange-700">
+            <p class="text-sm text-[#888888]">
+                Trenger du hjelp?
+                <a href="<?php echo home_url('/kontakt/'); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] hover:underline">
                     Kontakt oss
                 </a>
             </p>
         </div>
-        
+
     </div>
 </main>
 
 <style>
-/* Custom styles for the verification form */
+/* Custom styles for the verification form - UI Contract compliant */
 .bimverdi-verify-form-wrapper .gform_wrapper {
     margin: 0;
     padding: 0;
@@ -225,7 +245,7 @@ if (is_user_logged_in()) {
 
 .bimverdi-verify-form-wrapper .gform_wrapper .gfield_label {
     font-weight: 500;
-    color: #374151;
+    color: #1A1A1A;
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
 }
@@ -234,22 +254,23 @@ if (is_user_logged_in()) {
 .bimverdi-verify-form-wrapper .gform_wrapper input[type="password"] {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid #D1D5DB;
+    border: 1px solid #E5E0D5;
     border-radius: 0.5rem;
     font-size: 1rem;
+    color: #1A1A1A;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .bimverdi-verify-form-wrapper .gform_wrapper input[type="text"]:focus,
 .bimverdi-verify-form-wrapper .gform_wrapper input[type="password"]:focus {
     outline: none;
-    border-color: #F97316;
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    border-color: #1A1A1A;
+    box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.1);
 }
 
 .bimverdi-verify-form-wrapper .gform_wrapper .gfield_description {
     font-size: 0.75rem;
-    color: #6B7280;
+    color: #888888;
     margin-top: 0.25rem;
 }
 
@@ -260,8 +281,8 @@ if (is_user_logged_in()) {
 
 .bimverdi-verify-form-wrapper .gform_wrapper .gform_button {
     width: 100%;
-    padding: 0.875rem 1.5rem;
-    background-color: #F97316;
+    padding: 0.75rem 1.5rem;
+    background-color: #1A1A1A;
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -272,7 +293,12 @@ if (is_user_logged_in()) {
 }
 
 .bimverdi-verify-form-wrapper .gform_wrapper .gform_button:hover {
-    background-color: #EA580C;
+    background-color: #333333;
+}
+
+.bimverdi-verify-form-wrapper .gform_wrapper .gform_button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #F7F5EF, 0 0 0 4px #1A1A1A;
 }
 
 /* Password visibility toggle */
@@ -282,7 +308,7 @@ if (is_user_logged_in()) {
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    color: #9CA3AF;
+    color: #888888;
 }
 
 .bimverdi-verify-form-wrapper .gform_wrapper .ginput_container_password {
@@ -291,11 +317,11 @@ if (is_user_logged_in()) {
 
 /* Validation errors */
 .bimverdi-verify-form-wrapper .gform_wrapper .gfield_error input {
-    border-color: #EF4444;
+    border-color: #dc2626;
 }
 
 .bimverdi-verify-form-wrapper .gform_wrapper .validation_message {
-    color: #EF4444;
+    color: #dc2626;
     font-size: 0.75rem;
     margin-top: 0.25rem;
 }

@@ -59,7 +59,7 @@ get_header();
             <!-- Section header -->
             <div class="mb-10">
                 <h2 class="text-3xl font-bold text-[#1A1A1A] mb-2">Nytt i nettverket</h2>
-                <p class="text-[#5A5A5A]">De siste tilskuddene til medlemsbasen og verktøykatalogen.</p>
+                <p class="text-[#5A5A5A]">De siste tilskuddene til deltakernettverket og verktøykatalogen.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
@@ -77,8 +77,8 @@ get_header();
                 ?>
                 <div>
                     <div class="flex justify-between items-baseline mb-2">
-                        <h3 class="text-lg font-bold text-[#1A1A1A]">Medlemsbedrifter</h3>
-                        <a href="<?php echo esc_url(home_url('/medlemmer/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] flex items-center gap-1">Se alle (<?php echo $total_companies; ?>) <span>&rarr;</span></a>
+                        <h3 class="text-lg font-bold text-[#1A1A1A]">Deltakere</h3>
+                        <a href="<?php echo esc_url(home_url('/deltakere/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] flex items-center gap-1">Se alle (<?php echo $total_companies; ?>) <span>&rarr;</span></a>
                     </div>
                     <?php if (!empty($companies)): ?>
                     <div>

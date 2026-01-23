@@ -171,22 +171,26 @@ function bimverdi_excerpt_more($more) {
 add_filter('excerpt_more', 'bimverdi_excerpt_more');
 
 /**
- * Add /medlemmer/ rewrite to foretak archive
- * This allows both /foretak/ and /medlemmer/ to show the same archive
+ * Add /deltakere/ rewrite to foretak archive
+ * This allows both /foretak/ and /deltakere/ to show the same archive
  */
-function bimverdi_add_medlemmer_rewrite() {
-    // Base medlemmer URL
+function bimverdi_add_deltakere_rewrite() {
+    // Base deltakere URL
+    add_rewrite_rule('^deltakere/?$', 'index.php?post_type=foretak', 'top');
+    // Paged deltakere URL
+    add_rewrite_rule('^deltakere/page/([0-9]+)/?$', 'index.php?post_type=foretak&paged=$matches[1]', 'top');
+
+    // Legacy /medlemmer/ redirect support (can be removed after transition)
     add_rewrite_rule('^medlemmer/?$', 'index.php?post_type=foretak', 'top');
-    // Paged medlemmer URL
     add_rewrite_rule('^medlemmer/page/([0-9]+)/?$', 'index.php?post_type=foretak&paged=$matches[1]', 'top');
 }
-add_action('init', 'bimverdi_add_medlemmer_rewrite');
+add_action('init', 'bimverdi_add_deltakere_rewrite');
 
 /**
  * Flush rewrite rules on theme activation
  */
 function bimverdi_flush_rewrites() {
-    bimverdi_add_medlemmer_rewrite();
+    bimverdi_add_deltakere_rewrite();
     flush_rewrite_rules();
 }
 add_action('after_switch_theme', 'bimverdi_flush_rewrites');

@@ -640,7 +640,7 @@ BIM Verdi',
                             <wa-icon name="building" library="fa" style="font-size: 3rem; color: var(--wa-color-purple-600);"></wa-icon>
                             <h2 class="text-xl font-semibold">Invitasjon fra <?php echo esc_html($company_name); ?></h2>
                             <p class="text-gray-600">
-                                Du er invitert til å bli medlem av <strong><?php echo esc_html($company_name); ?></strong>.
+                                Du er invitert til å bli en del av <strong><?php echo esc_html($company_name); ?></strong>.
                             </p>
                             <p class="text-gray-500 text-sm">
                                 Logget inn som: <?php echo esc_html($current_user->user_email); ?>
@@ -704,7 +704,7 @@ BIM Verdi',
                                 
                                 <p class="text-gray-500 text-sm">eller</p>
                                 
-                                <wa-button variant="neutral" outline href="<?php echo esc_url(wp_login_url(add_query_arg('token', $token, get_permalink()))); ?>">
+                                <wa-button variant="neutral" outline href="<?php echo esc_url(home_url('/logg-inn/?redirect_to=' . urlencode(add_query_arg('token', $token, get_permalink())))); ?>">
                                     <wa-icon slot="prefix" name="right-to-bracket" library="fa"></wa-icon>
                                     Logg inn med eksisterende konto
                                 </wa-button>

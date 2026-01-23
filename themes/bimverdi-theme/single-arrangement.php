@@ -85,7 +85,7 @@ function bimverdi_arr_get_type_label($type) {
 function bimverdi_arr_get_adgang_label($adgang) {
     $labels = array(
         'alle' => 'Åpent for alle',
-        'medlemmer' => 'Kun medlemmer',
+        'medlemmer' => 'Kun deltakere', // Legacy value, now means 'deltakere'
         'deltakere' => 'Kun deltakere/partnere',
         'invitert' => 'Kun inviterte',
     );

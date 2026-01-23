@@ -47,7 +47,7 @@
             "label": "Sharepoint-lenke",
             "name": "sharepoint_lenke",
             "type": "url",
-            "instructions": "Intern Sharepoint-lenke (kun for medlemmer)",
+            "instructions": "Intern Sharepoint-lenke (kun for deltakere)",
             "required": 0,
             "placeholder": "https://bimverdi.sharepoint.com/..."
         },
@@ -130,10 +130,10 @@
         },
         {
             "key": "field_kunnskapskilde_tilknyttet_bedrift",
-            "label": "Tilknyttet medlemsbedrift",
+            "label": "Tilknyttet foretak",
             "name": "tilknyttet_bedrift",
             "type": "post_object",
-            "instructions": "Medlemsbedriften som registrerte kilden",
+            "instructions": "Foretaket som registrerte kilden",
             "required": 0,
             "post_type": [
                 "foretak"

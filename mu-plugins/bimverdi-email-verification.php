@@ -428,7 +428,7 @@ class BIMVerdi_Email_Verification {
             foreach ($form['fields'] as &$field) {
                 if ($field->id == 1) {
                     $field->failed_validation = true;
-                    $field->validation_message = 'Denne e-postadressen er allerede registrert. <a href="' . wp_login_url() . '">Logg inn her</a>';
+                    $field->validation_message = 'Denne e-postadressen er allerede registrert. <a href="' . home_url('/logg-inn/') . '">Logg inn her</a>';
                 }
             }
         }
@@ -564,9 +564,9 @@ class BIMVerdi_Email_Verification {
                                     </h3>
                                     
                                     <p style="margin: 0 0 20px 0; color: #6B7280; font-size: 14px; line-height: 1.6;">
-                                        Med en BIM Verdi-konto kan du delta i nettverkets aktiviteter, 
-                                        melde deg på arrangementer og få tilgang til medlemsportalen. 
-                                        Når du kobler kontoen til et foretak, får du også tilgang til verktøyregistrering, 
+                                        Med en BIM Verdi-konto kan du delta i nettverkets aktiviteter,
+                                        melde deg på arrangementer og få tilgang til deltakerportalen.
+                                        Når du kobler kontoen til et foretak, får du også tilgang til verktøyregistrering,
                                         artikkelskriving og mer.
                                     </p>
                                     

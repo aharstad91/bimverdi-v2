@@ -80,16 +80,18 @@ class BIM_Verdi_Tool_Form_Handler {
      * @return int Tool ID (0 if new tool)
      */
     public function populate_tool_id() {
-        return isset($_GET['tool_id']) ? intval($_GET['tool_id']) : 0;
+        return isset($_GET['tool_id']) ? intval($_GET['tool_id']) :
+               (isset($_GET['id']) ? intval($_GET['id']) : 0);
     }
     
     /**
      * Populate tool_name parameter
      */
     public function populate_tool_name() {
-        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) : 0;
+        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) :
+                   (isset($_GET['id']) ? intval($_GET['id']) : 0);
         if (!$tool_id) return '';
-        
+
         $tool = get_post($tool_id);
         return $tool ? $tool->post_title : '';
     }
@@ -98,9 +100,10 @@ class BIM_Verdi_Tool_Form_Handler {
      * Populate tool_description parameter
      */
     public function populate_tool_description() {
-        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) : 0;
+        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) :
+                   (isset($_GET['id']) ? intval($_GET['id']) : 0);
         if (!$tool_id) return '';
-        
+
         $description = get_field('detaljert_beskrivelse', $tool_id);
         if (empty($description)) {
             $tool = get_post($tool_id);
@@ -113,9 +116,10 @@ class BIM_Verdi_Tool_Form_Handler {
      * Populate tool_url parameter
      */
     public function populate_tool_url() {
-        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) : 0;
+        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) :
+                   (isset($_GET['id']) ? intval($_GET['id']) : 0);
         if (!$tool_id) return '';
-        
+
         return get_field('verktoy_lenke', $tool_id);
     }
     
@@ -127,9 +131,10 @@ class BIM_Verdi_Tool_Form_Handler {
      */
     public function prepopulate_tool_fields($form) {
         
-        // Check if we're editing (tool_id present)
-        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) : 0;
-        
+        // Check if we're editing (tool_id or id present)
+        $tool_id = isset($_GET['tool_id']) ? intval($_GET['tool_id']) :
+                   (isset($_GET['id']) ? intval($_GET['id']) : 0);
+
         if (!$tool_id) {
             return $form; // Not editing, return form as-is
         }

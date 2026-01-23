@@ -43,7 +43,7 @@
                         Min side
                     </a>
                 <?php else : ?>
-                    <a href="<?php echo wp_login_url(); ?>" 
+                    <a href="<?php echo home_url('/logg-inn/'); ?>"
                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#1A1A1A] text-white text-sm font-medium rounded-md hover:bg-[#333333] transition-colors">
                         Logg inn
                     </a>

@@ -327,7 +327,7 @@ function bimverdi_v2_readable_label($value) {
                         </div>
                         <div>
                             <p class="font-medium text-[#1A1A1A]"><?php echo esc_html($eier->post_title); ?></p>
-                            <p class="text-xs text-[#5A5A5A]">BIM Verdi-medlem</p>
+                            <p class="text-xs text-[#5A5A5A]">BIM Verdi-deltaker</p>
                         </div>
                     </div>
                     

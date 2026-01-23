@@ -250,7 +250,7 @@ if (!function_exists('bimverdi_get_account_type')) {
             return 'Foretaksbruker';
         }
         
-        return 'Medlem';
+        return 'Deltaker';
     }
 }
 
@@ -298,7 +298,7 @@ if (!function_exists('bimverdi_protect_minside')) {
         
         // Check if logged in
         if (!is_user_logged_in()) {
-            wp_redirect(wp_login_url(bimverdi_minside_url()));
+            wp_redirect(home_url('/logg-inn/?redirect_to=' . urlencode(bimverdi_minside_url())));
             exit;
         }
     }
@@ -342,6 +342,58 @@ if (!function_exists('bimverdi_login_redirect_minside')) {
         }
         
         return $redirect_to;
+    }
+}
+
+/**
+ * =============================================================================
+ * ACCOUNT ROUTES (Profile & Company Settings)
+ * =============================================================================
+ */
+
+/**
+ * Check if current route is an account-related route
+ *
+ * Account routes include profile and foretak pages that show the account sidenav.
+ *
+ * @return bool
+ */
+if (!function_exists('bimverdi_is_account_route')) {
+    function bimverdi_is_account_route() {
+        $account_routes = [
+            'profil',
+            'profil/rediger',
+            'profil/passord',
+            'foretak',
+            'foretak/rediger',
+            'foretak/team',
+            'invitasjoner',
+        ];
+
+        $current = bimverdi_get_current_route();
+        return in_array($current, $account_routes, true);
+    }
+}
+
+/**
+ * Get all account route definitions
+ *
+ * Returns the list of routes that are part of the account/settings section.
+ * Used by account-sidenav component.
+ *
+ * @return array List of account route identifiers
+ */
+if (!function_exists('bimverdi_get_account_routes')) {
+    function bimverdi_get_account_routes() {
+        return [
+            'profil',
+            'profil/rediger',
+            'profil/passord',
+            'foretak',
+            'foretak/rediger',
+            'foretak/team',
+            'invitasjoner',
+        ];
     }
 }
 

@@ -175,10 +175,10 @@ $is_logged_in = is_user_logged_in();
 
         <div id="verktoy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             <?php while ($tools_query->have_posts()): $tools_query->the_post();
-                $eier_id = get_post_meta(get_the_ID(), 'eier_leverandor', true);
+                $eier_id = get_field('eier_leverandor', get_the_ID());
                 $eier = $eier_id ? get_post($eier_id) : null;
-                $formaal = get_post_meta(get_the_ID(), 'formaalstema', true);
-                $type = get_post_meta(get_the_ID(), 'type_ressurs', true);
+                $formaal = get_field('formaalstema', get_the_ID());
+                $type = get_field('type_ressurs', get_the_ID());
             ?>
 
             <a href="<?php the_permalink(); ?>"

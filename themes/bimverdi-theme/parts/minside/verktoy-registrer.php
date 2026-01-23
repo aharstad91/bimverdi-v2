@@ -115,7 +115,7 @@ get_template_part('parts/components/page-header', null, [
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
                 <div>
-                    <p class="font-medium text-[#1A1A1A]">Synlig for alle medlemmer</p>
+                    <p class="font-medium text-[#1A1A1A]">Synlig for alle deltakere</p>
                     <p class="text-sm text-[#5A5A5A] mt-0.5">Verktøyet vises i den felles verktøykatalogen</p>
                 </div>
             </div>

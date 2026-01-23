@@ -90,9 +90,20 @@ class BIM_Verdi_Design_System {
             }
             
             /* ============================================
+               MISSING TAILWIND UTILITIES
+               (Manually added until next CSS rebuild)
+               ============================================ */
+
+            @media (min-width: 768px) {
+                .md\:block {
+                    display: block;
+                }
+            }
+
+            /* ============================================
                BASE ELEMENTS
                ============================================ */
-            
+
             * {
                 box-sizing: border-box;
             }

@@ -309,11 +309,11 @@ class BIMVerdi_GForms_Setup {
         return '
 <h2>Velkommen til BIM Verdi, {Fullt navn:2}! 🎉</h2>
 
-<p>Din konto er nå aktivert og du er klar til å utforske medlemsportalen.</p>
+<p>Din konto er nå aktivert og du er klar til å utforske deltakerportalen.</p>
 
 <h3>Hva kan du gjøre nå?</h3>
 <ul>
-    <li>✅ Utforske medlemskatalogen</li>
+    <li>✅ Utforske deltakerkatalogen</li>
     <li>✅ Se verktøykatalogen</li>
     <li>✅ Melde deg på arrangementer</li>
 </ul>

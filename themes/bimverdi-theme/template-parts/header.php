@@ -68,8 +68,8 @@ $user = wp_get_current_user();
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo esc_url($site_url); ?>/medlemmer/" class="hover:text-primary">
-                            Medlemmer
+                        <a href="<?php echo esc_url($site_url); ?>/deltakere/" class="hover:text-primary">
+                            Deltakere
                         </a>
                     </li>
                     <li>
@@ -94,7 +94,7 @@ $user = wp_get_current_user();
                         </ul>
                     </div>
                 <?php else: ?>
-                    <a href="<?php echo esc_url(wp_login_url()); ?>" class="btn btn-sm btn-outline">
+                    <a href="<?php echo esc_url(home_url('/logg-inn/')); ?>" class="btn btn-sm btn-outline">
                         Logg inn
                     </a>
                     <a href="<?php echo esc_url($site_url); ?>/registrer-bruker/" class="btn btn-sm btn-primary">
@@ -127,7 +127,7 @@ $user = wp_get_current_user();
                             </details>
                         </li>
                         <li><a href="<?php echo esc_url($site_url); ?>/arrangementer/">Arrangementer</a></li>
-                        <li><a href="<?php echo esc_url($site_url); ?>/medlemmer/">Medlemmer</a></li>
+                        <li><a href="<?php echo esc_url($site_url); ?>/deltakere/">Deltakere</a></li>
                         <li><a href="<?php echo esc_url($site_url); ?>/verktoy/">Verktøy</a></li>
                     </ul>
                 </div>

@@ -402,6 +402,11 @@ function bimverdi_sync_brreg_on_foretak_creation($post_id, $feed, $entry, $form)
         update_field('webside', $data['hjemmeside'], $post_id);
     }
 
+    // Antall ansatte
+    if (isset($data['antallAnsatte'])) {
+        update_field('antall_ansatte', intval($data['antallAnsatte']), $post_id);
+    }
+
     error_log('BIM Verdi: Synket Brreg-data for foretak ' . $post_id . ' (' . $data['navn'] . ')');
 }
 
@@ -525,6 +530,11 @@ function bimverdi_maybe_sync_all_foretak() {
                 update_field('poststed', $addr['poststed'], $post->ID);
             }
             update_field('land', $addr['land'] ?? 'Norge', $post->ID);
+        }
+
+        // Antall ansatte
+        if (isset($data['antallAnsatte'])) {
+            update_field('antall_ansatte', intval($data['antallAnsatte']), $post->ID);
         }
 
         $results['synced']++;

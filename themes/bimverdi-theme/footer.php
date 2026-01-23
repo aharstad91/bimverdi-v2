@@ -3,7 +3,7 @@
 <!-- CTA Banner -->
 <section class="py-16 border-t border-[#D6D1C6] bg-[#F7F5EF]">
     <div class="max-w-3xl mx-auto px-4 md:px-8 text-center">
-        <h2 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4">Klar til å bli medlem?</h2>
+        <h2 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4">Klar til å bli deltaker?</h2>
         <p class="text-[#5A5A5A] text-lg mb-8 max-w-2xl mx-auto">
             Få tilgang til hele nettverket, alle verktøyene og delta i våre faggrupper. Vær med på å forme fremtidens byggenæring.
         </p>
@@ -44,7 +44,7 @@
                 <h3 class="text-lg font-bold text-[#1A1A1A] mb-4">Organisasjon</h3>
                 <ul class="space-y-3 text-sm">
                     <li><a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Om oss</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/medlemmer/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Medlemmer</a></li>
+                    <li><a href="<?php echo esc_url(home_url('/deltakere/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Deltakere</a></li>
                     <li><a href="<?php echo esc_url(home_url('/styret/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Styret</a></li>
                     <li><a href="<?php echo esc_url(home_url('/vedtekter/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Vedtekter</a></li>
                 </ul>
