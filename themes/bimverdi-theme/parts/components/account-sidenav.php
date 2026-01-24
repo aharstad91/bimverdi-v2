@@ -57,7 +57,7 @@ if ($has_company) {
             'icon' => 'square-pen',
         ];
         $foretak_items[] = [
-            'route' => 'foretak/team',
+            'route' => 'foretak/kolleger',
             'label' => __('Kolleger', 'bimverdi'),
             'icon' => 'users',
         ];
@@ -147,7 +147,7 @@ function bimverdi_is_account_route_active($route, $current_route) {
             if (in_array($primary_route, ['profil'])) {
                 $section_label = __('Profil', 'bimverdi');
                 $parent_url = bimverdi_minside_url('profil');
-            } elseif (in_array($primary_route, ['foretak', 'invitasjoner'])) {
+            } elseif (in_array($primary_route, ['foretak'])) {
                 $section_label = __('Foretak', 'bimverdi');
                 $parent_url = bimverdi_minside_url('foretak');
             }

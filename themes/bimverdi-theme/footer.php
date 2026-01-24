@@ -1,6 +1,7 @@
 </div><!-- #content -->
 
-<!-- CTA Banner -->
+<!-- CTA Banner (only for logged-out users) -->
+<?php if (!is_user_logged_in()): ?>
 <section class="py-16 border-t border-[#D6D1C6] bg-[#F7F5EF]">
     <div class="max-w-3xl mx-auto px-4 md:px-8 text-center">
         <h2 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4">Klar til å bli deltaker?</h2>
@@ -13,6 +14,7 @@
         </a>
     </div>
 </section>
+<?php endif; ?>
 
 <!-- Footer -->
 <footer class="bg-[#F7F5EF] border-t border-[#D6D1C6]">

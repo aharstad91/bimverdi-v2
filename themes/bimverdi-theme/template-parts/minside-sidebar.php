@@ -143,12 +143,12 @@ $nav_groups = array(
     ),
 );
 
-// Add invitations link for hovedkontakt only
+// Add colleagues link for hovedkontakt only
 if ($is_hovedkontakt) {
-    $nav_groups['konto']['items']['invitasjoner'] = array(
-        'label' => 'Inviter kolleger',
-        'icon' => 'user-plus',
-        'url' => home_url('/min-side/invitasjoner/'),
+    $nav_groups['konto']['items']['kolleger'] = array(
+        'label' => 'Kolleger',
+        'icon' => 'users',
+        'url' => home_url('/min-side/foretak/kolleger/'),
         'count' => null,
     );
 }

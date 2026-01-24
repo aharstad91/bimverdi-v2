@@ -114,7 +114,7 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
         if ($remove_user_id !== $user_id) {
             delete_user_meta($remove_user_id, 'bimverdi_company_id');
             delete_user_meta($remove_user_id, 'bim_verdi_company_id');
-            wp_redirect(bimverdi_minside_url('foretak/team') . '?bruker_fjernet=1');
+            wp_redirect(bimverdi_minside_url('foretak/kolleger') . '?bruker_fjernet=1');
             exit;
         }
     }
@@ -129,7 +129,7 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
 
         if ($new_user_company == $company_id && function_exists('update_field')) {
             update_field('hovedkontaktperson', $new_hovedkontakt_id, $company_id);
-            wp_redirect(bimverdi_minside_url('foretak/team') . '?hovedkontakt_overfort=1');
+            wp_redirect(bimverdi_minside_url('foretak/kolleger') . '?hovedkontakt_overfort=1');
             exit;
         }
     }

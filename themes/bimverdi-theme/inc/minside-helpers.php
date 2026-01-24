@@ -91,16 +91,21 @@ function bimverdi_get_current_route() {
  */
 function bimverdi_is_minside_route($routes) {
     $current = bimverdi_get_current_route();
-    
+
     if (is_array($routes)) {
         foreach ($routes as $route) {
-            if ($current === $route || strpos($current, $route) === 0) {
+            // Skip empty strings to prevent false matches
+            if ($route === '') continue;
+            if ($current === $route || strpos($current, $route . '/') === 0) {
                 return true;
             }
         }
         return false;
     }
-    
+
+    // Skip empty string check
+    if ($routes === '') return false;
+
     return $current === $routes || strpos($current, $routes . '/') === 0;
 }
 
@@ -366,8 +371,7 @@ if (!function_exists('bimverdi_is_account_route')) {
             'profil/passord',
             'foretak',
             'foretak/rediger',
-            'foretak/team',
-            'invitasjoner',
+            'foretak/kolleger',
         ];
 
         $current = bimverdi_get_current_route();
@@ -391,8 +395,7 @@ if (!function_exists('bimverdi_get_account_routes')) {
             'profil/passord',
             'foretak',
             'foretak/rediger',
-            'foretak/team',
-            'invitasjoner',
+            'foretak/kolleger',
         ];
     }
 }
@@ -446,11 +449,11 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'prosjektideer'       => 'prosjektideer-list',
             'prosjektideer/ny'    => 'prosjektideer-ny',
 
-            // Company Team (hovedkontakt only)
-            'foretak/team'        => 'foretak-team',
+            // Company Colleagues (hovedkontakt only)
+            'foretak/kolleger'    => 'foretak-team',
 
-            // Invitations (hovedkontakt only)
-            'invitasjoner'        => 'invitasjoner-list',
+            // Legacy redirect
+            'foretak/team'        => 'foretak-team',
             
             // Legacy route mappings (for backward compatibility)
             'mine-verktoy'        => 'verktoy-list',
@@ -518,10 +521,10 @@ if (!function_exists('bimverdi_get_minside_nav')) {
         
         $nav = [
             'dashboard' => [
-                'label' => 'Dashboard',
+                'label' => 'Dashbord',
                 'url' => bimverdi_minside_url(''),
                 'icon' => 'layout-dashboard',
-                'routes' => ['dashboard', ''],
+                'routes' => ['dashboard'],
             ],
             'verktoy' => [
                 'label' => 'Mine verktøy',
@@ -555,16 +558,6 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'routes' => ['arrangementer'],
             ],
         ];
-        
-        // Add invitations for hovedkontakt only
-        if ($is_hovedkontakt) {
-            $nav['invitasjoner'] = [
-                'label' => 'Invitasjoner',
-                'url' => bimverdi_minside_url('invitasjoner'),
-                'icon' => 'user-plus',
-                'routes' => ['invitasjoner'],
-            ];
-        }
         
         return $nav;
     }
