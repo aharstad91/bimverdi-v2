@@ -1,0 +1,183 @@
+{
+    "key": "group_foretak_info",
+    "title": "Foretak Info",
+    "fields": [
+        {
+            "key": "field_foretak_logo",
+            "label": "Logo",
+            "name": "logo",
+            "type": "image",
+            "instructions": "Last opp foretakets logo",
+            "required": 0,
+            "return_format": "id",
+            "preview_size": "medium",
+            "library": "all"
+        },
+        {
+            "key": "field_foretak_beskrivelse",
+            "label": "Beskrivelse",
+            "name": "beskrivelse",
+            "type": "textarea",
+            "instructions": "Kort beskrivelse av foretaket",
+            "required": 0,
+            "rows": 4,
+            "new_lines": "wpautop"
+        },
+        {
+            "key": "field_foretak_organisasjonsnummer",
+            "label": "Organisasjonsnummer",
+            "name": "organisasjonsnummer",
+            "type": "text",
+            "instructions": "9-sifret organisasjonsnummer fra Brønnøysundregistrene",
+            "required": 0,
+            "maxlength": 9
+        },
+        {
+            "key": "field_foretak_er_aktiv_deltaker",
+            "label": "Er aktiv deltaker",
+            "name": "er_aktiv_deltaker",
+            "type": "true_false",
+            "instructions": "Er foretaket en aktiv betalende deltaker i BIM Verdi?",
+            "required": 0,
+            "default_value": 0,
+            "ui": 1
+        },
+        {
+            "key": "field_foretak_hovedkontaktperson",
+            "label": "Hovedkontaktperson",
+            "name": "hovedkontaktperson",
+            "type": "user",
+            "instructions": "Velg bruker som er hovedkontakt for foretaket",
+            "required": 0,
+            "role": "",
+            "return_format": "id",
+            "multiple": 0
+        },
+        {
+            "key": "field_foretak_kontakt_tab",
+            "label": "Kontaktinformasjon",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
+            "key": "field_foretak_adresse",
+            "label": "Adresse",
+            "name": "adresse",
+            "type": "text",
+            "instructions": "Gateadresse",
+            "required": 0
+        },
+        {
+            "key": "field_foretak_postnummer",
+            "label": "Postnummer",
+            "name": "postnummer",
+            "type": "text",
+            "instructions": "4-sifret postnummer",
+            "required": 0,
+            "maxlength": 4
+        },
+        {
+            "key": "field_foretak_poststed",
+            "label": "Poststed",
+            "name": "poststed",
+            "type": "text",
+            "instructions": "Poststed",
+            "required": 0
+        },
+        {
+            "key": "field_foretak_telefon",
+            "label": "Telefon",
+            "name": "telefon",
+            "type": "text",
+            "instructions": "Telefonnummer til foretaket",
+            "required": 0
+        },
+        {
+            "key": "field_foretak_kontakt_epost",
+            "label": "Kontakt e-post",
+            "name": "kontakt_epost",
+            "type": "email",
+            "instructions": "E-postadresse for henvendelser",
+            "required": 0
+        },
+        {
+            "key": "field_foretak_nettside",
+            "label": "Nettside",
+            "name": "nettside",
+            "type": "url",
+            "instructions": "Foretakets nettside",
+            "required": 0,
+            "placeholder": "https://www.example.no"
+        },
+        {
+            "key": "field_foretak_brreg_tab",
+            "label": "BRREG-data",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
+            "key": "field_foretak_organisasjonsform",
+            "label": "Organisasjonsform",
+            "name": "organisasjonsform",
+            "type": "text",
+            "instructions": "Organisasjonsform fra BRREG (f.eks. AS, ENK)",
+            "required": 0,
+            "readonly": 1
+        },
+        {
+            "key": "field_foretak_naeringskode",
+            "label": "Næringskode",
+            "name": "naeringskode",
+            "type": "text",
+            "instructions": "Næringskode fra BRREG",
+            "required": 0,
+            "readonly": 1
+        },
+        {
+            "key": "field_foretak_naeringskode_beskrivelse",
+            "label": "Næringskode beskrivelse",
+            "name": "naeringskode_beskrivelse",
+            "type": "text",
+            "instructions": "Beskrivelse av næringskoden",
+            "required": 0,
+            "readonly": 1
+        },
+        {
+            "key": "field_foretak_antall_ansatte",
+            "label": "Antall ansatte",
+            "name": "antall_ansatte",
+            "type": "number",
+            "instructions": "Antall ansatte fra BRREG",
+            "required": 0,
+            "readonly": 1,
+            "min": 0
+        },
+        {
+            "key": "field_foretak_kommune",
+            "label": "Kommune",
+            "name": "kommune",
+            "type": "text",
+            "instructions": "Kommune fra BRREG",
+            "required": 0,
+            "readonly": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "foretak"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true,
+    "description": "Informasjon om foretak/bedrifter"
+}
