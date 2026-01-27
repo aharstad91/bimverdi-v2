@@ -102,13 +102,22 @@
             "required": 0
         },
         {
-            "key": "field_foretak_nettside",
-            "label": "Nettside",
-            "name": "nettside",
+            "key": "field_foretak_hjemmeside",
+            "label": "Hjemmeside",
+            "name": "hjemmeside",
             "type": "url",
             "instructions": "Foretakets nettside",
             "required": 0,
             "placeholder": "https://www.example.no"
+        },
+        {
+            "key": "field_foretak_land",
+            "label": "Land",
+            "name": "land",
+            "type": "text",
+            "instructions": "Land (default: Norge)",
+            "required": 0,
+            "default_value": "Norge"
         },
         {
             "key": "field_foretak_brreg_tab",
@@ -162,6 +171,40 @@
             "instructions": "Kommune fra BRREG",
             "required": 0,
             "readonly": 1
+        },
+        {
+            "key": "field_foretak_stiftelsesdato",
+            "label": "Stiftelsesdato",
+            "name": "stiftelsesdato",
+            "type": "date_picker",
+            "instructions": "Dato foretaket ble stiftet (fra BRREG)",
+            "required": 0,
+            "display_format": "d.m.Y",
+            "return_format": "Y-m-d",
+            "readonly": 1
+        },
+        {
+            "key": "field_foretak_bedriftsnavn",
+            "label": "Bedriftsnavn (BRREG)",
+            "name": "bedriftsnavn",
+            "type": "text",
+            "instructions": "Offisielt navn fra BRREG",
+            "required": 0,
+            "readonly": 1
+        },
+        {
+            "key": "field_foretak_bv_rolle",
+            "label": "BIM Verdi rolle",
+            "name": "bv_rolle",
+            "type": "select",
+            "instructions": "Foretakets rolle i BIM Verdi",
+            "required": 0,
+            "choices": {
+                "Deltaker": "Deltaker",
+                "Prosjektdeltaker": "Prosjektdeltaker",
+                "Partner": "Partner"
+            },
+            "default_value": "Deltaker"
         }
     ],
     "location": [

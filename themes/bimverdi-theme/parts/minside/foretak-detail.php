@@ -156,7 +156,7 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
                 </div>
                 <?php endif; ?>
 
-                <?php $nettside = get_field('nettside', $company_id); ?>
+                <?php $nettside = get_field('hjemmeside', $company_id); ?>
                 <?php if ($nettside): ?>
                 <div class="flex items-start gap-3 py-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#888888] flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>

@@ -23,7 +23,7 @@ $adresse = get_field('adresse', $company_id);
 $postnummer = get_field('postnummer', $company_id);
 $poststed = get_field('poststed', $company_id);
 $telefon = get_field('telefon', $company_id);
-$nettside = get_field('nettside', $company_id);
+$nettside = get_field('hjemmeside', $company_id);
 $kontakt_epost = get_field('kontakt_epost', $company_id);
 $er_aktiv_deltaker = get_field('er_aktiv_deltaker', $company_id);
 
