@@ -3947,6 +3947,10 @@ details.collapse summary::-webkit-details-marker {
   flex-grow: 1;
 }
 
+.table-fixed {
+  table-layout: fixed;
+}
+
 .border-collapse {
   border-collapse: collapse;
 }
@@ -3974,10 +3978,6 @@ details.collapse summary::-webkit-details-marker {
 
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.grid-cols-\[1fr_100px_100px_100px_100px_80px\] {
-  grid-template-columns: 1fr 100px 100px 100px 100px 80px;
 }
 
 .flex-col {

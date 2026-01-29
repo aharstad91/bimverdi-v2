@@ -14,13 +14,25 @@
             "library": "all"
         },
         {
+            "key": "field_foretak_kort_beskrivelse",
+            "label": "Kort beskrivelse",
+            "name": "kort_beskrivelse",
+            "type": "textarea",
+            "instructions": "Kort beskrivelse for kort/liste-visning (maks 300 tegn)",
+            "required": 0,
+            "maxlength": 300,
+            "rows": 3,
+            "new_lines": ""
+        },
+        {
             "key": "field_foretak_beskrivelse",
             "label": "Beskrivelse",
             "name": "beskrivelse",
             "type": "textarea",
-            "instructions": "Kort beskrivelse av foretaket",
+            "instructions": "Full beskrivelse av foretaket (maks 800 tegn)",
             "required": 0,
-            "rows": 4,
+            "rows": 6,
+            "maxlength": 800,
             "new_lines": "wpautop"
         },
         {
@@ -52,6 +64,93 @@
             "role": "",
             "return_format": "id",
             "multiple": 0
+        },
+        {
+            "key": "field_foretak_profil_tab",
+            "label": "Profil",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
+            "key": "field_foretak_bransje_rolle",
+            "label": "Bransje/rolle",
+            "name": "bransje_rolle",
+            "type": "checkbox",
+            "instructions": "Velg hvilke roller foretaket har i bransjen",
+            "required": 0,
+            "choices": {
+                "bestiller_byggherre": "Bestiller/byggherre",
+                "arkitekt_radgiver": "Arkitekt/rådgiver",
+                "entreprenor_byggmester": "Entreprenør/byggmester",
+                "byggevareprodusent": "Byggevareprodusent",
+                "byggevarehandel": "Byggevarehandel",
+                "eiendom_drift": "Eiendom/drift",
+                "digital_leverandor": "Leverandør av digitale verktøy, innhold og løsninger",
+                "organisasjon": "Organisasjon, nettverk m.m.",
+                "tjenesteleverandor": "Tjenesteleverandør",
+                "offentlig": "Offentlig instans",
+                "utdanning": "Utdanningsinstitusjon"
+            },
+            "layout": "vertical",
+            "return_format": "value"
+        },
+        {
+            "key": "field_foretak_interesseomrader",
+            "label": "Interesseområder",
+            "name": "interesseomrader",
+            "type": "checkbox",
+            "instructions": "Hvilke BIM-områder er foretaket interessert i?",
+            "required": 0,
+            "choices": {
+                "byggesak": "ByggesaksBIM (byggesøknader, GIS, visualisering)",
+                "prosjekt": "ProsjektBIM (prosjektering, bygging, logistikk)",
+                "eiendom": "EiendomsBIM (digital tvilling, drift)",
+                "miljo": "MiljøBIM (klimagassberegninger)",
+                "sirk": "SirkBIM (ombruk, gjenbruk, verdibank)",
+                "tech": "BIMtech (KI, skann til BIM, IDS)"
+            },
+            "layout": "vertical",
+            "return_format": "value"
+        },
+        {
+            "key": "field_foretak_kundetyper",
+            "label": "Kundetyper",
+            "name": "kundetyper",
+            "type": "checkbox",
+            "instructions": "Hvem er foretakets målgrupper/kunder?",
+            "required": 0,
+            "choices": {
+                "bestiller": "Bestiller/byggherre",
+                "arkitekt": "Arkitekt/rådgiver",
+                "entreprenor": "Entreprenør/byggmester",
+                "produsent": "Byggevareprodusent",
+                "handel": "Byggevarehandel",
+                "eiendom": "Eiendom/drift",
+                "digital": "Leverandør av digitale verktøy",
+                "organisasjon": "Organisasjon, nettverk m.m.",
+                "tjeneste": "Tjenesteleverandør",
+                "utdanning": "Utdanningsinstitusjon",
+                "brukere": "Brukere av bygg"
+            },
+            "layout": "vertical",
+            "return_format": "value"
+        },
+        {
+            "key": "field_foretak_artikkel_lenke",
+            "label": "Artikkel/lenke",
+            "name": "artikkel_lenke",
+            "type": "url",
+            "instructions": "Lenke til artikkel eller annen ekstern ressurs om foretaket",
+            "required": 0
+        },
+        {
+            "key": "field_foretak_hashtag",
+            "label": "Hashtag",
+            "name": "hashtag",
+            "type": "text",
+            "instructions": "Hashtag for LinkedIn etc. (f.eks. #BIMVerdi)",
+            "required": 0
         },
         {
             "key": "field_foretak_kontakt_tab",
@@ -118,6 +217,49 @@
             "instructions": "Land (default: Norge)",
             "required": 0,
             "default_value": "Norge"
+        },
+        {
+            "key": "field_foretak_social_tab",
+            "label": "Sosiale medier",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
+            "key": "field_foretak_linkedin_url",
+            "label": "LinkedIn",
+            "name": "linkedin_url",
+            "type": "url",
+            "instructions": "Lenke til foretakets LinkedIn-side",
+            "required": 0,
+            "placeholder": "https://www.linkedin.com/company/..."
+        },
+        {
+            "key": "field_foretak_facebook_url",
+            "label": "Facebook",
+            "name": "facebook_url",
+            "type": "url",
+            "instructions": "Lenke til foretakets Facebook-side",
+            "required": 0,
+            "placeholder": "https://www.facebook.com/..."
+        },
+        {
+            "key": "field_foretak_youtube_url",
+            "label": "YouTube",
+            "name": "youtube_url",
+            "type": "url",
+            "instructions": "Lenke til foretakets YouTube-kanal",
+            "required": 0,
+            "placeholder": "https://www.youtube.com/..."
+        },
+        {
+            "key": "field_foretak_twitter_url",
+            "label": "X (Twitter)",
+            "name": "twitter_url",
+            "type": "url",
+            "instructions": "Lenke til foretakets X/Twitter-profil",
+            "required": 0,
+            "placeholder": "https://x.com/..."
         },
         {
             "key": "field_foretak_brreg_tab",

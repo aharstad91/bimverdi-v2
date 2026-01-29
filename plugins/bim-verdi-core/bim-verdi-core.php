@@ -97,6 +97,11 @@ class BIM_Verdi_Core {
         
         // Load Gravity Forms manager (orchestrates all form handlers)
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/class-gravity-forms-manager.php';
+
+        // Load WP-CLI commands
+        if (defined('WP_CLI') && WP_CLI) {
+            require_once BIM_VERDI_CORE_PLUGIN_DIR . 'cli/class-foretak-import-command.php';
+        }
     }
     
     /**

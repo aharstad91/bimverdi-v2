@@ -34,14 +34,17 @@ $temagruppe_options = array(
 );
 
 $kildetype_options = array(
-    'standard' => 'Standard',
-    'veileder' => 'Veileder',
+    'standard' => 'Standard (ISO, NS, etc.)',
+    'veiledning' => 'Veiledning/metodikk',
+    'forskrift_norsk' => 'Forskrift (norsk lov)',
+    'forordning_eu' => 'Forordning (EU/EØS)',
     'mal' => 'Mal/Template',
     'forskningsrapport' => 'Forskningsrapport',
     'casestudie' => 'Casestudie',
-    'opplaering' => 'Opplæring',
-    'dokumentasjon' => 'Dokumentasjon',
-    'annet' => 'Annet',
+    'opplaering' => 'Opplæringsmateriell',
+    'dokumentasjon' => 'Verktøydokumentasjon',
+    'nettressurs' => 'Nettressurs/Database',
+    'annet' => 'Annet (tjeneste, webside etc.)',
 );
 
 // Get kategori terms from taxonomy
@@ -248,10 +251,14 @@ $is_logged_in = is_user_logged_in();
                         // Icon based on kildetype
                         $icon_map = [
                             'standard' => '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><path d="m9 14 2 2 4-4"></path>',
+                            'veiledning' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>',
                             'veileder' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>',
+                            'forskrift_norsk' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
+                            'forordning_eu' => '<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>',
                             'mal' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>',
                             'forskningsrapport' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>',
                             'opplaering' => '<path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path>',
+                            'nettressurs' => '<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>',
                         ];
                         $icon_path = isset($icon_map[$kildetype_val]) ? $icon_map[$kildetype_val] : '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>';
                         ?>
@@ -287,7 +294,10 @@ $is_logged_in = is_user_logged_in();
                         <?php
                         $meta_parts = array();
                         if ($utgiver) $meta_parts[] = $utgiver;
-                        if ($utgivelsesaar) $meta_parts[] = $utgivelsesaar;
+                        if ($utgivelsesaar) {
+                            $aar_display = ($utgivelsesaar === 'eldre') ? 'Eldre enn 2022' : $utgivelsesaar;
+                            $meta_parts[] = $aar_display;
+                        }
                         echo esc_html(implode(' - ', $meta_parts));
                         ?>
                     </p>

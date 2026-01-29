@@ -16,10 +16,10 @@
             "label": "Kort beskrivelse",
             "name": "kort_beskrivelse",
             "type": "textarea",
-            "instructions": "En kort beskrivelse av hva kunnskapskilden omhandler (maks 300 tegn)",
-            "required": 1,
+            "instructions": "En kort beskrivelse av hva kunnskapskilden omhandler (maks 250 tegn)",
+            "required": 0,
             "rows": 3,
-            "maxlength": 300,
+            "maxlength": 250,
             "placeholder": "Beskrivelse av innhold og formål..."
         },
         {
@@ -88,14 +88,23 @@
         },
         {
             "key": "field_kunnskapskilde_aar",
-            "label": "År",
+            "label": "År (antatt)",
             "name": "utgivelsesaar",
-            "type": "number",
-            "instructions": "Utgivelsesår",
+            "type": "select",
+            "instructions": "Antatt utgivelsesår",
             "required": 0,
-            "min": 1900,
-            "max": 2100,
-            "placeholder": "2023"
+            "choices": {
+                "": "Velg år",
+                "2026": "2026",
+                "2025": "2025",
+                "2024": "2024",
+                "2023": "2023",
+                "2022": "2022",
+                "eldre": "Eldre enn 2022"
+            },
+            "default_value": "",
+            "return_format": "value",
+            "allow_null": 1
         },
         {
             "key": "field_kunnskapskilde_kildetype",
@@ -106,17 +115,57 @@
             "required": 1,
             "choices": {
                 "standard": "Standard (ISO, NS, etc.)",
-                "veileder": "Veileder/Retningslinje",
+                "veiledning": "Veiledning/metodikk",
+                "forskrift_norsk": "Forskrift (norsk lov)",
+                "forordning_eu": "Forordning (EU/EØS)",
                 "mal": "Mal/Template",
                 "forskningsrapport": "Forskningsrapport",
                 "casestudie": "Casestudie",
                 "opplaering": "Opplæringsmateriell",
                 "dokumentasjon": "Verktøydokumentasjon",
                 "nettressurs": "Nettressurs/Database",
-                "annet": "Annet"
+                "annet": "Annet (tjeneste, webside etc.)"
             },
             "default_value": "standard",
             "return_format": "value"
+        },
+        {
+            "key": "field_kunnskapskilde_geografisk_gyldighet",
+            "label": "Geografisk gyldighet",
+            "name": "geografisk_gyldighet",
+            "type": "select",
+            "instructions": "Hvilket geografisk område gjelder kilden for?",
+            "required": 0,
+            "choices": {
+                "nasjonalt": "Nasjonalt/Norsk",
+                "nordisk": "Nordisk",
+                "europeisk": "Europeisk",
+                "internasjonalt": "Internasjonalt",
+                "annet": "Annet"
+            },
+            "default_value": "nasjonalt",
+            "return_format": "value",
+            "allow_null": 1
+        },
+        {
+            "key": "field_kunnskapskilde_dataformat",
+            "label": "Dataformat",
+            "name": "dataformat",
+            "type": "select",
+            "instructions": "Hvilket format er kilden tilgjengelig i?",
+            "required": 0,
+            "choices": {
+                "pdf": "PDF-dokument",
+                "web_aapent": "Web-innhold - åpent",
+                "web_lukket": "Web-innhold - lukket/betalt",
+                "api": "Åpent API",
+                "ifc": "IFC-fil",
+                "database": "Database/register",
+                "annet": "Annet"
+            },
+            "default_value": "web_aapent",
+            "return_format": "value",
+            "allow_null": 1
         },
         {
             "key": "field_kunnskapskilde_registrert_av",

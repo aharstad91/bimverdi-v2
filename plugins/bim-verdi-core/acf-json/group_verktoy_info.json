@@ -12,6 +12,17 @@
             "placeholder": "BIM Software Pro"
         },
         {
+            "key": "field_verktoy_kort_beskrivelse",
+            "label": "Kort beskrivelse",
+            "name": "kort_beskrivelse",
+            "type": "textarea",
+            "instructions": "Kort beskrivelse for kort/liste-visning (maks 300 tegn)",
+            "required": 0,
+            "maxlength": 300,
+            "rows": 3,
+            "new_lines": ""
+        },
+        {
             "key": "field_verktoy_detaljert_beskrivelse",
             "label": "Detaljert beskrivelse",
             "name": "detaljert_beskrivelse",
@@ -28,8 +39,26 @@
             "name": "verktoy_lenke",
             "type": "url",
             "instructions": "Nettside eller produktside",
-            "required": 1,
+            "required": 0,
             "placeholder": "https://www.verktoy.no"
+        },
+        {
+            "key": "field_verktoy_nedlastingslenke",
+            "label": "Nedlastingslenke",
+            "name": "nedlastingslenke",
+            "type": "url",
+            "instructions": "Link til nedlasting (GitHub, app store, etc.)",
+            "required": 0,
+            "placeholder": "https://github.com/..."
+        },
+        {
+            "key": "field_verktoy_versjon",
+            "label": "Versjon",
+            "name": "versjon",
+            "type": "text",
+            "instructions": "Gjeldende versjon av verktøyet",
+            "required": 0,
+            "placeholder": "1.0"
         },
         {
             "key": "field_verktoy_logo",
@@ -48,7 +77,7 @@
             "name": "eier_leverandor",
             "type": "post_object",
             "instructions": "Velg bedriften som eier/leverer verktøyet",
-            "required": 1,
+            "required": 0,
             "post_type": [
                 "foretak"
             ],
@@ -59,56 +88,59 @@
             "key": "field_formaalstema",
             "label": "Formålstema",
             "name": "formaalstema",
-            "type": "radio",
-            "instructions": "Velg hvilket tema verktøyet primært støtter",
+            "type": "checkbox",
+            "instructions": "Velg hvilke tema verktøyet støtter",
             "required": 0,
             "choices": {
-                "ByggesaksBIM": "ByggesaksBIM",
-                "ProsjektBIM": "ProsjektBIM",
-                "EiendomsBIM": "EiendomsBIM",
-                "MiljøBIM": "MiljøBIM",
-                "SirkBIM": "SirkBIM",
-                "Opplæring": "Opplæring",
-                "Annet": "Annet"
+                "byggesak": "Byggesak/byggesøknad (ByggesaksBIM)",
+                "prosjekt": "Prosjektering og bygging (ProsjektBIM)",
+                "eiendom": "Eiendomsdrift og vedlikehold (EiendomsBIM)",
+                "miljo": "Miljøberegninger (MiljøBIM)",
+                "sirk": "Ombruk og resirkulering (SirkBIM)",
+                "validering": "Validering",
+                "opplaering": "Opplæringsverktøy",
+                "samhandling": "Samhandling og visualisering",
+                "prosjektutvikling": "Prosjektutvikling"
             },
-            "default_value": "",
+            "default_value": [],
             "return_format": "value"
         },
         {
             "key": "field_bim_kompatibilitet",
             "label": "BIM-kompatibilitet",
             "name": "bim_kompatibilitet",
-            "type": "radio",
-            "instructions": "Velg verktøyets IFC-kompatibilitet",
+            "type": "checkbox",
+            "instructions": "Velg verktøyets IFC-kompatibilitet (flere valg mulig)",
             "required": 0,
             "choices": {
-                "IFC_kompatibel": "IFC-kompatibel (fullt støtte)",
-                "IFC_eksport": "IFC-eksport",
-                "IFC_import": "IFC-import",
-                "IFC_kobling": "IFC-kobling (via plugin)",
-                "Planlagt": "Planlagt IFC-støtte",
-                "Vet_ikke": "Vet ikke"
+                "ifc_kompatibel": "IFC/BIM-kompatibel",
+                "ifc_eksport": "IFC-eksport",
+                "ifc_import": "IFC-import",
+                "kobling_ifc": "Kobling mot IFC",
+                "planlagt": "Planlagt/under utvikling",
+                "vet_ikke": "Vet ikke"
             },
-            "default_value": "",
+            "default_value": [],
             "return_format": "value"
         },
         {
             "key": "field_type_ressurs",
             "label": "Type ressurs",
             "name": "type_ressurs",
-            "type": "radio",
-            "instructions": "Hva slags type ressurs er dette?",
+            "type": "checkbox",
+            "instructions": "Hva slags type ressurs er dette? (flere valg mulig)",
             "required": 0,
             "choices": {
-                "Programvare": "Programvare",
-                "Standard": "Standard",
-                "Metodikk": "Metodikk",
-                "Veileder": "Veileder",
-                "Nettside": "Nettside",
-                "Digital_tjeneste": "Digital tjeneste",
-                "Annet": "Annet"
+                "programvare": "Programvare",
+                "standard": "Standard eller forskrift",
+                "metodikk": "Metodikk eller rutinebeskrivelse",
+                "veileder": "Veileder",
+                "nettside": "Nettside",
+                "digital_tjeneste": "Digital tjeneste",
+                "saas": "SaaS",
+                "kurs": "Kurs og opplæring"
             },
-            "default_value": "",
+            "default_value": [],
             "return_format": "value"
         },
         {
@@ -119,10 +151,10 @@
             "instructions": "Bruker verktøyet kunstig intelligens?",
             "required": 0,
             "choices": {
-                "Bruker_KI": "Bruker KI",
-                "Ikke_KI": "Ikke KI",
-                "Under_avklaring": "Under avklaring",
-                "Annet": "Annet"
+                "bruker_ki": "Bruker KI i dag",
+                "ikke_ki": "Bruker ikke KI",
+                "planlegger_ki": "Planlegger å inkludere KI",
+                "under_avklaring": "Under avklaring"
             },
             "default_value": "",
             "return_format": "value"
@@ -135,18 +167,18 @@
             "instructions": "Velg alle relevante bruksområder",
             "required": 0,
             "choices": {
-                "Design_modellering": "Design og modellering",
-                "GIS_kart": "GIS og kart",
-                "Digitalt_innhold": "Digitalt innhold",
-                "Prosjektledelse": "Prosjektledelse",
-                "Kostnadsanalyse": "Kostnadsanalyse",
-                "Simulering": "Simulering og analyse",
-                "FDVU": "Fasilitetsstyring (FDVU)",
-                "Feltarbeid": "Feltarbeid",
-                "Baerekraft": "Bærekraft",
-                "Kommunikasjon": "Kommunikasjon",
-                "Logistikk": "Logistikk",
-                "Kompetanse": "Kompetanse"
+                "design": "Design og modellering",
+                "gis": "GIS/kart",
+                "dokumenter": "Digitalt innhold, skanning, dokumenter",
+                "prosjektledelse": "Prosjektledelse og dokumentstyring",
+                "kostnad": "Kostnadsanalyse og budsjett",
+                "simulering": "Simulering og analyse",
+                "feltarbeid": "Feltarbeid og inspeksjon",
+                "fasilitets": "Fasilitetsstyring, FDVU",
+                "barekraft": "Bærekraft og miljø",
+                "kommunikasjon": "Kommunikasjon og samarbeid",
+                "logistikk": "Logistikk, økonomi og handel",
+                "kompetanse": "Kompetansesystemer"
             },
             "default_value": [],
             "return_format": "value"

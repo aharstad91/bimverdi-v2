@@ -47,33 +47,81 @@ if ($current_user_id) {
 
 // Helper function for readable labels
 function bimverdi_v3_readable_label($value) {
+    // Handle arrays - return first value's label
+    if (is_array($value)) {
+        if (empty($value)) return '';
+        $value = reset($value); // Get first element
+    }
+
     $labels = [
-        // Formålstema
+        // Formålstema (nye keys)
+        'byggesak' => 'ByggesaksBIM',
+        'prosjekt' => 'ProsjektBIM',
+        'eiendom' => 'EiendomsBIM',
+        'miljo' => 'MiljøBIM',
+        'sirk' => 'SirkBIM',
+        'validering' => 'Validering',
+        'opplaering' => 'Opplæring',
+        'samhandling' => 'Samhandling',
+        'prosjektutvikling' => 'Prosjektutvikling',
+        // Formålstema (legacy)
         'ByggesaksBIM' => 'ByggesaksBIM',
         'ProsjektBIM' => 'ProsjektBIM',
         'EiendomsBIM' => 'EiendomsBIM',
         'MiljøBIM' => 'MiljøBIM',
         'SirkBIM' => 'SirkBIM',
         'Opplæring' => 'Opplæring',
-        // BIM-kompatibilitet
-        'IFC_kompatibel' => 'IFC-kompatibel (full støtte)',
+        // BIM-kompatibilitet (nye keys)
+        'ifc_kompatibel' => 'IFC/BIM-kompatibel',
+        'ifc_eksport' => 'IFC-eksport',
+        'ifc_import' => 'IFC-import',
+        'kobling_ifc' => 'Kobling mot IFC',
+        'planlagt' => 'Planlagt/under utvikling',
+        'vet_ikke' => 'Ikke oppgitt',
+        // BIM-kompatibilitet (legacy)
+        'IFC_kompatibel' => 'IFC-kompatibel',
         'IFC_eksport' => 'IFC-eksport',
         'IFC_import' => 'IFC-import',
-        'IFC_kobling' => 'IFC-kobling (via plugin)',
-        'planlagt' => 'Planlagt IFC-støtte',
-        'vet_ikke' => 'Ikke oppgitt',
-        // Type ressurs
+        'IFC_kobling' => 'IFC-kobling',
+        // Type ressurs (nye keys)
+        'programvare' => 'Programvare',
+        'standard' => 'Standard',
+        'metodikk' => 'Metodikk',
+        'veileder' => 'Veileder',
+        'nettside' => 'Nettside',
+        'digital_tjeneste' => 'Digital tjeneste',
+        'saas' => 'SaaS',
+        'kurs' => 'Kurs og opplæring',
+        // Type ressurs (legacy)
         'Programvare' => 'Programvare',
         'Standard' => 'Standard',
         'Metodikk' => 'Metodikk',
         'Veileder' => 'Veileder',
         'Nettside' => 'Nettside',
         'Digital_tjeneste' => 'Digital tjeneste',
-        // Type teknologi
+        // Type teknologi (nye keys)
+        'bruker_ki' => 'Bruker KI',
+        'ikke_ki' => 'Bruker ikke KI',
+        'planlegger_ki' => 'Planlegger KI',
+        'under_avklaring' => 'Under avklaring',
+        // Type teknologi (legacy)
         'Bruker_KI' => 'Bruker KI',
         'Ikke_KI' => 'Ikke KI',
         'Under_avklaring' => 'Under avklaring',
-        // Anvendelser
+        // Anvendelser (nye keys)
+        'design' => 'Design og modellering',
+        'gis' => 'GIS/kart',
+        'dokumenter' => 'Dokumenter og innhold',
+        'prosjektledelse' => 'Prosjektledelse',
+        'kostnad' => 'Kostnadsanalyse',
+        'simulering' => 'Simulering og analyse',
+        'feltarbeid' => 'Feltarbeid',
+        'fasilitets' => 'Fasilitetsstyring (FDVU)',
+        'barekraft' => 'Bærekraft og miljø',
+        'kommunikasjon' => 'Kommunikasjon',
+        'logistikk' => 'Logistikk',
+        'kompetanse' => 'Kompetanse',
+        // Anvendelser (legacy)
         'Design_modellering' => 'Design og modellering',
         'GIS_kart' => 'GIS og kart',
         'Digitalt_innhold' => 'Digitalt innhold',
@@ -175,16 +223,26 @@ $tool_updated = get_the_modified_date('d.m.Y');
                             </span>
                             <?php endforeach; ?>
                         <?php endif; ?>
-                        <?php if ($bim_kompatibilitet && $bim_kompatibilitet !== 'vet_ikke'): ?>
+                        <?php
+                        // Handle bim_kompatibilitet (now array)
+                        $bim_values = is_array($bim_kompatibilitet) ? $bim_kompatibilitet : ($bim_kompatibilitet ? [$bim_kompatibilitet] : []);
+                        foreach ($bim_values as $bim_val):
+                            if ($bim_val && $bim_val !== 'vet_ikke'):
+                        ?>
                         <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
-                            <?php echo esc_html(bimverdi_v3_readable_label($bim_kompatibilitet)); ?>
+                            <?php echo esc_html(bimverdi_v3_readable_label($bim_val)); ?>
                         </span>
-                        <?php endif; ?>
-                        <?php if ($formaalstema): ?>
+                        <?php endif; endforeach; ?>
+                        <?php
+                        // Handle formaalstema (now array)
+                        $tema_values = is_array($formaalstema) ? $formaalstema : ($formaalstema ? [$formaalstema] : []);
+                        foreach ($tema_values as $tema_val):
+                            if ($tema_val):
+                        ?>
                         <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
-                            <?php echo esc_html(bimverdi_v3_readable_label($formaalstema)); ?>
+                            <?php echo esc_html(bimverdi_v3_readable_label($tema_val)); ?>
                         </span>
-                        <?php endif; ?>
+                        <?php endif; endforeach; ?>
                         <?php if ($type_teknologi && $type_teknologi !== 'Under_avklaring'): ?>
                         <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
                             <?php echo esc_html(bimverdi_v3_readable_label($type_teknologi)); ?>
@@ -200,13 +258,18 @@ $tool_updated = get_the_modified_date('d.m.Y');
                     
                     <dl class="space-y-0 divide-y divide-[#E5E0D8]">
                         <!-- Type -->
-                        <?php if ($type_ressurs): ?>
+                        <?php
+                        $type_values = is_array($type_ressurs) ? $type_ressurs : ($type_ressurs ? [$type_ressurs] : []);
+                        if (!empty($type_values)):
+                        ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
                             <dt class="text-sm text-[#5A5A5A]">Type</dt>
-                            <dd class="text-sm">
+                            <dd class="text-sm flex flex-wrap gap-2">
+                                <?php foreach ($type_values as $type_val): ?>
                                 <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
-                                    <?php echo esc_html(bimverdi_v3_readable_label($type_ressurs)); ?>
+                                    <?php echo esc_html(bimverdi_v3_readable_label($type_val)); ?>
                                 </span>
+                                <?php endforeach; ?>
                             </dd>
                         </div>
                         <?php endif; ?>

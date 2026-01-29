@@ -10,7 +10,8 @@
 !mu-plugins/
 !mu-plugins/**
 
-# Ignorer alle plugins unntatt egenutviklede
+# Egenutviklet plugin
+!plugins/
 plugins/*
 !plugins/bim-verdi-core/
 !plugins/bim-verdi-core/**

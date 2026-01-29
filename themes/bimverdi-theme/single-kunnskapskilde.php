@@ -23,6 +23,8 @@ $spraak = get_field('spraak');
 $versjon = get_field('versjon');
 $utgivelsesaar = get_field('utgivelsesaar');
 $kildetype = get_field('kildetype');
+$geografisk_gyldighet = get_field('geografisk_gyldighet');
+$dataformat = get_field('dataformat');
 $registrert_av = get_field('registrert_av');
 $tilknyttet_bedrift = get_field('tilknyttet_bedrift');
 
@@ -48,15 +50,39 @@ if ($current_user_id) {
 
 // Kildetype labels
 $kildetype_labels = [
-    'standard' => 'Standard',
-    'veileder' => 'Veileder',
+    'standard' => 'Standard (ISO, NS, etc.)',
+    'veiledning' => 'Veiledning/metodikk',
+    'forskrift_norsk' => 'Forskrift (norsk lov)',
+    'forordning_eu' => 'Forordning (EU/EØS)',
     'mal' => 'Mal/Template',
     'forskningsrapport' => 'Forskningsrapport',
     'casestudie' => 'Casestudie',
-    'opplaering' => 'Opplæring',
-    'dokumentasjon' => 'Dokumentasjon',
-    'nettressurs' => 'Nettressurs',
-    'annet' => 'Annet'
+    'opplaering' => 'Opplæringsmateriell',
+    'dokumentasjon' => 'Verktøydokumentasjon',
+    'nettressurs' => 'Nettressurs/Database',
+    'annet' => 'Annet',
+    // Legacy values
+    'veileder' => 'Veileder',
+];
+
+// Geografisk gyldighet labels
+$geo_labels = [
+    'nasjonalt' => 'Nasjonalt/Norsk',
+    'nordisk' => 'Nordisk',
+    'europeisk' => 'Europeisk',
+    'internasjonalt' => 'Internasjonalt',
+    'annet' => 'Annet',
+];
+
+// Dataformat labels
+$dataformat_labels = [
+    'pdf' => 'PDF-dokument',
+    'web_aapent' => 'Web-innhold - åpent',
+    'web_lukket' => 'Web-innhold - lukket/betalt',
+    'api' => 'Åpent API',
+    'ifc' => 'IFC-fil',
+    'database' => 'Database/register',
+    'annet' => 'Annet',
 ];
 
 // Språk labels
@@ -183,8 +209,29 @@ $kilde_created = get_the_date('d.m.Y');
                         <!-- År -->
                         <?php if ($utgivelsesaar): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Utgivelsesår</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($utgivelsesaar); ?></dd>
+                            <dt class="text-sm text-[#5A5A5A]">År (antatt)</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php
+                                $aar_display = [
+                                    'eldre' => 'Eldre enn 2022',
+                                ];
+                                echo esc_html($aar_display[$utgivelsesaar] ?? $utgivelsesaar);
+                            ?></dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Geografisk gyldighet -->
+                        <?php if ($geografisk_gyldighet): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Geografisk gyldighet</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($geo_labels[$geografisk_gyldighet] ?? $geografisk_gyldighet); ?></dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Dataformat -->
+                        <?php if ($dataformat): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Dataformat</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($dataformat_labels[$dataformat] ?? $dataformat); ?></dd>
                         </div>
                         <?php endif; ?>
 

@@ -83,21 +83,57 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
 
         // Kildetype choices
         $kildetype_choices = array(
-            array('text' => 'Standard', 'value' => 'standard'),
-            array('text' => 'Veileder', 'value' => 'veileder'),
+            array('text' => 'Standard (ISO, NS, etc.)', 'value' => 'standard'),
+            array('text' => 'Veiledning/metodikk', 'value' => 'veiledning'),
+            array('text' => 'Forskrift (norsk lov)', 'value' => 'forskrift_norsk'),
+            array('text' => 'Forordning (EU/EØS)', 'value' => 'forordning_eu'),
             array('text' => 'Mal/Template', 'value' => 'mal'),
             array('text' => 'Forskningsrapport', 'value' => 'forskningsrapport'),
             array('text' => 'Casestudie', 'value' => 'casestudie'),
-            array('text' => 'Opplæring', 'value' => 'opplaering'),
+            array('text' => 'Opplæringsmateriell', 'value' => 'opplaering'),
             array('text' => 'Verktøydokumentasjon', 'value' => 'dokumentasjon'),
-            array('text' => 'Annet', 'value' => 'annet'),
+            array('text' => 'Nettressurs/Database', 'value' => 'nettressurs'),
+            array('text' => 'Annet (tjeneste, webside etc.)', 'value' => 'annet'),
         );
 
         // Language choices
         $spraak_choices = array(
             array('text' => 'Norsk', 'value' => 'norsk'),
             array('text' => 'Engelsk', 'value' => 'engelsk'),
+            array('text' => 'Svensk', 'value' => 'svensk'),
+            array('text' => 'Dansk', 'value' => 'dansk'),
+            array('text' => 'Flerspråklig', 'value' => 'flerspraklig'),
             array('text' => 'Annet', 'value' => 'annet'),
+        );
+
+        // Geografisk gyldighet choices
+        $geo_choices = array(
+            array('text' => 'Nasjonalt/Norsk', 'value' => 'nasjonalt'),
+            array('text' => 'Nordisk', 'value' => 'nordisk'),
+            array('text' => 'Europeisk', 'value' => 'europeisk'),
+            array('text' => 'Internasjonalt', 'value' => 'internasjonalt'),
+            array('text' => 'Annet', 'value' => 'annet'),
+        );
+
+        // Dataformat choices
+        $dataformat_choices = array(
+            array('text' => 'PDF-dokument', 'value' => 'pdf'),
+            array('text' => 'Web-innhold - åpent', 'value' => 'web_aapent'),
+            array('text' => 'Web-innhold - lukket/betalt', 'value' => 'web_lukket'),
+            array('text' => 'Åpent API', 'value' => 'api'),
+            array('text' => 'IFC-fil', 'value' => 'ifc'),
+            array('text' => 'Database/register', 'value' => 'database'),
+            array('text' => 'Annet', 'value' => 'annet'),
+        );
+
+        // År choices
+        $aar_choices = array(
+            array('text' => '2026', 'value' => '2026'),
+            array('text' => '2025', 'value' => '2025'),
+            array('text' => '2024', 'value' => '2024'),
+            array('text' => '2023', 'value' => '2023'),
+            array('text' => '2022', 'value' => '2022'),
+            array('text' => 'Eldre enn 2022', 'value' => 'eldre'),
         );
 
         $form = array(
@@ -124,9 +160,9 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                 array(
                     'type' => 'textarea',
                     'label' => 'Kort beskrivelse',
-                    'isRequired' => true,
-                    'maxLength' => 200,
-                    'placeholder' => 'Beskriv kunnskapskilden kort (maks 200 tegn)',
+                    'isRequired' => false,
+                    'maxLength' => 250,
+                    'placeholder' => 'Beskriv kunnskapskilden kort (maks 250 tegn)',
                     'inputName' => 'kort_beskrivelse',
                 ),
                 // Field 3: Detaljert beskrivelse
@@ -179,24 +215,41 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                     'placeholder' => 'F.eks. 2.0, Rev. 3',
                     'inputName' => 'versjon',
                 ),
-                // Field 9: Utgivelsesår
+                // Field 9: Utgivelsesår (select)
                 array(
-                    'type' => 'number',
-                    'label' => 'Utgivelsesår',
+                    'type' => 'select',
+                    'label' => 'År (antatt)',
                     'isRequired' => false,
-                    'placeholder' => 'F.eks. 2024',
-                    'rangeMin' => 1900,
-                    'rangeMax' => 2100,
+                    'choices' => $aar_choices,
+                    'placeholder' => 'Velg antatt år',
                     'inputName' => 'utgivelsesaar',
                 ),
                 // Field 10: Kildetype
                 array(
                     'type' => 'select',
-                    'label' => 'Kildetype',
-                    'isRequired' => false,
+                    'label' => 'Type kilde/ressurs',
+                    'isRequired' => true,
                     'choices' => $kildetype_choices,
                     'placeholder' => 'Velg type',
                     'inputName' => 'kildetype',
+                ),
+                // Field: Geografisk gyldighet
+                array(
+                    'type' => 'select',
+                    'label' => 'Geografisk gyldighet',
+                    'isRequired' => false,
+                    'choices' => $geo_choices,
+                    'placeholder' => 'Velg geografisk gyldighet',
+                    'inputName' => 'geografisk_gyldighet',
+                ),
+                // Field: Dataformat
+                array(
+                    'type' => 'select',
+                    'label' => 'Dataform(at)',
+                    'isRequired' => false,
+                    'choices' => $dataformat_choices,
+                    'placeholder' => 'Velg dataformat',
+                    'inputName' => 'dataformat',
                 ),
                 // Field 11: Temagrupper (checkbox)
                 array(

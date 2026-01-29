@@ -144,6 +144,8 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
             'versjon' => get_field('versjon', $kunnskapskilde_id),
             'utgivelsesaar' => get_field('utgivelsesaar', $kunnskapskilde_id),
             'kildetype' => get_field('kildetype', $kunnskapskilde_id),
+            'geografisk_gyldighet' => get_field('geografisk_gyldighet', $kunnskapskilde_id),
+            'dataformat' => get_field('dataformat', $kunnskapskilde_id),
         );
 
         // Get taxonomy terms
@@ -205,8 +207,10 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
                     break;
 
                 case 'utgivelsesaar':
-                    if (!empty($acf_data['utgivelsesaar'])) {
-                        $field->defaultValue = $acf_data['utgivelsesaar'];
+                    if (!empty($acf_data['utgivelsesaar']) && !empty($field->choices)) {
+                        foreach ($field->choices as &$choice) {
+                            $choice['isSelected'] = ($choice['value'] === (string)$acf_data['utgivelsesaar']);
+                        }
                     }
                     break;
 
@@ -214,6 +218,22 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
                     if (!empty($acf_data['kildetype']) && !empty($field->choices)) {
                         foreach ($field->choices as &$choice) {
                             $choice['isSelected'] = ($choice['value'] === $acf_data['kildetype']);
+                        }
+                    }
+                    break;
+
+                case 'geografisk_gyldighet':
+                    if (!empty($acf_data['geografisk_gyldighet']) && !empty($field->choices)) {
+                        foreach ($field->choices as &$choice) {
+                            $choice['isSelected'] = ($choice['value'] === $acf_data['geografisk_gyldighet']);
+                        }
+                    }
+                    break;
+
+                case 'dataformat':
+                    if (!empty($acf_data['dataformat']) && !empty($field->choices)) {
+                        foreach ($field->choices as &$choice) {
+                            $choice['isSelected'] = ($choice['value'] === $acf_data['dataformat']);
                         }
                     }
                     break;
@@ -575,6 +595,8 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
             'versjon' => 'versjon',
             'utgivelsesaar' => 'utgivelsesaar',
             'kildetype' => 'kildetype',
+            'geografisk_gyldighet' => 'geografisk_gyldighet',
+            'dataformat' => 'dataformat',
         );
 
         foreach ($field_mapping as $input_name => $acf_field) {
@@ -594,7 +616,7 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
                         $value = esc_url_raw($value);
                         break;
                     case 'utgivelsesaar':
-                        $value = intval($value);
+                        $value = sanitize_text_field($value);
                         break;
                     default:
                         $value = sanitize_text_field($value);
