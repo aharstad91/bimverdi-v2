@@ -437,18 +437,9 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'kunnskapskilder/registrer' => 'kunnskapskilder-registrer',
             'kunnskapskilder/rediger'   => 'kunnskapskilder-rediger',
 
-            // Articles
-            'artikler'            => 'artikler-list',
-            'artikler/skriv'      => 'artikler-skriv',
-            'artikler/rediger'    => 'artikler-rediger',
-            
             // Events
             'arrangementer'       => 'arrangementer-list',
             
-            // Project Ideas
-            'prosjektideer'       => 'prosjektideer-list',
-            'prosjektideer/ny'    => 'prosjektideer-ny',
-
             // Company Colleagues (hovedkontakt only)
             'foretak/kolleger'    => 'foretak-team',
 
@@ -462,8 +453,6 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'rediger-foretak'     => 'foretak-rediger',
             'rediger-profil'      => 'profil-rediger',
             'endre-passord'       => 'profil-passord',
-            'skriv-artikkel'      => 'artikler-skriv',
-            'rediger-artikkel'    => 'artikler-rediger',
         ];
     }
 }
@@ -538,18 +527,6 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'url' => bimverdi_minside_url('kunnskapskilder'),
                 'icon' => 'book-open',
                 'routes' => ['kunnskapskilder', 'kunnskapskilder/registrer', 'kunnskapskilder/rediger'],
-            ],
-            'artikler' => [
-                'label' => 'Artikler',
-                'url' => bimverdi_minside_url('artikler'),
-                'icon' => 'file-text',
-                'routes' => ['artikler', 'artikler/skriv'],
-            ],
-            'prosjektideer' => [
-                'label' => 'Prosjektidéer',
-                'url' => bimverdi_minside_url('prosjektideer'),
-                'icon' => 'lightbulb',
-                'routes' => ['prosjektideer'],
             ],
             'arrangementer' => [
                 'label' => 'Arrangementer',

@@ -319,7 +319,7 @@ class BIMVerdi_GForms_Setup {
 </ul>
 
 <h3>Vil du ha full tilgang?</h3>
-<p>For å registrere verktøy, skrive artikler og delta i temagrupper, må du koble kontoen til et foretak.</p>
+<p>For å registrere verktøy og delta i temagrupper, må du koble kontoen til et foretak.</p>
 
 <p><a href="' . home_url('/min-side/') . '">Gå til Min Side →</a></p>
 

@@ -83,7 +83,7 @@ $form_id = 9; // "[Public] - Søknadsbistand prosjektidé"
                     <div class="mt-4">
                         <wa-alert variant="success" open>
                             <wa-icon library="fa" name="fas-circle-check" slot="icon"></wa-icon>
-                            <strong>Du er innlogget!</strong> Dine kontaktopplysninger er forhåndsutfylt, og du kan følge status på <a href="<?php echo esc_url(home_url('/min-side/prosjektideer/')); ?>" class="underline">Min Side</a>.
+                            <strong>Du er innlogget!</strong> Dine kontaktopplysninger er forhåndsutfylt, og du kan følge status på <a href="<?php echo esc_url(home_url('/min-side/')); ?>" class="underline">Min Side</a>.
                         </wa-alert>
                     </div>
                 <?php endif; ?>

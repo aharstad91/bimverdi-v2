@@ -40,19 +40,6 @@ $my_tools_count = count(get_posts(array(
     'post_status' => array('publish', 'draft', 'pending'),
 )));
 
-$my_articles_count = count(get_posts(array(
-    'post_type' => 'artikkel',
-    'author' => $user_id,
-    'posts_per_page' => -1,
-    'post_status' => array('publish', 'draft', 'pending'),
-)));
-
-$my_ideas_count = count(get_posts(array(
-    'post_type' => 'case',
-    'author' => $user_id,
-    'posts_per_page' => -1,
-)));
-
 // Count only active registrations for upcoming events
 $today = date('Y-m-d');
 $all_active_registrations = get_posts(array(
@@ -92,18 +79,6 @@ $nav_groups = array(
                 'icon' => 'wrench',
                 'url' => home_url('/min-side/mine-verktoy/'),
                 'count' => $my_tools_count,
-            ),
-            'artikler' => array(
-                'label' => 'Artikler',
-                'icon' => 'file-lines',
-                'url' => home_url('/min-side/artikler/'),
-                'count' => $my_articles_count,
-            ),
-            'prosjektideer' => array(
-                'label' => 'Prosjektidéer',
-                'icon' => 'lightbulb',
-                'url' => home_url('/min-side/prosjektideer/'),
-                'count' => $my_ideas_count,
             ),
         ),
     ),

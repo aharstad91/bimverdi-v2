@@ -40,14 +40,6 @@ if ($company_id) {
     }
 }
 
-// Get user's ideas count
-$my_ideas = get_posts([
-    'post_type' => 'case',
-    'author' => $user_id,
-    'posts_per_page' => -1,
-]);
-$my_ideas_count = count($my_ideas);
-
 // Get upcoming events count
 $upcoming_events = get_posts([
     'post_type' => 'arrangement',
@@ -62,13 +54,6 @@ $upcoming_events = get_posts([
 ]);
 $events_count = count($upcoming_events);
 
-// Get user's articles count
-$my_articles = get_posts([
-    'post_type' => 'medlemsinnlegg',
-    'author' => $user_id,
-    'posts_per_page' => -1,
-]);
-$articles_count = count($my_articles);
 ?>
 
 <!-- Page Header -->
@@ -93,11 +78,11 @@ $articles_count = count($my_articles);
     </div>
 <?php endif; ?>
 
-<!-- Quick Stats (Borderless with vertical dividers) -->
-<div class="grid grid-cols-2 lg:grid-cols-4 mb-12">
+<!-- Quick Stats -->
+<div class="grid grid-cols-2 mb-12">
 
     <!-- Mine verktøy -->
-    <div class="py-4 pr-6 lg:border-r border-[#D6D1C6]">
+    <div class="py-4 pr-6 border-r border-[#D6D1C6]">
         <div class="flex items-center gap-2 mb-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
             <h3 class="text-sm text-[#5A5A5A]"><?php _e('Mine verktøy', 'bimverdi'); ?></h3>
@@ -108,32 +93,8 @@ $articles_count = count($my_articles);
         </a>
     </div>
 
-    <!-- Mine artikler -->
-    <div class="py-4 px-6 lg:border-r border-[#D6D1C6]">
-        <div class="flex items-center gap-2 mb-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-            <h3 class="text-sm text-[#5A5A5A]"><?php _e('Mine artikler', 'bimverdi'); ?></h3>
-        </div>
-        <p class="text-2xl font-semibold text-[#1A1A1A] mb-1"><?php echo $articles_count; ?></p>
-        <a href="<?php echo home_url('/min-side/artikler/'); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A]">
-            <?php _e('Se alle', 'bimverdi'); ?> →
-        </a>
-    </div>
-
-    <!-- Prosjektidéer -->
-    <div class="py-4 px-6 lg:border-r border-[#D6D1C6] border-t lg:border-t-0 border-[#D6D1C6]">
-        <div class="flex items-center gap-2 mb-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
-            <h3 class="text-sm text-[#5A5A5A]"><?php _e('Prosjektidéer', 'bimverdi'); ?></h3>
-        </div>
-        <p class="text-2xl font-semibold text-[#1A1A1A] mb-1"><?php echo $my_ideas_count; ?></p>
-        <a href="<?php echo home_url('/min-side/prosjektideer/'); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A]">
-            <?php _e('Se alle', 'bimverdi'); ?> →
-        </a>
-    </div>
-
     <!-- Kommende arrangementer -->
-    <div class="py-4 pl-6 border-t lg:border-t-0 border-[#D6D1C6]">
+    <div class="py-4 pl-6">
         <div class="flex items-center gap-2 mb-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             <h3 class="text-sm text-[#5A5A5A]"><?php _e('Arrangementer', 'bimverdi'); ?></h3>
@@ -148,16 +109,11 @@ $articles_count = count($my_articles);
 <!-- Snarveier Section (Subtle action links) -->
 <div class="mb-12">
     <h2 class="text-lg font-semibold text-[#1A1A1A] mb-4"><?php _e('Snarveier', 'bimverdi'); ?></h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
 
         <a href="<?php echo home_url('/min-side/registrer-verktoy/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F2F0EB] transition-colors group">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#1A1A1A]"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Registrer verktøy', 'bimverdi'); ?></span>
-        </a>
-
-        <a href="<?php echo home_url('/min-side/skriv-artikkel/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F2F0EB] transition-colors group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#1A1A1A]"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Skriv artikkel', 'bimverdi'); ?></span>
         </a>
 
         <a href="<?php echo home_url('/min-side/foretak/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F2F0EB] transition-colors group">

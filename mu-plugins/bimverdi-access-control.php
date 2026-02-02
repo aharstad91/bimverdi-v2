@@ -28,8 +28,6 @@ class BIMVerdi_Access_Control {
     const COMPANY_REQUIRED_FEATURES = array(
         'register_tool',      // Registrere verktøy
         'edit_tool',          // Redigere verktøy
-        'write_article',      // Skrive artikler
-        'submit_case',        // Sende inn prosjektidéer
         'join_temagruppe',    // Velge temagrupper
         'company_profile',    // Redigere foretaksprofil
         'view_members_full',  // Se fullt medlemsinnhold
@@ -331,8 +329,6 @@ class BIMVerdi_Access_Control {
         $feature_names = array(
             'register_tool' => 'Registrere verktøy',
             'edit_tool' => 'Redigere verktøy',
-            'write_article' => 'Skrive artikler',
-            'submit_case' => 'Sende inn prosjektidéer',
             'join_temagruppe' => 'Velge temagrupper',
             'company_profile' => 'Redigere foretaksprofil',
             'view_members_full' => 'Se fullt medlemsinnhold',
@@ -407,7 +403,6 @@ class BIMVerdi_Access_Control {
         $protected_pages = array(
             'min-side/registrer-verktoy' => 'register_tool',
             'min-side/rediger-verktoy' => 'edit_tool',
-            'min-side/skriv-artikkel' => 'write_article',
             'min-side/temagrupper' => 'join_temagruppe',
             'min-side/foretak' => 'company_profile',
         );
@@ -533,7 +528,7 @@ function bimverdi_connect_company_cta() {
                     Få full tilgang til BIM Verdi
                 </h3>
                 <p class="text-gray-600 text-sm">
-                    Koble kontoen din til et foretak for å registrere verktøy, skrive artikler, 
+                    Koble kontoen din til et foretak for å registrere verktøy,
                     delta i temagrupper og mer.
                 </p>
             </div>
