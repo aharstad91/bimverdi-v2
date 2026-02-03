@@ -79,8 +79,9 @@ class BIM_Verdi_CLI_Commands {
 
             // Skip draft/trashed entries
             $entry_status = $row['Entry Status'] ?? '0';
+            $entry_id = $row['ID'] ?? $row['Entry Id'] ?? '';
             if ($entry_status !== '0') {
-                WP_CLI::log("[SKIP] Entry {$row['Entry Id']} - Draft/trashed (status: {$entry_status})");
+                WP_CLI::log("[SKIP] Entry {$entry_id} - Draft/trashed (status: {$entry_status})");
                 $stats['skipped']++;
                 continue;
             }
@@ -90,7 +91,7 @@ class BIM_Verdi_CLI_Commands {
             $company_name = trim($row['Foretaksnavn'] ?? '');
 
             if (empty($org_nr) && empty($company_name)) {
-                WP_CLI::log("[SKIP] Entry {$row['Entry Id']} - No org number or name");
+                WP_CLI::log("[SKIP] Entry {$entry_id} - No org number or name");
                 $stats['skipped']++;
                 continue;
             }
@@ -106,7 +107,7 @@ class BIM_Verdi_CLI_Commands {
 
             $stats['matched']++;
             $foretak_title = get_the_title($foretak_id);
-            WP_CLI::log("[MATCH] Entry {$row['Entry Id']} → Post {$foretak_id} \"{$foretak_title}\"");
+            WP_CLI::log("[MATCH] Entry {$entry_id} → Post {$foretak_id} \"{$foretak_title}\"");
 
             // Prepare field updates
             $updates = $this->prepare_updates($row, $foretak_id, $force);
@@ -254,13 +255,16 @@ class BIM_Verdi_CLI_Commands {
         $updates = [];
 
         // Field mapping configurations
+        // CSV column names from Formidable Forms export (2026-02-03)
         $field_configs = [
             'kort_beskrivelse' => [
-                'csv_columns' => ['Kort om hvorfor vi deltar i BIM Verdi', 'Virksomhetsbeskrivelse - maks. 800 tegn'],
+                'csv_columns' => [
+                    'Virksomhetsbeskrivelse - maks. 800 tegn og mellomrom (publiseres i din deltakerprofil)',
+                ],
                 'transform' => 'kort_beskrivelse',
             ],
             'bransje_rolle' => [
-                'csv_columns' => ['Vår rolle/fag/bransje'],
+                'csv_columns' => ['Vår rolle/fag/bransje er (du kan krysse av flere):'],
                 'transform' => 'bransje_rolle',
             ],
             'interesseomrader' => [
@@ -268,7 +272,7 @@ class BIM_Verdi_CLI_Commands {
                 'transform' => 'interesseomrader',
             ],
             'kundetyper' => [
-                'csv_columns' => ['Hvem er våre kunder'],
+                'csv_columns' => ['Hvem er våre kunder?'],
                 'transform' => 'kundetyper',
             ],
             'linkedin_url' => [
@@ -280,7 +284,7 @@ class BIM_Verdi_CLI_Commands {
                 'transform' => 'url',
             ],
             'youtube_url' => [
-                'csv_columns' => ['YouTube-kanal - foretak'],
+                'csv_columns' => ['YouTube-kanal  - foretak'], // Note: two spaces before dash
                 'transform' => 'url',
             ],
             'twitter_url' => [
@@ -288,11 +292,11 @@ class BIM_Verdi_CLI_Commands {
                 'transform' => 'url',
             ],
             'artikkel_lenke' => [
-                'csv_columns' => ['Link til artikkel'],
+                'csv_columns' => ['Link til artikkel etc. om bedriften'],
                 'transform' => 'url',
             ],
             'hashtag' => [
-                'csv_columns' => ['Hashtag for LinkedIn'],
+                'csv_columns' => ['# (hashtag) som du ønsker brukt på Linkedin etc.'],
                 'transform' => 'text',
             ],
             'bv_rolle' => [
@@ -899,6 +903,611 @@ class BIM_Verdi_CLI_Commands {
 
         set_post_thumbnail($post_id, $attachment_id);
         WP_CLI::log("  → Logo attached (attachment {$attachment_id})");
+    }
+
+    /**
+     * Import Arrangement data from Formidable Forms CSV export
+     *
+     * Creates new arrangement CPT posts from historical FF entries.
+     *
+     * ## OPTIONS
+     *
+     * <csv-file>
+     * : Path to the Formidable Forms CSV export file
+     *
+     * [--dry-run]
+     * : Run without making changes, just show what would be imported
+     *
+     * [--status=<status>]
+     * : Post status for imported entries (default: publish)
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi arrangement-import /path/to/arrangementer.csv --dry-run
+     *     wp bimverdi arrangement-import /path/to/arrangementer.csv
+     *
+     * @param array $args       Positional arguments
+     * @param array $assoc_args Named arguments
+     */
+    public function arrangement_import($args, $assoc_args) {
+        $csv_file = $args[0];
+        $dry_run = isset($assoc_args['dry-run']);
+        $post_status = $assoc_args['status'] ?? 'publish';
+
+        if (!file_exists($csv_file)) {
+            WP_CLI::error("CSV file not found: {$csv_file}");
+        }
+
+        WP_CLI::log("=== BIM Verdi Arrangement Import (Formidable Forms) ===");
+        WP_CLI::log("CSV: {$csv_file}");
+        WP_CLI::log("Mode: " . ($dry_run ? "DRY RUN" : "LIVE"));
+        WP_CLI::log("Post status: {$post_status}");
+        WP_CLI::log("");
+
+        // Read CSV
+        $csv_data = $this->read_csv($csv_file);
+        if (empty($csv_data)) {
+            WP_CLI::error("No data found in CSV");
+        }
+
+        WP_CLI::log("Found " . count($csv_data) . " entries in CSV");
+        WP_CLI::log("");
+
+        // Stats
+        $stats = [
+            'processed' => 0,
+            'created' => 0,
+            'skipped_duplicate' => 0,
+            'skipped_invalid' => 0,
+            'skipped_not_publishable' => 0,
+            'errors' => 0,
+        ];
+
+        // Mapping tables
+        $type_mapping = [
+            'Fysisk' => 'fysisk',
+            'Fysisk med video-overføring' => 'hybrid',
+            'Nettbasert' => 'digitalt',
+        ];
+
+        $arrangementstype_mapping = [
+            'Digital Arena på Bygg Reis Deg' => null,
+            'Deltakerforum (åpent)' => 'deltakerforum',
+            'Deltakerforum (lukket)' => 'deltakerforum',
+            'Partnerarrangement' => 'partnerarrangement',
+            'PilotVerksted' => 'workshop',
+            'PilotSeminar' => 'seminar',
+            'Nytt & Nyttig' => 'webinar',
+        ];
+
+        $temagruppe_mapping = [
+            'Varelogistikk (TG01)' => 'prosjektbim',
+            'Industrialisering og avfallsforebygging (TG03)' => 'sirkbim',
+            'Digital Tvilling og drift (TG02)' => 'eiendomsbim',
+            'MiljøBIM (klimagassberegninger fra BIM)' => 'miljobim',
+            'EiendomsBIM (digital tvilling, drift)' => 'eiendomsbim',
+            'ProsjektBIM (logistikk, egenskaper i IFC)' => 'prosjektbim',
+            'ByggesaksBIM (byggesøknader, GIS, visualisering)' => 'byggesaksbim',
+            'ResirkuleringsBIM (BIM som verdibank etc.)' => 'sirkbim',
+            'BIMtech (muliggjørende teknologier...)' => 'bimtech',
+            // Partial matches for corrupted data
+            'drift)' => 'eiendomsbim',
+            'logistikk' => 'prosjektbim',
+        ];
+
+        foreach ($csv_data as $row) {
+            $stats['processed']++;
+
+            // Skip if not active entry
+            $entry_status = trim($row['Entry Status'] ?? '0');
+            if ($entry_status !== '0') {
+                $stats['skipped_invalid']++;
+                continue;
+            }
+
+            // Skip if not publishable
+            $can_publish = trim($row['Kan arrangementet publiseres slik det er beskrevet?'] ?? '');
+            if ($can_publish === 'Nei - ikke enda') {
+                $stats['skipped_not_publishable']++;
+                continue;
+            }
+
+            $title = trim($row['Tittel på innlegg eller arrangement'] ?? '');
+            $entry_id = trim($row['Entry ID'] ?? $row['Entry Id'] ?? '');
+
+            // Skip if empty title
+            if (empty($title)) {
+                $stats['skipped_invalid']++;
+                continue;
+            }
+
+            // Duplicate check via ff_entry_id
+            if (!empty($entry_id)) {
+                $existing = get_posts([
+                    'post_type' => 'arrangement',
+                    'post_status' => 'any',
+                    'meta_key' => 'ff_entry_id',
+                    'meta_value' => $entry_id,
+                    'posts_per_page' => 1,
+                    'fields' => 'ids',
+                ]);
+
+                if (!empty($existing)) {
+                    WP_CLI::log("[DUPLICATE] Entry ID {$entry_id}: \"{$title}\"");
+                    $stats['skipped_duplicate']++;
+                    continue;
+                }
+            }
+
+            // Date validation
+            $fra_dato = trim($row['Fra dato'] ?? '');
+            if (empty($fra_dato) || !strtotime($fra_dato)) {
+                WP_CLI::warning("[INVALID DATE] \"{$title}\" - Fra dato: {$fra_dato}");
+                $stats['skipped_invalid']++;
+                continue;
+            }
+
+            // Determine status based on date
+            $status_toggle = (strtotime($fra_dato) < strtotime('today')) ? 'tidligere' : 'kommende';
+
+            // Map arrangement_type
+            $fysisk_digital = trim($row['Fysisk eller nettbasert gjennomføring'] ?? '');
+            $arrangement_type = $type_mapping[$fysisk_digital] ?? 'digitalt';
+
+            // Build post_content
+            $content_parts = [];
+            $kort_beskrivelse = trim($row['Kort beskrivelse - for kalenderoppføring'] ?? '');
+            $agenda = trim($row['Agenda'] ?? '');
+            if (!empty($kort_beskrivelse)) {
+                $content_parts[] = wp_kses_post($kort_beskrivelse);
+            }
+            if (!empty($agenda)) {
+                $content_parts[] = "\n\n<!-- wp:heading -->\n<h2>Agenda</h2>\n<!-- /wp:heading -->\n\n" . wp_kses_post($agenda);
+            }
+            $post_content = implode('', $content_parts);
+
+            // Build sted
+            $sted_parts = array_filter([
+                trim($row['Konferansested og møterom'] ?? ''),
+                trim($row['Adresse - Line 1'] ?? ''),
+            ]);
+            $sted_adresse = implode(', ', $sted_parts);
+            $sted_by = trim($row['Adresse - By'] ?? '');
+
+            // Opptak URL (try Teams folder first, then external)
+            $opptak_url = trim($row['Link til Teams-folder med opptak og presentasjoner (for deltakere i BIM Verdi)'] ?? '');
+            if (empty($opptak_url)) {
+                $opptak_url = trim($row['Link til opptak-del 1  - eksterne kilder'] ?? '');
+            }
+
+            WP_CLI::log("[CREATE] \"{$title}\" ({$fra_dato}) [{$status_toggle}]");
+
+            if ($dry_run) {
+                $stats['created']++;
+                continue;
+            }
+
+            // Create post
+            $post_id = wp_insert_post([
+                'post_type' => 'arrangement',
+                'post_title' => sanitize_text_field($title),
+                'post_content' => $post_content,
+                'post_status' => $post_status,
+                'post_date' => $row['Timestamp'] ?? current_time('mysql'),
+            ]);
+
+            if (is_wp_error($post_id)) {
+                WP_CLI::warning("  Failed to create: " . $post_id->get_error_message());
+                $stats['errors']++;
+                continue;
+            }
+
+            // Save ACF fields
+            update_field('arrangement_status_toggle', $status_toggle, $post_id);
+            update_field('arrangement_type', $arrangement_type, $post_id);
+            update_field('arrangement_dato', $fra_dato, $post_id);
+            update_field('arrangement_status', 'planlagt', $post_id);
+
+            $tidspunkt_start = trim($row['Starter kl'] ?? '');
+            if (!empty($tidspunkt_start)) {
+                update_field('tidspunkt_start', $tidspunkt_start, $post_id);
+            }
+
+            $til_dato = trim($row['Til dato'] ?? '');
+            if (!empty($til_dato) && $til_dato !== $fra_dato) {
+                update_field('slutt_dato', $til_dato, $post_id);
+            }
+
+            $tidspunkt_slutt = trim($row['Slutter kl.'] ?? '');
+            if (!empty($tidspunkt_slutt)) {
+                update_field('tidspunkt_slutt', $tidspunkt_slutt, $post_id);
+            }
+
+            $formal = trim($row['Formål med innlegget/arrangementet'] ?? '');
+            if (!empty($formal)) {
+                update_field('formal_tema', sanitize_textarea_field($formal), $post_id);
+            }
+
+            $malgruppe = trim($row['Målgrupper for arrangementet'] ?? '');
+            if (!empty($malgruppe)) {
+                update_field('passer_for', sanitize_text_field($malgruppe), $post_id);
+            }
+
+            if (!empty($sted_adresse)) {
+                update_field('sted_adresse', sanitize_text_field($sted_adresse), $post_id);
+            }
+
+            if (!empty($sted_by)) {
+                update_field('sted_by', sanitize_text_field($sted_by), $post_id);
+            }
+
+            // Arrangør
+            $arrangor_parts = array_filter([
+                trim($row['Teknisk arrangør'] ?? ''),
+                trim($row['Med-arrangør/partner(e)'] ?? ''),
+            ]);
+            if (!empty($arrangor_parts)) {
+                update_field('arrangor', sanitize_text_field(implode(' / ', $arrangor_parts)), $post_id);
+            }
+
+            // Resources (only for past events)
+            if ($status_toggle === 'tidligere') {
+                if (!empty($opptak_url)) {
+                    update_field('opptak_url', esc_url_raw($opptak_url), $post_id);
+                }
+                $dok_url = trim($row['Link til pres., PPT etc.'] ?? '');
+                if (!empty($dok_url)) {
+                    update_field('dokumentasjon_url', esc_url_raw($dok_url), $post_id);
+                }
+            }
+
+            // Påmelding
+            $pamelding_url = trim($row['Ekstern link til påmelding'] ?? '');
+            if (!empty($pamelding_url)) {
+                update_field('pamelding_url', esc_url_raw($pamelding_url), $post_id);
+            }
+
+            // Store FF Entry ID for duplicate tracking
+            if (!empty($entry_id)) {
+                update_post_meta($post_id, 'ff_entry_id', $entry_id);
+            }
+
+            // Taxonomies: arrangementstype
+            $type_arr = trim($row['Type arrangement'] ?? '');
+            if (!empty($type_arr)) {
+                $type_parts = array_map('trim', explode(',', $type_arr));
+                $type_slugs = [];
+                foreach ($type_parts as $part) {
+                    if (isset($arrangementstype_mapping[$part]) && $arrangementstype_mapping[$part] !== null) {
+                        $slug = $arrangementstype_mapping[$part];
+                        $term = get_term_by('slug', $slug, 'arrangementstype');
+                        if ($term) {
+                            $type_slugs[] = $slug;
+                        }
+                    }
+                }
+                if (!empty($type_slugs)) {
+                    wp_set_object_terms($post_id, $type_slugs, 'arrangementstype');
+                }
+            }
+
+            // Taxonomies: temagruppe
+            $temagrupper = trim($row['Temagrupper som har størst relevans til arrangementet'] ?? '');
+            if (!empty($temagrupper)) {
+                $tg_parts = array_map('trim', explode(',', $temagrupper));
+                $tg_slugs = [];
+                foreach ($tg_parts as $part) {
+                    // Try exact match first
+                    if (isset($temagruppe_mapping[$part])) {
+                        $tg_slugs[] = $temagruppe_mapping[$part];
+                    } else {
+                        // Try partial match for corrupted data
+                        foreach ($temagruppe_mapping as $key => $slug) {
+                            if (stripos($part, $key) !== false || stripos($key, $part) !== false) {
+                                $tg_slugs[] = $slug;
+                                break;
+                            }
+                        }
+                    }
+                }
+                $tg_slugs = array_unique($tg_slugs);
+                if (!empty($tg_slugs)) {
+                    wp_set_object_terms($post_id, $tg_slugs, 'temagruppe');
+                }
+            }
+
+            WP_CLI::log("  → Post ID: {$post_id}");
+            $stats['created']++;
+        }
+
+        // Summary
+        WP_CLI::log("");
+        WP_CLI::log("=== Import Summary ===");
+        WP_CLI::log("Processed:      {$stats['processed']}");
+        WP_CLI::log("Created:        {$stats['created']}");
+        WP_CLI::log("Duplicates:     {$stats['skipped_duplicate']}");
+        WP_CLI::log("Invalid:        {$stats['skipped_invalid']}");
+        WP_CLI::log("Not publishable:{$stats['skipped_not_publishable']}");
+        WP_CLI::log("Errors:         {$stats['errors']}");
+
+        if ($dry_run) {
+            WP_CLI::warning("DRY RUN - No changes were made");
+        } else {
+            WP_CLI::success("Import completed!");
+        }
+    }
+
+    /**
+     * Import Arrangement data from live CPT CSV export
+     *
+     * Imports events from the live bimverdi.no CPT export.
+     * Handles YYYYMMDD date format and PHP serialized arrays.
+     *
+     * ## OPTIONS
+     *
+     * <csv-file>
+     * : Path to the live CPT CSV export file
+     *
+     * [--dry-run]
+     * : Run without making changes, just show what would be imported
+     *
+     * [--status=<status>]
+     * : Post status for imported entries (default: publish)
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi arrangement-import-cpt /path/to/cpt-export.csv --dry-run
+     *     wp bimverdi arrangement-import-cpt /path/to/cpt-export.csv
+     *
+     * @param array $args       Positional arguments
+     * @param array $assoc_args Named arguments
+     */
+    public function arrangement_import_cpt($args, $assoc_args) {
+        $csv_file = $args[0];
+        $dry_run = isset($assoc_args['dry-run']);
+        $post_status = $assoc_args['status'] ?? 'publish';
+
+        if (!file_exists($csv_file)) {
+            WP_CLI::error("CSV file not found: {$csv_file}");
+        }
+
+        WP_CLI::log("=== BIM Verdi Arrangement Import (Live CPT) ===");
+        WP_CLI::log("CSV: {$csv_file}");
+        WP_CLI::log("Mode: " . ($dry_run ? "DRY RUN" : "LIVE"));
+        WP_CLI::log("Post status: {$post_status}");
+        WP_CLI::log("");
+
+        // Read CSV
+        $csv_data = $this->read_csv($csv_file);
+        if (empty($csv_data)) {
+            WP_CLI::error("No data found in CSV");
+        }
+
+        WP_CLI::log("Found " . count($csv_data) . " entries in CSV");
+        WP_CLI::log("");
+
+        // Stats
+        $stats = [
+            'processed' => 0,
+            'created' => 0,
+            'skipped_duplicate' => 0,
+            'skipped_test' => 0,
+            'skipped_invalid' => 0,
+            'errors' => 0,
+        ];
+
+        // Skip test entries
+        $skip_titles = ['map test', 'NEW-EVENT', 'test', 'KLADD:'];
+
+        foreach ($csv_data as $row) {
+            $stats['processed']++;
+
+            $live_id = trim($row['ID'] ?? '');
+            $title = trim($row['post_title'] ?? '');
+
+            // Skip test entries
+            $is_test = false;
+            foreach ($skip_titles as $skip) {
+                if (stripos($title, $skip) !== false) {
+                    $is_test = true;
+                    break;
+                }
+            }
+            if ($is_test) {
+                WP_CLI::log("[SKIP TEST] \"{$title}\"");
+                $stats['skipped_test']++;
+                continue;
+            }
+
+            // Skip empty title
+            if (empty($title)) {
+                $stats['skipped_invalid']++;
+                continue;
+            }
+
+            // Parse date (YYYYMMDD format)
+            $dato_start_raw = trim($row['dato_start'] ?? '');
+            if (empty($dato_start_raw) || strlen($dato_start_raw) !== 8) {
+                WP_CLI::warning("[INVALID DATE] \"{$title}\" - dato_start: {$dato_start_raw}");
+                $stats['skipped_invalid']++;
+                continue;
+            }
+
+            // Convert YYYYMMDD to Y-m-d
+            $fra_dato = substr($dato_start_raw, 0, 4) . '-' . substr($dato_start_raw, 4, 2) . '-' . substr($dato_start_raw, 6, 2);
+
+            // Clean title (remove date prefix like "20251211 ")
+            $clean_title = preg_replace('/^\d{8}\s+/', '', $title);
+
+            // Duplicate check: title + date
+            $existing = get_posts([
+                'post_type' => 'arrangement',
+                'post_status' => 'any',
+                'title' => $clean_title,
+                'meta_query' => [
+                    [
+                        'key' => 'arrangement_dato',
+                        'value' => $fra_dato,
+                    ],
+                ],
+                'posts_per_page' => 1,
+                'fields' => 'ids',
+            ]);
+
+            if (!empty($existing)) {
+                WP_CLI::log("[DUPLICATE] \"{$clean_title}\" ({$fra_dato})");
+                $stats['skipped_duplicate']++;
+                continue;
+            }
+
+            // Also check by live_cpt_id
+            $existing_by_id = get_posts([
+                'post_type' => 'arrangement',
+                'post_status' => 'any',
+                'meta_key' => 'live_cpt_id',
+                'meta_value' => $live_id,
+                'posts_per_page' => 1,
+                'fields' => 'ids',
+            ]);
+
+            if (!empty($existing_by_id)) {
+                WP_CLI::log("[DUPLICATE] Live ID {$live_id}: \"{$clean_title}\"");
+                $stats['skipped_duplicate']++;
+                continue;
+            }
+
+            // Determine status
+            $avsluttet = trim($row['avsluttet'] ?? '0');
+            $status_toggle = ($avsluttet === '1') ? 'tidligere' : 'kommende';
+
+            // Parse sted (PHP serialized Google Maps array)
+            $sted_raw = trim($row['sted'] ?? '');
+            $sted_adresse = '';
+            if (!empty($sted_raw) && $sted_raw !== 'NULL') {
+                $sted_data = @unserialize($sted_raw);
+                if (is_array($sted_data) && isset($sted_data['address'])) {
+                    $sted_adresse = $sted_data['address'];
+                }
+            }
+
+            // Parse adgang (PHP serialized array)
+            $adgang_raw = trim($row['adgang'] ?? '');
+            $adgang = 'alle';
+            if (!empty($adgang_raw) && $adgang_raw !== 'NULL') {
+                $adgang_data = @unserialize($adgang_raw);
+                if (is_array($adgang_data)) {
+                    // Map live values to v2 ACF values
+                    if (in_array('åpent', $adgang_data)) {
+                        $adgang = 'alle';
+                    } elseif (in_array('deltakere i BIM Verdi og arrangementspartnere', $adgang_data)) {
+                        $adgang = 'deltakere';
+                    } elseif (in_array('registrerte personkontakter', $adgang_data)) {
+                        $adgang = 'medlemmer';
+                    }
+                }
+            }
+
+            // Arrangør
+            $arrangor = trim($row['arrangor'] ?? '');
+
+            // Påmelding URL (may contain shortcode)
+            $pamelding = trim($row['pamelding'] ?? '');
+            $pamelding_url = '';
+            if (!empty($pamelding) && strpos($pamelding, '[formidable') === false) {
+                // Only use if it's an actual URL, not a shortcode
+                if (filter_var($pamelding, FILTER_VALIDATE_URL)) {
+                    $pamelding_url = $pamelding;
+                }
+            }
+
+            WP_CLI::log("[CREATE] \"{$clean_title}\" ({$fra_dato}) [{$status_toggle}]");
+
+            if ($dry_run) {
+                $stats['created']++;
+                continue;
+            }
+
+            // Create post
+            $post_id = wp_insert_post([
+                'post_type' => 'arrangement',
+                'post_title' => sanitize_text_field($clean_title),
+                'post_content' => '',
+                'post_status' => $post_status,
+            ]);
+
+            if (is_wp_error($post_id)) {
+                WP_CLI::warning("  Failed to create: " . $post_id->get_error_message());
+                $stats['errors']++;
+                continue;
+            }
+
+            // Save ACF fields
+            update_field('arrangement_status_toggle', $status_toggle, $post_id);
+            update_field('arrangement_type', 'digitalt', $post_id); // Default, type column often empty
+            update_field('arrangement_dato', $fra_dato, $post_id);
+            update_field('arrangement_status', 'planlagt', $post_id);
+            update_field('adgang', $adgang, $post_id);
+
+            // Time
+            $tid_start = trim($row['tid_start'] ?? '');
+            if (!empty($tid_start) && $tid_start !== 'NULL') {
+                // May be H:i or full datetime
+                if (preg_match('/^\d{2}:\d{2}$/', $tid_start)) {
+                    update_field('tidspunkt_start', $tid_start, $post_id);
+                }
+            }
+
+            $tid_slutt = trim($row['tid_slutt'] ?? '');
+            if (!empty($tid_slutt) && $tid_slutt !== 'NULL') {
+                if (preg_match('/^\d{2}:\d{2}$/', $tid_slutt)) {
+                    update_field('tidspunkt_slutt', $tid_slutt, $post_id);
+                }
+            }
+
+            // End date
+            $dato_slutt_raw = trim($row['dato_slutt'] ?? '');
+            if (!empty($dato_slutt_raw) && $dato_slutt_raw !== 'NULL' && strlen($dato_slutt_raw) === 8 && $dato_slutt_raw !== $dato_start_raw) {
+                $slutt_dato = substr($dato_slutt_raw, 0, 4) . '-' . substr($dato_slutt_raw, 4, 2) . '-' . substr($dato_slutt_raw, 6, 2);
+                update_field('slutt_dato', $slutt_dato, $post_id);
+            }
+
+            if (!empty($sted_adresse)) {
+                update_field('sted_adresse', sanitize_text_field($sted_adresse), $post_id);
+            }
+
+            if (!empty($arrangor)) {
+                update_field('arrangor', sanitize_text_field($arrangor), $post_id);
+            }
+
+            if (!empty($pamelding_url)) {
+                update_field('pamelding_url', esc_url_raw($pamelding_url), $post_id);
+            }
+
+            // Store live CPT ID for tracking
+            update_post_meta($post_id, 'live_cpt_id', $live_id);
+
+            // Taxonomies: temagruppe (PHP serialized term IDs - skip for now, IDs don't match)
+            // Would need term ID mapping from live to local
+
+            WP_CLI::log("  → Post ID: {$post_id}");
+            $stats['created']++;
+        }
+
+        // Summary
+        WP_CLI::log("");
+        WP_CLI::log("=== Import Summary ===");
+        WP_CLI::log("Processed:  {$stats['processed']}");
+        WP_CLI::log("Created:    {$stats['created']}");
+        WP_CLI::log("Duplicates: {$stats['skipped_duplicate']}");
+        WP_CLI::log("Test posts: {$stats['skipped_test']}");
+        WP_CLI::log("Invalid:    {$stats['skipped_invalid']}");
+        WP_CLI::log("Errors:     {$stats['errors']}");
+
+        if ($dry_run) {
+            WP_CLI::warning("DRY RUN - No changes were made");
+        } else {
+            WP_CLI::success("Import completed!");
+        }
     }
 }
 

@@ -25,7 +25,27 @@ $poststed = get_field('poststed', $company_id);
 $telefon = get_field('telefon', $company_id);
 $nettside = get_field('hjemmeside', $company_id);
 $kontakt_epost = get_field('kontakt_epost', $company_id);
-$er_aktiv_deltaker = get_field('er_aktiv_deltaker', $company_id);
+$bv_rolle = get_field('bv_rolle', $company_id);
+$er_aktiv_deltaker = $bv_rolle && $bv_rolle !== 'Ikke deltaker';
+
+// Hent profil-data
+$kort_beskrivelse = get_field('kort_beskrivelse', $company_id);
+$bransje_rolle = get_field('bransje_rolle', $company_id);
+$interesseomrader = get_field('interesseomrader', $company_id);
+$kundetyper_acf = get_field('kundetyper', $company_id);
+$artikkel_lenke = get_field('artikkel_lenke', $company_id);
+$hashtag = get_field('hashtag', $company_id);
+$land = get_field('land', $company_id);
+
+// Hent sosiale medier
+$linkedin_url = get_field('linkedin_url', $company_id);
+$facebook_url = get_field('facebook_url', $company_id);
+$youtube_url = get_field('youtube_url', $company_id);
+$twitter_url = get_field('twitter_url', $company_id);
+
+// Hent hovedkontakt
+$hovedkontakt_id = get_field('hovedkontaktperson', $company_id);
+$hovedkontakt = $hovedkontakt_id ? get_userdata($hovedkontakt_id) : null;
 
 // Hent BRREG-data
 $organisasjonsform = get_field('organisasjonsform', $company_id);
@@ -33,6 +53,8 @@ $naeringskode = get_field('naeringskode', $company_id);
 $naeringskode_beskrivelse = get_field('naeringskode_beskrivelse', $company_id);
 $antall_ansatte = get_field('antall_ansatte', $company_id);
 $kommune = get_field('kommune', $company_id);
+$stiftelsesdato = get_field('stiftelsesdato', $company_id);
+$bedriftsnavn = get_field('bedriftsnavn', $company_id);
 
 // Hent taxonomier
 $bransjekategorier = wp_get_post_terms($company_id, 'bransjekategori', array('fields' => 'all'));
@@ -133,7 +155,7 @@ $company_kunnskapskilder = get_posts(array(
                         <?php if ($er_aktiv_deltaker): ?>
                             <span class="inline-flex items-center gap-1 text-xs font-medium text-[#166534] bg-[#DCFCE7] px-2.5 py-1 rounded-full">
                                 <span class="w-1.5 h-1.5 bg-[#166534] rounded-full"></span>
-                                Aktiv deltaker
+                                <?php echo esc_html($bv_rolle); ?>
                             </span>
                         <?php endif; ?>
                     </div>
@@ -162,12 +184,42 @@ $company_kunnskapskilder = get_posts(array(
             <div class="lg:col-span-2 space-y-10">
 
                 <!-- Om foretaket Section -->
+                <?php
+                // Labels for bransje_rolle
+                $bransje_labels = array(
+                    'bestiller_byggherre' => 'Bestiller/byggherre',
+                    'arkitekt_radgiver' => 'Arkitekt/rådgiver',
+                    'entreprenor_byggmester' => 'Entreprenør/byggmester',
+                    'byggevareprodusent' => 'Byggevareprodusent',
+                    'byggevarehandel' => 'Byggevarehandel',
+                    'eiendom_drift' => 'Eiendom/drift',
+                    'digital_leverandor' => 'Digital leverandør',
+                    'organisasjon' => 'Organisasjon/nettverk',
+                    'tjenesteleverandor' => 'Tjenesteleverandør',
+                    'offentlig' => 'Offentlig instans',
+                    'utdanning' => 'Utdanning',
+                );
+
+                // Labels for interesseomrader
+                $interesse_labels = array(
+                    'byggesak' => 'ByggesaksBIM',
+                    'prosjekt' => 'ProsjektBIM',
+                    'eiendom' => 'EiendomsBIM',
+                    'miljo' => 'MiljøBIM',
+                    'sirk' => 'SirkBIM',
+                    'tech' => 'BIMtech',
+                );
+                ?>
                 <section>
                     <h2 class="text-lg font-bold text-[#1A1A1A] mb-4">Om foretaket</h2>
 
-                    <?php if ($beskrivelse): ?>
+                    <?php
+                    // Prefer kort_beskrivelse (imported from FF), fall back to beskrivelse (legacy ACF field)
+                    $display_beskrivelse = !empty($kort_beskrivelse) ? $kort_beskrivelse : $beskrivelse;
+                    ?>
+                    <?php if ($display_beskrivelse): ?>
                         <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
-                            <?php echo wpautop(esc_html($beskrivelse)); ?>
+                            <?php echo wpautop(esc_html($display_beskrivelse)); ?>
                         </div>
                     <?php elseif (has_excerpt()): ?>
                         <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
@@ -177,7 +229,82 @@ $company_kunnskapskilder = get_posts(array(
                         <p class="text-[#5A5A5A] italic mb-6">Ingen beskrivelse tilgjengelig.</p>
                     <?php endif; ?>
 
-                    <!-- Tags: Bransje og Kundetyper -->
+                    <!-- Bransje/rolle -->
+                    <?php if (!empty($bransje_rolle) && is_array($bransje_rolle)): ?>
+                    <div class="mb-4">
+                        <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-2">Bransje/rolle</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <?php foreach ($bransje_rolle as $rolle): ?>
+                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                                <?php echo esc_html(isset($bransje_labels[$rolle]) ? $bransje_labels[$rolle] : $rolle); ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Interesseområder -->
+                    <?php if (!empty($interesseomrader) && is_array($interesseomrader)): ?>
+                    <div class="mb-4">
+                        <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-2">Interesseområder</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <?php foreach ($interesseomrader as $interesse): ?>
+                            <span class="inline-block text-xs font-medium bg-[#ECFDF5] text-[#059669] px-3 py-1.5 rounded">
+                                <?php echo esc_html(isset($interesse_labels[$interesse]) ? $interesse_labels[$interesse] : $interesse); ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Kundetyper (fra ACF) -->
+                    <?php
+                    $kundetype_labels = array(
+                        'bestiller' => 'Bestillere/byggherrer',
+                        'arkitekt' => 'Arkitekter/rådgivere',
+                        'entreprenor' => 'Entreprenører',
+                        'produsent' => 'Produsenter',
+                        'handel' => 'Handel',
+                        'eiendom' => 'Eiendomsforvaltere',
+                        'digital' => 'Digitale leverandører',
+                        'tjeneste' => 'Tjenesteytere',
+                        'utdanning' => 'Utdanning',
+                        'brukere' => 'Sluttbrukere',
+                    );
+                    ?>
+                    <?php if (!empty($kundetyper_acf) && is_array($kundetyper_acf)): ?>
+                    <div class="mb-4">
+                        <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-2">Kundetyper</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <?php foreach ($kundetyper_acf as $kundetype): ?>
+                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                                <?php echo esc_html(isset($kundetype_labels[$kundetype]) ? $kundetype_labels[$kundetype] : $kundetype); ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Nøkkelord (hashtags) -->
+                    <?php if (!empty($hashtag)): ?>
+                    <div class="mb-4">
+                        <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-2">Nøkkelord</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <?php
+                            // Split hashtags by comma and create tags
+                            $keywords = array_map('trim', explode(',', $hashtag));
+                            foreach ($keywords as $keyword):
+                                if (empty($keyword)) continue;
+                            ?>
+                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                                <?php echo esc_html($keyword); ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Tags: Taxonomier -->
                     <?php if ((!empty($bransjekategorier) && !is_wp_error($bransjekategorier)) || (!empty($kundetyper) && !is_wp_error($kundetyper)) || (!empty($temagrupper) && !is_wp_error($temagrupper))): ?>
                     <div class="flex flex-wrap gap-2 pt-4 border-t border-[#E5E0D8]">
                         <?php if (!empty($bransjekategorier) && !is_wp_error($bransjekategorier)): ?>
@@ -201,6 +328,16 @@ $company_kunnskapskilder = get_posts(array(
                             </span>
                             <?php endforeach; ?>
                         <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Ekstern lenke -->
+                    <?php if ($artikkel_lenke): ?>
+                    <div class="mt-4 pt-4 border-t border-[#E5E0D8]">
+                        <a href="<?php echo esc_url($artikkel_lenke); ?>" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm text-[#FF8B5E] hover:underline">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            Les mer om <?php echo esc_html($company_title); ?>
+                        </a>
                     </div>
                     <?php endif; ?>
                 </section>
@@ -399,33 +536,6 @@ $company_kunnskapskilder = get_posts(array(
                     <?php endif; ?>
                 </section>
 
-                <!-- Ansatte Section -->
-                <?php if (!empty($company_users) && count($company_users) > 0): ?>
-                <section class="border-t border-[#E5E0D8] pt-10">
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-6">Ansatte</h2>
-
-                    <div class="flex flex-wrap gap-3">
-                        <?php foreach ($company_users as $user):
-                            $user_name = $user->display_name;
-                            $user_title = get_user_meta($user->ID, 'stillingstittel', true);
-                            $initials = strtoupper(substr($user_name, 0, 1));
-                        ?>
-                        <div class="flex items-center gap-3 bg-[#F7F5EF] rounded-lg px-4 py-3">
-                            <div class="w-10 h-10 bg-[#E5E0D8] rounded-full flex items-center justify-center flex-shrink-0">
-                                <span class="text-sm font-medium text-[#5A5A5A]"><?php echo esc_html($initials); ?></span>
-                            </div>
-                            <div>
-                                <div class="font-medium text-[#1A1A1A] text-sm"><?php echo esc_html($user_name); ?></div>
-                                <?php if ($user_title): ?>
-                                <div class="text-xs text-[#5A5A5A]"><?php echo esc_html($user_title); ?></div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
-                <?php endif; ?>
-
             </div>
 
             <!-- Right Column: Sidebar -->
@@ -437,15 +547,15 @@ $company_kunnskapskilder = get_posts(array(
 
                     <dl class="space-y-6">
                         <div class="flex justify-between items-center">
-                            <dt class="text-sm text-[#5A5A5A]">Deltakerstatus</dt>
+                            <dt class="text-sm text-[#5A5A5A]">BIM Verdi rolle</dt>
                             <dd>
                                 <?php if ($er_aktiv_deltaker): ?>
                                 <span class="inline-block text-xs font-medium bg-[#DCFCE7] text-[#166534] px-2.5 py-1 rounded">
-                                    Aktiv
+                                    <?php echo esc_html($bv_rolle); ?>
                                 </span>
                                 <?php else: ?>
                                 <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2.5 py-1 rounded">
-                                    Ikke aktiv
+                                    Ikke deltaker
                                 </span>
                                 <?php endif; ?>
                             </dd>
@@ -473,6 +583,35 @@ $company_kunnskapskilder = get_posts(array(
                     </dl>
                 </section>
 
+                <!-- HOVEDKONTAKT Section -->
+                <?php if ($hovedkontakt): ?>
+                <section class="bg-[#F7F5EF] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-4">Hovedkontakt</h3>
+
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 bg-[#E5E0D8] rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-base font-medium text-[#5A5A5A]">
+                                <?php echo esc_html(strtoupper(substr($hovedkontakt->display_name, 0, 1))); ?>
+                            </span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="font-medium text-[#1A1A1A] text-sm"><?php echo esc_html($hovedkontakt->display_name); ?></div>
+                            <?php
+                            $hovedkontakt_tittel = get_user_meta($hovedkontakt_id, 'stillingstittel', true);
+                            if ($hovedkontakt_tittel):
+                            ?>
+                            <div class="text-xs text-[#5A5A5A] mb-2"><?php echo esc_html($hovedkontakt_tittel); ?></div>
+                            <?php endif; ?>
+                            <?php if ($hovedkontakt->user_email): ?>
+                            <a href="mailto:<?php echo esc_attr($hovedkontakt->user_email); ?>" class="text-xs text-[#FF8B5E] hover:underline break-all">
+                                <?php echo esc_html($hovedkontakt->user_email); ?>
+                            </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </section>
+                <?php endif; ?>
+
                 <!-- KONTAKTINFO Section -->
                 <section class="bg-[#F7F5EF] rounded-lg p-5">
                     <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-4">Kontaktinfo</h3>
@@ -492,6 +631,13 @@ $company_kunnskapskilder = get_posts(array(
                         </div>
                         <?php endif; ?>
 
+                        <?php if ($stiftelsesdato): ?>
+                        <div class="py-3">
+                            <dt class="text-xs text-[#9D8F7F] mb-0.5">Stiftet</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html(date_i18n('j. F Y', strtotime($stiftelsesdato))); ?></dd>
+                        </div>
+                        <?php endif; ?>
+
                         <?php if ($naeringskode): ?>
                         <div class="py-3">
                             <dt class="text-xs text-[#9D8F7F] mb-0.5">Næringskode</dt>
@@ -504,12 +650,21 @@ $company_kunnskapskilder = get_posts(array(
                         </div>
                         <?php endif; ?>
 
-                        <?php if ($adresse || $postnummer || $poststed): ?>
+                        <?php if ($adresse || $postnummer || $poststed || $kommune || $land): ?>
                         <div class="py-3">
                             <dt class="text-xs text-[#9D8F7F] mb-0.5">Adresse</dt>
                             <dd class="text-sm text-[#1A1A1A]">
                                 <?php if ($adresse): echo esc_html($adresse) . '<br>'; endif; ?>
-                                <?php echo esc_html(trim($postnummer . ' ' . $poststed)); ?>
+                                <?php
+                                $location_parts = array_filter([
+                                    trim($postnummer . ' ' . $poststed),
+                                    $kommune ? $kommune . ' kommune' : null
+                                ]);
+                                echo esc_html(implode(', ', $location_parts));
+                                ?>
+                                <?php if ($land && strtolower($land) !== 'norge'): ?>
+                                <br><?php echo esc_html($land); ?>
+                                <?php endif; ?>
                             </dd>
                         </div>
                         <?php endif; ?>
@@ -537,13 +692,41 @@ $company_kunnskapskilder = get_posts(array(
                         <?php endif; ?>
 
                         <?php if ($nettside): ?>
-                        <div class="py-3 last:pb-0">
+                        <div class="py-3">
                             <dt class="text-xs text-[#9D8F7F] mb-0.5">Nettside</dt>
                             <dd class="text-sm">
                                 <a href="<?php echo esc_url($nettside); ?>" target="_blank" rel="noopener" class="text-[#1A1A1A] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($nettside, PHP_URL_HOST) ?: 'Besøk nettside'); ?>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 </a>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if ($linkedin_url || $facebook_url || $youtube_url || $twitter_url): ?>
+                        <div class="py-3 last:pb-0">
+                            <dt class="text-xs text-[#9D8F7F] mb-0.5">Sosiale medier</dt>
+                            <dd class="flex items-center gap-3 mt-1">
+                                <?php if ($linkedin_url): ?>
+                                <a href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noopener" class="text-[#5A5A5A] hover:text-[#0A66C2] transition-colors" title="LinkedIn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                </a>
+                                <?php endif; ?>
+                                <?php if ($facebook_url): ?>
+                                <a href="<?php echo esc_url($facebook_url); ?>" target="_blank" rel="noopener" class="text-[#5A5A5A] hover:text-[#1877F2] transition-colors" title="Facebook">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                </a>
+                                <?php endif; ?>
+                                <?php if ($youtube_url): ?>
+                                <a href="<?php echo esc_url($youtube_url); ?>" target="_blank" rel="noopener" class="text-[#5A5A5A] hover:text-[#FF0000] transition-colors" title="YouTube">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                </a>
+                                <?php endif; ?>
+                                <?php if ($twitter_url): ?>
+                                <a href="<?php echo esc_url($twitter_url); ?>" target="_blank" rel="noopener" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors" title="X (Twitter)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+                                </a>
+                                <?php endif; ?>
                             </dd>
                         </div>
                         <?php endif; ?>
