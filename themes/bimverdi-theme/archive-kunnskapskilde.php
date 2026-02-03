@@ -3,13 +3,17 @@
  * Archive template for Kunnskapskilde (Knowledge Sources)
  *
  * Public knowledge source catalog with BIM Verdi design.
- * Filter on temagruppe and kategori as per requirements.
+ * Filter on temagruppe, kildetype and kategori.
  * URL: /kunnskapskilder (from CPT rewrite slug)
+ * Updated 2026-02-03: Replaced checkbox filters with compact dropdown filter bar.
  *
  * @package BimVerdi_Theme
  */
 
 get_header();
+
+// Include filter bar component
+require_once get_template_directory() . '/parts/components/filter-bar.php';
 
 // Get filter parameters
 $search = sanitize_text_field($_GET['s'] ?? '');
@@ -25,12 +29,12 @@ $kildetype = isset($_GET['kildetype']) && is_array($_GET['kildetype'])
 
 // Define filter options
 $temagruppe_options = array(
-    'ByggesaksBIM' => 'ByggesaksBIM',
-    'ProsjektBIM' => 'ProsjektBIM',
-    'EiendomsBIM' => 'EiendomsBIM',
-    'MiljøBIM' => 'MiljøBIM',
-    'SirkBIM' => 'SirkBIM',
-    'BIMtech' => 'BIMtech',
+    'byggesaksbim' => 'ByggesaksBIM',
+    'prosjektbim' => 'ProsjektBIM',
+    'eiendomsbim' => 'EiendomsBIM',
+    'miljobim' => 'MiljøBIM',
+    'sirkbim' => 'SirkBIM',
+    'bimtech' => 'BIMtech',
 );
 
 $kildetype_options = array(
@@ -41,10 +45,10 @@ $kildetype_options = array(
     'mal' => 'Mal/Template',
     'forskningsrapport' => 'Forskningsrapport',
     'casestudie' => 'Casestudie',
-    'opplaering' => 'Opplæringsmateriell',
+    'opplaering' => 'Opplæring',
     'dokumentasjon' => 'Verktøydokumentasjon',
     'nettressurs' => 'Nettressurs/Database',
-    'annet' => 'Annet (tjeneste, webside etc.)',
+    'annet' => 'Annet',
 );
 
 // Get kategori terms from taxonomy
@@ -52,6 +56,12 @@ $kategori_terms = get_terms(array(
     'taxonomy' => 'kunnskapskildekategori',
     'hide_empty' => false,
 ));
+$kategori_options = array();
+if (!empty($kategori_terms) && !is_wp_error($kategori_terms)) {
+    foreach ($kategori_terms as $term) {
+        $kategori_options[$term->slug] = $term->name;
+    }
+}
 
 // Build query
 $args = array(
@@ -100,6 +110,55 @@ if (!empty($kildetype)) {
 
 $kunnskapskilder_query = new WP_Query($args);
 $is_logged_in = is_user_logged_in();
+
+// Calculate counts for each filter option (static counts - total items per value)
+$temagruppe_counts = array();
+foreach (array_keys($temagruppe_options) as $slug) {
+    $count_query = new WP_Query([
+        'post_type' => 'kunnskapskilde',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'fields' => 'ids',
+        'tax_query' => [[
+            'taxonomy' => 'temagruppe',
+            'field' => 'slug',
+            'terms' => $slug,
+        ]],
+    ]);
+    $temagruppe_counts[$slug] = $count_query->found_posts;
+}
+
+$kildetype_counts = array();
+foreach (array_keys($kildetype_options) as $value) {
+    $count_query = new WP_Query([
+        'post_type' => 'kunnskapskilde',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'fields' => 'ids',
+        'meta_query' => [[
+            'key' => 'kildetype',
+            'value' => $value,
+            'compare' => '=',
+        ]],
+    ]);
+    $kildetype_counts[$value] = $count_query->found_posts;
+}
+
+$kategori_counts = array();
+foreach (array_keys($kategori_options) as $slug) {
+    $count_query = new WP_Query([
+        'post_type' => 'kunnskapskilde',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'fields' => 'ids',
+        'tax_query' => [[
+            'taxonomy' => 'kunnskapskildekategori',
+            'field' => 'slug',
+            'terms' => $slug,
+        ]],
+    ]);
+    $kategori_counts[$slug] = $count_query->found_posts;
+}
 ?>
 
 <div class="min-h-screen bg-[#F7F5EF]">
@@ -127,94 +186,50 @@ $is_logged_in = is_user_logged_in();
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- Search & Filters -->
-        <div class="bg-white rounded-lg border border-[#E5E0D8] p-6 mb-8">
-            <form method="GET" id="kunnskapskilde-filter-form">
+        <!-- Compact Filter Bar -->
+        <?php
+        $dropdowns = [
+            [
+                'name'         => 'temagruppe[]',
+                'label'        => 'Temagruppe',
+                'options'      => $temagruppe_options,
+                'selected'     => $temagruppe,
+                'counts'       => $temagruppe_counts,
+                'filter_class' => 'filter-temagruppe',
+            ],
+            [
+                'name'         => 'kildetype[]',
+                'label'        => 'Kildetype',
+                'options'      => $kildetype_options,
+                'selected'     => $kildetype,
+                'counts'       => $kildetype_counts,
+                'filter_class' => 'filter-kildetype',
+            ],
+        ];
+        // Only add kategori dropdown if there are terms
+        if (!empty($kategori_options)) {
+            $dropdowns[] = [
+                'name'         => 'kategori[]',
+                'label'        => 'Kategori',
+                'options'      => $kategori_options,
+                'selected'     => $kategori,
+                'counts'       => $kategori_counts,
+                'filter_class' => 'filter-kategori',
+            ];
+        }
 
-                <!-- Search Bar -->
-                <div class="relative mb-6">
-                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5A5A5A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input
-                        type="text"
-                        name="s"
-                        id="kunnskapskilde-search"
-                        value="<?php echo esc_attr($search); ?>"
-                        placeholder="Søk etter kunnskapskilder..."
-                        class="w-full pl-12 pr-4 py-3 border border-[#E5E0D8] rounded-lg focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent text-[#1A1A1A] placeholder-[#9A9A9A]"
-                    >
-                </div>
-
-                <!-- Filter Sections -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-
-                    <!-- Temagruppe Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#1A1A1A] mb-3">Temagruppe</label>
-                        <div class="space-y-2 max-h-48 overflow-y-auto">
-                            <?php foreach ($temagruppe_options as $value => $label): ?>
-                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#F7F5EF]">
-                                <input type="checkbox"
-                                       name="temagruppe[]"
-                                       value="<?php echo esc_attr(sanitize_title($value)); ?>"
-                                       class="filter-checkbox filter-temagruppe w-4 h-4 text-[#1A1A1A] rounded border-[#E5E0D8] focus:ring-[#1A1A1A]"
-                                       <?php echo in_array(sanitize_title($value), $temagruppe) ? 'checked' : ''; ?>>
-                                <span class="text-sm text-[#5A5A5A]"><?php echo esc_html($label); ?></span>
-                            </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <!-- Kildetype Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#1A1A1A] mb-3">Kildetype</label>
-                        <div class="space-y-2 max-h-48 overflow-y-auto">
-                            <?php foreach ($kildetype_options as $value => $label): ?>
-                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#F7F5EF]">
-                                <input type="checkbox"
-                                       name="kildetype[]"
-                                       value="<?php echo esc_attr($value); ?>"
-                                       class="filter-checkbox filter-kildetype w-4 h-4 text-[#1A1A1A] rounded border-[#E5E0D8] focus:ring-[#1A1A1A]"
-                                       <?php echo in_array($value, $kildetype) ? 'checked' : ''; ?>>
-                                <span class="text-sm text-[#5A5A5A]"><?php echo esc_html($label); ?></span>
-                            </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <!-- Kategori Filter (from taxonomy) -->
-                    <?php if (!empty($kategori_terms) && !is_wp_error($kategori_terms)): ?>
-                    <div>
-                        <label class="block text-sm font-medium text-[#1A1A1A] mb-3">Kategori</label>
-                        <div class="space-y-2 max-h-48 overflow-y-auto">
-                            <?php foreach ($kategori_terms as $term): ?>
-                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#F7F5EF]">
-                                <input type="checkbox"
-                                       name="kategori[]"
-                                       value="<?php echo esc_attr($term->slug); ?>"
-                                       class="filter-checkbox filter-kategori w-4 h-4 text-[#1A1A1A] rounded border-[#E5E0D8] focus:ring-[#1A1A1A]"
-                                       <?php echo in_array($term->slug, $kategori) ? 'checked' : ''; ?>>
-                                <span class="text-sm text-[#5A5A5A]"><?php echo esc_html($term->name); ?></span>
-                            </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Results count and Reset -->
-                <div class="flex items-center justify-between pt-4 border-t border-[#E5E0D8]">
-                    <p class="text-sm text-[#5A5A5A]">
-                        Viser <span id="visible-count" class="font-medium text-[#1A1A1A]"><?php echo $kunnskapskilder_query->found_posts; ?></span>
-                        av <?php echo $kunnskapskilder_query->found_posts; ?> kunnskapskilder
-                    </p>
-                    <button type="button" id="reset-filters" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
-                        Nullstill filter
-                    </button>
-                </div>
-            </form>
-        </div>
+        bimverdi_filter_bar([
+            'form_id'            => 'kunnskapskilde-filter-form',
+            'search_name'        => 's',
+            'search_value'       => $search,
+            'search_placeholder' => 'Søk etter kunnskapskilder...',
+            'dropdowns'          => $dropdowns,
+            'result_count'       => $kunnskapskilder_query->found_posts,
+            'total_count'        => $kunnskapskilder_query->found_posts,
+            'result_label'       => 'kilder',
+            'reset_id'           => 'reset-filters',
+        ]);
+        ?>
 
         <!-- Kunnskapskilder Grid -->
         <?php if ($kunnskapskilder_query->have_posts()): ?>
@@ -367,57 +382,86 @@ $is_logged_in = is_user_logged_in();
 <!-- Live Filter Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('kunnskapskilde-search');
-    const checkboxes = document.querySelectorAll('.filter-checkbox');
-    const cards = document.querySelectorAll('.kunnskapskilde-card');
-    const visibleCount = document.getElementById('visible-count');
-    const resetBtn = document.getElementById('reset-filters');
+    var searchInput = document.getElementById('kunnskapskilde-filter-form-search');
+    var checkboxes = document.querySelectorAll('.filter-checkbox');
+    var cards = document.querySelectorAll('.kunnskapskilde-card');
+    var visibleCountEl = document.getElementById('visible-count');
+    var visibleCountMobile = document.getElementById('visible-count-mobile');
+    var resetBtn = document.getElementById('reset-filters');
+    var sheetResultCount = document.querySelector('.bv-filter-sheet__result-count');
 
-    let debounceTimer;
+    var debounceTimer;
+
+    function updateVisibleCount(count) {
+        if (visibleCountEl) visibleCountEl.textContent = count;
+        if (visibleCountMobile) visibleCountMobile.textContent = count;
+        if (sheetResultCount) sheetResultCount.textContent = count;
+    }
 
     function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        const selectedTemagruppe = Array.from(document.querySelectorAll('.filter-temagruppe:checked')).map(cb => cb.value);
-        const selectedKildetype = Array.from(document.querySelectorAll('.filter-kildetype:checked')).map(cb => cb.value);
-        const selectedKategori = Array.from(document.querySelectorAll('.filter-kategori:checked')).map(cb => cb.value);
+        var searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        var selectedTemagruppe = Array.from(document.querySelectorAll('.filter-temagruppe:checked')).map(function(cb) { return cb.value; });
+        var selectedKildetype = Array.from(document.querySelectorAll('.filter-kildetype:checked')).map(function(cb) { return cb.value; });
+        var selectedKategori = Array.from(document.querySelectorAll('.filter-kategori:checked')).map(function(cb) { return cb.value; });
 
-        let visibleCards = 0;
+        var visibleCards = 0;
 
-        cards.forEach(card => {
-            const title = card.dataset.title || '';
-            const cardTemagruppe = card.dataset.temagruppe || '';
-            const cardKildetype = card.dataset.kildetype || '';
-            const cardKategori = card.dataset.kategori || '';
+        cards.forEach(function(card) {
+            var title = card.dataset.title || '';
+            var cardTemagruppe = card.dataset.temagruppe || '';
+            var cardKildetype = card.dataset.kildetype || '';
+            var cardKategori = card.dataset.kategori || '';
 
-            const matchesSearch = !searchTerm || title.includes(searchTerm);
-            const matchesTemagruppe = selectedTemagruppe.length === 0 || selectedTemagruppe.some(t => cardTemagruppe.includes(t));
-            const matchesKildetype = selectedKildetype.length === 0 || selectedKildetype.includes(cardKildetype);
-            const matchesKategori = selectedKategori.length === 0 || selectedKategori.some(k => cardKategori.includes(k));
+            var matchesSearch = !searchTerm || title.includes(searchTerm);
+            var matchesTemagruppe = selectedTemagruppe.length === 0 || selectedTemagruppe.some(function(t) { return cardTemagruppe.includes(t); });
+            var matchesKildetype = selectedKildetype.length === 0 || selectedKildetype.includes(cardKildetype);
+            var matchesKategori = selectedKategori.length === 0 || selectedKategori.some(function(k) { return cardKategori.includes(k); });
 
-            const isVisible = matchesSearch && matchesTemagruppe && matchesKildetype && matchesKategori;
+            var isVisible = matchesSearch && matchesTemagruppe && matchesKildetype && matchesKategori;
 
             card.style.display = isVisible ? '' : 'none';
             if (isVisible) visibleCards++;
         });
 
-        visibleCount.textContent = visibleCards;
+        updateVisibleCount(visibleCards);
     }
 
-    searchInput.addEventListener('input', function() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(applyFilters, 200);
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFilters, 200);
+        });
+    }
 
-    checkboxes.forEach(cb => {
+    checkboxes.forEach(function(cb) {
         cb.addEventListener('change', applyFilters);
     });
 
-    resetBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        checkboxes.forEach(cb => cb.checked = false);
-        applyFilters();
-    });
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (searchInput) searchInput.value = '';
+            checkboxes.forEach(function(cb) {
+                cb.checked = false;
+            });
+            // Also reset dropdown count badges
+            document.querySelectorAll('[data-multiselect] [data-count]').forEach(function(badge) {
+                badge.textContent = '0';
+                badge.classList.remove('opacity-100');
+                badge.classList.add('opacity-0');
+                badge.setAttribute('aria-hidden', 'true');
+            });
+            // Reset mobile count badge
+            var mobileCount = document.querySelector('[data-mobile-count]');
+            if (mobileCount) {
+                mobileCount.textContent = '0';
+                mobileCount.classList.remove('opacity-100');
+                mobileCount.classList.add('opacity-0');
+            }
+            applyFilters();
+        });
+    }
 
+    // Apply filters on page load if URL has params
     if (window.location.search) {
         applyFilters();
     }

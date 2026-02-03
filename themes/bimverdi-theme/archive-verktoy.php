@@ -4,11 +4,15 @@
  *
  * Public tools/software catalog with BIM Verdi design.
  * Clean, minimal styling following UI Contract v1.
+ * Updated 2026-02-03: Replaced checkbox filters with compact dropdown filter bar.
  *
  * @package BimVerdi_Theme
  */
 
 get_header();
+
+// Include filter bar component
+require_once get_template_directory() . '/parts/components/filter-bar.php';
 
 // Get filter parameters
 $search = sanitize_text_field($_GET['s'] ?? '');
@@ -73,6 +77,39 @@ if (!empty($formaalstema) || !empty($type_ressurs)) {
 
 $tools_query = new WP_Query($args);
 $is_logged_in = is_user_logged_in();
+
+// Calculate counts for each filter option (static counts - total items per value)
+$formaalstema_counts = array();
+foreach (array_keys($formaalstema_options) as $value) {
+    $count_query = new WP_Query([
+        'post_type' => 'verktoy',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'fields' => 'ids',
+        'meta_query' => [[
+            'key' => 'formaalstema',
+            'value' => $value,
+            'compare' => '=',
+        ]],
+    ]);
+    $formaalstema_counts[$value] = $count_query->found_posts;
+}
+
+$type_ressurs_counts = array();
+foreach (array_keys($type_ressurs_options) as $value) {
+    $count_query = new WP_Query([
+        'post_type' => 'verktoy',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'fields' => 'ids',
+        'meta_query' => [[
+            'key' => 'type_ressurs',
+            'value' => $value,
+            'compare' => '=',
+        ]],
+    ]);
+    $type_ressurs_counts[$value] = $count_query->found_posts;
+}
 ?>
 
 <div class="min-h-screen bg-[#F7F5EF]">
@@ -100,75 +137,37 @@ $is_logged_in = is_user_logged_in();
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- Search & Filters -->
-        <div class="bg-white rounded-lg border border-[#E5E0D8] p-6 mb-8">
-            <form method="GET" id="verktoy-filter-form">
-
-                <!-- Search Bar -->
-                <div class="relative mb-6">
-                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5A5A5A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input
-                        type="text"
-                        name="s"
-                        id="verktoy-search"
-                        value="<?php echo esc_attr($search); ?>"
-                        placeholder="Søk etter verktøy..."
-                        class="w-full pl-12 pr-4 py-3 border border-[#E5E0D8] rounded-lg focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent text-[#1A1A1A] placeholder-[#9A9A9A]"
-                    >
-                </div>
-
-                <!-- Filter Sections -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-                    <!-- Formålstema Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#1A1A1A] mb-3">Temagruppe</label>
-                        <div class="space-y-2 max-h-48 overflow-y-auto">
-                            <?php foreach ($formaalstema_options as $value => $label): ?>
-                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#F7F5EF]">
-                                <input type="checkbox"
-                                       name="formaalstema[]"
-                                       value="<?php echo esc_attr($value); ?>"
-                                       class="filter-checkbox filter-formaal w-4 h-4 text-[#1A1A1A] rounded border-[#E5E0D8] focus:ring-[#1A1A1A]"
-                                       <?php echo in_array($value, $formaalstema) ? 'checked' : ''; ?>>
-                                <span class="text-sm text-[#5A5A5A]"><?php echo esc_html($label); ?></span>
-                            </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <!-- Type Ressurs Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#1A1A1A] mb-3">Type ressurs</label>
-                        <div class="space-y-2 max-h-48 overflow-y-auto">
-                            <?php foreach ($type_ressurs_options as $value => $label): ?>
-                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#F7F5EF]">
-                                <input type="checkbox"
-                                       name="type_ressurs[]"
-                                       value="<?php echo esc_attr($value); ?>"
-                                       class="filter-checkbox filter-type w-4 h-4 text-[#1A1A1A] rounded border-[#E5E0D8] focus:ring-[#1A1A1A]"
-                                       <?php echo in_array($value, $type_ressurs) ? 'checked' : ''; ?>>
-                                <span class="text-sm text-[#5A5A5A]"><?php echo esc_html($label); ?></span>
-                            </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Results count and Reset -->
-                <div class="flex items-center justify-between pt-4 border-t border-[#E5E0D8]">
-                    <p class="text-sm text-[#5A5A5A]">
-                        Viser <span id="visible-count" class="font-medium text-[#1A1A1A]"><?php echo $tools_query->found_posts; ?></span>
-                        av <?php echo $tools_query->found_posts; ?> verktøy
-                    </p>
-                    <button type="button" id="reset-filters" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
-                        Nullstill filter
-                    </button>
-                </div>
-            </form>
-        </div>
+        <!-- Compact Filter Bar -->
+        <?php
+        bimverdi_filter_bar([
+            'form_id'            => 'verktoy-filter-form',
+            'search_name'        => 's',
+            'search_value'       => $search,
+            'search_placeholder' => 'Søk etter verktøy...',
+            'dropdowns'          => [
+                [
+                    'name'         => 'formaalstema[]',
+                    'label'        => 'Temagruppe',
+                    'options'      => $formaalstema_options,
+                    'selected'     => $formaalstema,
+                    'counts'       => $formaalstema_counts,
+                    'filter_class' => 'filter-formaal',
+                ],
+                [
+                    'name'         => 'type_ressurs[]',
+                    'label'        => 'Type',
+                    'options'      => $type_ressurs_options,
+                    'selected'     => $type_ressurs,
+                    'counts'       => $type_ressurs_counts,
+                    'filter_class' => 'filter-type',
+                ],
+            ],
+            'result_count'       => $tools_query->found_posts,
+            'total_count'        => $tools_query->found_posts,
+            'result_label'       => 'verktøy',
+            'reset_id'           => 'reset-filters',
+        ]);
+        ?>
 
         <!-- Tools Grid -->
         <?php if ($tools_query->have_posts()): ?>
@@ -232,54 +231,83 @@ $is_logged_in = is_user_logged_in();
 <!-- Live Filter Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('verktoy-search');
-    const checkboxes = document.querySelectorAll('.filter-checkbox');
-    const cards = document.querySelectorAll('.verktoy-card');
-    const visibleCount = document.getElementById('visible-count');
-    const resetBtn = document.getElementById('reset-filters');
+    var searchInput = document.getElementById('verktoy-filter-form-search');
+    var checkboxes = document.querySelectorAll('.filter-checkbox');
+    var cards = document.querySelectorAll('.verktoy-card');
+    var visibleCountEl = document.getElementById('visible-count');
+    var visibleCountMobile = document.getElementById('visible-count-mobile');
+    var resetBtn = document.getElementById('reset-filters');
+    var sheetResultCount = document.querySelector('.bv-filter-sheet__result-count');
 
-    let debounceTimer;
+    var debounceTimer;
+
+    function updateVisibleCount(count) {
+        if (visibleCountEl) visibleCountEl.textContent = count;
+        if (visibleCountMobile) visibleCountMobile.textContent = count;
+        if (sheetResultCount) sheetResultCount.textContent = count;
+    }
 
     function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        const selectedFormaal = Array.from(document.querySelectorAll('.filter-formaal:checked')).map(cb => cb.value);
-        const selectedType = Array.from(document.querySelectorAll('.filter-type:checked')).map(cb => cb.value);
+        var searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        var selectedFormaal = Array.from(document.querySelectorAll('.filter-formaal:checked')).map(function(cb) { return cb.value; });
+        var selectedType = Array.from(document.querySelectorAll('.filter-type:checked')).map(function(cb) { return cb.value; });
 
-        let visibleCards = 0;
+        var visibleCards = 0;
 
-        cards.forEach(card => {
-            const title = card.dataset.title || '';
-            const cardFormaal = card.dataset.formaal || '';
-            const cardType = card.dataset.type || '';
+        cards.forEach(function(card) {
+            var title = card.dataset.title || '';
+            var cardFormaal = card.dataset.formaal || '';
+            var cardType = card.dataset.type || '';
 
-            const matchesSearch = !searchTerm || title.includes(searchTerm);
-            const matchesFormaal = selectedFormaal.length === 0 || selectedFormaal.includes(cardFormaal);
-            const matchesType = selectedType.length === 0 || selectedType.includes(cardType);
+            var matchesSearch = !searchTerm || title.includes(searchTerm);
+            var matchesFormaal = selectedFormaal.length === 0 || selectedFormaal.includes(cardFormaal);
+            var matchesType = selectedType.length === 0 || selectedType.includes(cardType);
 
-            const isVisible = matchesSearch && matchesFormaal && matchesType;
+            var isVisible = matchesSearch && matchesFormaal && matchesType;
 
             card.style.display = isVisible ? '' : 'none';
             if (isVisible) visibleCards++;
         });
 
-        visibleCount.textContent = visibleCards;
+        updateVisibleCount(visibleCards);
     }
 
-    searchInput.addEventListener('input', function() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(applyFilters, 200);
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFilters, 200);
+        });
+    }
 
-    checkboxes.forEach(cb => {
+    checkboxes.forEach(function(cb) {
         cb.addEventListener('change', applyFilters);
     });
 
-    resetBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        checkboxes.forEach(cb => cb.checked = false);
-        applyFilters();
-    });
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (searchInput) searchInput.value = '';
+            checkboxes.forEach(function(cb) {
+                cb.checked = false;
+            });
+            // Also reset dropdown count badges
+            document.querySelectorAll('[data-multiselect] [data-count]').forEach(function(badge) {
+                badge.textContent = '0';
+                badge.classList.remove('opacity-100');
+                badge.classList.add('opacity-0');
+                badge.setAttribute('aria-hidden', 'true');
+            });
+            // Reset mobile count badge
+            var mobileCount = document.querySelector('[data-mobile-count]');
+            if (mobileCount) {
+                mobileCount.textContent = '0';
+                mobileCount.classList.remove('opacity-100');
+                mobileCount.classList.add('opacity-0');
+            }
+            applyFilters();
+        });
+    }
 
+    // Apply filters on page load if URL has params
     if (window.location.search) {
         applyFilters();
     }
