@@ -71,6 +71,7 @@ html {
 document.addEventListener('DOMContentLoaded', function() {
     const navLinks = document.querySelectorAll('.section-nav-link');
     const sections = document.querySelectorAll('[id^="section-"]');
+    const navContainer = document.querySelector('.scrollbar-hide');
 
     // Intersection Observer for active state
     const observer = new IntersectionObserver((entries) => {
@@ -80,10 +81,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 navLinks.forEach(link => link.classList.remove('active'));
                 // Add active to matching link
                 const activeLink = document.querySelector(`.section-nav-link[data-section="${entry.target.id}"]`);
-                if (activeLink) {
+                if (activeLink && navContainer) {
                     activeLink.classList.add('active');
-                    // Scroll nav to show active link
-                    activeLink.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    // Scroll only the nav container horizontally (not the viewport)
+                    const linkLeft = activeLink.offsetLeft;
+                    const linkWidth = activeLink.offsetWidth;
+                    const containerWidth = navContainer.offsetWidth;
+                    const scrollLeft = linkLeft - (containerWidth / 2) + (linkWidth / 2);
+                    navContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' });
                 }
             }
         });

@@ -54,20 +54,20 @@ if ($fagansvarlig_navn) {
     }
 }
 
-// Dummy intro text (will be replaced by ACF field later)
-$intro_tekst = get_field('intro_tekst', $post_id);
-if (empty($intro_tekst)) {
-    $intro_tekst = 'Denne temagruppen samler aktorer som jobber med ' . strtolower($temagruppe_navn) . '-relaterte problemstillinger. Vi deler erfaringer, utvikler felles losninger, og bidrar til a heve kompetansen i bransjen gjennom workshops, moter og samarbeidsprosjekter.';
-}
+// Get the post content (WordPress editor)
+$post_content = get_the_content(null, false, $post_id);
+$post_content = apply_filters('the_content', $post_content);
 ?>
 
 <section class="grid grid-cols-1 lg:grid-cols-3 gap-16">
 
     <!-- Left Column: Introduction (2/3 width) -->
-    <div class="lg:col-span-2">
-        <p class="text-lg text-[#5A5A5A] leading-relaxed">
-            <?php echo esc_html($intro_tekst); ?>
-        </p>
+    <div class="lg:col-span-2 prose prose-lg max-w-none text-[#5A5A5A]">
+        <?php if ($post_content) : ?>
+            <?php echo $post_content; ?>
+        <?php else : ?>
+            <p>Denne temagruppen samler aktører som jobber med <?php echo esc_html(strtolower($temagruppe_navn)); ?>-relaterte problemstillinger.</p>
+        <?php endif; ?>
     </div>
 
     <!-- Right Column: Fagradgiver + CTA (1/3 width) -->
