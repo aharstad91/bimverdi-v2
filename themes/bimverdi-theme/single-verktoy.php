@@ -15,10 +15,15 @@ if (have_posts()) : while (have_posts()) : the_post();
 // Get ACF fields
 $eier_id = get_field('eier_leverandor');
 $eier = $eier_id ? get_post($eier_id) : null;
+$kort_beskrivelse = get_field('kort_beskrivelse');
 $detaljert_beskrivelse = get_field('detaljert_beskrivelse');
 $lenke = get_field('verktoy_lenke');
-$logo_id = get_field('verktoy_logo');
-$logo_url = $logo_id ? wp_get_attachment_url($logo_id) : '';
+$nedlastingslenke = get_field('nedlastingslenke');
+$logo = get_field('verktoy_logo');
+$logo_url = '';
+if ($logo) {
+    $logo_url = is_array($logo) ? ($logo['url'] ?? '') : wp_get_attachment_url($logo);
+}
 
 // Get new ACF fields
 $formaalstema = get_field('formaalstema');
@@ -168,11 +173,22 @@ $tool_updated = get_the_modified_date('d.m.Y');
 
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
-            <div class="flex-1">
-                <h1 class="text-3xl font-bold text-[#1A1A1A] mb-1"><?php the_title(); ?></h1>
-                <?php if ($eier): ?>
-                <p class="text-[#5A5A5A]"><?php echo esc_html($eier->post_title); ?></p>
+            <div class="flex items-start gap-5 flex-1">
+                <?php if ($logo_url): ?>
+                <div class="flex-shrink-0 w-20 h-20 bg-white rounded-lg border border-[#E5E0D8] p-2 flex items-center justify-center">
+                    <img src="<?php echo esc_url($logo_url); ?>" alt="<?php the_title(); ?> logo" class="max-w-full max-h-full object-contain">
+                </div>
                 <?php endif; ?>
+                <div>
+                    <h1 class="text-3xl font-bold text-[#1A1A1A] mb-1"><?php the_title(); ?></h1>
+                    <?php if ($eier): ?>
+                    <p class="text-[#5A5A5A]">
+                        <a href="<?php echo get_permalink($eier->ID); ?>" class="hover:underline">
+                            <?php echo esc_html($eier->post_title); ?>
+                        </a>
+                    </p>
+                    <?php endif; ?>
+                </div>
             </div>
             
             <?php if ($can_edit): ?>
@@ -202,16 +218,26 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 <!-- Oversikt Section -->
                 <section>
                     <h2 class="text-lg font-bold text-[#1A1A1A] mb-4">Oversikt</h2>
-                    
+
+                    <?php if (!empty($kort_beskrivelse)): ?>
                     <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
-                        <?php if (!empty($detaljert_beskrivelse)): ?>
-                            <?php echo wpautop($detaljert_beskrivelse); ?>
-                        <?php elseif (has_excerpt()): ?>
+                        <?php echo wpautop(esc_html($kort_beskrivelse)); ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($detaljert_beskrivelse)): ?>
+                    <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
+                        <?php echo $detaljert_beskrivelse; ?>
+                    </div>
+                    <?php elseif (empty($kort_beskrivelse)): ?>
+                    <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
+                        <?php if (has_excerpt()): ?>
                             <p><?php echo get_the_excerpt(); ?></p>
                         <?php else: ?>
                             <p class="italic">Ingen beskrivelse tilgjengelig.</p>
                         <?php endif; ?>
                     </div>
+                    <?php endif; ?>
                     
                     <!-- Tags -->
                     <?php if (!empty($anvendelser) || $formaalstema || $bim_kompatibilitet || $type_teknologi): ?>
@@ -322,11 +348,27 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         <div class="grid grid-cols-2 py-6 gap-4">
                             <dt class="text-sm text-[#5A5A5A]">Nettside</dt>
                             <dd class="text-sm">
-                                <a href="<?php echo esc_url($lenke); ?>" 
-                                   target="_blank" 
+                                <a href="<?php echo esc_url($lenke); ?>"
+                                   target="_blank"
                                    rel="noopener"
-                                   class="text-[#1A1A1A] hover:underline inline-flex items-center gap-1">
+                                   class="text-[#FF8B5E] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($lenke, PHP_URL_HOST) ?: $lenke); ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </a>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Nedlastingslenke -->
+                        <?php if (!empty($nedlastingslenke)): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Nedlasting/App</dt>
+                            <dd class="text-sm">
+                                <a href="<?php echo esc_url($nedlastingslenke); ?>"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="text-[#FF8B5E] hover:underline inline-flex items-center gap-1">
+                                    <?php echo esc_html(parse_url($nedlastingslenke, PHP_URL_HOST) ?: $nedlastingslenke); ?>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 </a>
                             </dd>
@@ -334,6 +376,24 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         <?php endif; ?>
                     </dl>
                 </section>
+
+                <!-- BIM-kompatibilitet Section -->
+                <?php
+                $bim_values = is_array($bim_kompatibilitet) ? $bim_kompatibilitet : ($bim_kompatibilitet ? [$bim_kompatibilitet] : []);
+                if (!empty($bim_values)):
+                ?>
+                <section class="border-t border-[#E5E0D8] pt-10">
+                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4">BIM-kompatibilitet</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <?php foreach ($bim_values as $bim_val): ?>
+                        <span class="inline-flex items-center gap-2 text-sm font-medium bg-[#ECFDF5] text-[#059669] px-3 py-2 rounded">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            <?php echo esc_html(bimverdi_v3_readable_label($bim_val)); ?>
+                        </span>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+                <?php endif; ?>
 
             </div>
 
@@ -377,24 +437,37 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 <!-- SNARVEIER Section -->
                 <section class="bg-[#F7F5EF] rounded-lg p-5">
                     <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-4">Snarveier</h3>
-                    
+
                     <nav class="space-y-0 divide-y divide-[#E5E0D8]">
-                        <?php if (!empty($lenke)): ?>
-                        <a href="<?php echo esc_url($lenke); ?>" 
+                        <?php if (!empty($nedlastingslenke)): ?>
+                        <a href="<?php echo esc_url($nedlastingslenke); ?>"
                            target="_blank"
                            rel="noopener"
-                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
-                            Åpne dokumentasjon
+                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Åpne verktøyet
                         </a>
                         <?php endif; ?>
-                        
-                        <a href="#" 
-                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
+
+                        <?php if (!empty($lenke)): ?>
+                        <a href="<?php echo esc_url($lenke); ?>"
+                           target="_blank"
+                           rel="noopener"
+                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            Besøk nettside
+                        </a>
+                        <?php endif; ?>
+
+                        <a href="#"
+                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             Rapporter feil
                         </a>
-                        
-                        <a href="#" 
-                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
+
+                        <a href="#"
+                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                             Se endringslogg
                         </a>
                     </nav>
