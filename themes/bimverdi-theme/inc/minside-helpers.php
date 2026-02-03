@@ -426,6 +426,7 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             // Company (Foretak)
             'foretak'             => 'foretak-detail',
             'foretak/rediger'     => 'foretak-rediger',
+            'foretak/registrer'   => 'foretak-registrer',
             
             // Tools (Verktøy)
             'verktoy'             => 'verktoy-list',
@@ -451,6 +452,7 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'registrer-verktoy'   => 'verktoy-registrer',
             'rediger-verktoy'     => 'verktoy-rediger',
             'rediger-foretak'     => 'foretak-rediger',
+            'registrer-foretak'   => 'foretak-registrer',
             'rediger-profil'      => 'profil-rediger',
             'endre-passord'       => 'profil-passord',
         ];
