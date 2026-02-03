@@ -344,7 +344,8 @@
             "choices": {
                 "Deltaker": "Deltaker",
                 "Prosjektdeltaker": "Prosjektdeltaker",
-                "Partner": "Partner"
+                "Partner": "Partner",
+                "Ikke deltaker": "Ikke deltaker"
             },
             "default_value": "Deltaker"
         }
