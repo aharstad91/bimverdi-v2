@@ -8,7 +8,7 @@
  * @package BimVerdi_Theme
  */
 
-get_header('minside');
+get_header();
 
 if (have_posts()) : while (have_posts()) : the_post();
 
@@ -36,16 +36,13 @@ $lisensmodell = get_field('lisensmodell');
 $versjon = get_field('versjon');
 $integrasjoner = get_field('integrasjoner');
 
-// Check if current user can edit this tool
+// Check if current user can edit this tool (only hovedkontakt of owner company)
 $current_user_id = get_current_user_id();
 $can_edit = false;
-if ($current_user_id) {
-    $user_company_id = get_user_meta($current_user_id, 'bim_verdi_company_id', true);
-    if (current_user_can('manage_options')) {
-        $can_edit = true;
-    } elseif ($user_company_id && $eier_id && $user_company_id == $eier_id) {
-        $can_edit = true;
-    } elseif (get_post_field('post_author', get_the_ID()) == $current_user_id) {
+if ($current_user_id && $eier_id) {
+    // Check if user is hovedkontakt of the company that owns the tool
+    $hovedkontakt_id = get_field('hovedkontaktperson', $eier_id);
+    if ($hovedkontakt_id && $hovedkontakt_id == $current_user_id) {
         $can_edit = true;
     }
 }
@@ -159,9 +156,9 @@ $tool_updated = get_the_modified_date('d.m.Y');
         <nav class="mb-6" aria-label="Brødsmulesti">
             <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
                 <li>
-                    <a href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>" class="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
+                    <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                        Mine Verktøy
+                        Verktøy
                     </a>
                 </li>
                 <li>
@@ -198,12 +195,6 @@ $tool_updated = get_the_modified_date('d.m.Y');
                     'variant' => 'secondary',
                     'icon' => 'square-pen',
                     'href' => home_url('/min-side/rediger-verktoy/?id=' . get_the_ID())
-                ]); ?>
-                <?php bimverdi_button([
-                    'text' => 'Administrer tilgang',
-                    'variant' => 'secondary',
-                    'icon' => 'shield-check',
-                    'href' => '#'
                 ]); ?>
             </div>
             <?php endif; ?>
