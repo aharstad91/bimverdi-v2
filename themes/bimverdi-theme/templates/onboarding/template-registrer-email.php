@@ -18,6 +18,7 @@ if (is_user_logged_in()) {
 
 // Get URL parameters for error/success states
 $error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
+$invitation_error = isset($_GET['invitation_error']) ? sanitize_text_field($_GET['invitation_error']) : '';
 $success = isset($_GET['success']) ? sanitize_text_field($_GET['success']) : '';
 $prefill_email = isset($_GET['email']) ? sanitize_email(urldecode($_GET['email'])) : '';
 
@@ -30,6 +31,16 @@ $error_messages = array(
     'system'        => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
 );
 $error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
+
+// Invitation error messages (from invitation link redirect)
+$invitation_error_messages = array(
+    'already_used'  => 'Denne invitasjonen er allerede brukt. <a href="' . esc_url(home_url('/logg-inn/')) . '" style="color: inherit; font-weight: 600;">Logg inn her</a> hvis du allerede har en konto.',
+    'expired'       => 'Denne invitasjonen har utløpt. Be hovedkontakten om å sende en ny invitasjon.',
+    'invalid_token' => 'Ugyldig invitasjonslenke. Sjekk at du bruker riktig lenke fra e-posten.',
+);
+if ($invitation_error && isset($invitation_error_messages[$invitation_error])) {
+    $error_text = $invitation_error_messages[$invitation_error];
+}
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
