@@ -78,6 +78,23 @@ $events_count = count($upcoming_events);
     </div>
 <?php endif; ?>
 
+<?php if (isset($_GET['invitation_accepted']) && $_GET['invitation_accepted'] == '1'): ?>
+    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <p class="text-sm text-green-800">
+            <strong><?php _e('Invitasjon akseptert!', 'bimverdi'); ?></strong>
+            <?php if ($company): ?>
+                <?php printf(__('Du er nå koblet til %s.', 'bimverdi'), esc_html($company->post_title)); ?>
+            <?php else: ?>
+                <?php _e('Du er nå koblet til foretaket.', 'bimverdi'); ?>
+            <?php endif; ?>
+        </p>
+    </div>
+<?php endif; ?>
+
 <!-- Quick Stats -->
 <div class="grid grid-cols-2 mb-12">
 
