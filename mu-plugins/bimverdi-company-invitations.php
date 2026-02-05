@@ -28,7 +28,7 @@ class BIMVerdi_Company_Invitations {
     const TOKEN_EXPIRY = 604800;
     
     /** @var int Maximum invitations per company (default) */
-    const DEFAULT_MAX_INVITATIONS = 2;
+    const DEFAULT_MAX_INVITATIONS = 50;
     
     /**
      * Constructor - initialize hooks
@@ -170,9 +170,9 @@ class BIMVerdi_Company_Invitations {
             return false;
         }
         
-        // Check if company is active
-        $er_aktiv = get_field('er_aktiv_deltaker', $company_id);
-        if (!$er_aktiv) {
+        // Check if company is active (any role except 'Ikke deltaker')
+        $bv_rolle = get_field('bv_rolle', $company_id);
+        if (!$bv_rolle || $bv_rolle === 'Ikke deltaker') {
             return false;
         }
         
@@ -313,7 +313,14 @@ class BIMVerdi_Company_Invitations {
         
         // Check remaining invitations
         if ($this->get_remaining_invitations($company_id) <= 0) {
-            return new WP_Error('limit_reached', 'Maksimalt antall invitasjoner er nådd (maks 2 tilleggskontakter)');
+            $max_allowed = (int) get_field('antall_invitasjoner_tillatt', $company_id);
+            if ($max_allowed <= 0) {
+                $max_allowed = self::DEFAULT_MAX_INVITATIONS;
+            }
+            return new WP_Error('limit_reached', sprintf(
+                'Maksimalt antall invitasjoner er nådd (maks %d tilleggskontakter)',
+                $max_allowed
+            ));
         }
         
         // Check if email already has pending invitation for this company

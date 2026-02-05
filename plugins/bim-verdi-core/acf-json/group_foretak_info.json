@@ -45,16 +45,6 @@
             "maxlength": 9
         },
         {
-            "key": "field_foretak_er_aktiv_deltaker",
-            "label": "Er aktiv deltaker",
-            "name": "er_aktiv_deltaker",
-            "type": "true_false",
-            "instructions": "Er foretaket en aktiv betalende deltaker i BIM Verdi?",
-            "required": 0,
-            "default_value": 0,
-            "ui": 1
-        },
-        {
             "key": "field_foretak_hovedkontaktperson",
             "label": "Hovedkontaktperson",
             "name": "hovedkontaktperson",
@@ -71,6 +61,21 @@
             "name": "",
             "type": "tab",
             "placement": "top"
+        },
+        {
+            "key": "field_foretak_bv_rolle",
+            "label": "BIM Verdi rolle",
+            "name": "bv_rolle",
+            "type": "select",
+            "instructions": "Foretakets rolle i BIM Verdi",
+            "required": 0,
+            "choices": {
+                "Deltaker": "Deltaker",
+                "Prosjektdeltaker": "Prosjektdeltaker",
+                "Partner": "Partner",
+                "Ikke deltaker": "Ikke deltaker"
+            },
+            "default_value": "Deltaker"
         },
         {
             "key": "field_foretak_bransje_rolle",
@@ -135,6 +140,18 @@
             },
             "layout": "vertical",
             "return_format": "value"
+        },
+        {
+            "key": "field_foretak_antall_invitasjoner_tillatt",
+            "label": "Maks antall tilleggskontakter",
+            "name": "antall_invitasjoner_tillatt",
+            "type": "number",
+            "instructions": "Maks antall tilleggskontakter som kan inviteres. La stå tomt for standard (50).",
+            "required": 0,
+            "default_value": "",
+            "min": 1,
+            "max": 500,
+            "step": 1
         },
         {
             "key": "field_foretak_artikkel_lenke",
@@ -333,21 +350,6 @@
             "instructions": "Offisielt navn fra BRREG",
             "required": 0,
             "readonly": 1
-        },
-        {
-            "key": "field_foretak_bv_rolle",
-            "label": "BIM Verdi rolle",
-            "name": "bv_rolle",
-            "type": "select",
-            "instructions": "Foretakets rolle i BIM Verdi",
-            "required": 0,
-            "choices": {
-                "Deltaker": "Deltaker",
-                "Prosjektdeltaker": "Prosjektdeltaker",
-                "Partner": "Partner",
-                "Ikke deltaker": "Ikke deltaker"
-            },
-            "default_value": "Deltaker"
         }
     ],
     "location": [
