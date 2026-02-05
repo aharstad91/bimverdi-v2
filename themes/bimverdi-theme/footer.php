@@ -1,31 +1,15 @@
 </div><!-- #content -->
 
-<!-- CTA Banner (only for logged-out users) -->
-<?php if (!is_user_logged_in()): ?>
-<section class="py-16 border-t border-[#D6D1C6] bg-[#F7F5EF]">
-    <div class="max-w-3xl mx-auto px-4 md:px-8 text-center">
-        <h2 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4">Klar til å bli deltaker?</h2>
-        <p class="text-[#5A5A5A] text-lg mb-8 max-w-2xl mx-auto">
-            Få tilgang til hele nettverket, alle verktøyene og delta i våre faggrupper. Vær med på å forme fremtidens byggenæring.
-        </p>
-        <a href="<?php echo esc_url(home_url('/registrer/')); ?>"
-           class="inline-block px-8 py-3 bg-[#1A1A1A] text-white rounded font-semibold hover:bg-[#333] transition-colors">
-            Registrer deg nå
-        </a>
-    </div>
-</section>
-<?php endif; ?>
-
 <!-- Footer -->
 <footer class="bg-[#F7F5EF] border-t border-[#D6D1C6]">
     <div class="max-w-6xl mx-auto px-4 md:px-8 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
 
             <!-- Newsletter Column -->
-            <div class="md:col-span-2 lg:col-span-1">
+            <div>
                 <h3 class="text-lg font-bold text-[#1A1A1A] mb-4">Hold deg oppdatert</h3>
                 <p class="text-[#5A5A5A] text-sm mb-4">
-                    Motta nyheter om BIM, TEK17, og invitasjoner til våre arrangementer.
+                    Motta nyheter og invitasjoner til våre arrangement.
                 </p>
                 <form class="flex border-b border-[#1A1A1A]" action="#" method="post">
                     <input type="email"
@@ -41,13 +25,13 @@
                 </form>
             </div>
 
-            <!-- Organisasjon Column -->
+            <!-- Organisering Column -->
             <div>
-                <h3 class="text-lg font-bold text-[#1A1A1A] mb-4">Organisasjon</h3>
+                <h3 class="text-lg font-bold text-[#1A1A1A] mb-4">Organisering</h3>
                 <ul class="space-y-3 text-sm">
                     <li><a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Om oss</a></li>
                     <li><a href="<?php echo esc_url(home_url('/deltakere/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Deltakere</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/styret/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Styret</a></li>
+                    <li><a href="<?php echo esc_url(home_url('/styringsgruppe/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Styringsgruppe</a></li>
                     <li><a href="<?php echo esc_url(home_url('/vedtekter/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Vedtekter</a></li>
                 </ul>
             </div>
@@ -58,28 +42,6 @@
                 <ul class="space-y-3 text-sm">
                     <li><a href="<?php echo esc_url(home_url('/artikler/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Artikler</a></li>
                     <li><a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Verktøy</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/begrepsbase/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Begrepsbase</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/api-dokumentasjon/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">API Dokumentasjon</a></li>
-                </ul>
-            </div>
-
-            <!-- Kontakt Column -->
-            <div>
-                <h3 class="text-lg font-bold text-[#1A1A1A] mb-4">Kontakt</h3>
-                <ul class="space-y-3 text-sm">
-                    <li><a href="<?php echo esc_url(home_url('/kontakt/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Kundeservice</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/presse/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Presse</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/samarbeidspartnere/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Samarbeidspartnere</a></li>
-                </ul>
-            </div>
-
-            <!-- Juridisk Column -->
-            <div>
-                <h3 class="text-lg font-bold text-[#1A1A1A] mb-4">Juridisk</h3>
-                <ul class="space-y-3 text-sm">
-                    <li><a href="<?php echo esc_url(home_url('/personvern/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Personvern</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/vilkar/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Vilkår</a></li>
-                    <li><a href="<?php echo esc_url(home_url('/cookies/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Cookies</a></li>
                 </ul>
             </div>
 

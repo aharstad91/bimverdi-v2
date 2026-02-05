@@ -22,18 +22,14 @@ $total_foretak = $members_query->found_posts;
 
 /**
  * Get membership level for a foretak
- * Returns 'Partner', 'Deltaker', or empty string
+ * Returns 'Partner', 'Prosjektdeltaker', 'Deltaker', or empty string
  */
 if (!function_exists('bimverdi_get_membership_level')) {
     function bimverdi_get_membership_level($post_id) {
-        // Check ACF field first
-        $er_partner = get_field('er_partner', $post_id);
-        $er_aktiv = get_field('er_aktiv_deltaker', $post_id);
+        $bv_rolle = get_field('bv_rolle', $post_id);
 
-        if ($er_partner) {
-            return 'Partner';
-        } elseif ($er_aktiv) {
-            return 'Deltaker';
+        if ($bv_rolle && $bv_rolle !== 'Ikke deltaker') {
+            return $bv_rolle;
         }
         return '';
     }
@@ -60,7 +56,7 @@ if (!function_exists('bimverdi_get_initials')) {
         <div class="mb-10">
             <h1 class="text-4xl font-bold text-[#1A1A1A] mb-3">Deltakere</h1>
             <p class="text-[#5A5A5A] text-lg">
-                Utforsk nettverket av <?php echo intval($total_foretak); ?> foretak som sammen utvikler norsk BIM-bransje.
+                Utforsk nettverket av <?php echo intval($total_foretak); ?> foretak som <strong>samarbeider for økt produktivitet i byggenæringen med BIM og KI</strong>.
             </p>
         </div>
 
@@ -73,9 +69,15 @@ if (!function_exists('bimverdi_get_initials')) {
                 $logo_url = $logo_id ? (is_array($logo_id) ? $logo_id['sizes']['medium'] : wp_get_attachment_url($logo_id)) : '';
                 $bransjekategorier_terms = wp_get_post_terms(get_the_ID(), 'bransjekategori', array('fields' => 'names'));
                 $poststed = get_field('poststed');
+                $adresse = get_field('adresse');
+                $postnummer = get_field('postnummer');
                 $membership_level = bimverdi_get_membership_level(get_the_ID());
                 $initials = bimverdi_get_initials(get_the_title());
                 $bransje_display = !empty($bransjekategorier_terms) ? $bransjekategorier_terms[0] : '';
+
+                // Build map URL for Google Maps
+                $map_query_parts = array_filter([$adresse, $postnummer, $poststed, 'Norge']);
+                $map_url = !empty($map_query_parts) ? 'https://www.google.com/maps/search/' . urlencode(implode(', ', $map_query_parts)) : '';
             ?>
 
             <!-- Card -->
@@ -114,8 +116,15 @@ if (!function_exists('bimverdi_get_initials')) {
                     <!-- Location -->
                     <?php if ($poststed): ?>
                     <div class="flex items-center gap-1 text-sm text-[#5A5A5A]">
+                        <?php if ($map_url): ?>
+                        <a href="<?php echo esc_url($map_url); ?>" target="_blank" rel="noopener" class="inline-flex items-center gap-1 hover:text-[#1A1A1A] transition-colors" title="Vis på kart">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span><?php echo esc_html($poststed); ?></span>
+                        </a>
+                        <?php else: ?>
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         <span><?php echo esc_html($poststed); ?></span>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
                 </div>

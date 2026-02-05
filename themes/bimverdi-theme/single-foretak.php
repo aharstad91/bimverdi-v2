@@ -85,6 +85,18 @@ $company_users = get_users(array(
 $tool_count = count($company_tools);
 $user_count = count($company_users);
 
+// Tell tilleggskontakter (alle brukere unntatt hovedkontakt)
+$tilleggskontakter_count = 0;
+if ($hovedkontakt_id) {
+    foreach ($company_users as $user) {
+        if ($user->ID != $hovedkontakt_id) {
+            $tilleggskontakter_count++;
+        }
+    }
+} else {
+    $tilleggskontakter_count = $user_count;
+}
+
 // Sjekk om besøkende bruker tilhører dette foretaket
 $current_user_company_id = get_user_meta(get_current_user_id(), 'bim_verdi_company_id', true);
 $is_own_company = ($current_user_company_id == $company_id);
@@ -485,7 +497,7 @@ $company_kunnskapskilder = get_posts(array(
                 ?>
                 <section class="border-t border-[#E5E0D8] pt-10">
                     <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-lg font-bold text-[#1A1A1A]">Kunnskapskilder</h2>
+                        <h2 class="text-lg font-bold text-[#1A1A1A]">Viktige kunnskapskilder registrert av <?php echo esc_html($company_title); ?></h2>
                         <?php if ($kilde_count > 0): ?>
                         <span class="text-sm text-[#5A5A5A]"><?php echo $kilde_count; ?> kilder</span>
                         <?php endif; ?>
@@ -578,6 +590,16 @@ $company_kunnskapskilder = get_posts(array(
                                 Ansatte
                             </dt>
                             <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo $antall_ansatte; ?> personer</dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if ($tilleggskontakter_count > 0): ?>
+                        <div>
+                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                Tilleggskontakter
+                            </dt>
+                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo $tilleggskontakter_count; ?> personer</dd>
                         </div>
                         <?php endif; ?>
                     </dl>

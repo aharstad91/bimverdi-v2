@@ -371,6 +371,42 @@ function bimverdi_get_cached_brreg_data($post_id) {
 }
 
 /**
+ * =============================================================================
+ * 3. AUTO-PREPEND HTTPS:// TIL URL-FELT
+ * =============================================================================
+ * ACF URL-felt krever gyldig URL med protokoll.
+ * Dette filteret legger automatisk til https:// hvis brukeren glemmer det.
+ */
+
+/**
+ * Auto-prepend https:// til URL-felt hvis det mangler protokoll
+ */
+add_filter('acf/update_value/type=url', 'bimverdi_auto_prepend_https_to_url', 10, 3);
+
+function bimverdi_auto_prepend_https_to_url($value, $post_id, $field) {
+    // Skip empty values
+    if (empty($value)) {
+        return $value;
+    }
+
+    // Trim whitespace
+    $value = trim($value);
+
+    // Skip if already has protocol
+    if (preg_match('/^https?:\/\//i', $value)) {
+        return $value;
+    }
+
+    // Skip if it starts with // (protocol-relative URL)
+    if (strpos($value, '//') === 0) {
+        return 'https:' . $value;
+    }
+
+    // Add https:// prefix
+    return 'https://' . $value;
+}
+
+/**
  * Legg til CSS for locked fields i admin
  */
 add_action('admin_head', 'bimverdi_locked_fields_admin_css');
