@@ -43,7 +43,7 @@ $tabs = array(
         'label' => 'Temagrupper',
         'icon' => 'layer-group',
         'url' => home_url('/min-side/temagrupper/'),
-        'description' => 'Velg temagruppemedimedlemskap',
+        'description' => 'Velg og delta i temagrupper',
     ),
     'arrangementer' => array(
         'label' => 'Arrangementer',

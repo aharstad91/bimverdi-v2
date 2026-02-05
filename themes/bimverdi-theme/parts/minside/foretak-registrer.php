@@ -40,7 +40,7 @@ if ($existing_foretak_id && get_post_status($existing_foretak_id) === 'publish')
 <?php
 get_template_part('parts/components/page-header', null, [
     'title' => 'Registrer foretak',
-    'description' => 'Koble ditt foretak til BIM Verdi medlemsportalen'
+    'description' => 'Koble ditt foretak til BIM Verdi nettverksportalen'
 ]);
 ?>
 

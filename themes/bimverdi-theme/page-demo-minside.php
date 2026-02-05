@@ -119,7 +119,7 @@ get_header();
                             <div><strong>Adresse:</strong> Stortingsgaten 1, 0161 Oslo</div>
                             <div><strong>Telefon:</strong> +47 XX XXX XXX</div>
                             <div><strong>Nettside:</strong> arkitektur.example.no</div>
-                            <div><strong>Medlem:</strong> <span class="badge badge-primary">Partner</span></div>
+                            <div><strong>Rolle:</strong> <span class="badge badge-primary">Partner</span></div>
                         </div>
                         <div class="mt-6 flex gap-2">
                             <button class="btn btn-primary btn-sm">Rediger profil</button>
@@ -163,11 +163,11 @@ get_header();
                         <div class="card-body p-4">
                             <h4 class="font-bold"><?php echo esc_html($group['name']); ?></h4>
                             <p class="text-sm text-gray-600 my-2"><?php echo esc_html($group['description']); ?></p>
-                            <div class="text-xs text-gray-500">👥 <?php echo esc_html($group['members']); ?> medlemmer</div>
+                            <div class="text-xs text-gray-500">👥 <?php echo esc_html($group['members']); ?> deltakere</div>
                             <?php if ($group['selected']): ?>
-                                <div class="mt-3 font-semibold text-sm text-primary">✓ Du er medlem</div>
+                                <div class="mt-3 font-semibold text-sm text-primary">✓ Du deltar</div>
                             <?php else: ?>
-                                <button class="btn btn-outline btn-sm mt-3 w-full">Bli medlem</button>
+                                <button class="btn btn-outline btn-sm mt-3 w-full">Bli med</button>
                             <?php endif; ?>
                         </div>
                     </div>

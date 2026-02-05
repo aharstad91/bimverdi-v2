@@ -159,7 +159,7 @@ function bimverdi_get_mock_events() {
             'capacity' => 100,
             'registered' => 42,
             'user_registered' => true,
-            'description' => 'Månedlig møte for medlemmer av Modellkvalitet-gruppen. Diskusjon og erfaringsutveksling.',
+            'description' => 'Månedlig møte for deltakere i Modellkvalitet-gruppen. Diskusjon og erfaringsutveksling.',
         ),
         array(
             'ID' => 0,

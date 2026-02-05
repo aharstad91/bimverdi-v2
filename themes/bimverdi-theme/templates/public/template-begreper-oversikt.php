@@ -76,7 +76,7 @@ get_header();
                     <div class="flex items-center gap-4 text-sm text-gray-500">
                         <span>📝 8 artikler</span>
                         <span>🔧 5 verktøy</span>
-                        <span>👥 23 medlemmer</span>
+                        <span>👥 23 deltakere</span>
                     </div>
                 </a>
                 
@@ -91,7 +91,7 @@ get_header();
                     <div class="flex items-center gap-4 text-sm text-gray-500">
                         <span>📝 12 artikler</span>
                         <span>🔧 8 verktøy</span>
-                        <span>👥 45 medlemmer</span>
+                        <span>👥 45 deltakere</span>
                     </div>
                 </a>
                 
@@ -106,7 +106,7 @@ get_header();
                     <div class="flex items-center gap-4 text-sm text-gray-500">
                         <span>📝 6 artikler</span>
                         <span>🔧 4 verktøy</span>
-                        <span>👥 34 medlemmer</span>
+                        <span>👥 34 deltakere</span>
                     </div>
                 </a>
             </div>

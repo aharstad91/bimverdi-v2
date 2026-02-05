@@ -8,7 +8,7 @@
         <p class="text-[#5A5A5A] text-lg mb-8 max-w-2xl mx-auto">
             Få tilgang til hele nettverket, alle verktøyene og delta i våre faggrupper. Vær med på å forme fremtidens byggenæring.
         </p>
-        <a href="<?php echo esc_url(home_url('/bli-medlem/')); ?>"
+        <a href="<?php echo esc_url(home_url('/registrer/')); ?>"
            class="inline-block px-8 py-3 bg-[#1A1A1A] text-white rounded font-semibold hover:bg-[#333] transition-colors">
             Registrer deg nå
         </a>

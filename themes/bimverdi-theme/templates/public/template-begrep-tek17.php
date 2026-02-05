@@ -213,7 +213,7 @@ get_header();
                             <h3 class="font-bold text-gray-900 mb-2">Revit</h3>
                             <p class="text-sm text-gray-600 mb-3">Native TEK17-validering med plugins</p>
                             <div class="flex items-center justify-between text-xs text-gray-500">
-                                <span>👥 45 medlemmer</span>
+                                <span>👥 45 deltakere</span>
                                 <span class="text-blue-600 font-semibold">Profil →</span>
                             </div>
                         </a>
@@ -223,7 +223,7 @@ get_header();
                             <h3 class="font-bold text-gray-900 mb-2">Catenda</h3>
                             <p class="text-sm text-gray-600 mb-3">Cloud BIM med EPD-støtte for klimakrav</p>
                             <div class="flex items-center justify-between text-xs text-gray-500">
-                                <span>👥 23 medlemmer</span>
+                                <span>👥 23 deltakere</span>
                                 <span class="text-blue-600 font-semibold">Profil →</span>
                             </div>
                         </a>
@@ -233,7 +233,7 @@ get_header();
                             <h3 class="font-bold text-gray-900 mb-2">Riuska</h3>
                             <p class="text-sm text-gray-600 mb-3">Energi- og klimaberegninger</p>
                             <div class="flex items-center justify-between text-xs text-gray-500">
-                                <span>👥 18 medlemmer</span>
+                                <span>👥 18 deltakere</span>
                                 <span class="text-blue-600 font-semibold">Profil →</span>
                             </div>
                         </a>
@@ -272,7 +272,7 @@ get_header();
                         
                         <div class="p-5 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
                             <div class="text-3xl mb-3">👥</div>
-                            <h3 class="font-bold text-gray-900 mb-1">23 andre medlemmer</h3>
+                            <h3 class="font-bold text-gray-900 mb-1">23 andre deltakere</h3>
                             <p class="text-sm text-gray-600 mb-3">som aktivt jobber med TEK17</p>
                             <a href="#" class="text-purple-600 text-sm font-semibold hover:underline">Se liste →</a>
                         </div>
@@ -329,7 +329,7 @@ get_header();
                             <span class="text-2xl">👥</span>
                             <div>
                                 <div class="font-bold text-2xl text-blue-600">23</div>
-                                <div class="text-xs text-gray-600">medlemmer jobber med dette</div>
+                                <div class="text-xs text-gray-600">deltakere jobber med dette</div>
                             </div>
                         </div>
                     </div>

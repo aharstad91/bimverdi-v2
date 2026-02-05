@@ -97,8 +97,8 @@ $user = wp_get_current_user();
                     <a href="<?php echo esc_url(home_url('/logg-inn/')); ?>" class="btn btn-sm btn-outline">
                         Logg inn
                     </a>
-                    <a href="<?php echo esc_url($site_url); ?>/registrer-bruker/" class="btn btn-sm btn-primary">
-                        Bli medlem
+                    <a href="<?php echo esc_url($site_url); ?>/registrer/" class="btn btn-sm btn-primary">
+                        Bli med
                     </a>
                 <?php endif; ?>
                 

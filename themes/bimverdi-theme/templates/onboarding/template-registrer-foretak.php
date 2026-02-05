@@ -118,7 +118,7 @@ if ($existing_foretak_id && get_post_status($existing_foretak_id) === 'publish')
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Registrer foretak</h1>
-                    <p class="text-gray-600">Koble ditt foretak til BIM Verdi medlemsportalen</p>
+                    <p class="text-gray-600">Koble ditt foretak til BIM Verdi nettverksportalen</p>
                 </div>
             </div>
         </div>

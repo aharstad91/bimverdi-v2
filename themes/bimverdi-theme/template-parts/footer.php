@@ -35,7 +35,7 @@ $footer_email = get_option('admin_email');
             <span class="footer-title text-lg font-bold mb-4">Navigasjon</span>
             <a href="<?php echo esc_url($site_url); ?>" class="link link-hover">Hjem</a>
             <a href="<?php echo esc_url($site_url); ?>/om-oss/" class="link link-hover">Om BIM Verdi</a>
-            <a href="<?php echo esc_url($site_url); ?>/medlemmer/" class="link link-hover">Medlemmer</a>
+            <a href="<?php echo esc_url($site_url); ?>/deltakere/" class="link link-hover">Deltakere</a>
             <a href="<?php echo esc_url($site_url); ?>/arrangementer/" class="link link-hover">Arrangementer</a>
             <a href="<?php echo esc_url($site_url); ?>/verktoy/" class="link link-hover">Verktøy</a>
         </div>

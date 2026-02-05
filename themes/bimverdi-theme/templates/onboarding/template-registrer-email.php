@@ -2,8 +2,8 @@
 /**
  * Template Name: Registrer (Email Signup)
  *
- * Første steg i registrering - kun e-post.
- * Sender verifiseringslenke til brukerens e-post.
+ * First step in registration - email only.
+ * Sends verification link to user's email.
  * Two-column layout: Value proposition left, form right.
  * Standalone page without site header/footer for focused experience.
  *
@@ -15,6 +15,21 @@ if (is_user_logged_in()) {
     wp_redirect(home_url('/min-side/'));
     exit;
 }
+
+// Get URL parameters for error/success states
+$error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
+$success = isset($_GET['success']) ? sanitize_text_field($_GET['success']) : '';
+$prefill_email = isset($_GET['email']) ? sanitize_email(urldecode($_GET['email'])) : '';
+
+// Error messages
+$error_messages = array(
+    'invalid_email' => 'Vennligst oppgi en gyldig e-postadresse.',
+    'exists'        => 'Denne e-postadressen er allerede registrert. <a href="' . esc_url(home_url('/logg-inn/')) . '" style="color: inherit; font-weight: 600;">Logg inn her</a>',
+    'rate_limit'    => 'For mange forsøk. Vent litt og prøv igjen.',
+    'nonce'         => 'Noe gikk galt. Vennligst prøv igjen.',
+    'system'        => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
+);
+$error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -171,6 +186,7 @@ if (is_user_logged_in()) {
             padding: var(--bv-space-xl);
             width: 100%;
             max-width: 440px;
+            overflow: hidden;
         }
 
         .auth-card-header {
@@ -220,6 +236,10 @@ if (is_user_logged_in()) {
         .form-input:focus {
             outline: none;
             border-color: var(--bv-border-focus);
+        }
+
+        .form-input.has-error {
+            border-color: #dc2626;
         }
 
         .form-helper {
@@ -303,100 +323,82 @@ if (is_user_logged_in()) {
             text-decoration: underline;
         }
 
-        /* Gravity Forms overrides */
-        .bimverdi-email-signup-wrapper .gform_wrapper {
-            margin: 0 !important;
-            padding: 0 !important;
+        /* Alert styles */
+        .alert {
+            padding: var(--bv-space-sm);
+            border-radius: var(--bv-radius-md);
+            margin-bottom: var(--bv-space-md);
+            font-size: var(--bv-text-sm);
+            line-height: 1.5;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gform_body {
-            padding: 0 !important;
+        .alert-error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gfield {
-            margin-bottom: var(--bv-space-md) !important;
+        .alert-error a {
+            color: #991B1B;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gfield_label {
-            font-weight: 500 !important;
-            color: var(--bv-text-primary) !important;
-            margin-bottom: var(--bv-space-xs) !important;
-            font-size: var(--bv-text-sm) !important;
+        .alert-success {
+            display: block;
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            color: #166534;
+            overflow-wrap: break-word;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper input[type="email"],
-        .bimverdi-email-signup-wrapper .gform_wrapper input[type="text"] {
-            width: 100% !important;
-            padding: var(--bv-space-sm) !important;
-            border: 1px solid var(--bv-border-light) !important;
-            border-radius: var(--bv-radius-md) !important;
-            font-size: var(--bv-text-base) !important;
-            color: var(--bv-text-primary) !important;
-            transition: border-color var(--bv-transition-normal) !important;
+        .alert-success p {
+            margin: 0 0 4px 0;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper input[type="email"]:focus,
-        .bimverdi-email-signup-wrapper .gform_wrapper input[type="text"]:focus {
-            outline: none !important;
-            border-color: var(--bv-border-focus) !important;
+        .alert-success p:last-child {
+            margin-bottom: 0;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gfield_description {
-            font-size: var(--bv-text-sm) !important;
-            color: var(--bv-text-secondary) !important;
-            margin-top: var(--bv-space-xs) !important;
+        .help-box {
+            margin-top: var(--bv-space-md);
+            padding: var(--bv-space-sm);
+            background: #FFFBEB;
+            border-radius: var(--bv-radius-md);
+            border: 1px solid #FDE68A;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gform_footer {
-            margin-top: var(--bv-space-md) !important;
-            padding: 0 !important;
+        .help-box p {
+            font-size: var(--bv-text-sm);
+            color: #92400E;
+            margin: 0 0 var(--bv-space-xs) 0;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gform_button,
-        .bimverdi-email-signup-wrapper .gform_wrapper input[type="submit"],
-        .bimverdi-email-signup-wrapper .gform_wrapper button[type="submit"] {
-            width: 100% !important;
-            padding: var(--bv-space-sm) !important;
-            background: var(--bv-btn-primary-bg) !important;
-            color: var(--bv-btn-primary-text) !important;
-            border: none !important;
-            border-radius: var(--bv-radius-md) !important;
-            font-size: var(--bv-text-base) !important;
-            font-weight: 500 !important;
-            cursor: pointer !important;
-            transition: background var(--bv-transition-normal) !important;
+        .help-box p:last-child { margin-bottom: 0; }
+
+        .help-box ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: var(--bv-text-sm);
+            color: #92400E;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gform_button:hover,
-        .bimverdi-email-signup-wrapper .gform_wrapper input[type="submit"]:hover,
-        .bimverdi-email-signup-wrapper .gform_wrapper button[type="submit"]:hover {
-            background: var(--bv-btn-primary-hover) !important;
+        .help-box ul li {
+            margin-bottom: 4px;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gfield_error input {
-            border-color: #dc2626 !important;
+        .resend-link {
+            text-align: center;
+            margin-top: var(--bv-space-md);
+            font-size: var(--bv-text-sm);
+            color: var(--bv-text-secondary);
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .validation_message {
-            color: #dc2626 !important;
-            font-size: var(--bv-text-sm) !important;
-            margin-top: 4px !important;
+        .resend-link a {
+            color: var(--bv-accent);
+            font-weight: 500;
+            text-decoration: none;
         }
 
-        .bimverdi-email-signup-wrapper .gform_wrapper .gform_validation_errors {
-            background-color: #fef2f2 !important;
-            border: 1px solid #fecaca !important;
-            border-radius: var(--bv-radius-md) !important;
-            padding: var(--bv-space-sm) !important;
-            margin-bottom: var(--bv-space-md) !important;
-        }
-
-        .bimverdi-email-signup-wrapper .gform_wrapper .gform_validation_errors h2 {
-            color: #dc2626 !important;
-            font-size: var(--bv-text-sm) !important;
-            font-weight: 600 !important;
-            margin: 0 !important;
-        }
+        .resend-link a:hover { color: var(--bv-accent-hover); }
 
         @media (max-width: 768px) {
             .auth-container {
@@ -425,7 +427,7 @@ if (is_user_logged_in()) {
         <div class="auth-value">
             <a href="<?php echo home_url('/'); ?>" class="auth-logo">BIM Verdi</a>
             <h1>Bli en del av nettverket</h1>
-            <p class="lead">Som medlem får du tilgang til Norges ledende nettverk for praktisk bruk av BIM og AI i byggenæringen.</p>
+            <p class="lead">Som deltaker får du tilgang til Norges ledende nettverk for praktisk bruk av BIM og AI i byggenæringen.</p>
             <ul class="benefits-list">
                 <li>
                     <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -466,40 +468,76 @@ if (is_user_logged_in()) {
 
         <div class="auth-form-wrapper">
             <div class="auth-card">
-                <div class="auth-card-header">
-                    <h2>Lag en konto</h2>
-                    <p>Oppgi e-postadressen din for å starte</p>
-                </div>
+                <?php if ($success === '1' && $prefill_email): ?>
+                    <!-- Success: Verification email sent -->
+                    <div class="auth-card-header">
+                        <h2>Sjekk e-posten din</h2>
+                        <p>Vi har sendt en verifiseringslenke</p>
+                    </div>
 
-                <div class="bimverdi-email-signup-wrapper">
-                    <?php
-                    if (function_exists('gravity_form')) {
-                        $email_form_id = (int) get_option('bimverdi_email_form_id', 5);
-                        gravity_form(
-                            $email_form_id,
-                            false,
-                            false,
-                            false,
-                            null,
-                            true,
-                            0,
-                            true
-                        );
-                    } else {
-                        echo '<div style="padding: var(--bv-space-sm); background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--bv-radius-md); color: #991b1b; font-size: var(--bv-text-sm);">';
-                        echo 'Gravity Forms er ikke aktivert. Kontakt administrator.';
-                        echo '</div>';
-                    }
-                    ?>
-                </div>
+                    <div class="alert alert-success">
+                        <p><strong>Flott!</strong> Vi har sendt en verifiseringslenke til:</p>
+                        <p><strong><?php echo esc_html($prefill_email); ?></strong></p>
+                        <p>Åpne e-posten og klikk på lenken for å fullføre registreringen.</p>
+                    </div>
 
-                <div class="divider">Har du konto?</div>
+                    <div class="help-box">
+                        <p><strong>Finner du ikke e-posten?</strong></p>
+                        <ul>
+                            <li>Sjekk søppelpost/spam-mappen</li>
+                            <li>Vent noen minutter og prøv igjen</li>
+                            <li>Kontakt oss hvis problemet vedvarer</li>
+                        </ul>
+                    </div>
 
-                <a href="<?php echo home_url('/logg-inn/'); ?>" class="btn btn-secondary">Logg inn</a>
+                    <div class="resend-link">
+                        <p>Ikke mottatt e-post? <a href="<?php echo esc_url(home_url('/registrer/')); ?>">Send på nytt</a></p>
+                    </div>
 
-                <p class="terms-text">
-                    Ved å registrere deg godtar du våre <a href="<?php echo home_url('/vilkar/'); ?>">vilkår</a> og <a href="<?php echo home_url('/personvern/'); ?>">personvernerklæring</a>.
-                </p>
+                    <p class="terms-text">
+                        Ved å registrere deg godtar du våre <a href="<?php echo home_url('/vilkar/'); ?>">vilkår</a> og <a href="<?php echo home_url('/personvern/'); ?>">personvernerklæring</a>.
+                    </p>
+
+                <?php else: ?>
+                    <!-- Default: Show signup form -->
+                    <div class="auth-card-header">
+                        <h2>Lag en konto</h2>
+                        <p>Oppgi e-postadressen din for å starte</p>
+                    </div>
+
+                    <?php if ($error_text): ?>
+                        <div class="alert alert-error">
+                            <?php echo $error_text; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="post" action="" novalidate>
+                        <?php wp_nonce_field('bimverdi_email_signup'); ?>
+                        <input type="text" name="bv_hp_field" style="display:none" tabindex="-1" autocomplete="off">
+
+                        <div class="form-group">
+                            <label class="form-label" for="bv-email">E-postadresse</label>
+                            <input type="email" id="bv-email" name="email" required
+                                   placeholder="din@epost.no"
+                                   value="<?php echo esc_attr($prefill_email); ?>"
+                                   class="form-input<?php echo $error ? ' has-error' : ''; ?>"
+                                   autocomplete="email">
+                            <p class="form-helper">Vi sender deg en lenke for å fullføre registreringen.</p>
+                        </div>
+
+                        <button type="submit" name="bimverdi_email_signup" value="1" class="btn btn-primary">
+                            Send verifiseringslenke
+                        </button>
+                    </form>
+
+                    <div class="divider">Har du konto?</div>
+
+                    <a href="<?php echo home_url('/logg-inn/'); ?>" class="btn btn-secondary">Logg inn</a>
+
+                    <p class="terms-text">
+                        Ved å registrere deg godtar du våre <a href="<?php echo home_url('/vilkar/'); ?>">vilkår</a> og <a href="<?php echo home_url('/personvern/'); ?>">personvernerklæring</a>.
+                    </p>
+                <?php endif; ?>
             </div>
 
             <div class="auth-footer">
