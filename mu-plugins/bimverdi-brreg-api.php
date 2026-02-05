@@ -13,6 +13,35 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Check if a foretak is Norwegian (eligible for BRREG lookup)
+ *
+ * @param int $post_id Foretak post ID
+ * @return bool True if Norwegian or no land specified
+ */
+function bimverdi_is_norwegian_foretak($post_id) {
+    $land = get_field('land', $post_id);
+
+    // If no land specified, assume Norwegian
+    if (empty($land)) {
+        return true;
+    }
+
+    // Check for Norwegian variants
+    $norwegian_values = array('norge', 'norway', 'no', 'nor');
+    return in_array(strtolower(trim($land)), $norwegian_values);
+}
+
+/**
+ * Check if an organization number is valid Norwegian format (9 digits)
+ *
+ * @param string $orgnr Organization number
+ * @return bool True if valid Norwegian format
+ */
+function bimverdi_is_valid_norwegian_orgnr($orgnr) {
+    return preg_match('/^\d{9}$/', $orgnr);
+}
+
+/**
  * Register REST API routes for BRreg
  */
 add_action('rest_api_init', function() {
@@ -316,14 +345,22 @@ function bimverdi_sync_brreg_on_foretak_creation($post_id, $feed, $entry, $form)
         return;
     }
 
+    // Sjekk om foretaket er norsk - hvis ikke, skip BRREG-synk
+    if (!bimverdi_is_norwegian_foretak($post_id)) {
+        error_log('BIM Verdi: Skipper BRREG-synk for utenlandsk foretak ' . $post_id);
+        return;
+    }
+
     // Hent org.nr fra entry eller ACF
     $org_nr = '';
 
     // Prøv å finne org.nr i entry (Field 1 i Form 2)
-    foreach ($entry as $key => $value) {
-        if (is_numeric($key) && preg_match('/^\d{9}$/', trim($value))) {
-            $org_nr = trim($value);
-            break;
+    if (is_array($entry)) {
+        foreach ($entry as $key => $value) {
+            if (is_numeric($key) && bimverdi_is_valid_norwegian_orgnr(trim($value))) {
+                $org_nr = trim($value);
+                break;
+            }
         }
     }
 
@@ -332,8 +369,8 @@ function bimverdi_sync_brreg_on_foretak_creation($post_id, $feed, $entry, $form)
         $org_nr = get_field('organisasjonsnummer', $post_id);
     }
 
-    if (!$org_nr || !preg_match('/^\d{9}$/', $org_nr)) {
-        error_log('BIM Verdi: Kunne ikke finne gyldig org.nr for foretak ' . $post_id);
+    if (!$org_nr || !bimverdi_is_valid_norwegian_orgnr($org_nr)) {
+        error_log('BIM Verdi: Kunne ikke finne gyldig norsk org.nr for foretak ' . $post_id . ' (dette er OK for utenlandske foretak)');
         return;
     }
 
@@ -431,6 +468,11 @@ function bimverdi_sync_brreg_on_foretak_save($post_id, $post, $update) {
         return;
     }
 
+    // Sjekk om foretaket er norsk - hvis ikke, skip BRREG-synk
+    if (!bimverdi_is_norwegian_foretak($post_id)) {
+        return;
+    }
+
     // Sjekk om Brreg-felt allerede er fylt ut
     $bedriftsnavn = get_field('bedriftsnavn', $post_id);
     $postnummer = get_field('postnummer', $post_id);
@@ -440,9 +482,9 @@ function bimverdi_sync_brreg_on_foretak_save($post_id, $post, $update) {
         return;
     }
 
-    // Hent org.nr
+    // Hent org.nr - må være gyldig norsk format for BRREG-oppslag
     $org_nr = get_field('organisasjonsnummer', $post_id);
-    if (!$org_nr || !preg_match('/^\d{9}$/', $org_nr)) {
+    if (!$org_nr || !bimverdi_is_valid_norwegian_orgnr($org_nr)) {
         return;
     }
 
@@ -483,11 +525,18 @@ function bimverdi_maybe_sync_all_foretak() {
     );
 
     foreach ($foretak as $post) {
+        // Sjekk om foretaket er norsk
+        if (!bimverdi_is_norwegian_foretak($post->ID)) {
+            $results['skipped']++;
+            $results['errors'][] = "ID {$post->ID}: Utenlandsk foretak (skipper BRREG)";
+            continue;
+        }
+
         $org_nr = get_field('organisasjonsnummer', $post->ID);
 
-        if (!$org_nr || !preg_match('/^\d{9}$/', $org_nr)) {
+        if (!$org_nr || !bimverdi_is_valid_norwegian_orgnr($org_nr)) {
             $results['skipped']++;
-            $results['errors'][] = "ID {$post->ID}: Mangler gyldig org.nr";
+            $results['errors'][] = "ID {$post->ID}: Mangler gyldig norsk org.nr";
             continue;
         }
 

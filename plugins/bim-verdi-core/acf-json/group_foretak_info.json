@@ -202,11 +202,41 @@
             "required": 0
         },
         {
+            "key": "field_foretak_telefon_landskode",
+            "label": "Landskode",
+            "name": "telefon_landskode",
+            "type": "select",
+            "instructions": "Velg landskode for telefonnummer",
+            "required": 0,
+            "choices": {
+                "+47": "+47 Norge",
+                "+46": "+46 Sverige",
+                "+45": "+45 Danmark",
+                "+358": "+358 Finland",
+                "+354": "+354 Island",
+                "+44": "+44 Storbritannia",
+                "+49": "+49 Tyskland",
+                "+31": "+31 Nederland",
+                "+32": "+32 Belgia",
+                "+33": "+33 Frankrike",
+                "+34": "+34 Spania",
+                "+39": "+39 Italia",
+                "+41": "+41 Sveits",
+                "+43": "+43 Østerrike",
+                "+48": "+48 Polen",
+                "+1": "+1 USA/Canada"
+            },
+            "default_value": "+47",
+            "allow_null": 1,
+            "ui": 1,
+            "return_format": "value"
+        },
+        {
             "key": "field_foretak_telefon",
             "label": "Telefon",
             "name": "telefon",
             "type": "text",
-            "instructions": "Telefonnummer til foretaket",
+            "instructions": "Telefonnummer (uten landskode)",
             "required": 0
         },
         {
