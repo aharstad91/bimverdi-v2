@@ -13,8 +13,10 @@ if (!defined('ABSPATH')) exit;
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
-// Get company ID
-$company_id = bimverdi_get_user_company($user_id);
+// Get company data
+// bimverdi_get_user_company() returns array with 'id' key, or false
+$company_data = bimverdi_get_user_company($user_id);
+$company_id = $company_data ? (is_array($company_data) ? $company_data['id'] : $company_data) : false;
 $company = $company_id ? get_post($company_id) : null;
 
 // Check if user is hovedkontakt
