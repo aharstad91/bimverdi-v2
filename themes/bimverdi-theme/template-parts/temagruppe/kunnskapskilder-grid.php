@@ -76,7 +76,6 @@ if (empty($kunnskapskilder)) {
             $kilde_id = $kilde->ID;
             $kort_beskrivelse = get_field('kort_beskrivelse', $kilde_id);
             $ekstern_lenke = get_field('ekstern_lenke', $kilde_id);
-            $sharepoint_lenke = get_field('sharepoint_lenke', $kilde_id);
             $utgiver = get_field('utgiver', $kilde_id);
             $kildetype = get_field('kildetype', $kilde_id);
             $utgivelsesaar = get_field('utgivelsesaar', $kilde_id);
@@ -89,8 +88,8 @@ if (empty($kunnskapskilder)) {
             $type_config = $kildetype_config[$kildetype] ?? $kildetype_config['annet'];
 
             // Determine link
-            $resource_url = $ekstern_lenke ?: $sharepoint_lenke ?: get_permalink($kilde_id);
-            $is_external = $ekstern_lenke || $sharepoint_lenke;
+            $resource_url = $ekstern_lenke ?: get_permalink($kilde_id);
+            $is_external = !empty($ekstern_lenke);
         ?>
         <article class="bg-white rounded-lg border border-[#E5E0D8] p-5 flex flex-col">
             <!-- Type Badge -->

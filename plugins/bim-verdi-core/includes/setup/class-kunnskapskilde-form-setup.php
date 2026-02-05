@@ -182,15 +182,7 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                     'placeholder' => 'https://example.com/dokument',
                     'inputName' => 'ekstern_lenke',
                 ),
-                // Field 5: SharePoint-lenke
-                array(
-                    'type' => 'website',
-                    'label' => 'SharePoint-lenke',
-                    'isRequired' => false,
-                    'placeholder' => 'https://sharepoint.com/...',
-                    'inputName' => 'sharepoint_lenke',
-                ),
-                // Field 6: Utgiver
+                // Field 5: Utgiver
                 array(
                     'type' => 'text',
                     'label' => 'Utgiver',

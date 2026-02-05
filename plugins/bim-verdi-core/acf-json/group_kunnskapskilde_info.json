@@ -3,6 +3,13 @@
     "title": "Kunnskapskilde Info",
     "fields": [
         {
+            "key": "field_kunnskapskilde_tab_innhold",
+            "label": "Innhold",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
             "key": "field_kunnskapskilde_navn",
             "label": "Navn",
             "name": "kunnskapskilde_navn",
@@ -23,17 +30,6 @@
             "placeholder": "Beskrivelse av innhold og formål..."
         },
         {
-            "key": "field_kunnskapskilde_detaljert_beskrivelse",
-            "label": "Detaljert beskrivelse",
-            "name": "detaljert_beskrivelse",
-            "type": "wysiwyg",
-            "instructions": "Fullstendig beskrivelse av kunnskapskilden",
-            "required": 0,
-            "tabs": "all",
-            "toolbar": "full",
-            "media_upload": 1
-        },
-        {
             "key": "field_kunnskapskilde_ekstern_lenke",
             "label": "Ekstern lenke",
             "name": "ekstern_lenke",
@@ -41,15 +37,6 @@
             "instructions": "Direkte lenke til kunnskapskilden (unik - kan ikke dupliseres i systemet)",
             "required": 1,
             "placeholder": "https://www.standard.no/..."
-        },
-        {
-            "key": "field_kunnskapskilde_sharepoint_lenke",
-            "label": "Sharepoint-lenke",
-            "name": "sharepoint_lenke",
-            "type": "url",
-            "instructions": "Intern Sharepoint-lenke (kun for deltakere)",
-            "required": 0,
-            "placeholder": "https://bimverdi.sharepoint.com/..."
         },
         {
             "key": "field_kunnskapskilde_utgiver",
@@ -61,50 +48,11 @@
             "placeholder": "Standard Norge"
         },
         {
-            "key": "field_kunnskapskilde_spraak",
-            "label": "Språk",
-            "name": "spraak",
-            "type": "select",
-            "instructions": "Hvilket språk er kilden skrevet på?",
-            "required": 1,
-            "choices": {
-                "norsk": "Norsk",
-                "engelsk": "Engelsk",
-                "svensk": "Svensk",
-                "dansk": "Dansk",
-                "flerspraklig": "Flerspråklig"
-            },
-            "default_value": "norsk",
-            "return_format": "value"
-        },
-        {
-            "key": "field_kunnskapskilde_versjon",
-            "label": "Versjon",
-            "name": "versjon",
-            "type": "text",
-            "instructions": "Versjonsnummer eller utgave",
-            "required": 0,
-            "placeholder": "1.0 / 2023-utgave"
-        },
-        {
-            "key": "field_kunnskapskilde_aar",
-            "label": "År (antatt)",
-            "name": "utgivelsesaar",
-            "type": "select",
-            "instructions": "Antatt utgivelsesår",
-            "required": 0,
-            "choices": {
-                "": "Velg år",
-                "2026": "2026",
-                "2025": "2025",
-                "2024": "2024",
-                "2023": "2023",
-                "2022": "2022",
-                "eldre": "Eldre enn 2022"
-            },
-            "default_value": "",
-            "return_format": "value",
-            "allow_null": 1
+            "key": "field_kunnskapskilde_tab_klassifisering",
+            "label": "Klassifisering",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
         },
         {
             "key": "field_kunnskapskilde_kildetype",
@@ -127,7 +75,10 @@
                 "annet": "Annet (tjeneste, webside etc.)"
             },
             "default_value": "standard",
-            "return_format": "value"
+            "return_format": "value",
+            "wrapper": {
+                "width": "50"
+            }
         },
         {
             "key": "field_kunnskapskilde_geografisk_gyldighet",
@@ -145,7 +96,10 @@
             },
             "default_value": "nasjonalt",
             "return_format": "value",
-            "allow_null": 1
+            "allow_null": 1,
+            "wrapper": {
+                "width": "50"
+            }
         },
         {
             "key": "field_kunnskapskilde_dataformat",
@@ -165,7 +119,99 @@
             },
             "default_value": "web_aapent",
             "return_format": "value",
-            "allow_null": 1
+            "allow_null": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_spraak",
+            "label": "Språk",
+            "name": "spraak",
+            "type": "select",
+            "instructions": "Hvilket språk er kilden skrevet på?",
+            "required": 1,
+            "choices": {
+                "norsk": "Norsk",
+                "engelsk": "Engelsk",
+                "svensk": "Svensk",
+                "dansk": "Dansk",
+                "flerspraklig": "Flerspråklig"
+            },
+            "default_value": "norsk",
+            "return_format": "value",
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_aar",
+            "label": "År (antatt)",
+            "name": "utgivelsesaar",
+            "type": "select",
+            "instructions": "Antatt utgivelsesår",
+            "required": 0,
+            "choices": {
+                "": "Velg år",
+                "2026": "2026",
+                "2025": "2025",
+                "2024": "2024",
+                "2023": "2023",
+                "2022": "2022",
+                "eldre": "Eldre enn 2022"
+            },
+            "default_value": "",
+            "return_format": "value",
+            "allow_null": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_versjon",
+            "label": "Versjon",
+            "name": "versjon",
+            "type": "text",
+            "instructions": "Versjonsnummer eller utgave",
+            "required": 0,
+            "placeholder": "1.0 / 2023-utgave",
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_tab_utvidet",
+            "label": "Utvidet",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
+            "key": "field_kunnskapskilde_detaljert_beskrivelse",
+            "label": "Detaljert beskrivelse",
+            "name": "detaljert_beskrivelse",
+            "type": "wysiwyg",
+            "instructions": "Fullstendig beskrivelse av kunnskapskilden",
+            "required": 0,
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 1
+        },
+        {
+            "key": "field_kunnskapskilde_tab_internt",
+            "label": "Internt",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
+            "key": "field_kunnskapskilde_sharepoint_lenke",
+            "label": "Sharepoint-lenke (admin)",
+            "name": "sharepoint_lenke",
+            "type": "url",
+            "instructions": "Intern lenke til Sharepoint. Kun synlig i admin, vises ikke på nettsiden.",
+            "required": 0,
+            "placeholder": "https://bimverdi.sharepoint.com/..."
         },
         {
             "key": "field_kunnskapskilde_registrert_av",
@@ -175,7 +221,10 @@
             "instructions": "Hvem registrerte denne kunnskapskilden",
             "required": 0,
             "role": "",
-            "return_format": "id"
+            "return_format": "id",
+            "wrapper": {
+                "width": "50"
+            }
         },
         {
             "key": "field_kunnskapskilde_tilknyttet_bedrift",
@@ -188,7 +237,10 @@
                 "foretak"
             ],
             "return_format": "id",
-            "multiple": 0
+            "multiple": 0,
+            "wrapper": {
+                "width": "50"
+            }
         }
     ],
     "location": [

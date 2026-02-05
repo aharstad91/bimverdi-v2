@@ -261,7 +261,9 @@ if (!function_exists('bimverdi_get_account_type')) {
 
 /**
  * Check if user's company is active (approved)
- * 
+ *
+ * Active = any bv_rolle except 'Ikke deltaker'
+ *
  * @param int|null $company_id Company ID (defaults to current user's company)
  * @return bool
  */
@@ -270,15 +272,16 @@ if (!function_exists('bimverdi_is_company_active')) {
         if (!$company_id) {
             $company_id = bimverdi_get_user_company();
         }
-        
+
         if (!$company_id) {
             return false;
         }
-        
+
         if (function_exists('get_field')) {
-            return (bool) get_field('er_aktiv_deltaker', $company_id);
+            $bv_rolle = get_field('bv_rolle', $company_id);
+            return $bv_rolle && $bv_rolle !== 'Ikke deltaker';
         }
-        
+
         return false;
     }
 }

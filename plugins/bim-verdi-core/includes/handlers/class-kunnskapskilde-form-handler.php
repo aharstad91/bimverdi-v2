@@ -138,7 +138,6 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
             'kort_beskrivelse' => get_field('kort_beskrivelse', $kunnskapskilde_id),
             'detaljert_beskrivelse' => get_field('detaljert_beskrivelse', $kunnskapskilde_id),
             'ekstern_lenke' => get_field('ekstern_lenke', $kunnskapskilde_id),
-            'sharepoint_lenke' => get_field('sharepoint_lenke', $kunnskapskilde_id),
             'utgiver' => get_field('utgiver', $kunnskapskilde_id),
             'spraak' => get_field('spraak', $kunnskapskilde_id),
             'versjon' => get_field('versjon', $kunnskapskilde_id),
@@ -177,12 +176,6 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
                 case 'ekstern_lenke':
                     if (!empty($acf_data['ekstern_lenke'])) {
                         $field->defaultValue = $acf_data['ekstern_lenke'];
-                    }
-                    break;
-
-                case 'sharepoint_lenke':
-                    if (!empty($acf_data['sharepoint_lenke'])) {
-                        $field->defaultValue = $acf_data['sharepoint_lenke'];
                     }
                     break;
 
@@ -589,7 +582,6 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
             'kort_beskrivelse' => 'kort_beskrivelse',
             'detaljert_beskrivelse' => 'detaljert_beskrivelse',
             'ekstern_lenke' => 'ekstern_lenke',
-            'sharepoint_lenke' => 'sharepoint_lenke',
             'utgiver' => 'utgiver',
             'spraak' => 'spraak',
             'versjon' => 'versjon',
@@ -612,7 +604,6 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
                         $value = wp_kses_post($value);
                         break;
                     case 'ekstern_lenke':
-                    case 'sharepoint_lenke':
                         $value = esc_url_raw($value);
                         break;
                     case 'utgivelsesaar':

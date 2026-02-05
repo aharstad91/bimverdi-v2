@@ -41,7 +41,7 @@ if (!$company || $company->post_type !== 'foretak') {
     exit;
 }
 
-$er_aktiv_deltaker = bimverdi_is_company_active($company_id);
+$is_active_member = bimverdi_is_company_active($company_id);
 
 // Get invitations handler
 if (!function_exists('bimverdi_get_invitations')) {
@@ -90,7 +90,7 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
     'description' => sprintf(__('Administrer brukertilgang for %s', 'bimverdi'), esc_html($company_name)),
 ]); ?>
 
-<?php if (!$er_aktiv_deltaker): ?>
+<?php if (!$is_active_member): ?>
     <!-- Company not yet approved -->
     <div class="p-4 bg-amber-50 border-l-4 border-amber-400 text-amber-800 mb-8">
         <strong>Foretaket er ikke godkjent ennå</strong><br>

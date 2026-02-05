@@ -458,6 +458,157 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
             </div>
         </div>
 
+        <?php
+        // Related Content Section - based on temagruppe
+        if (!empty($temagrupper)):
+            $temagruppe_ids = wp_list_pluck($temagrupper, 'term_id');
+            $temagruppe_names = wp_list_pluck($temagrupper, 'name');
+
+            // Query related content
+            $related_args = array(
+                'posts_per_page' => 6,
+                'post__not_in'   => array($arrangement_id),
+                'orderby'        => 'modified',
+                'order'          => 'DESC',
+                'tax_query'      => array(
+                    array(
+                        'taxonomy' => 'temagruppe',
+                        'field'    => 'term_id',
+                        'terms'    => $temagruppe_ids,
+                    ),
+                ),
+            );
+
+            // Get related tools
+            $related_tools = new WP_Query(array_merge($related_args, array('post_type' => 'verktoy')));
+
+            // Get related knowledge sources
+            $related_kilder = new WP_Query(array_merge($related_args, array('post_type' => 'kunnskapskilde')));
+
+            // Get related articles
+            $related_artikler = new WP_Query(array_merge($related_args, array('post_type' => 'artikkel')));
+
+            // Get related companies (deltakere)
+            $related_foretak = new WP_Query(array_merge($related_args, array('post_type' => 'foretak')));
+
+            // Check if we have any related content
+            $has_related = $related_tools->have_posts() || $related_kilder->have_posts() || $related_artikler->have_posts() || $related_foretak->have_posts();
+
+            if ($has_related):
+        ?>
+        <!-- Related Content Section -->
+        <div class="border-t border-[#D6D1C6] mt-12 pt-12">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-[#1A1A1A] mb-2">Relatert innhold</h2>
+                <p class="text-[#5A5A5A]">
+                    Innhold tagget med
+                    <?php foreach ($temagrupper as $i => $gruppe): ?>
+                        <a href="<?php echo get_term_link($gruppe); ?>" class="text-[#FF8B5E] hover:underline"><?php echo esc_html($gruppe->name); ?></a><?php echo ($i < count($temagrupper) - 1) ? ', ' : ''; ?>
+                    <?php endforeach; ?>
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <?php if ($related_tools->have_posts()): ?>
+                <!-- Related Tools -->
+                <div>
+                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        Verktøy
+                    </h3>
+                    <ul class="space-y-2">
+                        <?php while ($related_tools->have_posts()): $related_tools->the_post(); ?>
+                        <li>
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                                <?php the_title(); ?>
+                            </a>
+                        </li>
+                        <?php endwhile; wp_reset_postdata(); ?>
+                    </ul>
+                    <a href="<?php echo home_url('/verktoy/'); ?>" class="inline-flex items-center gap-1 text-xs text-[#FF8B5E] mt-3 hover:underline">
+                        Se alle verktøy
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </a>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($related_kilder->have_posts()): ?>
+                <!-- Related Knowledge Sources -->
+                <div>
+                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        Kunnskapskilder
+                    </h3>
+                    <ul class="space-y-2">
+                        <?php while ($related_kilder->have_posts()): $related_kilder->the_post(); ?>
+                        <li>
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                                <?php the_title(); ?>
+                            </a>
+                        </li>
+                        <?php endwhile; wp_reset_postdata(); ?>
+                    </ul>
+                    <a href="<?php echo home_url('/kunnskapskilder/'); ?>" class="inline-flex items-center gap-1 text-xs text-[#FF8B5E] mt-3 hover:underline">
+                        Se alle kilder
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </a>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($related_artikler->have_posts()): ?>
+                <!-- Related Articles -->
+                <div>
+                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Artikler
+                    </h3>
+                    <ul class="space-y-2">
+                        <?php while ($related_artikler->have_posts()): $related_artikler->the_post(); ?>
+                        <li>
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                                <?php the_title(); ?>
+                            </a>
+                        </li>
+                        <?php endwhile; wp_reset_postdata(); ?>
+                    </ul>
+                    <a href="<?php echo home_url('/artikler/'); ?>" class="inline-flex items-center gap-1 text-xs text-[#FF8B5E] mt-3 hover:underline">
+                        Se alle artikler
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </a>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($related_foretak->have_posts()): ?>
+                <!-- Related Companies -->
+                <div>
+                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+                        Deltakere
+                    </h3>
+                    <ul class="space-y-2">
+                        <?php while ($related_foretak->have_posts()): $related_foretak->the_post(); ?>
+                        <li>
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                                <?php the_title(); ?>
+                            </a>
+                        </li>
+                        <?php endwhile; wp_reset_postdata(); ?>
+                    </ul>
+                    <a href="<?php echo home_url('/deltakere/'); ?>" class="inline-flex items-center gap-1 text-xs text-[#FF8B5E] mt-3 hover:underline">
+                        Se alle deltakere
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </a>
+                </div>
+                <?php endif; ?>
+
+            </div>
+        </div>
+        <?php
+            endif; // has_related
+        endif; // !empty($temagrupper)
+        ?>
+
     </div>
 </div>
 

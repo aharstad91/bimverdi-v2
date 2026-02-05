@@ -222,7 +222,7 @@ User's company is stored in user_meta. Check these keys **in order**:
 ### Foretak (Company) - CPT: `foretak`
 ```php
 get_field('hovedkontaktperson', $company_id);  // User ID of primary contact
-get_field('er_aktiv_deltaker', $company_id);   // bool - is active member
+get_field('bv_rolle', $company_id);            // Deltaker|Prosjektdeltaker|Partner|Ikke deltaker
 get_field('organisasjonsnummer', $company_id); // Norwegian org number
 get_field('bedriftsnavn', $company_id);        // Company name (or post_title)
 get_field('beskrivelse', $company_id);         // Company description

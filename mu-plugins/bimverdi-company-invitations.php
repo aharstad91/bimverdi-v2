@@ -4,8 +4,8 @@
  * 
  * Håndterer invitasjon av kolleger til et foretak:
  * - Hovedkontakt sender invitasjon via e-post
- * - Invitert bruker får lenke og registrerer seg
- * - Bruker blir automatisk koblet til foretaket med company_user rolle
+ * - Invitert bruker klikker lenke → sendes direkte til /aktiver-konto/ (navn + passord)
+ * - Bruker blir automatisk koblet til foretaket med tilleggskontakt rolle
  * 
  * @package BIMVerdi
  * @version 1.0.0
@@ -296,7 +296,7 @@ class BIMVerdi_Company_Invitations {
      * @param string $role Default role for invited user
      * @return array|WP_Error
      */
-    public function send_invitation($email, $company_id, $invited_by, $role = 'company_user') {
+    public function send_invitation($email, $company_id, $invited_by, $role = 'tilleggskontakt') {
         global $wpdb;
         
         $email = sanitize_email($email);
@@ -506,9 +506,13 @@ BIM Verdi',
             update_field('tilknyttet_foretak', $invitation->company_id, 'user_' . $user_id);
         }
         
-        // Set user role
+        // Set user role (with fallback for legacy 'company_user' values)
+        $role = $invitation->role;
+        if ($role === 'company_user' || empty($role)) {
+            $role = 'tilleggskontakt';
+        }
         $user = new WP_User($user_id);
-        $user->set_role($invitation->role);
+        $user->set_role($role);
         
         // Mark invitation as used
         $wpdb->update(
@@ -573,15 +577,44 @@ BIM Verdi',
             exit;
         }
         
-        // Redirect to registration with pre-filled email
-        $company = get_post($invitation->company_id);
-        wp_redirect(add_query_arg(
-            array(
-                'invitation' => '1',
-                'company' => urlencode($company->post_title),
-            ),
-            home_url('/registrer/')
-        ));
+        // Check if email already has a WordPress account → redirect to login
+        $existing_user = get_user_by('email', $invitation->email);
+        if ($existing_user) {
+            $login_redirect = add_query_arg(
+                'invitation_token', $token,
+                home_url('/aksepter-invitasjon/')
+            );
+            wp_redirect(add_query_arg(
+                'redirect_to', urlencode($login_redirect),
+                home_url('/logg-inn/')
+            ));
+            exit;
+        }
+
+        // Auto-create pending registration (skips email verification step)
+        $verification = new BIMVerdi_Email_Verification();
+        $pending = $verification->create_pending_registration($invitation->email);
+
+        if ($pending) {
+            // Redirect directly to /aktiver-konto/ (name + password form)
+            wp_redirect(add_query_arg(
+                array(
+                    'email' => urlencode($invitation->email),
+                    'token' => $pending['token'],
+                ),
+                home_url('/aktiver-konto/')
+            ));
+        } else {
+            // Fallback: redirect to registration page
+            $company = get_post($invitation->company_id);
+            wp_redirect(add_query_arg(
+                array(
+                    'invitation' => '1',
+                    'company' => urlencode($company->post_title),
+                ),
+                home_url('/registrer/')
+            ));
+        }
         exit;
     }
     

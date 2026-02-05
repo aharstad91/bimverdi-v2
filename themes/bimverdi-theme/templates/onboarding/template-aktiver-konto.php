@@ -13,6 +13,7 @@
 // Get parameters from URL
 $email = isset($_GET['email']) ? sanitize_email(urldecode($_GET['email'])) : '';
 $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
+$form_error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
 
 // Validate token
 $is_valid = false;
@@ -62,6 +63,27 @@ if (is_user_logged_in()) {
     wp_redirect(home_url('/min-side/'));
     exit;
 }
+
+// Form error messages (from POST-Redirect-GET)
+$form_error_messages = array(
+    'weak_password' => 'Passord må være minst 8 tegn.',
+    'missing_name'  => 'Vennligst oppgi navnet ditt.',
+    'user_exists'   => 'Denne e-postadressen er allerede registrert. <a href="' . esc_url(home_url('/logg-inn/')) . '" style="color: inherit; font-weight: 600;">Logg inn her</a>',
+    'nonce'         => 'Noe gikk galt. Vennligst prøv igjen.',
+    'system'        => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
+    'token_invalid' => '', // Handled by the token validation above
+);
+$form_error_text = isset($form_error_messages[$form_error]) ? $form_error_messages[$form_error] : '';
+
+// If form submission returned token_invalid, override the validation state
+if ($form_error === 'token_invalid') {
+    $is_valid = false;
+    $error_message = 'Verifiseringslenken er ugyldig eller utløpt. Vennligst registrer deg på nytt.';
+    $error_code = 'invalid_token';
+}
+
+// Prefill name from failed submission (passed via URL would be insecure, so we don't)
+$prefill_name = '';
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -244,18 +266,6 @@ if (is_user_logged_in()) {
             margin: 0;
         }
 
-        .success-icon {
-            width: 56px;
-            height: 56px;
-            margin: 0 auto var(--bv-space-md);
-            border-radius: 50%;
-            background: #DCFCE7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #22C55E;
-        }
-
         .form-group { margin-bottom: var(--bv-space-md); }
 
         .form-label {
@@ -263,6 +273,11 @@ if (is_user_logged_in()) {
             font-size: var(--bv-text-sm);
             font-weight: 500;
             margin-bottom: var(--bv-space-xs);
+        }
+
+        .form-label .required {
+            color: #DC2626;
+            margin-left: 2px;
         }
 
         .form-hint {
@@ -292,10 +307,8 @@ if (is_user_logged_in()) {
             border-color: var(--bv-border-focus);
         }
 
-        .form-input.locked {
-            background: var(--bv-bg-page);
-            color: var(--bv-text-secondary);
-            cursor: not-allowed;
+        .form-input.has-error {
+            border-color: #DC2626;
         }
 
         .email-display {
@@ -395,11 +408,16 @@ if (is_user_logged_in()) {
             display: flex;
             align-items: flex-start;
             gap: var(--bv-space-xs);
+            line-height: 1.5;
         }
 
         .alert-error {
             background: #FEF2F2;
             border: 1px solid #FECACA;
+            color: #991B1B;
+        }
+
+        .alert-error a {
             color: #991B1B;
         }
 
@@ -427,80 +445,6 @@ if (is_user_logged_in()) {
         .error-icon.expired { background: #FEF2F2; color: #DC2626; }
         .error-icon.used { background: #FEF3C7; color: #D97706; }
         .error-icon.invalid { background: #FEF2F2; color: #DC2626; }
-
-        /* Gravity Forms overrides */
-        .gform_wrapper .gform_body { padding: 0 !important; }
-        .gform_wrapper .gform_fields { padding: 0 !important; }
-        .gform_wrapper .gfield { margin-bottom: var(--bv-space-md) !important; }
-        .gform_wrapper .gfield_label {
-            font-size: var(--bv-text-sm) !important;
-            font-weight: 500 !important;
-            color: var(--bv-text-primary) !important;
-            margin-bottom: var(--bv-space-xs) !important;
-        }
-        .gform_wrapper .gfield_required { color: #DC2626 !important; }
-        .gform_wrapper input[type="text"],
-        .gform_wrapper input[type="password"] {
-            width: 100% !important;
-            padding: var(--bv-space-sm) !important;
-            font-size: var(--bv-text-base) !important;
-            font-family: inherit !important;
-            border: 1px solid var(--bv-border-light) !important;
-            border-radius: var(--bv-radius-md) !important;
-            background: var(--bv-bg-card) !important;
-            transition: border-color var(--bv-transition-normal) !important;
-        }
-        .gform_wrapper input[type="text"]::placeholder,
-        .gform_wrapper input[type="password"]::placeholder {
-            color: var(--bv-text-muted) !important;
-            font-style: italic !important;
-        }
-        .gform_wrapper input:focus {
-            outline: none !important;
-            border-color: var(--bv-border-focus) !important;
-        }
-        .gform_wrapper .gfield_description {
-            font-size: 12px !important;
-            color: var(--bv-text-muted) !important;
-            margin-top: 4px !important;
-        }
-        .gform_wrapper .ginput_container_password {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: var(--bv-space-sm) !important;
-        }
-        .gform_wrapper .ginput_container_password > span {
-            width: 100% !important;
-        }
-        .gform_wrapper .gform_footer {
-            margin-top: var(--bv-space-md) !important;
-            padding: 0 !important;
-        }
-        .gform_wrapper .gform_button {
-            width: 100% !important;
-            padding: var(--bv-space-sm) !important;
-            background: var(--bv-btn-primary-bg) !important;
-            color: var(--bv-btn-primary-text) !important;
-            font-size: var(--bv-text-base) !important;
-            font-weight: 500 !important;
-            border: none !important;
-            border-radius: var(--bv-radius-md) !important;
-            cursor: pointer !important;
-        }
-        .gform_wrapper .gform_button:hover {
-            background: var(--bv-btn-primary-hover) !important;
-        }
-        .gform_wrapper .gfield_visibility_hidden {
-            display: none !important;
-        }
-        .gform_wrapper .validation_message {
-            color: #DC2626 !important;
-            font-size: 12px !important;
-            margin-top: 4px !important;
-        }
-        .gform_wrapper .gfield_error input {
-            border-color: #DC2626 !important;
-        }
 
         @media (max-width: 768px) {
             .auth-container {
@@ -571,15 +515,15 @@ if (is_user_logged_in()) {
                 <?php if ($is_valid): ?>
                     <!-- Valid Token - Show Form -->
                     <div class="auth-card-header">
-                        <div class="success-icon">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                <polyline points="22 4 12 14.01 9 11.01"/>
-                            </svg>
-                        </div>
-                        <h2>E-post bekreftet</h2>
-                        <p>Fullfør registreringen for å aktivere kontoen</p>
+                        <h2>Fullfør registreringen</h2>
+                        <p>Oppgi navn og velg passord for å aktivere kontoen din</p>
                     </div>
+
+                    <?php if ($form_error_text): ?>
+                        <div class="alert alert-error">
+                            <?php echo $form_error_text; ?>
+                        </div>
+                    <?php endif; ?>
 
                     <!-- Email Display (locked) -->
                     <div class="form-group">
@@ -597,32 +541,34 @@ if (is_user_logged_in()) {
                         </div>
                     </div>
 
-                    <!-- Gravity Form -->
-                    <div class="bimverdi-verify-form">
-                        <?php
-                        if (function_exists('gravity_form')) {
-                            $verify_form_id = (int) get_option('bimverdi_verify_form_id', 6);
-                            gravity_form(
-                                $verify_form_id,
-                                false,
-                                false,
-                                false,
-                                array(
-                                    'email' => $email,
-                                    'token' => $token,
-                                ),
-                                true,
-                                0,
-                                true
-                            );
-                        } else {
-                            echo '<div class="alert alert-error">';
-                            echo '<svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-                            echo '<span>Gravity Forms er ikke aktivert. Kontakt administrator.</span>';
-                            echo '</div>';
-                        }
-                        ?>
-                    </div>
+                    <!-- Plain HTML Form -->
+                    <form method="post" action="" novalidate>
+                        <?php wp_nonce_field('bimverdi_verify_account'); ?>
+                        <input type="hidden" name="email" value="<?php echo esc_attr($email); ?>">
+                        <input type="hidden" name="token" value="<?php echo esc_attr($token); ?>">
+
+                        <div class="form-group">
+                            <label class="form-label" for="bv-name">Fullt navn <span class="required">*</span></label>
+                            <input type="text" id="bv-name" name="full_name" required
+                                   placeholder="Ola Nordmann"
+                                   value="<?php echo esc_attr($prefill_name); ?>"
+                                   class="form-input<?php echo $form_error === 'missing_name' ? ' has-error' : ''; ?>"
+                                   autocomplete="name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="bv-password">Velg et passord <span class="required">*</span></label>
+                            <input type="password" id="bv-password" name="password" required
+                                   placeholder="Minimum 8 tegn"
+                                   class="form-input<?php echo $form_error === 'weak_password' ? ' has-error' : ''; ?>"
+                                   autocomplete="new-password" minlength="8">
+                            <p class="form-hint">Minimum 8 tegn. Velg noe du husker!</p>
+                        </div>
+
+                        <button type="submit" name="bimverdi_verify_account" value="1" class="btn btn-primary">
+                            Aktiver kontoen min
+                        </button>
+                    </form>
 
                     <div class="auth-footer-links">
                         <p>Har du allerede en konto? <a href="<?php echo home_url('/logg-inn/'); ?>">Logg inn</a></p>

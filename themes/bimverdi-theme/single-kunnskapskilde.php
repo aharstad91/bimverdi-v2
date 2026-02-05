@@ -17,7 +17,6 @@ $kunnskapskilde_navn = get_field('kunnskapskilde_navn') ?: get_the_title();
 $kort_beskrivelse = get_field('kort_beskrivelse');
 $detaljert_beskrivelse = get_field('detaljert_beskrivelse');
 $ekstern_lenke = get_field('ekstern_lenke');
-$sharepoint_lenke = get_field('sharepoint_lenke');
 $utgiver = get_field('utgiver');
 $spraak = get_field('spraak');
 $versjon = get_field('versjon');
@@ -279,21 +278,6 @@ $kilde_created = get_the_date('d.m.Y');
                         </div>
                         <?php endif; ?>
 
-                        <!-- Sharepoint lenke (kun for innloggede) -->
-                        <?php if ($sharepoint_lenke && is_user_logged_in()): ?>
-                        <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Intern lenke</dt>
-                            <dd class="text-sm">
-                                <a href="<?php echo esc_url($sharepoint_lenke); ?>"
-                                   target="_blank"
-                                   rel="noopener"
-                                   class="text-[#1A1A1A] hover:underline inline-flex items-center gap-1">
-                                    Sharepoint
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                                </a>
-                            </dd>
-                        </div>
-                        <?php endif; ?>
                     </dl>
                 </section>
 
@@ -366,14 +350,6 @@ $kilde_created = get_the_date('d.m.Y');
                         </a>
                         <?php endif; ?>
 
-                        <?php if ($sharepoint_lenke && is_user_logged_in()): ?>
-                        <a href="<?php echo esc_url($sharepoint_lenke); ?>"
-                           target="_blank"
-                           rel="noopener"
-                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
-                            Åpne i Sharepoint
-                        </a>
-                        <?php endif; ?>
 
                         <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>"
                            class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
