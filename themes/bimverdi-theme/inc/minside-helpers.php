@@ -444,7 +444,7 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             // Events
             'arrangementer'       => 'arrangementer-list',
             
-            // Company Colleagues (hovedkontakt only)
+            // Company Colleagues (read-only for tilleggskontakter)
             'foretak/kolleger'    => 'foretak-team',
 
             // Legacy redirect

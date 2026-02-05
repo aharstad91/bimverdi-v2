@@ -56,12 +56,14 @@ if ($has_company) {
             'label' => __('Rediger foretak', 'bimverdi'),
             'icon' => 'square-pen',
         ];
-        $foretak_items[] = [
-            'route' => 'foretak/kolleger',
-            'label' => __('Kolleger', 'bimverdi'),
-            'icon' => 'users',
-        ];
     }
+
+    // Kolleger visible to all company users (read-only for tilleggskontakter)
+    $foretak_items[] = [
+        'route' => 'foretak/kolleger',
+        'label' => __('Kolleger', 'bimverdi'),
+        'icon' => 'users',
+    ];
 
     $nav_sections['foretak'] = [
         'label' => __('Foretak', 'bimverdi'),
