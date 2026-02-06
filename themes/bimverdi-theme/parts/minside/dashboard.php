@@ -126,11 +126,16 @@ $events_count = count($upcoming_events);
 <!-- Snarveier Section (Subtle action links) -->
 <div class="mb-12">
     <h2 class="text-lg font-semibold text-[#1A1A1A] mb-4"><?php _e('Snarveier', 'bimverdi'); ?></h2>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
 
         <a href="<?php echo home_url('/min-side/registrer-verktoy/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F2F0EB] transition-colors group">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#1A1A1A]"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Registrer verktøy', 'bimverdi'); ?></span>
+        </a>
+
+        <a href="<?php echo home_url('/min-side/kunnskapskilder/registrer/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F2F0EB] transition-colors group">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#1A1A1A]"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Registrer kunnskapskilde', 'bimverdi'); ?></span>
         </a>
 
         <a href="<?php echo home_url('/min-side/foretak/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F2F0EB] transition-colors group">
