@@ -153,8 +153,16 @@ $events_count = count($upcoming_events);
     <div class="flex items-start gap-4">
         <?php
         $logo = get_field('logo', $company_id);
-        if ($logo): ?>
-            <img src="<?php echo esc_url($logo['sizes']['thumbnail']); ?>" alt="" class="w-14 h-14 rounded-lg object-cover">
+        $logo_url = '';
+        if ($logo) {
+            if (is_array($logo)) {
+                $logo_url = $logo['sizes']['thumbnail'] ?? $logo['url'] ?? '';
+            } else {
+                $logo_url = wp_get_attachment_image_url($logo, 'thumbnail') ?: '';
+            }
+        }
+        if ($logo_url): ?>
+            <img src="<?php echo esc_url($logo_url); ?>" alt="" class="w-14 h-14 rounded-lg object-cover">
         <?php else: ?>
             <div class="w-14 h-14 rounded-lg bg-[#F2F0EB] flex items-center justify-center flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#888]"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path></svg>

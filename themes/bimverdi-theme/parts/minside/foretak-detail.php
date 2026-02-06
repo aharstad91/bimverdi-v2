@@ -52,9 +52,15 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
         <!-- Company Header (Variant B: no box, divider below) -->
         <div class="pb-8 border-b border-[#D6D1C6]">
             <div class="flex items-start gap-4">
-                <?php $logo = get_field('logo', $company_id); ?>
-                <?php if ($logo): ?>
-                    <img src="<?php echo esc_url($logo['sizes']['medium']); ?>" alt="" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+                <?php
+                $logo = get_field('logo', $company_id);
+                $logo_url = '';
+                if ($logo) {
+                    $logo_url = is_array($logo) ? ($logo['sizes']['medium'] ?? $logo['url'] ?? '') : (wp_get_attachment_image_url($logo, 'medium') ?: '');
+                }
+                ?>
+                <?php if ($logo_url): ?>
+                    <img src="<?php echo esc_url($logo_url); ?>" alt="" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
                 <?php else: ?>
                     <div class="w-20 h-20 rounded-lg bg-[#F2F0EB] flex items-center justify-center flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#888888]"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path></svg>
