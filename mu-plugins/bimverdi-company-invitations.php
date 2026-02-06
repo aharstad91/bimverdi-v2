@@ -507,12 +507,15 @@ BIM Verdi',
         }
         
         // Set user role (with fallback for legacy 'company_user' values)
-        $role = $invitation->role;
-        if ($role === 'company_user' || empty($role)) {
-            $role = 'tilleggskontakt';
-        }
+        // Never downgrade administrators
         $user = new WP_User($user_id);
-        $user->set_role($role);
+        if (!in_array('administrator', $user->roles)) {
+            $role = $invitation->role;
+            if ($role === 'company_user' || empty($role)) {
+                $role = 'tilleggskontakt';
+            }
+            $user->set_role($role);
+        }
         
         // Mark invitation as used
         $wpdb->update(
