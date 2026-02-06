@@ -98,6 +98,9 @@ class BIM_Verdi_Core {
         // Load Gravity Forms manager (orchestrates all form handlers)
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/class-gravity-forms-manager.php';
 
+        // Load profile form migration
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/setup/class-profile-form-migration.php';
+
         // Load WP-CLI commands
         if (defined('WP_CLI') && WP_CLI) {
             require_once BIM_VERDI_CORE_PLUGIN_DIR . 'cli/class-foretak-import-command.php';
@@ -129,6 +132,7 @@ class BIM_Verdi_Core {
         // Initialize Gravity Forms manager (if Gravity Forms is active)
         if (class_exists('GFForms')) {
             BIM_Verdi_Gravity_Forms_Manager::get_instance();
+            BIM_Verdi_Profile_Form_Migration::maybe_migrate();
         }
         
         // Set ACF JSON save/load points

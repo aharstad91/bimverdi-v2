@@ -89,6 +89,105 @@ add_action('acf/init', function() {
                 'prepend' => '🔗',
                 'append' => '',
             ),
+
+            // Middle Name
+            array(
+                'key' => 'field_user_middle_name',
+                'label' => 'Mellomnavn',
+                'name' => 'middle_name',
+                'type' => 'text',
+                'instructions' => 'Valgfritt mellomnavn',
+                'required' => 0,
+                'conditional_logic' => 0,
+                'wrapper' => array(
+                    'width' => '33.33',
+                    'class' => '',
+                    'id' => '',
+                ),
+                'placeholder' => '',
+            ),
+
+            // Profile Image
+            array(
+                'key' => 'field_user_profile_image',
+                'label' => 'Personbilde',
+                'name' => 'profile_image',
+                'type' => 'image',
+                'instructions' => 'Last opp et profilbilde (maks 2 MB, jpg/png/webp)',
+                'required' => 0,
+                'conditional_logic' => 0,
+                'return_format' => 'id',
+                'preview_size' => 'thumbnail',
+                'library' => 'all',
+                'min_width' => 0,
+                'min_height' => 0,
+                'max_width' => 0,
+                'max_height' => 0,
+                'min_size' => '',
+                'max_size' => 2,
+                'mime_types' => 'jpg, jpeg, png, webp',
+                'wrapper' => array(
+                    'width' => '50',
+                    'class' => '',
+                    'id' => '',
+                ),
+            ),
+
+            // Registration Background
+            array(
+                'key' => 'field_user_registration_background',
+                'label' => 'Bakgrunn for registrering',
+                'name' => 'registration_background',
+                'type' => 'checkbox',
+                'instructions' => 'Hva er bakgrunnen for at du registrerte deg?',
+                'required' => 0,
+                'conditional_logic' => 0,
+                'choices' => array(
+                    'oppdatering' => 'Dette er en oppdatering - jeg er allerede registrert',
+                    'tilleggskontakt' => 'Min arbeidsgiver er deltaker og jeg er ny tilleggskontakt',
+                    'arrangement' => 'Gjelder registrering for arrangement-deltakelse',
+                    'nyhetsbrev' => 'Jeg ønsker å motta nyhetsbrev fra BIM Verdi',
+                    'deltaker_verktoy' => 'Deltakerregistrering og digitale verktøy',
+                    'mote' => 'Ønsker å avtale et møte',
+                ),
+                'default_value' => array(),
+                'layout' => 'vertical',
+                'toggle' => 0,
+                'return_format' => 'value',
+                'wrapper' => array(
+                    'width' => '',
+                    'class' => '',
+                    'id' => '',
+                ),
+            ),
+
+            // Topic Interests
+            array(
+                'key' => 'field_user_topic_interests',
+                'label' => 'Interesse for temaene',
+                'name' => 'topic_interests',
+                'type' => 'checkbox',
+                'instructions' => 'Velg de temagruppene du er interessert i',
+                'required' => 0,
+                'conditional_logic' => 0,
+                'choices' => array(
+                    'byggesaksbim' => 'ByggesaksBIM',
+                    'prosjektbim' => 'ProsjektBIM',
+                    'eiendomsbim' => 'EiendomsBIM',
+                    'miljobim' => 'MiljøBIM',
+                    'sirkbim' => 'SirkBIM',
+                    'bimtech' => 'BIMtech',
+                ),
+                'default_value' => array(),
+                'layout' => 'vertical',
+                'toggle' => 0,
+                'return_format' => 'value',
+                'wrapper' => array(
+                    'width' => '',
+                    'class' => '',
+                    'id' => '',
+                ),
+            ),
         ),
         'location' => array(
             array(

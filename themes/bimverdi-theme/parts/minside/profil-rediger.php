@@ -13,21 +13,35 @@ defined('ABSPATH') || exit;
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
-// Get user data for display
-$first_name = get_user_meta($user_id, 'first_name', true);
-$last_name = get_user_meta($user_id, 'last_name', true);
-$display_name = trim($first_name . ' ' . $last_name) ?: $current_user->display_name;
-$avatar_url = get_avatar_url($user_id, ['size' => 80]);
+// Get user data via helper
+$display_name = bim_get_user_display_name($user_id);
+$avatar_url = bim_get_user_profile_image_url($user_id, 'thumbnail');
+
+// Check for welcome redirect (new colleague after email verification)
+$is_welcome = isset($_GET['welcome']) && $_GET['welcome'] === '1';
 ?>
 
 <!-- Account Layout with Sidenav -->
 <?php get_template_part('parts/components/account-layout', null, [
-    'title' => __('Rediger profil', 'bimverdi'),
-    'description' => __('Oppdater din personlige informasjon', 'bimverdi'),
+    'title' => $is_welcome ? __('Velkommen til BIM Verdi!', 'bimverdi') : __('Rediger profil', 'bimverdi'),
+    'description' => $is_welcome ? __('Fyll ut profilen din for å komme i gang', 'bimverdi') : __('Oppdater din personlige informasjon', 'bimverdi'),
 ]); ?>
 
     <!-- Form Container (constrained width) -->
     <div class="max-w-2xl">
+
+        <?php if ($is_welcome): ?>
+        <!-- Welcome Banner -->
+        <div class="mb-8 p-5 bg-[#FFF4EE] border border-[#FFD4BD] rounded-lg">
+            <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <div>
+                    <p class="font-semibold text-[#1A1A1A] mb-1"><?php _e('Kontoen din er opprettet!', 'bimverdi'); ?></p>
+                    <p class="text-sm text-[#5A5A5A]"><?php _e('Fyll ut informasjonen under for å fullføre profilen din. Du kan alltid oppdatere dette senere.', 'bimverdi'); ?></p>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- User Info Badge -->
         <div class="mb-8 p-4 bg-[#F7F5EF] border border-[#EFE9DE] rounded-lg flex items-center gap-4">

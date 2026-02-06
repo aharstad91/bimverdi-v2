@@ -51,6 +51,10 @@ function bim_get_user_profile($user_id) {
         'phone' => bim_get_user_profile_field('phone', $user_id),
         'job_title' => bim_get_user_profile_field('job_title', $user_id),
         'linkedin_url' => bim_get_user_profile_field('linkedin_url', $user_id),
+        'middle_name' => bim_get_user_profile_field('middle_name', $user_id),
+        'profile_image' => bim_get_user_profile_field('profile_image', $user_id),
+        'registration_background' => bim_get_user_profile_field('registration_background', $user_id) ?: array(),
+        'topic_interests' => bim_get_user_profile_field('topic_interests', $user_id) ?: array(),
         'user_url' => get_author_posts_url($user_id),
     );
 }
@@ -132,14 +136,50 @@ function bim_update_user_profile_field($field_name, $value, $user_id) {
  * @return string Display name
  */
 function bim_get_user_display_name($user_id) {
-    
+
     $profile = bim_get_user_profile($user_id);
-    
+
     if ($profile['first_name'] || $profile['last_name']) {
-        return trim($profile['first_name'] . ' ' . $profile['last_name']);
+        $parts = array_filter(array(
+            $profile['first_name'],
+            $profile['middle_name'] ?? '',
+            $profile['last_name'],
+        ));
+        return trim(implode(' ', $parts));
     }
-    
+
     return $profile['email'];
+}
+
+/**
+ * Get user profile image URL
+ *
+ * Returns the ACF profile image URL if set, otherwise falls back to Gravatar.
+ *
+ * @param int $user_id User ID
+ * @param string $size Image size: 'thumbnail', 'medium', 'large', 'full' (default: 'medium')
+ * @return string Image URL
+ */
+function bim_get_user_profile_image_url($user_id, $size = 'medium') {
+
+    if (!$user_id || !is_numeric($user_id)) {
+        return get_avatar_url(0, array('size' => 200));
+    }
+
+    // Try ACF profile image first
+    if (function_exists('get_field')) {
+        $image_id = get_field('profile_image', 'user_' . $user_id);
+        if ($image_id) {
+            $image_url = wp_get_attachment_image_url($image_id, $size);
+            if ($image_url) {
+                return $image_url;
+            }
+        }
+    }
+
+    // Fallback to Gravatar
+    $gravatar_size = ($size === 'thumbnail') ? 96 : (($size === 'large' || $size === 'full') ? 400 : 200);
+    return get_avatar_url($user_id, array('size' => $gravatar_size));
 }
 
 /**

@@ -13,11 +13,10 @@ if (!defined('ABSPATH')) exit;
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
-// Get user meta
-$first_name = get_user_meta($user_id, 'first_name', true);
-$last_name = get_user_meta($user_id, 'last_name', true);
-$phone = get_user_meta($user_id, 'bim_verdi_phone', true);
-$position = get_user_meta($user_id, 'bim_verdi_position', true);
+// Get user profile via helper
+$profile = bim_get_user_profile($user_id);
+$phone = $profile['phone'];
+$position = $profile['job_title'];
 $bio = get_user_meta($user_id, 'description', true);
 
 // Get company info
@@ -25,18 +24,21 @@ $company_data = bimverdi_get_user_company($user_id);
 $company_id = $company_data ? (is_array($company_data) ? $company_data['id'] : $company_data) : false;
 $company = $company_id ? get_post($company_id) : null;
 
-// Get temagrupper
-$temagrupper = get_user_meta($user_id, 'bim_verdi_temagrupper', true);
-if (!is_array($temagrupper)) $temagrupper = [];
-
-// Get avatar
-$avatar_url = get_avatar_url($user_id, ['size' => 200]);
-
-// Display name
-$display_name = trim($first_name . ' ' . $last_name);
-if (empty($display_name)) {
-    $display_name = $current_user->display_name;
+// Get temagrupper from profile (ACF is source of truth, legacy fallback)
+$temagrupper = !empty($profile['topic_interests']) ? $profile['topic_interests'] : [];
+if (empty($temagrupper)) {
+    $legacy = get_user_meta($user_id, 'bim_verdi_temagrupper', true);
+    if (is_array($legacy)) $temagrupper = $legacy;
 }
+
+// Registration background
+$registration_background = $profile['registration_background'];
+
+// Get avatar via helper
+$avatar_url = bim_get_user_profile_image_url($user_id, 'medium');
+
+// Display name (includes middle name)
+$display_name = bim_get_user_display_name($user_id);
 ?>
 
 <!-- Account Layout with Sidenav -->
@@ -93,7 +95,7 @@ if (empty($display_name)) {
         <?php endif; ?>
 
         <!-- Contact Info Section (Variant B: stacked items with dividers, no box) -->
-        <div class="<?php echo !empty($temagrupper) ? 'pb-8 border-b border-[#D6D1C6]' : ''; ?>">
+        <div class="<?php echo (!empty($temagrupper) || !empty($registration_background)) ? 'pb-8 border-b border-[#D6D1C6]' : ''; ?>">
             <h3 class="text-lg font-semibold text-[#1A1A1A] mb-4"><?php _e('Kontaktinformasjon', 'bimverdi'); ?></h3>
             <div class="divide-y divide-[#E5E0D8]">
 
@@ -116,8 +118,54 @@ if (empty($display_name)) {
                 </div>
                 <?php endif; ?>
 
+                <?php if ($position): ?>
+                <div class="flex items-start gap-3 py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#888888] flex-shrink-0 mt-0.5"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    <div>
+                        <p class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide mb-1"><?php _e('Stilling', 'bimverdi'); ?></p>
+                        <p class="text-sm text-[#1A1A1A]"><?php echo esc_html($position); ?></p>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($profile['linkedin_url'])): ?>
+                <div class="flex items-start gap-3 py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#888888] flex-shrink-0 mt-0.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <div>
+                        <p class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide mb-1"><?php _e('LinkedIn', 'bimverdi'); ?></p>
+                        <a href="<?php echo esc_url($profile['linkedin_url']); ?>" target="_blank" rel="noopener" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors"><?php _e('Se profil', 'bimverdi'); ?> &rarr;</a>
+                    </div>
+                </div>
+                <?php endif; ?>
+
             </div>
         </div>
+
+        <!-- Bakgrunn for registrering (if exists) -->
+        <?php if (!empty($registration_background)): ?>
+        <div class="pb-8 border-b border-[#D6D1C6]">
+            <h3 class="text-lg font-semibold text-[#1A1A1A] mb-4"><?php _e('Bakgrunn for registrering', 'bimverdi'); ?></h3>
+            <?php
+            $background_labels = [
+                'oppdatering' => 'Oppdatering - allerede registrert',
+                'tilleggskontakt' => 'Ny tilleggskontakt',
+                'arrangement' => 'Arrangement-deltakelse',
+                'nyhetsbrev' => 'Nyhetsbrev',
+                'deltaker_verktoy' => 'Deltakerregistrering og digitale verktøy',
+                'mote' => 'Ønsker å avtale et møte',
+            ];
+            ?>
+            <div class="flex flex-wrap gap-2">
+                <?php foreach ($registration_background as $bg):
+                    $label = $background_labels[$bg] ?? ucfirst($bg);
+                ?>
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-[#FFF4EE] text-[#A0522D]">
+                        <?php echo esc_html($label); ?>
+                    </span>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Temagrupper Section (if exists) -->
         <?php if (!empty($temagrupper)): ?>

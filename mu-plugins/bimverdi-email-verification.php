@@ -229,8 +229,8 @@ class BIMVerdi_Email_Verification {
 
         error_log('BIMVerdi: User created and logged in: ' . $user_id . ' (' . $email . ')');
 
-        // Redirect to Min Side
-        wp_redirect(add_query_arg('welcome', '1', home_url('/min-side/')));
+        // Redirect to profile edit (so new users complete their profile)
+        wp_redirect(add_query_arg('welcome', '1', home_url('/min-side/profil/rediger/')));
         exit;
     }
 
