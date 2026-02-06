@@ -372,7 +372,7 @@ $error_message = $error_messages[$error] ?? '';
                 <p>3. Klikk lenken og velg nytt passord</p>
             </div>
 
-            <p class="auth-help">Husker du ikke e-posten? <a href="<?php echo home_url('/kontakt/'); ?>">Kontakt oss</a></p>
+            <p class="auth-help">Husker du ikke e-posten? <a href="mailto:post@bimverdi.no">Kontakt oss</a></p>
         </div>
 
         <div class="auth-form-wrapper">

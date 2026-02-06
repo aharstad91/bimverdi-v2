@@ -403,7 +403,7 @@ $error_message = $error_messages[$error] ?? '';
                     Skriv artikler og del erfaringer
                 </li>
             </ul>
-            <p class="auth-help">Problemer med innloggingen? <a href="<?php echo home_url('/kontakt/'); ?>">Kontakt oss</a></p>
+            <p class="auth-help">Problemer med innloggingen? <a href="mailto:post@bimverdi.no">Kontakt oss</a></p>
         </div>
 
         <div class="auth-form-wrapper">

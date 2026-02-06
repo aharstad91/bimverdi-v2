@@ -507,7 +507,7 @@ $prefill_name = '';
                 <p class="lead">Vi kunne ikke validere verifiseringslenken din. Dette kan skyldes at lenken har utløpt eller allerede er brukt.</p>
             <?php endif; ?>
 
-            <p class="auth-help">Trenger du hjelp? <a href="<?php echo home_url('/kontakt/'); ?>">Kontakt oss</a></p>
+            <p class="auth-help">Trenger du hjelp? <a href="mailto:post@bimverdi.no">Kontakt oss</a></p>
         </div>
 
         <div class="auth-form-wrapper">

@@ -474,7 +474,7 @@ if ($invitation_error && isset($invitation_error_messages[$invitation_error])) {
                     </div>
                 </li>
             </ul>
-            <p class="auth-help">Har du spørsmål? <a href="<?php echo home_url('/kontakt/'); ?>">Kontakt oss</a></p>
+            <p class="auth-help">Har du spørsmål? <a href="mailto:post@bimverdi.no">Kontakt oss</a></p>
         </div>
 
         <div class="auth-form-wrapper">
