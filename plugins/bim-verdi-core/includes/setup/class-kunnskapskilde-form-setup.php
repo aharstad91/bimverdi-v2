@@ -59,25 +59,41 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
             'hide_empty' => false,
         ));
 
-        // Build temagruppe choices
+        // Build temagruppe choices + inputs (GFAPI requires inputs for checkbox fields)
         $temagruppe_choices = array();
+        $temagruppe_inputs = array();
         if (!is_wp_error($temagrupper)) {
+            $i = 1;
             foreach ($temagrupper as $term) {
                 $temagruppe_choices[] = array(
                     'text' => $term->name,
                     'value' => $term->slug,
                 );
+                $temagruppe_inputs[] = array(
+                    'id' => '12.' . $i,
+                    'label' => $term->name,
+                    'name' => '',
+                );
+                $i++;
             }
         }
 
-        // Build kategori choices
+        // Build kategori choices + inputs
         $kategori_choices = array();
+        $kategori_inputs = array();
         if (!is_wp_error($kategorier)) {
+            $i = 1;
             foreach ($kategorier as $term) {
                 $kategori_choices[] = array(
                     'text' => $term->name,
                     'value' => $term->slug,
                 );
+                $kategori_inputs[] = array(
+                    'id' => '13.' . $i,
+                    'label' => $term->name,
+                    'name' => '',
+                );
+                $i++;
             }
         }
 
@@ -243,20 +259,22 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                     'placeholder' => 'Velg dataformat',
                     'inputName' => 'dataformat',
                 ),
-                // Field 11: Temagrupper (checkbox)
+                // Field 11: Temagrupper (checkbox - requires inputs array for GFAPI)
                 array(
                     'type' => 'checkbox',
                     'label' => 'Relevante temagrupper',
                     'isRequired' => false,
                     'choices' => $temagruppe_choices,
+                    'inputs' => $temagruppe_inputs,
                     'inputName' => 'temagrupper',
                 ),
-                // Field 12: Kategorier (checkbox)
+                // Field 12: Kategorier (checkbox - requires inputs array for GFAPI)
                 array(
                     'type' => 'checkbox',
                     'label' => 'Kategorier',
                     'isRequired' => false,
                     'choices' => $kategori_choices,
+                    'inputs' => $kategori_inputs,
                     'inputName' => 'kategorier',
                 ),
                 // Field 13: kunnskapskilde_id (hidden - for editing)
