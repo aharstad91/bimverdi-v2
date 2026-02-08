@@ -510,7 +510,7 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
             'post_type' => 'kunnskapskilde',
             'post_title' => sanitize_text_field($navn),
             'post_content' => '',
-            'post_status' => 'draft', // Requires admin approval
+            'post_status' => 'publish', // Auto-publish (no approval needed)
             'post_author' => $user_id,
         ));
 
