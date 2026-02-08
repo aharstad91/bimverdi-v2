@@ -298,7 +298,7 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                     'inputName' => 'company_id',
                     'allowsPrepopulate' => true,
                 ),
-                // Field 16: GDPR samtykke (checkbox med riktig inputs-konfigurasjon)
+                // Field 17: GDPR samtykke (NB: input id must match field position = 17)
                 array(
                     'type' => 'checkbox',
                     'label' => 'Personvern og vilkår',
@@ -312,7 +312,7 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                     ),
                     'inputs' => array(
                         array(
-                            'id' => '16.1',
+                            'id' => '17.1',
                             'label' => 'Jeg godtar at BIM Verdi lagrer og behandler denne informasjonen i henhold til personvernreglene.',
                             'name' => 'personvern_samtykke',
                         ),
