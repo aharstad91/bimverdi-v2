@@ -325,7 +325,7 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                     'name' => 'Standard bekreftelse',
                     'isDefault' => true,
                     'type' => 'message',
-                    'message' => 'Takk! Kunnskapskilden er registrert og vil bli gjennomgått av vårt team.',
+                    'message' => 'Takk! Kunnskapskilden er registrert og publisert i katalogen.',
                 ),
             ),
         );
