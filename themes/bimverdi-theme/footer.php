@@ -6,24 +6,17 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
 
             <!-- Newsletter Column -->
-            <div>
+            <div class="bv-footer-newsletter">
                 <h3 class="text-lg font-bold text-[#1A1A1A] mb-4">Hold deg oppdatert</h3>
                 <p class="text-[#5A5A5A] text-sm mb-4">
                     Motta nyheter og invitasjoner til våre arrangement.
                 </p>
-                <form id="bv-newsletter-form" class="flex border-b border-[#1A1A1A]" method="post">
-                    <input type="email"
-                           name="email"
-                           placeholder="E-postadresse"
-                           class="flex-grow bg-transparent py-2 text-[#1A1A1A] placeholder-[#888] focus:outline-none text-sm"
-                           required>
-                    <button type="submit" class="p-2 text-[#1A1A1A] hover:text-[#5A5A5A] transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                        </svg>
-                    </button>
-                </form>
-                <p id="bv-newsletter-msg" class="text-sm mt-2" style="display:none"></p>
+                <?php
+                if (function_exists('gravity_form')) {
+                    $newsletter_form_id = get_option('bimverdi_newsletter_gf_created', 17);
+                    gravity_form($newsletter_form_id, false, false, false, null, true);
+                }
+                ?>
             </div>
 
             <!-- Organisering Column -->

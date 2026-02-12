@@ -708,6 +708,71 @@ class BIM_Verdi_Design_System {
                     padding: 0.65rem 1.5rem;
                 }
             }
+
+            /* Footer Newsletter GF Styling */
+            .bv-footer-newsletter .gform_wrapper {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .bv-footer-newsletter .gform_wrapper .gform_body {
+                margin: 0;
+            }
+            .bv-footer-newsletter .gform_wrapper .gfield {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .bv-footer-newsletter .gform_wrapper input[type="email"] {
+                background: transparent !important;
+                border: none !important;
+                border-bottom: 1px solid #1A1A1A !important;
+                border-radius: 0 !important;
+                padding: 0.5rem 0 !important;
+                font-size: 0.875rem !important;
+                color: #1A1A1A !important;
+                box-shadow: none !important;
+                outline: none !important;
+                width: 100% !important;
+            }
+            .bv-footer-newsletter .gform_wrapper input[type="email"]::placeholder {
+                color: #888 !important;
+            }
+            .bv-footer-newsletter .gform_wrapper input[type="email"]:focus {
+                border-bottom-color: #FF8B5E !important;
+            }
+            .bv-footer-newsletter .gform_wrapper .gform_footer,
+            .bv-footer-newsletter .gform_wrapper .gform_page_footer {
+                margin: 0.75rem 0 0 !important;
+                padding: 0 !important;
+            }
+            .bv-footer-newsletter .gform_wrapper input[type="submit"] {
+                background: #1A1A1A !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 6px !important;
+                padding: 0.5rem 1.25rem !important;
+                font-size: 0.8125rem !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                transition: opacity 0.2s !important;
+            }
+            .bv-footer-newsletter .gform_wrapper input[type="submit"]:hover {
+                opacity: 0.8 !important;
+            }
+            .bv-footer-newsletter .gform_wrapper .gform_confirmation_message {
+                color: #2e7d32 !important;
+                font-size: 0.875rem !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: none !important;
+                border: none !important;
+            }
+            .bv-footer-newsletter .gform_wrapper .validation_error,
+            .bv-footer-newsletter .gform_wrapper .gfield_error .gfield_label {
+                display: none !important;
+            }
+            .bv-footer-newsletter .gform_wrapper .gfield_error input[type="email"] {
+                border-bottom-color: #772015 !important;
+            }
         </style>
         <?php
     }
