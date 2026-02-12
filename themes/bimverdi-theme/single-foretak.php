@@ -101,11 +101,12 @@ if ($hovedkontakt_id) {
 $current_user_company_id = get_user_meta(get_current_user_id(), 'bim_verdi_company_id', true);
 $is_own_company = ($current_user_company_id == $company_id);
 
-// Hent artikler
-$company_articles = get_posts(array(
+// Hent artikler (bedrift-tilknyttede + medforfattere fra foretaket)
+$company_articles_by_bedrift = get_posts(array(
     'post_type' => 'artikkel',
     'post_status' => 'publish',
-    'posts_per_page' => 6,
+    'posts_per_page' => -1,
+    'fields' => 'ids',
     'meta_query' => array(
         array(
             'key' => 'artikkel_bedrift',
@@ -113,6 +114,42 @@ $company_articles = get_posts(array(
         ),
     ),
 ));
+
+// Finn artikler der ansatte er medforfattere
+$company_articles_by_medforfattere = array();
+if (!empty($company_users)) {
+    $user_ids = wp_list_pluck($company_users, 'ID');
+    foreach ($user_ids as $uid) {
+        $medforfattere_articles = get_posts(array(
+            'post_type' => 'artikkel',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'meta_query' => array(
+                array(
+                    'key' => 'artikkel_medforfattere',
+                    'value' => '"' . $uid . '"',
+                    'compare' => 'LIKE',
+                ),
+            ),
+        ));
+        $company_articles_by_medforfattere = array_merge($company_articles_by_medforfattere, $medforfattere_articles);
+    }
+}
+
+// Kombiner og dedupliser
+$all_article_ids = array_unique(array_merge($company_articles_by_bedrift, $company_articles_by_medforfattere));
+$company_articles = array();
+if (!empty($all_article_ids)) {
+    $company_articles = get_posts(array(
+        'post_type' => 'artikkel',
+        'post_status' => 'publish',
+        'posts_per_page' => 6,
+        'post__in' => $all_article_ids,
+        'orderby' => 'date',
+        'order' => 'DESC',
+    ));
+}
 
 // Hent kunnskapskilder
 $company_kunnskapskilder = get_posts(array(
