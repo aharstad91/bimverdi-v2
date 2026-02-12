@@ -180,6 +180,74 @@
             }
         },
         {
+            "key": "field_kunnskapskilde_ant_lovpalagte",
+            "label": "Ant. lovpålagte standarder",
+            "name": "ant_lovpalagte_standarder",
+            "type": "number",
+            "instructions": "Antall lovpålagte standarder som dekkes",
+            "required": 0,
+            "min": 0,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_lovpalagte_standarder",
+            "label": "Lovpålagte standarder",
+            "name": "lovpalagte_standarder",
+            "type": "text",
+            "instructions": "Hvilke lovpålagte standarder (kommaseparert)",
+            "required": 0,
+            "placeholder": "NS 3420, NS-EN 1990, ...",
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_ant_anbefalte",
+            "label": "Ant. anbefalte standarder",
+            "name": "ant_anbefalte_standarder",
+            "type": "number",
+            "instructions": "Antall anbefalte standarder som dekkes",
+            "required": 0,
+            "min": 0,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_anbefalte_standarder",
+            "label": "Anbefalte standarder",
+            "name": "anbefalte_standarder",
+            "type": "text",
+            "instructions": "Hvilke anbefalte standarder (kommaseparert)",
+            "required": 0,
+            "placeholder": "ISO 19650, ISO 16739, ...",
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_tilgang",
+            "label": "Tilgang",
+            "name": "tilgang",
+            "type": "select",
+            "instructions": "Hvordan er tilgangen til denne kilden?",
+            "required": 0,
+            "choices": {
+                "gratis": "Gratis",
+                "betalt": "Betalt",
+                "abonnement": "Abonnement",
+                "ukjent": "Ukjent"
+            },
+            "default_value": "ukjent",
+            "return_format": "value",
+            "allow_null": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
             "key": "field_kunnskapskilde_tab_utvidet",
             "label": "Utvidet",
             "name": "",

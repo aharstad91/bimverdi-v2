@@ -145,6 +145,11 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
             'kildetype' => get_field('kildetype', $kunnskapskilde_id),
             'geografisk_gyldighet' => get_field('geografisk_gyldighet', $kunnskapskilde_id),
             'dataformat' => get_field('dataformat', $kunnskapskilde_id),
+            'ant_lovpalagte_standarder' => get_field('ant_lovpalagte_standarder', $kunnskapskilde_id),
+            'lovpalagte_standarder' => get_field('lovpalagte_standarder', $kunnskapskilde_id),
+            'ant_anbefalte_standarder' => get_field('ant_anbefalte_standarder', $kunnskapskilde_id),
+            'anbefalte_standarder' => get_field('anbefalte_standarder', $kunnskapskilde_id),
+            'tilgang' => get_field('tilgang', $kunnskapskilde_id),
         );
 
         // Get taxonomy terms
@@ -227,6 +232,38 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
                     if (!empty($acf_data['dataformat']) && !empty($field->choices)) {
                         foreach ($field->choices as &$choice) {
                             $choice['isSelected'] = ($choice['value'] === $acf_data['dataformat']);
+                        }
+                    }
+                    break;
+
+                case 'ant_lovpalagte_standarder':
+                    if (!empty($acf_data['ant_lovpalagte_standarder'])) {
+                        $field->defaultValue = $acf_data['ant_lovpalagte_standarder'];
+                    }
+                    break;
+
+                case 'lovpalagte_standarder':
+                    if (!empty($acf_data['lovpalagte_standarder'])) {
+                        $field->defaultValue = $acf_data['lovpalagte_standarder'];
+                    }
+                    break;
+
+                case 'ant_anbefalte_standarder':
+                    if (!empty($acf_data['ant_anbefalte_standarder'])) {
+                        $field->defaultValue = $acf_data['ant_anbefalte_standarder'];
+                    }
+                    break;
+
+                case 'anbefalte_standarder':
+                    if (!empty($acf_data['anbefalte_standarder'])) {
+                        $field->defaultValue = $acf_data['anbefalte_standarder'];
+                    }
+                    break;
+
+                case 'tilgang':
+                    if (!empty($acf_data['tilgang']) && !empty($field->choices)) {
+                        foreach ($field->choices as &$choice) {
+                            $choice['isSelected'] = ($choice['value'] === $acf_data['tilgang']);
                         }
                     }
                     break;
@@ -591,6 +628,11 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
             'kildetype' => 'kildetype',
             'geografisk_gyldighet' => 'geografisk_gyldighet',
             'dataformat' => 'dataformat',
+            'ant_lovpalagte_standarder' => 'ant_lovpalagte_standarder',
+            'lovpalagte_standarder' => 'lovpalagte_standarder',
+            'ant_anbefalte_standarder' => 'ant_anbefalte_standarder',
+            'anbefalte_standarder' => 'anbefalte_standarder',
+            'tilgang' => 'tilgang',
         );
 
         foreach ($field_mapping as $input_name => $acf_field) {

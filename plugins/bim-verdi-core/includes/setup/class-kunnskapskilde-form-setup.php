@@ -232,6 +232,52 @@ class BIM_Verdi_Kunnskapskilde_Form_Setup {
                     'placeholder' => 'Velg antatt år',
                     'inputName' => 'utgivelsesaar',
                 ),
+                // Field: Ant. lovpålagte standarder
+                array(
+                    'type' => 'number',
+                    'label' => 'Ant. lovpålagte standarder',
+                    'isRequired' => false,
+                    'placeholder' => '0',
+                    'inputName' => 'ant_lovpalagte_standarder',
+                ),
+                // Field: Lovpålagte standarder
+                array(
+                    'type' => 'text',
+                    'label' => 'Lovpålagte standarder',
+                    'isRequired' => false,
+                    'placeholder' => 'NS 3420, NS-EN 1990, ...',
+                    'inputName' => 'lovpalagte_standarder',
+                ),
+                // Field: Ant. anbefalte standarder
+                array(
+                    'type' => 'number',
+                    'label' => 'Ant. anbefalte standarder',
+                    'isRequired' => false,
+                    'placeholder' => '0',
+                    'inputName' => 'ant_anbefalte_standarder',
+                ),
+                // Field: Anbefalte standarder
+                array(
+                    'type' => 'text',
+                    'label' => 'Anbefalte standarder',
+                    'isRequired' => false,
+                    'placeholder' => 'ISO 19650, ISO 16739, ...',
+                    'inputName' => 'anbefalte_standarder',
+                ),
+                // Field: Tilgang
+                array(
+                    'type' => 'select',
+                    'label' => 'Tilgang',
+                    'isRequired' => false,
+                    'choices' => array(
+                        array('text' => 'Gratis', 'value' => 'gratis'),
+                        array('text' => 'Betalt', 'value' => 'betalt'),
+                        array('text' => 'Abonnement', 'value' => 'abonnement'),
+                        array('text' => 'Ukjent', 'value' => 'ukjent'),
+                    ),
+                    'placeholder' => 'Velg tilgang',
+                    'inputName' => 'tilgang',
+                ),
                 // Field 10: Kildetype
                 array(
                     'type' => 'select',

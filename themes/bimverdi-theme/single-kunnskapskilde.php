@@ -24,6 +24,11 @@ $utgivelsesaar = get_field('utgivelsesaar');
 $kildetype = get_field('kildetype');
 $geografisk_gyldighet = get_field('geografisk_gyldighet');
 $dataformat = get_field('dataformat');
+$ant_lovpalagte = get_field('ant_lovpalagte_standarder');
+$lovpalagte_standarder = get_field('lovpalagte_standarder');
+$ant_anbefalte = get_field('ant_anbefalte_standarder');
+$anbefalte_standarder = get_field('anbefalte_standarder');
+$tilgang = get_field('tilgang');
 $registrert_av = get_field('registrert_av');
 $tilknyttet_bedrift = get_field('tilknyttet_bedrift');
 
@@ -167,7 +172,7 @@ $kilde_created = get_the_date('d.m.Y');
                     <?php endif; ?>
 
                     <!-- Tags -->
-                    <?php if (!empty($temagruppe_terms) || $kildetype): ?>
+                    <?php if (!empty($temagruppe_terms) || !empty($kategori_terms)): ?>
                     <div class="flex flex-wrap gap-2 pt-6 mt-6 border-t border-[#E5E0D8]">
                         <?php if (!empty($temagruppe_terms)): ?>
                             <?php foreach ($temagruppe_terms as $term): ?>
@@ -175,11 +180,6 @@ $kilde_created = get_the_date('d.m.Y');
                                 <?php echo esc_html($term->name); ?>
                             </span>
                             <?php endforeach; ?>
-                        <?php endif; ?>
-                        <?php if ($kildetype && isset($kildetype_labels[$kildetype])): ?>
-                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
-                            <?php echo esc_html($kildetype_labels[$kildetype]); ?>
-                        </span>
                         <?php endif; ?>
                         <?php if (!empty($kategori_terms)): ?>
                             <?php foreach ($kategori_terms as $term): ?>
@@ -239,6 +239,54 @@ $kilde_created = get_the_date('d.m.Y');
                         <div class="grid grid-cols-2 py-6 gap-4">
                             <dt class="text-sm text-[#5A5A5A]">Versjon</dt>
                             <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($versjon); ?></dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Tilgang -->
+                        <?php if ($tilgang && $tilgang !== 'ukjent'): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Tilgang</dt>
+                            <dd class="text-sm text-[#1A1A1A]"><?php
+                                $tilgang_labels = [
+                                    'gratis' => 'Gratis',
+                                    'betalt' => 'Betalt',
+                                    'abonnement' => 'Abonnement',
+                                    'ukjent' => 'Ukjent',
+                                ];
+                                echo esc_html($tilgang_labels[$tilgang] ?? $tilgang);
+                            ?></dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Lovpålagte standarder -->
+                        <?php if ($ant_lovpalagte || $lovpalagte_standarder): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Lovpålagte standarder</dt>
+                            <dd class="text-sm text-[#1A1A1A]">
+                                <?php if ($ant_lovpalagte): ?>
+                                    <span class="font-medium"><?php echo esc_html($ant_lovpalagte); ?></span>
+                                <?php endif; ?>
+                                <?php if ($lovpalagte_standarder): ?>
+                                    <?php if ($ant_lovpalagte): ?><br><?php endif; ?>
+                                    <?php echo esc_html($lovpalagte_standarder); ?>
+                                <?php endif; ?>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Anbefalte standarder -->
+                        <?php if ($ant_anbefalte || $anbefalte_standarder): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#5A5A5A]">Anbefalte standarder</dt>
+                            <dd class="text-sm text-[#1A1A1A]">
+                                <?php if ($ant_anbefalte): ?>
+                                    <span class="font-medium"><?php echo esc_html($ant_anbefalte); ?></span>
+                                <?php endif; ?>
+                                <?php if ($anbefalte_standarder): ?>
+                                    <?php if ($ant_anbefalte): ?><br><?php endif; ?>
+                                    <?php echo esc_html($anbefalte_standarder); ?>
+                                <?php endif; ?>
+                            </dd>
                         </div>
                         <?php endif; ?>
 
