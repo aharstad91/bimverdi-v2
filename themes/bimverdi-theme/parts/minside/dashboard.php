@@ -40,19 +40,52 @@ if ($company_id) {
     }
 }
 
-// Get upcoming events count
-$upcoming_events = get_posts([
-    'post_type' => 'arrangement',
+// Get user's kunnskapskilder count
+$my_kunnskapskilder_count = 0;
+$kilde_query_args = [
+    'post_type' => 'kunnskapskilde',
     'posts_per_page' => -1,
-    'meta_key' => 'arrangement_dato',
-    'meta_query' => [[
-        'key' => 'arrangement_dato',
-        'value' => date('Y-m-d'),
-        'compare' => '>=',
-        'type' => 'DATE'
-    ]]
+    'post_status' => ['publish', 'draft', 'pending'],
+    'fields' => 'ids',
+    'meta_query' => [
+        'relation' => 'OR',
+        ['key' => 'registrert_av', 'value' => $user_id],
+        ['key' => 'tilknyttet_bedrift', 'value' => $company_id ?: 0],
+    ],
+];
+$kilde_posts = get_posts($kilde_query_args);
+if (empty($kilde_posts)) {
+    $kilde_posts = get_posts([
+        'post_type' => 'kunnskapskilde',
+        'posts_per_page' => -1,
+        'post_status' => ['publish', 'draft', 'pending'],
+        'fields' => 'ids',
+        'author' => $user_id,
+    ]);
+}
+$my_kunnskapskilder_count = count($kilde_posts);
+
+// Get upcoming events the user is registered for
+$my_events_count = 0;
+$registrations = get_posts([
+    'post_type' => 'pamelding',
+    'posts_per_page' => -1,
+    'post_status' => 'publish',
+    'fields' => 'ids',
+    'meta_query' => [['key' => 'bruker', 'value' => $user_id]],
 ]);
-$events_count = count($upcoming_events);
+$my_events_count = count($registrations);
+
+// Get company role info for welcome message
+$user_role_label = '';
+$company_role_label = '';
+if ($company) {
+    $user_role_label = bimverdi_is_hovedkontakt($user_id) ? 'hovedkontakt' : 'tilleggskontakt';
+    $bv_rolle = get_field('bv_rolle', $company_id);
+    if ($bv_rolle && $bv_rolle !== 'Ikke deltaker') {
+        $company_role_label = mb_strtolower($bv_rolle);
+    }
+}
 
 ?>
 
@@ -61,6 +94,22 @@ $events_count = count($upcoming_events);
     'title' => __('Dashbord', 'bimverdi'),
     'description' => sprintf(__('Velkommen tilbake, %s', 'bimverdi'), $current_user->display_name),
 ]); ?>
+
+<?php if ($company && $user_role_label): ?>
+<p class="text-sm text-[#5A5A5A] -mt-4 mb-6">
+    <?php
+    $role_text = sprintf(
+        'Du er %s i %s',
+        esc_html($user_role_label),
+        '<a href="' . esc_url(home_url('/min-side/foretak/')) . '" class="text-[#1A1A1A] underline hover:no-underline">' . esc_html(get_the_title($company_id)) . '</a>'
+    );
+    if ($company_role_label) {
+        $role_text .= sprintf(', som er %s i BIM Verdi', esc_html($company_role_label));
+    }
+    echo $role_text . '.';
+    ?>
+</p>
+<?php endif; ?>
 
 <!-- Success Messages -->
 <?php if (isset($_GET['welcome']) && $_GET['welcome'] == '1'):
@@ -96,7 +145,7 @@ $events_count = count($upcoming_events);
 <?php endif; ?>
 
 <!-- Quick Stats -->
-<div class="grid grid-cols-2 mb-12">
+<div class="grid grid-cols-3 mb-12">
 
     <!-- Mine verktøy -->
     <div class="py-4 pr-6 border-r border-[#D6D1C6]">
@@ -104,20 +153,32 @@ $events_count = count($upcoming_events);
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
             <h3 class="text-sm text-[#5A5A5A]"><?php _e('Mine verktøy', 'bimverdi'); ?></h3>
         </div>
-        <p class="text-2xl font-semibold text-[#1A1A1A] mb-1"><?php echo $my_tools_count; ?></p>
-        <a href="<?php echo home_url('/min-side/mine-verktoy/'); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A]">
+        <p class="text-2xl font-semibold text-[#1A1A1A] mb-1"><?php echo esc_html($my_tools_count); ?></p>
+        <a href="<?php echo esc_url(home_url('/min-side/verktoy/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A]">
             <?php _e('Se alle', 'bimverdi'); ?> →
         </a>
     </div>
 
-    <!-- Kommende arrangementer -->
+    <!-- Mine kunnskapskilder -->
+    <div class="py-4 px-6 border-r border-[#D6D1C6]">
+        <div class="flex items-center gap-2 mb-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            <h3 class="text-sm text-[#5A5A5A]"><?php _e('Mine kunnskapskilder', 'bimverdi'); ?></h3>
+        </div>
+        <p class="text-2xl font-semibold text-[#1A1A1A] mb-1"><?php echo esc_html($my_kunnskapskilder_count); ?></p>
+        <a href="<?php echo esc_url(home_url('/min-side/kunnskapskilder/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A]">
+            <?php _e('Se alle', 'bimverdi'); ?> →
+        </a>
+    </div>
+
+    <!-- Mine arrangementer -->
     <div class="py-4 pl-6">
         <div class="flex items-center gap-2 mb-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <h3 class="text-sm text-[#5A5A5A]"><?php _e('Arrangementer', 'bimverdi'); ?></h3>
+            <h3 class="text-sm text-[#5A5A5A]"><?php _e('Mine arrangementer', 'bimverdi'); ?></h3>
         </div>
-        <p class="text-2xl font-semibold text-[#1A1A1A] mb-1"><?php echo $events_count; ?></p>
-        <a href="<?php echo home_url('/min-side/arrangementer/'); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A]">
+        <p class="text-2xl font-semibold text-[#1A1A1A] mb-1"><?php echo esc_html($my_events_count); ?></p>
+        <a href="<?php echo esc_url(home_url('/min-side/arrangementer/')); ?>" class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A]">
             <?php _e('Se alle', 'bimverdi'); ?> →
         </a>
     </div>

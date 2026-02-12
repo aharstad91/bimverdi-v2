@@ -24,35 +24,55 @@ class BIM_Verdi_Design_System {
         ?>
         <style>
             /* ============================================
-               BIM VERDI COLOR PALETTE (hjem.no inspired)
+               BIM VERDI "OATMEAL" DESIGN SYSTEM
+               Warm, structured, enterprise-calm
                ============================================ */
             :root {
-                /* Primary Colors */
-                --color-primary: #FF8B5E;        /* Warm orange - main brand color */
+                /* ---- Brand ---- */
+                --color-primary: #FF8B5E;        /* Warm orange - main brand */
                 --color-primary-dark: #E67A4E;
                 --color-primary-light: #FFBFA8;
-                
-                /* Secondary Colors */
-                --color-secondary: #5E36FE;      /* Purple - innovation */
+
+                /* ---- Text ---- */
+                --color-text: #1A1A1A;           /* Primary text */
+                --color-text-secondary: #5A5A5A; /* Secondary/meta text */
+                --color-text-muted: #888888;     /* Muted/disabled text */
+
+                /* ---- Surfaces ---- */
+                --color-bg: #F7F5EF;             /* Warm background (beige) */
+                --color-bg-surface: #EFE9DE;     /* Elevated surface */
+                --color-bg-white: #FFFFFF;       /* Card/panel background */
+                --color-bg-dark: #1A1A1A;        /* Dark sections (hero, CTA, badges) */
+
+                /* ---- Dividers ---- */
+                --color-divider: #D6D1C6;        /* Primary divider */
+                --color-divider-light: #E5E0D5;  /* Subtle divider (list items) */
+
+                /* ---- Temagruppe palette ---- */
+                --color-tg-orange: #FF8B5E;      /* Modellkvalitet */
+                --color-tg-blue: #005898;        /* ByggesaksBIM */
+                --color-tg-green: #6B9B37;       /* ProsjektBIM */
+                --color-tg-purple: #5E36FE;      /* EiendomsBIM */
+                --color-tg-teal: #0D9488;        /* MiljøBIM */
+                --color-tg-amber: #D97706;       /* BIMtech */
+
+                /* ---- State ---- */
+                --color-success: #B3DB87;
+                --color-error: #772015;
+                --color-alert: #FFC845;
+                --color-info: #005898;
+
+                /* ---- Legacy aliases ---- */
+                --color-secondary: #5E36FE;
                 --color-secondary-dark: #4E26DE;
                 --color-secondary-light: #DFD7C6;
-                
-                /* Neutrals */
-                --color-black: #0F0F0F;          /* Main text */
+                --color-black: #0F0F0F;
                 --color-gray-dark: #383838;
                 --color-gray-medium: #888888;
                 --color-gray-light: #D1D1D1;
                 --color-white: #FFFFFF;
-                
-                /* Background */
-                --color-beige: #F7F5EF;          /* Warm background */
+                --color-beige: #F7F5EF;
                 --color-beige-dark: #EFE9DE;
-                
-                /* State Colors */
-                --color-success: #B3DB87;        /* Green */
-                --color-error: #772015;          /* Red/brown */
-                --color-alert: #FFC845;          /* Yellow */
-                --color-info: #005898;           /* Blue */
                 
                 /* Spacing */
                 --spacing-xs: 0.5rem;
@@ -94,9 +114,34 @@ class BIM_Verdi_Design_System {
                (Manually added until next CSS rebuild)
                ============================================ */
 
+            /* Font size minimum 15px */
+            .text-15 { font-size: 0.9375rem; line-height: 1.4; }
+
+            .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+            /* Spacing utilities missing from pre-compiled CSS */
+            .py-14 { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+            .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+            .pt-14 { padding-top: 3.5rem; }
+            .pt-16 { padding-top: 4rem; }
+            .pb-12 { padding-bottom: 3rem; }
+            .mb-10 { margin-bottom: 2.5rem; }
+
             @media (min-width: 768px) {
                 .md\:block {
                     display: block;
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .lg\:grid-cols-2 {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+                .lg\:grid-cols-6 {
+                    grid-template-columns: repeat(6, minmax(0, 1fr));
+                }
+                .lg\:gap-12 {
+                    gap: 3rem;
                 }
             }
 
@@ -577,16 +622,37 @@ class BIM_Verdi_Design_System {
             }
             
             /* ============================================
-               UTILITY CLASSES
+               OATMEAL UTILITY CLASSES
+               Semantic tokens for consistent theming
                ============================================ */
-            
+
+            /* Text colors */
+            .oat-text          { color: var(--color-text); }
+            .oat-text-secondary { color: var(--color-text-secondary); }
+            .oat-text-muted    { color: var(--color-text-muted); }
+            .oat-text-primary  { color: var(--color-primary); }
+
+            /* Background colors */
+            .oat-bg            { background-color: var(--color-bg); }
+            .oat-bg-surface    { background-color: var(--color-bg-surface); }
+            .oat-bg-white      { background-color: var(--color-bg-white); }
+            .oat-bg-dark       { background-color: var(--color-bg-dark); }
+
+            /* Borders / dividers */
+            .oat-border        { border-color: var(--color-divider); }
+            .oat-border-light  { border-color: var(--color-divider-light); }
+
+            /* Hover states */
+            .oat-hover:hover   { background-color: var(--color-bg-surface); }
+
+            /* Legacy aliases */
             .text-primary { color: var(--color-primary); }
             .text-secondary { color: var(--color-secondary); }
             .text-success { color: var(--color-success); }
             .text-error { color: var(--color-error); }
             .text-alert { color: var(--color-alert); }
             .text-info { color: var(--color-info); }
-            
+
             .bg-beige { background-color: var(--color-beige); }
             .bg-beige-dark { background-color: var(--color-beige-dark); }
             

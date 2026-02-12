@@ -436,7 +436,7 @@ if ($invitation_error && isset($invitation_error_messages[$invitation_error])) {
 <body class="bv-auth-page">
     <div class="auth-container">
         <div class="auth-value">
-            <a href="<?php echo home_url('/'); ?>" class="auth-logo">BIM Verdi</a>
+            <a href="<?php echo home_url('/'); ?>" class="auth-logo"><img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 58px; width: auto;"></a>
             <h1>Bli en del av nettverket</h1>
             <p class="lead">Som deltaker får du tilgang til Norges ledende nettverk for praktisk bruk av BIM og AI i byggenæringen.</p>
             <ul class="benefits-list">

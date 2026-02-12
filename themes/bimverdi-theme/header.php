@@ -17,8 +17,8 @@
             
             <!-- Logo -->
             <div class="flex-shrink-0">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-xl font-bold text-[#1A1A1A]">
-                    BIM Verdi
+                <a href="<?php echo esc_url(home_url('/')); ?>">
+                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 36px; width: auto;">
                 </a>
             </div>
             

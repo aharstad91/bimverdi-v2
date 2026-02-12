@@ -528,13 +528,13 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'routes' => ['verktoy', 'verktoy/registrer', 'verktoy/rediger'],
             ],
             'kunnskapskilder' => [
-                'label' => 'Kunnskapskilder',
+                'label' => 'Mine kunnskapskilder',
                 'url' => bimverdi_minside_url('kunnskapskilder'),
                 'icon' => 'book-open',
                 'routes' => ['kunnskapskilder', 'kunnskapskilder/registrer', 'kunnskapskilder/rediger'],
             ],
             'arrangementer' => [
-                'label' => 'Arrangementer',
+                'label' => 'Mine arrangementer',
                 'url' => bimverdi_minside_url('arrangementer'),
                 'icon' => 'calendar',
                 'routes' => ['arrangementer'],

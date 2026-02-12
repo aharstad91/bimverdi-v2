@@ -39,8 +39,8 @@ $primary_route = bimverdi_get_primary_route();
             
             <!-- Logo -->
             <div>
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-[20px] font-bold text-[#1A1A1A] leading-[28px]">
-                    BIM Verdi
+                <a href="<?php echo esc_url(home_url('/')); ?>">
+                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 36px; width: auto;">
                 </a>
             </div>
             

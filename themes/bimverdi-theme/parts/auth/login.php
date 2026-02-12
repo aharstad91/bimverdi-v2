@@ -380,7 +380,7 @@ $error_message = $error_messages[$error] ?? '';
 <body class="bv-auth-page">
     <div class="auth-container">
         <div class="auth-value">
-            <a href="<?php echo home_url('/'); ?>" class="auth-logo">BIM Verdi</a>
+            <a href="<?php echo home_url('/'); ?>" class="auth-logo"><img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 58px; width: auto;"></a>
             <h1>Velkommen tilbake</h1>
             <p class="lead">Som innlogget får du tilgang til å registrere verktøy, delta på arrangementer og bidra med kunnskap til nettverket.</p>
             <ul class="benefits-list">

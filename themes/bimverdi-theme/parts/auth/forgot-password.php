@@ -171,7 +171,7 @@ $error_message = $error_messages[$error] ?? '';
 
         .auth-card-icon {
             width: 48px;
-            height: 48px;
+            height: 58px;
             margin: 0 auto var(--bv-space-md);
             display: flex;
             align-items: center;
@@ -361,7 +361,7 @@ $error_message = $error_messages[$error] ?? '';
 <body class="bv-auth-page">
     <div class="auth-container">
         <div class="auth-value">
-            <a href="<?php echo home_url('/'); ?>" class="auth-logo">BIM Verdi</a>
+            <a href="<?php echo home_url('/'); ?>" class="auth-logo"><img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 58px; width: auto;"></a>
             <h1>Tilbakestill passord</h1>
             <p class="lead">Det skjer med de beste av oss. Vi hjelper deg raskt tilbake inn i nettverket.</p>
 

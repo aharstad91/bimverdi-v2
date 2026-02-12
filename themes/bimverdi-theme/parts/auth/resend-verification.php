@@ -36,7 +36,7 @@ $error_message = $error_messages[$error] ?? '';
         <!-- Logo/Brand -->
         <div class="text-center mb-8">
             <a href="<?php echo home_url('/'); ?>" class="inline-block">
-                <span class="text-2xl font-bold text-[#1A1A1A]">BIM Verdi</span>
+                <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 58px; width: auto;">
             </a>
         </div>
 
