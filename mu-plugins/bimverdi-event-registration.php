@@ -288,15 +288,18 @@ function bimverdi_get_registration_count($arrangement_id) {
 }
 
 /**
- * Enqueue registration script on single arrangement pages
+ * Output registration config on single arrangement pages
  */
-add_action('wp_enqueue_scripts', function () {
+add_action('wp_head', function () {
     if (!is_singular('arrangement')) {
         return;
     }
 
-    wp_localize_script('jquery', 'bimverdiEventReg', [
-        'ajaxUrl' => admin_url('admin-ajax.php'),
-        'nonce'   => wp_create_nonce('bimverdi_event_registration'),
-    ]);
+    printf(
+        '<script>var bimverdiEventReg = %s;</script>',
+        wp_json_encode([
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('bimverdi_event_registration'),
+        ])
+    );
 });
