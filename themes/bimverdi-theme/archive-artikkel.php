@@ -10,17 +10,7 @@
 get_header();
 
 // Get filter parameters
-$current_kategori = isset($_GET['kategori']) ? sanitize_text_field($_GET['kategori']) : '';
 $current_temagruppe = isset($_GET['temagruppe']) ? sanitize_text_field($_GET['temagruppe']) : '';
-
-// Category labels
-$category_labels = array(
-    'fagartikkel' => array('label' => 'Fagartikkel', 'icon' => 'book'),
-    'case' => array('label' => 'Case', 'icon' => 'briefcase'),
-    'tips' => array('label' => 'Tips og triks', 'icon' => 'lightbulb'),
-    'nyhet' => array('label' => 'Nyhet', 'icon' => 'newspaper'),
-    'kommentar' => array('label' => 'Kommentar', 'icon' => 'comment'),
-);
 
 // Build query
 $query_args = array(
@@ -28,17 +18,9 @@ $query_args = array(
     'post_status' => 'publish',
     'posts_per_page' => 12,
     'paged' => get_query_var('paged') ? get_query_var('paged') : 1,
-    'orderby' => 'date',
+    'orderby' => 'modified',
     'order' => 'DESC',
 );
-
-// Add category filter
-if ($current_kategori) {
-    $query_args['meta_query'][] = array(
-        'key' => 'artikkel_kategori',
-        'value' => $current_kategori,
-    );
-}
 
 // Add temagruppe filter
 if ($current_temagruppe) {
@@ -64,9 +46,6 @@ $temagrupper = get_terms(array(
     <div class="container mx-auto px-4 py-12">
         <div class="max-w-3xl">
             <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Artikler</h1>
-            <p class="text-lg text-gray-600">
-                Fagartikler, case-studier og kunnskapsdeling fra BIM Verdi-nettverket.
-            </p>
         </div>
     </div>
     
@@ -76,22 +55,7 @@ $temagrupper = get_terms(array(
     
     <!-- Filters -->
     <div class="mb-8 flex flex-wrap gap-4">
-        
-        <!-- Category filter -->
-        <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-600">Type:</span>
-            <a href="<?php echo esc_url(remove_query_arg('kategori')); ?>" 
-               class="px-3 py-1 rounded-full text-sm <?php echo !$current_kategori ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">
-                Alle
-            </a>
-            <?php foreach ($category_labels as $slug => $info) : ?>
-                <a href="<?php echo esc_url(add_query_arg('kategori', $slug)); ?>" 
-                   class="px-3 py-1 rounded-full text-sm <?php echo $current_kategori === $slug ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">
-                    <?php echo esc_html($info['label']); ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
-        
+
         <!-- Temagruppe filter -->
         <?php if (!empty($temagrupper) && !is_wp_error($temagrupper)) : ?>
             <div class="flex items-center gap-2">
@@ -99,7 +63,7 @@ $temagrupper = get_terms(array(
                 <select onchange="window.location.href = this.value" class="text-sm border border-gray-300 rounded px-2 py-1">
                     <option value="<?php echo esc_url(remove_query_arg('temagruppe')); ?>">Alle temagrupper</option>
                     <?php foreach ($temagrupper as $temagruppe) : ?>
-                        <option value="<?php echo esc_url(add_query_arg('temagruppe', $temagruppe->slug)); ?>" 
+                        <option value="<?php echo esc_url(add_query_arg('temagruppe', $temagruppe->slug)); ?>"
                                 <?php selected($current_temagruppe, $temagruppe->slug); ?>>
                             <?php echo esc_html($temagruppe->name); ?>
                         </option>
@@ -107,7 +71,7 @@ $temagrupper = get_terms(array(
                 </select>
             </div>
         <?php endif; ?>
-        
+
     </div>
     
     <?php if ($articles->have_posts()) : ?>
