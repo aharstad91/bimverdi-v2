@@ -89,12 +89,11 @@ class BIM_Verdi_Taxonomies {
         
         $args = array(
             'labels'            => $labels,
-            'hierarchical'      => false,
+            'hierarchical'      => true,
             'public'            => true,
             'show_ui'           => true,
             'show_admin_column' => true,
             'show_in_rest'      => true,
-            'meta_box_cb'       => 'post_categories_meta_box',
         );
 
         register_taxonomy('kundetype', array('foretak'), $args);
@@ -112,12 +111,11 @@ class BIM_Verdi_Taxonomies {
         
         $args = array(
             'labels'            => $labels,
-            'hierarchical'      => false,
+            'hierarchical'      => true,
             'public'            => true,
             'show_ui'           => true,
             'show_admin_column' => true,
             'show_in_rest'      => true,
-            'meta_box_cb'       => 'post_categories_meta_box',
         );
 
         register_taxonomy('temagruppe', array('foretak', 'arrangement', 'prosjekt', 'kunnskapskilde', 'artikkel', 'verktoy'), $args);
@@ -134,12 +132,11 @@ class BIM_Verdi_Taxonomies {
         
         $args = array(
             'labels'            => $labels,
-            'hierarchical'      => false,
+            'hierarchical'      => true,
             'public'            => true,
             'show_ui'           => true,
             'show_admin_column' => true,
             'show_in_rest'      => true,
-            'meta_box_cb'       => 'post_categories_meta_box',
         );
 
         register_taxonomy('verktoykategori', array('verktoy'), $args);
@@ -184,12 +181,11 @@ class BIM_Verdi_Taxonomies {
         
         $args = array(
             'labels'            => $labels,
-            'hierarchical'      => false,
+            'hierarchical'      => true,
             'public'            => true,
             'show_ui'           => true,
             'show_admin_column' => true,
             'show_in_rest'      => true,
-            'meta_box_cb'       => 'post_categories_meta_box',
         );
 
         register_taxonomy('arrangementstype', array('arrangement'), $args);
@@ -206,12 +202,11 @@ class BIM_Verdi_Taxonomies {
         
         $args = array(
             'labels'            => $labels,
-            'hierarchical'      => false,
+            'hierarchical'      => true,
             'public'            => true,
             'show_ui'           => true,
             'show_admin_column' => true,
             'show_in_rest'      => true,
-            'meta_box_cb'       => 'post_categories_meta_box',
         );
 
         register_taxonomy('artikkelkategori', array('artikkel'), $args);
