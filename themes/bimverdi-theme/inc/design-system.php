@@ -766,6 +766,10 @@ class BIM_Verdi_Design_System {
                 background: none !important;
                 border: none !important;
             }
+            .bv-footer-newsletter .gform_wrapper .gfield_label,
+            .bv-footer-newsletter .gform_wrapper .gfield_required {
+                display: none !important;
+            }
             .bv-footer-newsletter .gform_wrapper .validation_error,
             .bv-footer-newsletter .gform_wrapper .gfield_error .gfield_label {
                 display: none !important;
