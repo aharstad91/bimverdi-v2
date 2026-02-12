@@ -571,7 +571,7 @@ $kildetype_config = array(
                     <div class="text-base oat-text-secondary mt-1">Temagrupper</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl md:text-4xl font-bold oat-text">2017</div>
+                    <div class="text-3xl md:text-4xl font-bold oat-text">2012</div>
                     <div class="text-base oat-text-secondary mt-1">Etablert</div>
                 </div>
             </div>

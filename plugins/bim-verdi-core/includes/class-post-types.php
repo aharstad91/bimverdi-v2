@@ -32,6 +32,12 @@ class BIM_Verdi_Post_Types {
      */
     private function __construct() {
         add_action('init', array($this, 'register_post_types'));
+
+        // Custom admin columns for arrangement
+        add_filter('manage_arrangement_posts_columns', array($this, 'arrangement_admin_columns'));
+        add_action('manage_arrangement_posts_custom_column', array($this, 'arrangement_admin_column_content'), 10, 2);
+        add_filter('manage_edit-arrangement_sortable_columns', array($this, 'arrangement_sortable_columns'));
+        add_action('pre_get_posts', array($this, 'arrangement_default_sort'));
     }
     
     /**
@@ -335,5 +341,84 @@ class BIM_Verdi_Post_Types {
         );
 
         register_post_type('artikkel', $args);
+    }
+
+    /**
+     * Custom admin columns for arrangement CPT
+     */
+    public function arrangement_admin_columns($columns) {
+        $new_columns = array();
+        foreach ($columns as $key => $label) {
+            if ($key === 'date') {
+                // Replace default date with event date
+                $new_columns['arrangement_dato'] = 'Arrangementsdato';
+                $new_columns['arrangement_status_toggle'] = 'Status';
+            } else {
+                $new_columns[$key] = $label;
+            }
+        }
+        return $new_columns;
+    }
+
+    /**
+     * Render custom column content
+     */
+    public function arrangement_admin_column_content($column, $post_id) {
+        if ($column === 'arrangement_dato') {
+            $dato = get_field('arrangement_dato', $post_id);
+            if ($dato) {
+                $date_obj = DateTime::createFromFormat('Y-m-d', $dato);
+                if (!$date_obj) {
+                    $date_obj = DateTime::createFromFormat('Ymd', $dato);
+                }
+                if ($date_obj) {
+                    echo esc_html($date_obj->format('d.m.Y'));
+                } else {
+                    echo esc_html($dato);
+                }
+            } else {
+                echo '<span style="color:#999">—</span>';
+            }
+        }
+
+        if ($column === 'arrangement_status_toggle') {
+            $status = get_field('arrangement_status_toggle', $post_id);
+            if ($status === 'kommende') {
+                echo '<span style="color:#2e7d32;font-weight:500">Kommende</span>';
+            } else {
+                echo '<span style="color:#888">Tidligere</span>';
+            }
+        }
+    }
+
+    /**
+     * Make arrangement_dato column sortable
+     */
+    public function arrangement_sortable_columns($columns) {
+        $columns['arrangement_dato'] = 'arrangement_dato';
+        return $columns;
+    }
+
+    /**
+     * Default sort by arrangement_dato and handle sortable column
+     */
+    public function arrangement_default_sort($query) {
+        if (!is_admin() || !$query->is_main_query()) {
+            return;
+        }
+
+        if ($query->get('post_type') !== 'arrangement') {
+            return;
+        }
+
+        $orderby = $query->get('orderby');
+
+        if ($orderby === 'arrangement_dato' || empty($orderby)) {
+            $query->set('meta_key', 'arrangement_dato');
+            $query->set('orderby', 'meta_value');
+            if (empty($query->get('order'))) {
+                $query->set('order', 'DESC');
+            }
+        }
     }
 }

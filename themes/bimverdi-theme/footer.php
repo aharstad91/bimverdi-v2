@@ -11,7 +11,7 @@
                 <p class="text-[#5A5A5A] text-sm mb-4">
                     Motta nyheter og invitasjoner til våre arrangement.
                 </p>
-                <form class="flex border-b border-[#1A1A1A]" action="#" method="post">
+                <form id="bv-newsletter-form" class="flex border-b border-[#1A1A1A]" method="post">
                     <input type="email"
                            name="email"
                            placeholder="E-postadresse"
@@ -23,6 +23,7 @@
                         </svg>
                     </button>
                 </form>
+                <p id="bv-newsletter-msg" class="text-sm mt-2" style="display:none"></p>
             </div>
 
             <!-- Organisering Column -->
@@ -42,6 +43,8 @@
                 <ul class="space-y-3 text-sm">
                     <li><a href="<?php echo esc_url(home_url('/artikler/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Artikler</a></li>
                     <li><a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Verktøy</a></li>
+                    <li><a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Kunnskapskilder</a></li>
+                    <li><a href="<?php echo esc_url(home_url('/temagrupper/')); ?>" class="text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">Temagrupper</a></li>
                 </ul>
             </div>
 
