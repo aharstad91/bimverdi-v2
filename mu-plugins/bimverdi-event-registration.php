@@ -59,7 +59,7 @@ function bimverdi_ajax_register_event() {
     }
 
     // Check access control (adgang)
-    $adgang = get_field('adgang', $arrangement_id) ?: 'deltakere';
+    $adgang = get_field('adgang', $arrangement_id) ?: 'alle';
     $access_check = bimverdi_check_event_access($user_id, $adgang);
     if (!$access_check['allowed']) {
         wp_send_json_error(['message' => $access_check['message']], 403);

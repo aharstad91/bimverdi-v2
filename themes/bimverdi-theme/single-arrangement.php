@@ -325,7 +325,7 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                     // Access check for soft messaging
                     $access_check = ['allowed' => true, 'message' => ''];
                     if ($user_id && function_exists('bimverdi_check_event_access')) {
-                        $access_check = bimverdi_check_event_access($user_id, $adgang ?: 'deltakere');
+                        $access_check = bimverdi_check_event_access($user_id, $adgang ?: 'alle');
                     }
                 ?>
                 <div class="bg-[#F2F0EB] rounded-xl p-6" id="bv-registration-card">
