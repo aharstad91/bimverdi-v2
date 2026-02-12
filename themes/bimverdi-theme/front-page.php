@@ -20,7 +20,7 @@ $total_sources = wp_count_posts('kunnskapskilde')->publish;
 
 // Temagruppe color mapping (references CSS custom properties)
 $tg_colors = array(
-    'Modellkvalitet' => 'var(--color-tg-orange)',
+    'SirkBIM'        => 'var(--color-tg-orange)',
     'ByggesaksBIM'   => 'var(--color-tg-blue)',
     'ProsjektBIM'    => 'var(--color-tg-green)',
     'EiendomsBIM'    => 'var(--color-tg-purple)',
@@ -65,7 +65,7 @@ $kildetype_config = array(
 
             <!-- Main Headline -->
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-5 leading-tight oat-text">
-                Vi digitaliserer sammen i praktiske prosjekter.
+                Vi digitaliserer sammen i praktiske prosjekter basert på dagens kunnskap, krav, forskrifter, standarder, veiledninger og verktøy.
             </h1>
 
             <!-- Subtitle -->
@@ -418,7 +418,7 @@ $kildetype_config = array(
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <?php
                 $theme_groups = array(
-                    array('title' => 'Modellkvalitet', 'desc' => 'Fokus på MMI, standarder og kvalitetssikring av modeller for bedre samhandling.', 'slug' => 'modellkvalitet', 'color' => 'var(--color-tg-orange)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>'),
+                    array('title' => 'SirkBIM', 'desc' => 'Sirkulær økonomi, materialgjenbruk og ombruk i byggenæringen med digitale verktøy.', 'slug' => 'sirkbim', 'color' => 'var(--color-tg-orange)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>'),
                     array('title' => 'ByggesaksBIM', 'desc' => 'Digitalisering av byggesaksprosessen og bruk av BIM mot offentlige myndigheter.', 'slug' => 'byggesaksbim', 'color' => 'var(--color-tg-blue)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>'),
                     array('title' => 'ProsjektBIM', 'desc' => 'Beste praksis for BIM-koordinering og ledelse i store byggeprosjekter.', 'slug' => 'prosjektbim', 'color' => 'var(--color-tg-green)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>'),
                     array('title' => 'EiendomsBIM', 'desc' => 'FDV-dokumentasjon og bruk av BIM i driftsfasen for eiendomsforvaltere.', 'slug' => 'eiendomsbim', 'color' => 'var(--color-tg-purple)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>'),
