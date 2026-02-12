@@ -48,6 +48,7 @@ $hero_image_url = $hero_illustrasjon ? wp_get_attachment_image_url($hero_illustr
             <div class="lg:max-w-2xl">
                 <h1 class="text-3xl lg:text-4xl font-bold text-[#1A1A1A] mb-4">
                     <?php the_title(); ?>
+                    <?php echo bimverdi_admin_id_badge(); ?>
                 </h1>
 
                 <?php if ($kort_beskrivelse) : ?>

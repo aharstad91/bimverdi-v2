@@ -188,7 +188,7 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                     </div>
                     <?php endif; ?>
 
-                    <h1 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4"><?php the_title(); ?></h1>
+                    <h1 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
 
                     <!-- Quick info row -->
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[#5A5A5A]">

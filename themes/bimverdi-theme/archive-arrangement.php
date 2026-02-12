@@ -147,6 +147,7 @@ function bimverdi_get_type_label($type) {
                         <!-- Title -->
                         <h3 class="text-xl font-bold text-[#1A1A1A] mb-2 leading-tight tracking-tight line-clamp-2">
                             <?php the_title(); ?>
+                            <?php echo bimverdi_admin_id_badge(); ?>
                         </h3>
 
                         <!-- Time and Location -->
@@ -242,7 +243,7 @@ function bimverdi_get_type_label($type) {
                     <div class="flex-1 min-w-0">
                         <a href="<?php the_permalink(); ?>" class="font-semibold text-[#1A1A1A] hover:opacity-70 transition-opacity block truncate">
                             <?php the_title(); ?>
-                        </a>
+                        </a><?php echo bimverdi_admin_id_badge(); ?>
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#5A5A5A] mt-1">
                             <span class="flex items-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>

@@ -319,7 +319,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Artikkel', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields'),
+            'supports'              => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,

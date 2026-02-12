@@ -111,6 +111,7 @@ if (!function_exists('bimverdi_get_initials')) {
                     <!-- Company Name -->
                     <h2 class="text-xl font-bold text-[#1A1A1A] mb-2 leading-tight tracking-tight">
                         <?php the_title(); ?>
+                        <?php echo bimverdi_admin_id_badge(); ?>
                     </h2>
 
                     <!-- Location -->

@@ -162,6 +162,7 @@ $temagrupper = get_terms(array(
                         <a href="<?php the_permalink(); ?>" class="hover:text-orange-600">
                             <?php the_title(); ?>
                         </a>
+                        <?php echo bimverdi_admin_id_badge(); ?>
                     </h2>
 
                     <!-- Ingress / Excerpt -->

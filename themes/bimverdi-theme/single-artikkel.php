@@ -16,6 +16,7 @@ $artikkel_ingress = get_field('artikkel_ingress');
 $author_id = get_the_author_meta('ID');
 $author_name = get_the_author();
 $author_avatar = get_avatar_url($author_id, array('size' => 80));
+$medforfattere_ids = get_field('artikkel_medforfattere');
 
 // Category labels
 $category_labels = array(
@@ -60,6 +61,7 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                 <!-- Title -->
                 <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
                     <?php the_title(); ?>
+                    <?php echo bimverdi_admin_id_badge(); ?>
                 </h1>
                 
                 <!-- Ingress -->
@@ -74,8 +76,8 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                     
                     <!-- Author -->
                     <div class="flex items-center gap-3">
-                        <wa-avatar 
-                            image="<?php echo esc_url($author_avatar); ?>" 
+                        <wa-avatar
+                            image="<?php echo esc_url($author_avatar); ?>"
                             label="<?php echo esc_attr($author_name); ?>"
                             style="--size: 48px;">
                         </wa-avatar>
@@ -85,6 +87,20 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                                 <a href="<?php echo esc_url($company_url); ?>" class="text-sm text-orange-600 hover:underline">
                                     <?php echo esc_html($company_name); ?>
                                 </a>
+                            <?php endif; ?>
+                            <?php if (!empty($medforfattere_ids)) : ?>
+                                <div class="text-sm text-gray-500 mt-0.5">
+                                    med <?php
+                                    $names = array();
+                                    foreach ($medforfattere_ids as $uid) {
+                                        $u = get_userdata($uid);
+                                        if ($u) {
+                                            $names[] = esc_html($u->display_name);
+                                        }
+                                    }
+                                    echo implode(', ', $names);
+                                    ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -174,6 +190,27 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                                         <wa-icon library="fa" name="fas-building" slot="prefix"></wa-icon>
                                         Se foretakets profil
                                     </wa-button>
+                                <?php endif; ?>
+                                <?php if (!empty($medforfattere_ids)) : ?>
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Medforfattere</h4>
+                                        <div class="flex flex-wrap gap-3">
+                                            <?php foreach ($medforfattere_ids as $uid) :
+                                                $u = get_userdata($uid);
+                                                if (!$u) continue;
+                                                $u_avatar = get_avatar_url($uid, array('size' => 40));
+                                            ?>
+                                            <div class="flex items-center gap-2">
+                                                <wa-avatar
+                                                    image="<?php echo esc_url($u_avatar); ?>"
+                                                    label="<?php echo esc_attr($u->display_name); ?>"
+                                                    style="--size: 32px;">
+                                                </wa-avatar>
+                                                <span class="text-sm text-gray-700"><?php echo esc_html($u->display_name); ?></span>
+                                            </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </div>

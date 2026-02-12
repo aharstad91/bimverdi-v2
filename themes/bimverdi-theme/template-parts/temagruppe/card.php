@@ -118,6 +118,7 @@ $initials = strtoupper(substr($title, 0, 2));
     <!-- Title -->
     <h2 class="text-lg font-bold text-[#1A1A1A] mb-2">
         <?php echo esc_html($title); ?>
+        <?php echo bimverdi_admin_id_badge($post_id); ?>
     </h2>
 
     <!-- Description -->

@@ -301,6 +301,7 @@ foreach (array_keys($kategori_options) as $slug) {
                     <!-- Title -->
                     <h3 class="text-lg font-bold text-[#1A1A1A] mb-1 group-hover:text-[#5A5A5A] transition-colors line-clamp-2">
                         <?php echo esc_html($navn); ?>
+                        <?php echo bimverdi_admin_id_badge(); ?>
                     </h3>
 
                     <!-- Publisher & Year -->

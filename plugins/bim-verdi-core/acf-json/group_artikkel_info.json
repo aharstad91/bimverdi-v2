@@ -1,0 +1,73 @@
+{
+    "key": "group_artikkel_info",
+    "title": "Artikkel Info",
+    "fields": [
+        {
+            "key": "field_artikkel_ingress",
+            "label": "Ingress",
+            "name": "artikkel_ingress",
+            "type": "textarea",
+            "instructions": "Kort introduksjon som vises i hero-seksjonen (maks 300 tegn)",
+            "required": 0,
+            "maxlength": 300,
+            "rows": 3,
+            "new_lines": ""
+        },
+        {
+            "key": "field_artikkel_kategori",
+            "label": "Artikkeltype",
+            "name": "artikkel_kategori",
+            "type": "select",
+            "instructions": "Hva slags artikkel er dette?",
+            "required": 0,
+            "choices": {
+                "fagartikkel": "Fagartikkel",
+                "case": "Case",
+                "tips": "Tips og triks",
+                "nyhet": "Nyhet",
+                "kommentar": "Kommentar"
+            },
+            "default_value": "",
+            "allow_null": 1,
+            "return_format": "value"
+        },
+        {
+            "key": "field_artikkel_bedrift",
+            "label": "Tilknyttet foretak",
+            "name": "artikkel_bedrift",
+            "type": "post_object",
+            "instructions": "Foretaket som artikkelen er tilknyttet",
+            "required": 0,
+            "post_type": ["foretak"],
+            "allow_null": 1,
+            "return_format": "id"
+        },
+        {
+            "key": "field_artikkel_medforfattere",
+            "label": "Medforfattere",
+            "name": "artikkel_medforfattere",
+            "type": "user",
+            "instructions": "Velg deltakere/medlemmer som har bidratt til artikkelen. Vises på artikkelsiden og kan kobles til deres profil.",
+            "required": 0,
+            "role": "",
+            "multiple": 1,
+            "allow_null": 1,
+            "return_format": "id"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "artikkel"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true
+}

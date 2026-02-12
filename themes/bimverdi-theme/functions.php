@@ -107,6 +107,12 @@ require_once get_template_directory() . '/template-parts/cards.php';
 require_once get_template_directory() . '/inc/mock-data.php';
 
 /**
+ * Load Admin Helpers
+ * Provides bimverdi_admin_id_badge() for frontend admin tools
+ */
+require_once get_template_directory() . '/inc/admin-helpers.php';
+
+/**
  * Load ACF Field Groups (with graceful fallback if file missing)
  */
 $acf_temagruppe_fields = get_template_directory() . '/inc/acf/temagruppe-fields.php';
