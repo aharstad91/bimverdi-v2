@@ -407,6 +407,19 @@ function bimverdi_auto_prepend_https_to_url($value, $post_id, $field) {
 }
 
 /**
+ * =============================================================================
+ * 4. SKJUL STANDARD "INNLEGG" (POSTS) FRA ADMIN-MENYEN
+ * =============================================================================
+ * BIM Verdi bruker kun egne CPT-er (artikkel, kunnskapskilde osv.).
+ * Standard WordPress-innlegg brukes ikke og fjernes fra menyen for å unngå forvirring.
+ */
+add_action('admin_menu', 'bimverdi_hide_default_posts_menu');
+
+function bimverdi_hide_default_posts_menu() {
+    remove_menu_page('edit.php');
+}
+
+/**
  * Legg til CSS for locked fields i admin
  */
 add_action('admin_head', 'bimverdi_locked_fields_admin_css');

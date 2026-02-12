@@ -74,7 +74,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Foretak', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
+            'supports'              => array('title', 'thumbnail', 'custom-fields'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -108,7 +108,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Verktøy', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
+            'supports'              => array('title', 'thumbnail', 'custom-fields'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
