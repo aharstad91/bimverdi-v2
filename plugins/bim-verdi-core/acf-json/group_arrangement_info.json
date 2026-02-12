@@ -190,12 +190,23 @@
         },
         {
             "key": "field_passer_for",
-            "label": "Passer for",
+            "label": "Målgrupper",
             "name": "passer_for",
-            "type": "text",
-            "instructions": "Hvem passer arrangementet for?",
+            "type": "checkbox",
+            "instructions": "Hvem passer arrangementet for? Velg én eller flere.",
             "required": 0,
-            "placeholder": "BIM-koordinatorer, prosjektledere, arkitekter"
+            "choices": {
+                "BIM-koordinatorer": "BIM-koordinatorer",
+                "Prosjektledere": "Prosjektledere",
+                "Arkitekter": "Arkitekter",
+                "Rådgivere": "Rådgivere",
+                "Utviklere": "Utviklere",
+                "Byggherrer": "Byggherrer",
+                "Studenter": "Studenter",
+                "Alle": "Alle"
+            },
+            "return_format": "value",
+            "layout": "vertical"
         },
         {
             "key": "field_arrangor",
@@ -211,13 +222,12 @@
             "label": "Adgang",
             "name": "adgang",
             "type": "select",
-            "instructions": "Hvem har adgang til arrangementet?",
-            "required": 0,
+            "instructions": "Hvem kan melde seg på arrangementet?",
+            "required": 1,
             "choices": {
                 "alle": "Åpent for alle",
-                "medlemmer": "Kun deltakere",
-                "deltakere": "Kun deltakere/partnere",
-                "invitert": "Kun inviterte"
+                "registrerte": "Registrerte brukere i BIM Verdi",
+                "deltakere": "Deltakere i BIM Verdi (alle nivåer)"
             },
             "default_value": "deltakere",
             "return_format": "value"

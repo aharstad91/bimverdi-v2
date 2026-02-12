@@ -85,9 +85,9 @@ function bimverdi_arr_get_type_label($type) {
 function bimverdi_arr_get_adgang_label($adgang) {
     $labels = array(
         'alle' => 'Åpent for alle',
-        'medlemmer' => 'Kun deltakere', // Legacy value, now means 'deltakere'
-        'deltakere' => 'Kun deltakere/partnere',
-        'invitert' => 'Kun inviterte',
+        'registrerte' => 'Registrerte brukere',
+        'deltakere' => 'Deltakere i BIM Verdi',
+        'medlemmer' => 'Deltakere i BIM Verdi', // Legacy
     );
     return $labels[$adgang] ?? '';
 }
@@ -315,30 +315,97 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
 
                 <!-- Registration Card -->
                 <?php if (!$is_past && $status !== 'avlyst'): ?>
-                <div class="bg-[#F2F0EB] rounded-xl p-6">
+                <?php
+                    // Registration state
+                    $user_id = get_current_user_id();
+                    $existing_registration = $user_id ? (function_exists('bimverdi_get_user_registration') ? bimverdi_get_user_registration($user_id, $arrangement_id) : false) : false;
+                    $registration_count = function_exists('bimverdi_get_registration_count') ? bimverdi_get_registration_count($arrangement_id) : 0;
+                    $is_full = $maks_deltakere && $registration_count >= intval($maks_deltakere);
+
+                    // Access check for soft messaging
+                    $access_check = ['allowed' => true, 'message' => ''];
+                    if ($user_id && function_exists('bimverdi_check_event_access')) {
+                        $access_check = bimverdi_check_event_access($user_id, $adgang ?: 'deltakere');
+                    }
+                ?>
+                <div class="bg-[#F2F0EB] rounded-xl p-6" id="bv-registration-card">
                     <h3 class="font-bold text-[#1A1A1A] mb-4">Påmelding</h3>
 
                     <?php if ($frist_passert): ?>
                         <p class="text-[#5A5A5A] text-sm mb-4">Påmeldingsfristen har gått ut.</p>
+
+                    <?php elseif ($existing_registration): ?>
+                        <?php $reg_status = get_field('pamelding_status', $existing_registration); ?>
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a7c29" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <span class="text-sm font-medium text-[#4a7c29]">
+                                <?php echo $reg_status === 'venteliste' ? 'Du står på venteliste' : 'Du er påmeldt'; ?>
+                            </span>
+                        </div>
+                        <?php
+                        $can_cancel = !function_exists('bimverdi_can_cancel_registration') || bimverdi_can_cancel_registration($arrangement_id);
+                        if ($can_cancel): ?>
+                        <button type="button"
+                                class="bv-btn bv-btn--secondary bv-btn--small w-full"
+                                id="bv-unregister-btn"
+                                data-arrangement-id="<?php echo $arrangement_id; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            Meld deg av
+                        </button>
+                        <?php else: ?>
+                        <p class="text-xs text-[#5A5A5A]">Avmeldingsfristen har passert.</p>
+                        <?php endif; ?>
+
                     <?php elseif ($pamelding_url): ?>
                         <?php bimverdi_button([
                             'text'       => 'Meld deg på',
                             'variant'    => 'primary',
-                            'icon'       => 'user',
+                            'icon'       => 'external-link',
                             'href'       => $pamelding_url,
                             'target'     => '_blank',
                             'full_width' => true,
                         ]); ?>
+                        <p class="text-xs text-[#5A5A5A] mt-2">Åpner ekstern påmelding</p>
+
+                    <?php elseif (!$user_id): ?>
+                        <p class="text-[#5A5A5A] text-sm mb-3">Logg inn for å melde deg på.</p>
+                        <?php bimverdi_button([
+                            'text'       => 'Logg inn',
+                            'variant'    => 'primary',
+                            'icon'       => 'log-in',
+                            'href'       => wp_login_url(get_permalink()),
+                            'full_width' => true,
+                        ]); ?>
+
+                    <?php elseif (!$access_check['allowed']): ?>
+                        <p class="text-[#5A5A5A] text-sm mb-3"><?php echo esc_html($access_check['message']); ?></p>
+
                     <?php else: ?>
-                        <p class="text-[#5A5A5A] text-sm">Kontakt arrangør for påmelding.</p>
+                        <button type="button"
+                                class="bv-btn bv-btn--primary w-full"
+                                id="bv-register-btn"
+                                data-arrangement-id="<?php echo $arrangement_id; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                            <?php echo $is_full ? 'Sett meg på venteliste' : 'Meld deg på'; ?>
+                        </button>
+                    <?php endif; ?>
+
+                    <?php // Capacity info ?>
+                    <?php if ($maks_deltakere && !$frist_passert): ?>
+                    <p class="text-xs text-[#5A5A5A] mt-3">
+                        <?php echo $registration_count; ?>/<?php echo intval($maks_deltakere); ?> plasser fylt
+                        <?php if ($is_full): ?><span class="text-[#B8860B] font-medium"> – fullt, venteliste</span><?php endif; ?>
+                    </p>
                     <?php endif; ?>
 
                     <?php if ($pameldingsfrist && !$frist_passert): ?>
-                    <p class="text-xs text-[#5A5A5A] mt-3 flex items-center gap-1">
+                    <p class="text-xs text-[#5A5A5A] mt-2 flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         Frist: <?php echo date_i18n('j. F Y H:i', strtotime($pameldingsfrist)); ?>
                     </p>
                     <?php endif; ?>
+
+                    <div id="bv-reg-message" class="hidden mt-3 text-sm p-3 rounded-lg"></div>
                 </div>
                 <?php endif; ?>
 
@@ -396,13 +463,23 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                         </div>
                         <?php endif; ?>
 
-                        <!-- Passer for -->
-                        <?php if ($passer_for): ?>
+                        <!-- Målgrupper -->
+                        <?php
+                        $malgrupper_display = '';
+                        if ($passer_for) {
+                            if (is_array($passer_for)) {
+                                $malgrupper_display = implode(', ', $passer_for);
+                            } else {
+                                $malgrupper_display = $passer_for;
+                            }
+                        }
+                        ?>
+                        <?php if ($malgrupper_display): ?>
                         <div class="flex items-start gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                             <div>
-                                <div class="text-[#5A5A5A]">Passer for</div>
-                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($passer_for); ?></div>
+                                <div class="text-[#5A5A5A]">Målgrupper</div>
+                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($malgrupper_display); ?></div>
                             </div>
                         </div>
                         <?php endif; ?>
@@ -613,5 +690,88 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
 </div>
 
 <?php endwhile; endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var regConfig = typeof bimverdiEventReg !== 'undefined' ? bimverdiEventReg : null;
+    if (!regConfig) return;
+
+    var msgEl = document.getElementById('bv-reg-message');
+    var registerBtn = document.getElementById('bv-register-btn');
+    var unregisterBtn = document.getElementById('bv-unregister-btn');
+
+    function showMessage(text, isError) {
+        if (!msgEl) return;
+        msgEl.textContent = text;
+        msgEl.className = 'mt-3 text-sm p-3 rounded-lg ' +
+            (isError ? 'bg-red-50 text-[#772015]' : 'bg-green-50 text-[#4a7c29]');
+    }
+
+    function setLoading(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.style.opacity = loading ? '0.6' : '1';
+    }
+
+    if (registerBtn) {
+        registerBtn.addEventListener('click', function() {
+            var btn = this;
+            var arrangementId = btn.getAttribute('data-arrangement-id');
+            setLoading(btn, true);
+
+            var formData = new FormData();
+            formData.append('action', 'bimverdi_register_event');
+            formData.append('arrangement_id', arrangementId);
+            formData.append('nonce', regConfig.nonce);
+
+            fetch(regConfig.ajaxUrl, { method: 'POST', body: formData })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (res.success) {
+                        showMessage(res.data.message, false);
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        showMessage(res.data.message || 'Noe gikk galt.', true);
+                        setLoading(btn, false);
+                    }
+                })
+                .catch(function() {
+                    showMessage('Noe gikk galt. Prøv igjen.', true);
+                    setLoading(btn, false);
+                });
+        });
+    }
+
+    if (unregisterBtn) {
+        unregisterBtn.addEventListener('click', function() {
+            if (!confirm('Er du sikker på at du vil melde deg av?')) return;
+            var btn = this;
+            var arrangementId = btn.getAttribute('data-arrangement-id');
+            setLoading(btn, true);
+
+            var formData = new FormData();
+            formData.append('action', 'bimverdi_unregister_event');
+            formData.append('arrangement_id', arrangementId);
+            formData.append('nonce', regConfig.nonce);
+
+            fetch(regConfig.ajaxUrl, { method: 'POST', body: formData })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (res.success) {
+                        showMessage(res.data.message, false);
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        showMessage(res.data.message || 'Noe gikk galt.', true);
+                        setLoading(btn, false);
+                    }
+                })
+                .catch(function() {
+                    showMessage('Noe gikk galt. Prøv igjen.', true);
+                    setLoading(btn, false);
+                });
+        });
+    }
+});
+</script>
 
 <?php get_footer(); ?>
