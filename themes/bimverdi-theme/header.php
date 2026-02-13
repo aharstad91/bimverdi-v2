@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="profile" href="https://gmpg.org/xfn/11">
     <?php wp_head(); ?>
-    <noscript><style>[data-animate]{opacity:1!important}</style></noscript>
+    <noscript><style>body{opacity:1!important}</style></noscript>
 </head>
 
 <body <?php body_class('bg-[#F7F5EF]'); ?>>

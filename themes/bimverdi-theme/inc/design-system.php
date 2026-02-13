@@ -778,16 +778,9 @@ class BIM_Verdi_Design_System {
                 border-bottom-color: #772015 !important;
             }
 
-            /* ---- GSAP Animation Base ---- */
-            /* Hide elements before GSAP animates them (prevents flash) */
-            [data-animate] {
-                opacity: 0;
-            }
-            /* Immediately show if JS is disabled or reduced motion preferred */
-            @media (prefers-reduced-motion: reduce) {
-                [data-animate] {
-                    opacity: 1 !important;
-                }
+            /* ---- GSAP Page Transition ---- */
+            @media (prefers-reduced-motion: no-preference) {
+                body { opacity: 0; }
             }
         </style>
         <?php

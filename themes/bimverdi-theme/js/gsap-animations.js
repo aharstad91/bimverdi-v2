@@ -1,24 +1,7 @@
 /**
- * BIM Verdi — GSAP Page-Load Animations
+ * BIM Verdi — GSAP Page Transitions
  *
- * Usage:  Add data-animate="<type>" to any HTML element.
- *
- *   Types:
- *     fade-up      — Fade in + slide up 30px   (default)
- *     fade-in      — Fade in (no movement)
- *     fade-left    — Fade in + slide from left
- *     fade-right   — Fade in + slide from right
- *     fade-down    — Fade in + slide down
- *     scale-in     — Fade in + scale from 0.95
- *
- *   Optional attributes:
- *     data-animate-delay="0.2"      — Delay in seconds
- *     data-animate-duration="0.6"   — Duration in seconds
- *     data-animate-stagger="0.1"    — Stagger children (on parent)
- *
- *   Stagger children:
- *     Add data-animate-stagger on a parent to auto-stagger
- *     all direct children that have data-animate.
+ * Subtle fade-in on page load, fade-out on navigation.
  *
  * @package BIMVerdi
  * @version 1.0.0
@@ -27,76 +10,54 @@
 (function () {
     'use strict';
 
-    // Skip animations if user prefers reduced motion
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelectorAll('[data-animate]').forEach(function (el) {
-            el.style.opacity = '1';
-        });
         return;
     }
 
-    // Animation presets — { from-values }
-    var presets = {
-        'fade-up':    { y: 30 },
-        'fade-down':  { y: -30 },
-        'fade-left':  { x: -30 },
-        'fade-right': { x: 30 },
-        'fade-in':    {},
-        'scale-in':   { scale: 0.95 },
-    };
+    var duration = 0.35;
+    var ease = 'power1.out';
 
-    var defaultDuration = 0.7;
-    var defaultEase = 'power2.out';
+    // Fade in on page load
+    gsap.fromTo('body', { opacity: 0 }, { opacity: 1, duration: duration, ease: ease });
 
-    /**
-     * Animate a single element using fromTo (explicit start and end)
-     */
-    function animateElement(el, extraDelay) {
-        var type = el.getAttribute('data-animate') || 'fade-up';
-        var preset = presets[type] || presets['fade-up'];
-        var delay = parseFloat(el.getAttribute('data-animate-delay') || 0) + (extraDelay || 0);
-        var duration = parseFloat(el.getAttribute('data-animate-duration') || defaultDuration);
+    // Fade out on internal link clicks
+    document.addEventListener('click', function (e) {
+        var link = e.target.closest('a[href]');
+        if (!link) return;
 
-        // Build "from" values: preset movement + opacity 0
-        var fromVars = Object.assign({ opacity: 0 }, preset);
+        var href = link.getAttribute('href');
 
-        // Build "to" values: natural position + opacity 1
-        var toVars = { opacity: 1, x: 0, y: 0, scale: 1, duration: duration, delay: delay, ease: defaultEase };
+        // Skip non-navigating links
+        if (!href
+            || href.startsWith('#')
+            || href.startsWith('javascript:')
+            || href.startsWith('mailto:')
+            || href.startsWith('tel:')
+            || link.target === '_blank'
+            || link.hasAttribute('download')
+            || e.ctrlKey || e.metaKey || e.shiftKey
+        ) return;
 
-        gsap.fromTo(el, fromVars, toVars);
-    }
+        // Skip external links
+        try {
+            var url = new URL(href, window.location.origin);
+            if (url.origin !== window.location.origin) return;
+        } catch (_) {
+            return;
+        }
 
-    /**
-     * Init: find all [data-animate] elements and animate them
-     */
-    function init() {
-        // 1. Handle stagger groups first
-        var staggerParents = document.querySelectorAll('[data-animate-stagger]');
-        var staggeredEls = new Set();
+        // Skip WP admin links
+        if (href.indexOf('/wp-admin') !== -1 || href.indexOf('wp-login') !== -1) return;
 
-        staggerParents.forEach(function (parent) {
-            var stagger = parseFloat(parent.getAttribute('data-animate-stagger') || 0.1);
-            var children = parent.querySelectorAll(':scope > [data-animate]');
-
-            children.forEach(function (child, i) {
-                staggeredEls.add(child);
-                animateElement(child, i * stagger);
-            });
+        e.preventDefault();
+        gsap.to('body', {
+            opacity: 0,
+            duration: duration,
+            ease: 'power1.in',
+            onComplete: function () {
+                window.location.href = href;
+            },
         });
-
-        // 2. Animate remaining standalone elements
-        document.querySelectorAll('[data-animate]').forEach(function (el) {
-            if (!staggeredEls.has(el)) {
-                animateElement(el);
-            }
-        });
-    }
-
-    // Run when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    });
 
 })();
