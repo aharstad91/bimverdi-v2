@@ -65,24 +65,6 @@ function bimverdi_enqueue_assets() {
         '2.0.0',
         true
     );
-
-    // GSAP Animation Library
-    wp_enqueue_script(
-        'gsap',
-        'https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js',
-        array(),
-        '3.12.7',
-        true
-    );
-
-    // GSAP Animations (page-load transitions)
-    wp_enqueue_script(
-        'bimverdi-animations',
-        get_template_directory_uri() . '/js/gsap-animations.js',
-        array('gsap'),
-        '1.0.0',
-        true
-    );
 }
 add_action('wp_enqueue_scripts', 'bimverdi_enqueue_assets');
 

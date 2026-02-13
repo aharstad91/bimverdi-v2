@@ -777,9 +777,6 @@ class BIM_Verdi_Design_System {
             .bv-footer-newsletter .gform_wrapper .gfield_error input[type="email"] {
                 border-bottom-color: #772015 !important;
             }
-
-            /* ---- GSAP Page Transition ---- */
-            main, footer { opacity: 0; }
         </style>
         <?php
     }
