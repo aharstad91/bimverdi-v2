@@ -777,6 +777,18 @@ class BIM_Verdi_Design_System {
             .bv-footer-newsletter .gform_wrapper .gfield_error input[type="email"] {
                 border-bottom-color: #772015 !important;
             }
+
+            /* ---- GSAP Animation Base ---- */
+            /* Hide elements before GSAP animates them (prevents flash) */
+            [data-animate] {
+                opacity: 0;
+            }
+            /* Immediately show if JS is disabled or reduced motion preferred */
+            @media (prefers-reduced-motion: reduce) {
+                [data-animate] {
+                    opacity: 1 !important;
+                }
+            }
         </style>
         <?php
     }

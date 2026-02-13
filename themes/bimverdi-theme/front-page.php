@@ -53,10 +53,10 @@ $kildetype_config = array(
 <!-- Hero Section -->
 <section class="oat-bg oat-text pt-14 pb-12">
     <div class="max-w-6xl mx-auto px-4 md:px-8">
-        <div class="max-w-3xl">
+        <div class="max-w-3xl" data-animate-stagger="0.15">
 
             <!-- Badge -->
-            <div class="mb-5">
+            <div class="mb-5" data-animate="fade-up">
                 <span class="inline-flex items-center gap-2 oat-bg-surface pl-4 pr-3 py-2 rounded-full text-base oat-text-secondary">
                     Norges ledende nettverk for praktisk bruk av BIM og AI
                     <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="font-semibold oat-text hover:underline flex items-center gap-1">Les mer <span>&rsaquo;</span></a>
@@ -64,17 +64,17 @@ $kildetype_config = array(
             </div>
 
             <!-- Main Headline -->
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-5 leading-tight oat-text">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-5 leading-tight oat-text" data-animate="fade-up">
                 Vi digitaliserer sammen i praktiske prosjekter basert på dagens kunnskap, krav, forskrifter, standarder, veiledninger og verktøy.
             </h1>
 
             <!-- Subtitle -->
-            <p class="text-lg md:text-xl oat-text-secondary mb-8 max-w-2xl leading-relaxed">
+            <p class="text-lg md:text-xl oat-text-secondary mb-8 max-w-2xl leading-relaxed" data-animate="fade-up">
                 BIM Verdi er et bransjenettverk som kobler sammen aktører i byggenæringen for å dele kunnskap, erfaringer og verktøy.
             </p>
 
             <!-- CTA Buttons -->
-            <div class="flex flex-wrap items-center gap-6 mb-10">
+            <div class="flex flex-wrap items-center gap-6 mb-10" data-animate="fade-up">
                 <a href="<?php echo esc_url(home_url('/logg-inn/')); ?>" class="bv-btn bv-btn--primary bv-btn--large" style="border-radius: var(--radius-pill)">
                     Bli med i nettverket
                 </a>
@@ -86,7 +86,7 @@ $kildetype_config = array(
         </div>
 
         <!-- Stats Bar -->
-        <div class="pt-6">
+        <div class="pt-6" data-animate="fade-up" data-animate-delay="0.6">
             <div class="flex flex-wrap items-stretch justify-between gap-y-3">
                 <?php
                 $stats = array(
@@ -121,7 +121,7 @@ $kildetype_config = array(
     <section class="py-14 border-t oat-border">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
 
-            <div class="mb-8">
+            <div class="mb-8" data-animate="fade-up">
                 <h2 class="text-2xl font-bold oat-text mb-1">Nytt i nettverket</h2>
                 <p class="text-base oat-text-secondary">Siste tilskudd til kunnskapsbasen og verktøykatalogen.</p>
             </div>
@@ -233,7 +233,7 @@ $kildetype_config = array(
 
                 <!-- Left: Ingress + CTA -->
                 <div>
-                    <h2 class="text-2xl font-bold oat-text mb-3">Bli en del av nettverket</h2>
+                    <h2 class="text-2xl font-bold oat-text mb-3" data-animate="fade-up">Bli en del av nettverket</h2>
                     <p class="text-base oat-text-secondary mb-5 leading-relaxed">
                         <?php echo esc_html($total_companies); ?> foretak deler verktøy, erfaringer og bransjekunnskap. Registrer ditt foretak og få tilgang til hele nettverket.
                     </p>
@@ -413,9 +413,9 @@ $kildetype_config = array(
     <!-- Våre Temagrupper -->
     <section class="py-14 border-t oat-border">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <h2 class="text-2xl font-bold oat-text mb-6">Temagrupper</h2>
+            <h2 class="text-2xl font-bold oat-text mb-6" data-animate="fade-up">Temagrupper</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-animate-stagger="0.08">
                 <?php
                 $theme_groups = array(
                     array('title' => 'SirkBIM', 'desc' => 'Sirkulær økonomi, materialgjenbruk og ombruk i byggenæringen med digitale verktøy.', 'slug' => 'sirkbim', 'color' => 'var(--color-tg-orange)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>'),
@@ -429,6 +429,7 @@ $kildetype_config = array(
                 foreach ($theme_groups as $group):
                 ?>
                 <a href="<?php echo esc_url(home_url('/temagrupper/' . $group['slug'] . '/')); ?>"
+                   data-animate="fade-up"
                    class="block rounded-xl border oat-border-light p-5 hover:shadow-sm transition-all group oat-bg"
                    style="border-color: color-mix(in srgb, <?php echo esc_attr($group['color']); ?> 25%, var(--color-border-light, #D6D1C6))">
                     <div class="flex items-start justify-between mb-4">
@@ -450,7 +451,7 @@ $kildetype_config = array(
     <section class="py-14 border-t oat-border">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-bold oat-text">Kommende Arrangementer</h2>
+                <h2 class="text-2xl font-bold oat-text" data-animate="fade-up">Kommende Arrangementer</h2>
                 <a href="<?php echo esc_url(home_url('/arrangementer/')); ?>" class="text-base oat-text-secondary font-medium flex items-center gap-1">Se alle <span>&rarr;</span></a>
             </div>
 
@@ -547,7 +548,7 @@ $kildetype_config = array(
     <!-- Nettverket i tall -->
     <section class="py-16 border-t oat-border">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <h2 class="text-2xl font-bold oat-text text-center mb-10">Nettverket i tall</h2>
+            <h2 class="text-2xl font-bold oat-text text-center mb-10" data-animate="fade-up">Nettverket i tall</h2>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                 <div class="text-center">
