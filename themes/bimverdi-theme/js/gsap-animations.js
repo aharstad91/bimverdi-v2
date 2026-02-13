@@ -1,11 +1,9 @@
 (function () {
-  // Fade-in: main+footer glir opp og fader inn ved DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', function () {
-    gsap.fromTo('main, footer',
-      { opacity: 0, y: 5 },
-      { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }
-    );
-  });
+  // Fade-in: main+footer glir opp og fader inn
+  gsap.fromTo('main, footer',
+    { opacity: 0, y: 5 },
+    { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }
+  );
 
   // Fade-out: fanger interne lenker, fader ut, navigerer
   document.addEventListener('click', function (e) {
