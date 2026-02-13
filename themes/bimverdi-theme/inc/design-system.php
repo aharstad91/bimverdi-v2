@@ -779,9 +779,7 @@ class BIM_Verdi_Design_System {
             }
 
             /* ---- GSAP Page Transition ---- */
-            @media (prefers-reduced-motion: no-preference) {
-                body { opacity: 0; }
-            }
+            main, footer { opacity: 0; }
         </style>
         <?php
     }
