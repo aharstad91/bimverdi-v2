@@ -1517,7 +1517,7 @@ class BIM_Verdi_CLI_Commands {
             }
             WP_CLI::log("");
             WP_CLI::log("Fix these with:");
-            WP_CLI::log("  wp bimverdi assign-tilleggskontakt --user=email@example.com --foretak=<POST_ID>");
+            WP_CLI::log("  wp bimverdi assign-tilleggskontakt --email=email@example.com --foretak=<POST_ID>");
         }
 
         // Print summary
@@ -1539,7 +1539,7 @@ class BIM_Verdi_CLI_Commands {
             WP_CLI::log("");
             WP_CLI::log("Next steps:");
             WP_CLI::log("  1. Review ambiguous matches above");
-            WP_CLI::log("  2. Fix with: wp bimverdi assign-tilleggskontakt --user=<email> --foretak=<ID>");
+            WP_CLI::log("  2. Fix with: wp bimverdi assign-tilleggskontakt --email=<email> --foretak=<ID>");
             WP_CLI::log("  3. Send password reset emails:");
             WP_CLI::log("     wp user list --meta_key=bimverdi_imported_from --meta_value=old_bimverdi --fields=user_email --format=csv | tail -n +2 | while read email; do wp user reset-password \"\$email\"; done");
         }
@@ -1550,7 +1550,7 @@ class BIM_Verdi_CLI_Commands {
      *
      * ## OPTIONS
      *
-     * --user=<email>
+     * --email=<email>
      * : Email address of the user to assign
      *
      * --foretak=<post-id>
@@ -1561,20 +1561,20 @@ class BIM_Verdi_CLI_Commands {
      *
      * ## EXAMPLES
      *
-     *     wp bimverdi assign-tilleggskontakt --user=ola@example.com --foretak=152
-     *     wp bimverdi assign-tilleggskontakt --user=ola@example.com --foretak=152 --dry-run
+     *     wp bimverdi assign-tilleggskontakt --email=ola@example.com --foretak=152
+     *     wp bimverdi assign-tilleggskontakt --email=ola@example.com --foretak=152 --dry-run
      *
      * @subcommand assign-tilleggskontakt
      * @param array $args       Positional arguments
      * @param array $assoc_args Named arguments
      */
     public function assign_tilleggskontakt($args, $assoc_args) {
-        $email = $assoc_args['user'] ?? '';
+        $email = $assoc_args['email'] ?? '';
         $foretak_id = intval($assoc_args['foretak'] ?? 0);
         $dry_run = isset($assoc_args['dry-run']);
 
         if (empty($email)) {
-            WP_CLI::error("--user=<email> is required");
+            WP_CLI::error("--email=<email> is required");
         }
         if ($foretak_id <= 0) {
             WP_CLI::error("--foretak=<post-id> is required (positive integer)");
