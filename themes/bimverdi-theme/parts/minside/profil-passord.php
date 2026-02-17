@@ -86,9 +86,9 @@ $display_name = trim($first_name . ' ' . $last_name) ?: $current_user->display_n
         <?php endif; ?>
 
         <!-- Password Form -->
-        <div class="bg-white border border-[#E5E0D5] rounded-lg p-8">
-            <h2 class="text-xl font-bold text-[#1A1A1A] mb-6 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]">
+        <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
+            <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
@@ -99,18 +99,18 @@ $display_name = trim($first_name . ' ' . $last_name) ?: $current_user->display_n
                 <?php wp_nonce_field('bimverdi_change_password'); ?>
 
                 <div>
-                    <label for="current_password" class="block text-sm font-medium text-[#1A1A1A] mb-2">
+                    <label for="current_password" class="block text-sm font-medium text-[#111827] mb-2">
                         <?php _e('Nåværende passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
                     </label>
                     <input type="password"
                            id="current_password"
                            name="current_password"
                            required
-                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent">
+                           class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
                 </div>
 
-                <div class="border-t border-[#E5E0D5] pt-6">
-                    <label for="new_password" class="block text-sm font-medium text-[#1A1A1A] mb-2">
+                <div class="border-t border-[#E7E5E4] pt-6">
+                    <label for="new_password" class="block text-sm font-medium text-[#111827] mb-2">
                         <?php _e('Nytt passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
                     </label>
                     <input type="password"
@@ -118,12 +118,12 @@ $display_name = trim($first_name . ' ' . $last_name) ?: $current_user->display_n
                            name="new_password"
                            required
                            minlength="8"
-                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent">
-                    <p class="mt-2 text-xs text-[#5A5A5A]"><?php _e('Minst 8 tegn', 'bimverdi'); ?></p>
+                           class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
+                    <p class="mt-2 text-xs text-[#57534E]"><?php _e('Minst 8 tegn', 'bimverdi'); ?></p>
                 </div>
 
                 <div>
-                    <label for="confirm_password" class="block text-sm font-medium text-[#1A1A1A] mb-2">
+                    <label for="confirm_password" class="block text-sm font-medium text-[#111827] mb-2">
                         <?php _e('Bekreft nytt passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
                     </label>
                     <input type="password"
@@ -131,7 +131,7 @@ $display_name = trim($first_name . ' ' . $last_name) ?: $current_user->display_n
                            name="confirm_password"
                            required
                            minlength="8"
-                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent">
+                           class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
                 </div>
 
                 <div class="pt-4">
@@ -149,14 +149,14 @@ $display_name = trim($first_name . ' ' . $last_name) ?: $current_user->display_n
         </div>
 
         <!-- Security Tips -->
-        <div class="mt-8 p-4 bg-[#F7F5EF] border border-[#EFE9DE] rounded-lg">
-            <h3 class="text-sm font-semibold text-[#1A1A1A] mb-3 flex items-center gap-2">
+        <div class="mt-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg">
+            <h3 class="text-sm font-semibold text-[#111827] mb-3 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
                 </svg>
                 <?php _e('Sikkerhetstips', 'bimverdi'); ?>
             </h3>
-            <ul class="space-y-2 text-sm text-[#5A5A5A]">
+            <ul class="space-y-2 text-sm text-[#57534E]">
                 <li class="flex items-start gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 flex-shrink-0">
                         <polyline points="20 6 9 17 4 12"/>

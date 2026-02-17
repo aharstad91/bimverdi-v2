@@ -62,13 +62,13 @@ $land = get_field('land', $company_id);
     <div class="max-w-2xl">
 
         <!-- Company Info Badge -->
-        <div class="mb-8 p-4 bg-[#F7F5EF] border border-[#EFE9DE] rounded-lg flex items-center gap-4">
+        <div class="mb-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center gap-4">
             <?php if ($logo_url): ?>
                 <img src="<?php echo esc_url($logo_url); ?>"
                      alt="<?php echo esc_attr($bedriftsnavn); ?>"
-                     class="w-16 h-16 rounded-lg object-contain bg-white border border-[#E5E0D5] flex-shrink-0">
+                     class="w-16 h-16 rounded-lg object-contain bg-white border border-[#E7E5E4] flex-shrink-0">
             <?php else: ?>
-                <div class="w-16 h-16 rounded-lg bg-white border border-[#E5E0D5] flex items-center justify-center flex-shrink-0">
+                <div class="w-16 h-16 rounded-lg bg-white border border-[#E7E5E4] flex items-center justify-center flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
                         <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
@@ -77,66 +77,66 @@ $land = get_field('land', $company_id);
                 </div>
             <?php endif; ?>
             <div>
-                <p class="font-semibold text-[#1A1A1A] text-lg"><?php echo esc_html($bedriftsnavn); ?></p>
+                <p class="font-semibold text-[#111827] text-lg"><?php echo esc_html($bedriftsnavn); ?></p>
                 <?php if ($org_nummer): ?>
-                    <p class="text-sm text-[#5A5A5A]"><?php _e('Org.nr:', 'bimverdi'); ?> <?php echo esc_html($org_nummer); ?></p>
+                    <p class="text-sm text-[#57534E]"><?php _e('Org.nr:', 'bimverdi'); ?> <?php echo esc_html($org_nummer); ?></p>
                 <?php endif; ?>
             </div>
         </div>
 
         <!-- Locked Brreg Data Section -->
-        <div class="mb-8 p-6 bg-[#F9F9F9] border border-[#E5E0D5] rounded-lg">
+        <div class="mb-8 p-6 bg-[#F9F9F9] border border-[#E7E5E4] rounded-lg">
             <div class="flex items-center gap-2 mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <h3 class="font-semibold text-[#1A1A1A]"><?php _e('Offisielle data fra Brønnøysundregistrene', 'bimverdi'); ?></h3>
+                <h3 class="font-semibold text-[#111827]"><?php _e('Offisielle data fra Brønnøysundregistrene', 'bimverdi'); ?></h3>
             </div>
-            <p class="text-sm text-[#5A5A5A] mb-4">
+            <p class="text-sm text-[#57534E] mb-4">
                 <?php _e('Disse opplysningene hentes automatisk fra Brønnøysundregistrene og kan ikke redigeres her. For å oppdatere disse må du melde endring til Brønnøysundregistrene.', 'bimverdi'); ?>
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Bedriftsnavn', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($bedriftsnavn); ?></p>
+                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($bedriftsnavn); ?></p>
                 </div>
                 <div>
                     <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Organisasjonsnummer', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($org_nummer); ?></p>
+                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($org_nummer); ?></p>
                 </div>
                 <?php if ($adresse): ?>
                 <div>
                     <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Adresse', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($adresse); ?></p>
+                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($adresse); ?></p>
                 </div>
                 <?php endif; ?>
                 <?php if ($postnummer || $poststed): ?>
                 <div>
                     <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Poststed', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html(trim($postnummer . ' ' . $poststed)); ?></p>
+                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html(trim($postnummer . ' ' . $poststed)); ?></p>
                 </div>
                 <?php endif; ?>
                 <?php if ($land && $land !== 'Norge'): ?>
                 <div>
                     <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Land', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#1A1A1A] bg-white border border-[#E5E0D5] rounded px-3 py-2"><?php echo esc_html($land); ?></p>
+                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($land); ?></p>
                 </div>
                 <?php endif; ?>
             </div>
         </div>
 
         <!-- Gravity Form -->
-        <div class="bg-white border border-[#E5E0D5] rounded-lg p-8">
-            <h2 class="text-xl font-bold text-[#1A1A1A] mb-6 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]">
+        <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
+            <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
                     <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>
                 </svg>
                 <?php _e('Redigerbar informasjon', 'bimverdi'); ?>
             </h2>
-            <p class="text-sm text-[#5A5A5A] mb-6">
+            <p class="text-sm text-[#57534E] mb-6">
                 <?php _e('Oppdater beskrivelse, logo, kontaktinformasjon og nettside for foretaket.', 'bimverdi'); ?>
             </p>
 
@@ -155,8 +155,8 @@ $land = get_field('land', $company_id);
         </div>
 
         <!-- Help Section -->
-        <div class="mt-12 pt-8 border-t border-[#D6D1C6]">
-            <h3 class="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 flex items-center gap-2">
+        <div class="mt-12 pt-8 border-t border-[#E7E5E4]">
+            <h3 class="text-sm font-bold text-[#111827] uppercase tracking-wider mb-4 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
@@ -165,7 +165,7 @@ $land = get_field('land', $company_id);
                 <?php _e('Hjelp', 'bimverdi'); ?>
             </h3>
 
-            <div class="space-y-4 text-sm text-[#5A5A5A]">
+            <div class="space-y-4 text-sm text-[#57534E]">
                 <div class="flex gap-3 items-start">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 flex-shrink-0">
                         <circle cx="12" cy="12" r="10"/>
@@ -195,7 +195,7 @@ $land = get_field('land', $company_id);
                         <path d="M12 16v-4"/>
                         <path d="M12 8h.01"/>
                     </svg>
-                    <p><?php _e('Trenger du å endre hovedkontakt?', 'bimverdi'); ?> <a href="mailto:post@bimverdi.no" class="text-[#1A1A1A] underline"><?php _e('Kontakt oss', 'bimverdi'); ?></a>.</p>
+                    <p><?php _e('Trenger du å endre hovedkontakt?', 'bimverdi'); ?> <a href="mailto:post@bimverdi.no" class="text-[#111827] underline"><?php _e('Kontakt oss', 'bimverdi'); ?></a>.</p>
                 </div>
             </div>
         </div>

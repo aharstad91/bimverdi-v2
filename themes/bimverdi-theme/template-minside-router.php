@@ -88,9 +88,9 @@ if ($part_file) {
         'icon' => 'alert-circle',
     ]);
     ?>
-    <div class="bg-white border border-[#E5E2DB] rounded-lg p-6 text-center">
-        <p class="text-[#5A5A5A] mb-4">
-            URL-en <code class="bg-[#F7F5EF] px-2 py-1 rounded text-sm">/min-side/<?php echo esc_html($current_route); ?>/</code> 
+    <div class="bg-white border border-[#E7E5E4] rounded-lg p-6 text-center">
+        <p class="text-[#57534E] mb-4">
+            URL-en <code class="bg-[#F5F5F4] px-2 py-1 rounded text-sm">/min-side/<?php echo esc_html($current_route); ?>/</code> 
             finnes ikke.
         </p>
         <a href="<?php echo esc_url(bimverdi_minside_url('')); ?>" 

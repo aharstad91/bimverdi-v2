@@ -23,16 +23,16 @@ if ($existing_foretak_id && get_post_status($existing_foretak_id) === 'publish')
 
 <!-- Breadcrumb -->
 <nav class="mb-6" aria-label="Brødsmulesti">
-    <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+    <ol class="flex items-center gap-2 text-sm text-[#57534E]">
         <li>
-            <a href="<?php echo esc_url(home_url('/min-side/')); ?>" class="hover:text-[#1A1A1A] transition-colors">
+            <a href="<?php echo esc_url(home_url('/min-side/')); ?>" class="hover:text-[#111827] transition-colors">
                 Min side
             </a>
         </li>
         <li>
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </li>
-        <li class="text-[#1A1A1A] font-medium" aria-current="page">Registrer foretak</li>
+        <li class="text-[#111827] font-medium" aria-current="page">Registrer foretak</li>
     </ol>
 </nav>
 
@@ -48,17 +48,17 @@ get_template_part('parts/components/page-header', null, [
 <div class="max-w-3xl mx-auto">
 
     <!-- Info Section -->
-    <div class="mb-8 p-4 bg-[#F7F5EF] rounded-lg">
+    <div class="mb-8 p-4 bg-[#F5F5F4] rounded-lg">
         <div class="flex items-start gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            <p class="text-sm text-[#5A5A5A]">
-                <strong class="text-[#1A1A1A]">Tips:</strong> Start å skrive foretaksnavnet, så henter vi automatisk informasjon fra Brønnøysundregistrene.
+            <p class="text-sm text-[#57534E]">
+                <strong class="text-[#111827]">Tips:</strong> Start å skrive foretaksnavnet, så henter vi automatisk informasjon fra Brønnøysundregistrene.
             </p>
         </div>
     </div>
 
     <!-- Gravity Form -->
-    <div class="bg-white rounded-lg border border-[#D6D1C6] p-6">
+    <div class="bg-white rounded-lg border border-[#E7E5E4] p-6">
         <?php
         if (function_exists('gravity_form')) {
             // Form ID 2 = [Bruker] - Registrering av foretak
@@ -74,7 +74,7 @@ get_template_part('parts/components/page-header', null, [
     </div>
 
     <!-- Help Link -->
-    <div class="mt-6 text-center text-sm text-[#5A5A5A]">
+    <div class="mt-6 text-center text-sm text-[#57534E]">
         <p>Har du allerede et registrert foretak?
             <a href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>" class="text-[#FF8B5E] hover:underline">
                 Se din foretaksprofil
@@ -110,7 +110,7 @@ get_template_part('parts/components/page-header', null, [
 
 .gform_wrapper .gfield_label {
     font-weight: 600 !important;
-    color: #1A1A1A !important;
+    color: #111827 !important;
     margin-bottom: 0.5rem !important;
 }
 
@@ -122,7 +122,7 @@ get_template_part('parts/components/page-header', null, [
 .gform_wrapper select {
     width: 100% !important;
     padding: 0.75rem 1rem !important;
-    border: 1px solid #D6D1C6 !important;
+    border: 1px solid #E7E5E4 !important;
     border-radius: 0.5rem !important;
     font-size: 1rem !important;
     transition: border-color 0.2s, box-shadow 0.2s !important;
@@ -141,13 +141,13 @@ get_template_part('parts/components/page-header', null, [
 
 .gform_wrapper .gfield_description {
     font-size: 0.875rem !important;
-    color: #5A5A5A !important;
+    color: #57534E !important;
     margin-top: 0.25rem !important;
 }
 
 .gform_wrapper .gform_footer {
     margin-top: 1.5rem !important;
     padding-top: 1rem !important;
-    border-top: 1px solid #D6D1C6 !important;
+    border-top: 1px solid #E7E5E4 !important;
 }
 </style>

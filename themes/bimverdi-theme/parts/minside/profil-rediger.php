@@ -36,26 +36,26 @@ $is_welcome = isset($_GET['welcome']) && $_GET['welcome'] === '1';
             <div class="flex items-start gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 <div>
-                    <p class="font-semibold text-[#1A1A1A] mb-1"><?php _e('Kontoen din er opprettet!', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#5A5A5A]"><?php _e('Fyll ut informasjonen under for å fullføre profilen din. Du kan alltid oppdatere dette senere.', 'bimverdi'); ?></p>
+                    <p class="font-semibold text-[#111827] mb-1"><?php _e('Kontoen din er opprettet!', 'bimverdi'); ?></p>
+                    <p class="text-sm text-[#57534E]"><?php _e('Fyll ut informasjonen under for å fullføre profilen din. Du kan alltid oppdatere dette senere.', 'bimverdi'); ?></p>
                 </div>
             </div>
         </div>
         <?php endif; ?>
 
         <!-- User Info Badge -->
-        <div class="mb-8 p-4 bg-[#F7F5EF] border border-[#EFE9DE] rounded-lg flex items-center gap-4">
+        <div class="mb-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center gap-4">
             <img src="<?php echo esc_url($avatar_url); ?>" alt="" class="w-14 h-14 rounded-full object-cover flex-shrink-0">
             <div>
-                <p class="font-semibold text-[#1A1A1A]"><?php echo esc_html($display_name); ?></p>
-                <p class="text-sm text-[#5A5A5A]"><?php echo esc_html($current_user->user_email); ?></p>
+                <p class="font-semibold text-[#111827]"><?php echo esc_html($display_name); ?></p>
+                <p class="text-sm text-[#57534E]"><?php echo esc_html($current_user->user_email); ?></p>
             </div>
         </div>
 
         <!-- Gravity Form -->
-        <div class="bg-white border border-[#E5E0D5] rounded-lg p-8">
-            <h2 class="text-xl font-bold text-[#1A1A1A] mb-6 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]">
+        <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
+            <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                 </svg>
