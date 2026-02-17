@@ -102,14 +102,14 @@ $kilde_updated = get_the_modified_date('d.m.Y');
 $kilde_created = get_the_date('d.m.Y');
 ?>
 
-<main class="min-h-screen bg-[#FAFAF8]">
+<main class="min-h-screen bg-white">
     <div class="max-w-7xl mx-auto px-6 py-8">
 
         <!-- Breadcrumb -->
         <nav class="mb-6" aria-label="Brødsmulesti">
-            <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+            <ol class="flex items-center gap-2 text-sm text-[#57534E]">
                 <li>
-                    <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>" class="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
+                    <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>" class="hover:text-[#111827] transition-colors flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                         Kunnskapskilder
                     </a>
@@ -117,16 +117,16 @@ $kilde_created = get_the_date('d.m.Y');
                 <li>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                 </li>
-                <li class="text-[#1A1A1A] font-medium line-clamp-1" aria-current="page"><?php echo esc_html($kunnskapskilde_navn); ?></li>
+                <li class="text-[#111827] font-medium line-clamp-1" aria-current="page"><?php echo esc_html($kunnskapskilde_navn); ?></li>
             </ol>
         </nav>
 
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
             <div class="flex-1">
-                <h1 class="text-3xl font-bold text-[#1A1A1A] mb-1"><?php echo esc_html($kunnskapskilde_navn); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
+                <h1 class="text-3xl font-bold text-[#111827] mb-1"><?php echo esc_html($kunnskapskilde_navn); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
                 <?php if ($utgiver): ?>
-                <p class="text-[#5A5A5A]"><?php echo esc_html($utgiver); ?><?php if ($utgivelsesaar): ?> - <?php echo esc_html($utgivelsesaar); ?><?php endif; ?></p>
+                <p class="text-[#57534E]"><?php echo esc_html($utgiver); ?><?php if ($utgivelsesaar): ?> - <?php echo esc_html($utgivelsesaar); ?><?php endif; ?></p>
                 <?php endif; ?>
             </div>
 
@@ -159,31 +159,31 @@ $kilde_created = get_the_date('d.m.Y');
 
                 <!-- Beskrivelse Section -->
                 <section>
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4">Om denne kilden</h2>
+                    <h2 class="text-lg font-bold text-[#111827] mb-4">Om denne kilden</h2>
 
                     <?php if ($kort_beskrivelse): ?>
-                    <p class="text-[#5A5A5A] text-lg mb-4"><?php echo esc_html($kort_beskrivelse); ?></p>
+                    <p class="text-[#57534E] text-lg mb-4"><?php echo esc_html($kort_beskrivelse); ?></p>
                     <?php endif; ?>
 
                     <?php if ($detaljert_beskrivelse): ?>
-                    <div class="prose prose-sm max-w-none text-[#5A5A5A]">
+                    <div class="prose prose-sm max-w-none text-[#57534E]">
                         <?php echo wpautop($detaljert_beskrivelse); ?>
                     </div>
                     <?php endif; ?>
 
                     <!-- Tags -->
                     <?php if (!empty($temagruppe_terms) || !empty($kategori_terms)): ?>
-                    <div class="flex flex-wrap gap-2 pt-6 mt-6 border-t border-[#E5E0D8]">
+                    <div class="flex flex-wrap gap-2 pt-6 mt-6 border-t border-[#E7E5E4]">
                         <?php if (!empty($temagruppe_terms)): ?>
                             <?php foreach ($temagruppe_terms as $term): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                                 <?php echo esc_html($term->name); ?>
                             </span>
                             <?php endforeach; ?>
                         <?php endif; ?>
                         <?php if (!empty($kategori_terms)): ?>
                             <?php foreach ($kategori_terms as $term): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                                 <?php echo esc_html($term->name); ?>
                             </span>
                             <?php endforeach; ?>
@@ -193,23 +193,23 @@ $kilde_created = get_the_date('d.m.Y');
                 </section>
 
                 <!-- Detaljer Section (Definition List) -->
-                <section class="border-t border-[#E5E0D8] pt-10">
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-6">Detaljer</h2>
+                <section class="border-t border-[#E7E5E4] pt-10">
+                    <h2 class="text-lg font-bold text-[#111827] mb-6">Detaljer</h2>
 
-                    <dl class="space-y-0 divide-y divide-[#E5E0D8]">
+                    <dl class="space-y-0 divide-y divide-[#E7E5E4]">
                         <!-- Utgiver -->
                         <?php if ($utgiver): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Utgiver</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($utgiver); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Utgiver</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($utgiver); ?></dd>
                         </div>
                         <?php endif; ?>
 
                         <!-- År -->
                         <?php if ($utgivelsesaar): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">År (antatt)</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php
+                            <dt class="text-sm text-[#57534E]">År (antatt)</dt>
+                            <dd class="text-sm text-[#111827]"><?php
                                 $aar_display = [
                                     'eldre' => 'Eldre enn 2022',
                                 ];
@@ -221,32 +221,32 @@ $kilde_created = get_the_date('d.m.Y');
                         <!-- Geografisk gyldighet -->
                         <?php if ($geografisk_gyldighet): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Geografisk gyldighet</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($geo_labels[$geografisk_gyldighet] ?? $geografisk_gyldighet); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Geografisk gyldighet</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($geo_labels[$geografisk_gyldighet] ?? $geografisk_gyldighet); ?></dd>
                         </div>
                         <?php endif; ?>
 
                         <!-- Dataformat -->
                         <?php if ($dataformat): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Dataformat</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($dataformat_labels[$dataformat] ?? $dataformat); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Dataformat</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($dataformat_labels[$dataformat] ?? $dataformat); ?></dd>
                         </div>
                         <?php endif; ?>
 
                         <!-- Versjon -->
                         <?php if ($versjon): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Versjon</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($versjon); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Versjon</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($versjon); ?></dd>
                         </div>
                         <?php endif; ?>
 
                         <!-- Tilgang -->
                         <?php if ($tilgang && $tilgang !== 'ukjent'): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Tilgang</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php
+                            <dt class="text-sm text-[#57534E]">Tilgang</dt>
+                            <dd class="text-sm text-[#111827]"><?php
                                 $tilgang_labels = [
                                     'gratis' => 'Gratis',
                                     'betalt' => 'Betalt',
@@ -261,8 +261,8 @@ $kilde_created = get_the_date('d.m.Y');
                         <!-- Lovpålagte standarder -->
                         <?php if ($ant_lovpalagte || $lovpalagte_standarder): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Lovpålagte standarder</dt>
-                            <dd class="text-sm text-[#1A1A1A]">
+                            <dt class="text-sm text-[#57534E]">Lovpålagte standarder</dt>
+                            <dd class="text-sm text-[#111827]">
                                 <?php if ($ant_lovpalagte): ?>
                                     <span class="font-medium"><?php echo esc_html($ant_lovpalagte); ?></span>
                                 <?php endif; ?>
@@ -277,8 +277,8 @@ $kilde_created = get_the_date('d.m.Y');
                         <!-- Anbefalte standarder -->
                         <?php if ($ant_anbefalte || $anbefalte_standarder): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Anbefalte standarder</dt>
-                            <dd class="text-sm text-[#1A1A1A]">
+                            <dt class="text-sm text-[#57534E]">Anbefalte standarder</dt>
+                            <dd class="text-sm text-[#111827]">
                                 <?php if ($ant_anbefalte): ?>
                                     <span class="font-medium"><?php echo esc_html($ant_anbefalte); ?></span>
                                 <?php endif; ?>
@@ -293,17 +293,17 @@ $kilde_created = get_the_date('d.m.Y');
                         <!-- Språk -->
                         <?php if ($spraak): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Språk</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html(isset($spraak_labels[$spraak]) ? $spraak_labels[$spraak] : $spraak); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Språk</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html(isset($spraak_labels[$spraak]) ? $spraak_labels[$spraak] : $spraak); ?></dd>
                         </div>
                         <?php endif; ?>
 
                         <!-- Kildetype -->
                         <?php if ($kildetype): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Kildetype</dt>
+                            <dt class="text-sm text-[#57534E]">Kildetype</dt>
                             <dd class="text-sm">
-                                <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                                <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                                     <?php echo esc_html(isset($kildetype_labels[$kildetype]) ? $kildetype_labels[$kildetype] : $kildetype); ?>
                                 </span>
                             </dd>
@@ -313,14 +313,14 @@ $kilde_created = get_the_date('d.m.Y');
                         <!-- Ekstern lenke -->
                         <?php if ($ekstern_lenke): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Ekstern lenke</dt>
+                            <dt class="text-sm text-[#57534E]">Ekstern lenke</dt>
                             <dd class="text-sm">
                                 <a href="<?php echo esc_url($ekstern_lenke); ?>"
                                    target="_blank"
                                    rel="noopener"
-                                   class="text-[#1A1A1A] hover:underline inline-flex items-center gap-1">
+                                   class="text-[#111827] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($ekstern_lenke, PHP_URL_HOST) ?: $ekstern_lenke); ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 </a>
                             </dd>
                         </div>
@@ -335,12 +335,12 @@ $kilde_created = get_the_date('d.m.Y');
             <div class="lg:col-span-1 space-y-6">
 
                 <!-- STATUS Section -->
-                <section class="bg-[#F7F5EF] rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-6">Status</h3>
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-6">Status</h3>
 
                     <dl class="space-y-6">
                         <div class="flex justify-between items-center">
-                            <dt class="text-sm text-[#5A5A5A]">Status</dt>
+                            <dt class="text-sm text-[#57534E]">Status</dt>
                             <dd>
                                 <?php
                                 $post_status = get_post_status();
@@ -354,19 +354,19 @@ $kilde_created = get_the_date('d.m.Y');
                         </div>
 
                         <div>
-                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                 Registrert
                             </dt>
-                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo esc_html($kilde_created); ?></dd>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($kilde_created); ?></dd>
                         </div>
 
                         <div>
-                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                 Sist oppdatert
                             </dt>
-                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo esc_html($kilde_updated); ?></dd>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($kilde_updated); ?></dd>
                         </div>
 
                         <?php
@@ -374,33 +374,33 @@ $kilde_created = get_the_date('d.m.Y');
                         if ($bedrift):
                         ?>
                         <div>
-                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
                                 Registrert av
                             </dt>
-                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo esc_html($bedrift->post_title); ?></dd>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($bedrift->post_title); ?></dd>
                         </div>
                         <?php endif; ?>
                     </dl>
                 </section>
 
                 <!-- SNARVEIER Section -->
-                <section class="bg-[#F7F5EF] rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-4">Snarveier</h3>
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-4">Snarveier</h3>
 
-                    <nav class="space-y-0 divide-y divide-[#E5E0D8]">
+                    <nav class="space-y-0 divide-y divide-[#E7E5E4]">
                         <?php if ($ekstern_lenke): ?>
                         <a href="<?php echo esc_url($ekstern_lenke); ?>"
                            target="_blank"
                            rel="noopener"
-                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
+                           class="block py-3 text-sm text-[#111827] hover:text-[#F97316] transition-colors">
                             Åpne ekstern kilde
                         </a>
                         <?php endif; ?>
 
 
                         <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>"
-                           class="block py-3 text-sm text-[#1A1A1A] hover:text-[#F97316] transition-colors">
+                           class="block py-3 text-sm text-[#111827] hover:text-[#F97316] transition-colors">
                             Tilbake til katalogen
                         </a>
                     </nav>

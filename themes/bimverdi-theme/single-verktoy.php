@@ -149,14 +149,14 @@ function bimverdi_v3_readable_label($value) {
 $tool_updated = get_the_modified_date('d.m.Y');
 ?>
 
-<main class="min-h-screen bg-[#FAFAF8]">
+<main class="min-h-screen bg-white">
     <div class="max-w-7xl mx-auto px-6 py-8">
 
         <!-- Breadcrumb -->
         <nav class="mb-6" aria-label="Brødsmulesti">
-            <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+            <ol class="flex items-center gap-2 text-sm text-[#57534E]">
                 <li>
-                    <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
+                    <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="hover:text-[#111827] transition-colors flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                         Verktøy
                     </a>
@@ -164,7 +164,7 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 <li>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                 </li>
-                <li class="text-[#1A1A1A] font-medium" aria-current="page"><?php the_title(); ?></li>
+                <li class="text-[#111827] font-medium" aria-current="page"><?php the_title(); ?></li>
             </ol>
         </nav>
 
@@ -172,14 +172,14 @@ $tool_updated = get_the_modified_date('d.m.Y');
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
             <div class="flex items-start gap-5 flex-1">
                 <?php if ($logo_url): ?>
-                <div class="flex-shrink-0 w-20 h-20 bg-white rounded-lg border border-[#E5E0D8] p-2 flex items-center justify-center">
+                <div class="flex-shrink-0 w-20 h-20 bg-white rounded-lg border border-[#E7E5E4] p-2 flex items-center justify-center">
                     <img src="<?php echo esc_url($logo_url); ?>" alt="<?php the_title(); ?> logo" class="max-w-full max-h-full object-contain">
                 </div>
                 <?php endif; ?>
                 <div>
-                    <h1 class="text-3xl font-bold text-[#1A1A1A] mb-1"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
+                    <h1 class="text-3xl font-bold text-[#111827] mb-1"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
                     <?php if ($eier): ?>
-                    <p class="text-[#5A5A5A]">
+                    <p class="text-[#57534E]">
                         <a href="<?php echo get_permalink($eier->ID); ?>" class="hover:underline">
                             <?php echo esc_html($eier->post_title); ?>
                         </a>
@@ -208,20 +208,20 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 
                 <!-- Oversikt Section -->
                 <section>
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4">Oversikt</h2>
+                    <h2 class="text-lg font-bold text-[#111827] mb-4">Oversikt</h2>
 
                     <?php if (!empty($kort_beskrivelse)): ?>
-                    <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
+                    <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
                         <?php echo wpautop(esc_html($kort_beskrivelse)); ?>
                     </div>
                     <?php endif; ?>
 
                     <?php if (!empty($detaljert_beskrivelse)): ?>
-                    <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
+                    <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
                         <?php echo $detaljert_beskrivelse; ?>
                     </div>
                     <?php elseif (empty($kort_beskrivelse)): ?>
-                    <div class="prose prose-sm max-w-none text-[#5A5A5A] mb-6">
+                    <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
                         <?php if (has_excerpt()): ?>
                             <p><?php echo get_the_excerpt(); ?></p>
                         <?php else: ?>
@@ -232,10 +232,10 @@ $tool_updated = get_the_modified_date('d.m.Y');
                     
                     <!-- Tags -->
                     <?php if (!empty($anvendelser) || $formaalstema || $bim_kompatibilitet || $type_teknologi): ?>
-                    <div class="flex flex-wrap gap-2 pt-4 border-t border-[#E5E0D8]">
+                    <div class="flex flex-wrap gap-2 pt-4 border-t border-[#E7E5E4]">
                         <?php if (!empty($anvendelser) && is_array($anvendelser)): ?>
                             <?php foreach ($anvendelser as $anvendelse): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                                 <?php echo esc_html(bimverdi_v3_readable_label($anvendelse)); ?>
                             </span>
                             <?php endforeach; ?>
@@ -246,7 +246,7 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         foreach ($bim_values as $bim_val):
                             if ($bim_val && $bim_val !== 'vet_ikke'):
                         ?>
-                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                        <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                             <?php echo esc_html(bimverdi_v3_readable_label($bim_val)); ?>
                         </span>
                         <?php endif; endforeach; ?>
@@ -256,12 +256,12 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         foreach ($tema_values as $tema_val):
                             if ($tema_val):
                         ?>
-                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                        <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                             <?php echo esc_html(bimverdi_v3_readable_label($tema_val)); ?>
                         </span>
                         <?php endif; endforeach; ?>
                         <?php if ($type_teknologi && $type_teknologi !== 'Under_avklaring'): ?>
-                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                        <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                             <?php echo esc_html(bimverdi_v3_readable_label($type_teknologi)); ?>
                         </span>
                         <?php endif; ?>
@@ -270,20 +270,20 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 </section>
 
                 <!-- Detaljer Section (Definition List) -->
-                <section class="border-t border-[#E5E0D8] pt-10">
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-6">Detaljer</h2>
+                <section class="border-t border-[#E7E5E4] pt-10">
+                    <h2 class="text-lg font-bold text-[#111827] mb-6">Detaljer</h2>
                     
-                    <dl class="space-y-0 divide-y divide-[#E5E0D8]">
+                    <dl class="space-y-0 divide-y divide-[#E7E5E4]">
                         <!-- Type -->
                         <?php
                         $type_values = is_array($type_ressurs) ? $type_ressurs : ($type_ressurs ? [$type_ressurs] : []);
                         if (!empty($type_values)):
                         ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Type</dt>
+                            <dt class="text-sm text-[#57534E]">Type</dt>
                             <dd class="text-sm flex flex-wrap gap-2">
                                 <?php foreach ($type_values as $type_val): ?>
-                                <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">
+                                <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                                     <?php echo esc_html(bimverdi_v3_readable_label($type_val)); ?>
                                 </span>
                                 <?php endforeach; ?>
@@ -294,16 +294,16 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         <!-- Plattform -->
                         <?php if (!empty($plattform)): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Plattform</dt>
-                            <dd class="text-sm text-[#1A1A1A]">
+                            <dt class="text-sm text-[#57534E]">Plattform</dt>
+                            <dd class="text-sm text-[#111827]">
                                 <?php 
                                 if (is_array($plattform)) {
                                     $platform_labels = array_map(function($p) {
-                                        return '<span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded mr-2 mb-2">' . esc_html($p) . '</span>';
+                                        return '<span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded mr-2 mb-2">' . esc_html($p) . '</span>';
                                     }, $plattform);
                                     echo implode('', $platform_labels);
                                 } else {
-                                    echo '<span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-3 py-1.5 rounded">' . esc_html($plattform) . '</span>';
+                                    echo '<span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">' . esc_html($plattform) . '</span>';
                                 }
                                 ?>
                             </dd>
@@ -313,38 +313,38 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         <!-- Lisensmodell -->
                         <?php if ($lisensmodell): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Lisensmodell</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html(bimverdi_v3_readable_label($lisensmodell)); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Lisensmodell</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html(bimverdi_v3_readable_label($lisensmodell)); ?></dd>
                         </div>
                         <?php endif; ?>
                         
                         <!-- Versjon -->
                         <?php if ($versjon): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Versjon</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($versjon); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Versjon</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($versjon); ?></dd>
                         </div>
                         <?php endif; ?>
                         
                         <!-- Integrasjoner -->
                         <?php if ($integrasjoner): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Integrasjoner</dt>
-                            <dd class="text-sm text-[#1A1A1A]"><?php echo esc_html($integrasjoner); ?></dd>
+                            <dt class="text-sm text-[#57534E]">Integrasjoner</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($integrasjoner); ?></dd>
                         </div>
                         <?php endif; ?>
                         
                         <!-- Nettside -->
                         <?php if (!empty($lenke)): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Nettside</dt>
+                            <dt class="text-sm text-[#57534E]">Nettside</dt>
                             <dd class="text-sm">
                                 <a href="<?php echo esc_url($lenke); ?>"
                                    target="_blank"
                                    rel="noopener"
                                    class="text-[#FF8B5E] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($lenke, PHP_URL_HOST) ?: $lenke); ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 </a>
                             </dd>
                         </div>
@@ -353,14 +353,14 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         <!-- Nedlastingslenke -->
                         <?php if (!empty($nedlastingslenke)): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#5A5A5A]">Nedlasting/App</dt>
+                            <dt class="text-sm text-[#57534E]">Nedlasting/App</dt>
                             <dd class="text-sm">
                                 <a href="<?php echo esc_url($nedlastingslenke); ?>"
                                    target="_blank"
                                    rel="noopener"
                                    class="text-[#FF8B5E] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($nedlastingslenke, PHP_URL_HOST) ?: $nedlastingslenke); ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 </a>
                             </dd>
                         </div>
@@ -373,8 +373,8 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 $bim_values = is_array($bim_kompatibilitet) ? $bim_kompatibilitet : ($bim_kompatibilitet ? [$bim_kompatibilitet] : []);
                 if (!empty($bim_values)):
                 ?>
-                <section class="border-t border-[#E5E0D8] pt-10">
-                    <h2 class="text-lg font-bold text-[#1A1A1A] mb-4">BIM-kompatibilitet</h2>
+                <section class="border-t border-[#E7E5E4] pt-10">
+                    <h2 class="text-lg font-bold text-[#111827] mb-4">BIM-kompatibilitet</h2>
                     <div class="flex flex-wrap gap-2">
                         <?php foreach ($bim_values as $bim_val): ?>
                         <span class="inline-flex items-center gap-2 text-sm font-medium bg-[#ECFDF5] text-[#059669] px-3 py-2 rounded">
@@ -392,12 +392,12 @@ $tool_updated = get_the_modified_date('d.m.Y');
             <div class="lg:col-span-1 space-y-6">
                 
                 <!-- STATUS Section -->
-                <section class="bg-[#F7F5EF] rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-6">Status</h3>
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-6">Status</h3>
                     
                     <dl class="space-y-6">
                         <div class="flex justify-between items-center">
-                            <dt class="text-sm text-[#5A5A5A]">Status</dt>
+                            <dt class="text-sm text-[#57534E]">Status</dt>
                             <dd>
                                 <span class="inline-block text-xs font-medium bg-[#DCFCE7] text-[#166534] px-2.5 py-1 rounded">
                                     Aktiv
@@ -406,35 +406,35 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         </div>
                         
                         <div>
-                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                 Sist oppdatert
                             </dt>
-                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo esc_html($tool_updated); ?></dd>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($tool_updated); ?></dd>
                         </div>
                         
                         <?php if ($eier): ?>
                         <div>
-                            <dt class="text-sm text-[#5A5A5A] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                                 Eier
                             </dt>
-                            <dd class="text-sm text-[#1A1A1A] pl-[22px]"><?php echo esc_html($eier->post_title); ?></dd>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($eier->post_title); ?></dd>
                         </div>
                         <?php endif; ?>
                     </dl>
                 </section>
 
                 <!-- SNARVEIER Section -->
-                <section class="bg-[#F7F5EF] rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-[#5A5A5A] uppercase tracking-wider mb-4">Snarveier</h3>
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-4">Snarveier</h3>
 
-                    <nav class="space-y-0 divide-y divide-[#E5E0D8]">
+                    <nav class="space-y-0 divide-y divide-[#E7E5E4]">
                         <?php if (!empty($nedlastingslenke)): ?>
                         <a href="<?php echo esc_url($nedlastingslenke); ?>"
                            target="_blank"
                            rel="noopener"
-                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Åpne verktøyet
                         </a>
@@ -444,20 +444,20 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         <a href="<?php echo esc_url($lenke); ?>"
                            target="_blank"
                            rel="noopener"
-                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                             Besøk nettside
                         </a>
                         <?php endif; ?>
 
                         <a href="#"
-                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             Rapporter feil
                         </a>
 
                         <a href="#"
-                           class="flex items-center gap-2 py-3 text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors">
+                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                             Se endringslogg
                         </a>

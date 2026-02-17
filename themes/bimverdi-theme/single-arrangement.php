@@ -111,21 +111,21 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
 }
 ?>
 
-<div class="min-h-screen bg-[#FAFAF8]">
+<div class="min-h-screen bg-white">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         <!-- Breadcrumb -->
         <nav class="mb-8">
-            <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
-                <li><a href="<?php echo home_url(); ?>" class="hover:text-[#1A1A1A]">Hjem</a></li>
+            <ol class="flex items-center gap-2 text-sm text-[#57534E]">
+                <li><a href="<?php echo home_url(); ?>" class="hover:text-[#111827]">Hjem</a></li>
                 <li>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                 </li>
-                <li><a href="<?php echo home_url('/arrangement/'); ?>" class="hover:text-[#1A1A1A]">Arrangementer</a></li>
+                <li><a href="<?php echo home_url('/arrangement/'); ?>" class="hover:text-[#111827]">Arrangementer</a></li>
                 <li>
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                 </li>
-                <li class="text-[#1A1A1A] font-medium truncate max-w-xs"><?php the_title(); ?></li>
+                <li class="text-[#111827] font-medium truncate max-w-xs"><?php the_title(); ?></li>
             </ol>
         </nav>
 
@@ -136,9 +136,9 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
             <span class="font-semibold text-[#772015]">Dette arrangementet er avlyst</span>
         </div>
         <?php elseif ($is_past): ?>
-        <div class="mb-6 px-4 py-3 bg-[#F2F0EB] border border-[#D6D1C6] rounded-lg flex items-center gap-3">
+        <div class="mb-6 px-4 py-3 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-            <span class="font-semibold text-[#5A5A5A]">Dette arrangementet er gjennomført</span>
+            <span class="font-semibold text-[#57534E]">Dette arrangementet er gjennomført</span>
         </div>
         <?php endif; ?>
 
@@ -150,7 +150,7 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
             <!-- Date badge -->
             <div class="absolute top-4 left-4 bg-white rounded-lg px-4 py-3 text-center">
                 <div class="text-2xl font-bold text-[#FF8B5E] leading-none"><?php echo date('d', strtotime($dato)); ?></div>
-                <div class="text-xs uppercase text-[#5A5A5A]"><?php echo date_i18n('M', strtotime($dato)); ?></div>
+                <div class="text-xs uppercase text-[#57534E]"><?php echo date_i18n('M', strtotime($dato)); ?></div>
             </div>
 
             <!-- Status badge -->
@@ -181,17 +181,17 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                             </a>
                         <?php endforeach; ?>
                         <?php foreach ($arrangementstyper as $type): ?>
-                            <span class="inline-flex items-center text-xs font-medium text-[#5A5A5A] bg-[#F2F0EB] px-2.5 py-1 rounded">
+                            <span class="inline-flex items-center text-xs font-medium text-[#57534E] bg-[#F5F5F4] px-2.5 py-1 rounded">
                                 <?php echo esc_html($type->name); ?>
                             </span>
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
 
-                    <h1 class="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-4"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
+                    <h1 class="text-3xl md:text-4xl font-bold text-[#111827] mb-4"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
 
                     <!-- Quick info row -->
-                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[#5A5A5A]">
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[#57534E]">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <span><?php echo esc_html($date_display); ?></span>
@@ -208,11 +208,11 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 </header>
 
                 <!-- Divider -->
-                <div class="border-t border-[#D6D1C6]"></div>
+                <div class="border-t border-[#E7E5E4]"></div>
 
                 <!-- Main Content (Gutenberg) -->
                 <section>
-                    <div class="prose prose-lg max-w-none text-[#1A1A1A]">
+                    <div class="prose prose-lg max-w-none text-[#111827]">
                         <?php the_content(); ?>
                     </div>
                 </section>
@@ -220,22 +220,22 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 <!-- Location Section (Fysisk/Hybrid) -->
                 <?php if (($arrangement_type === 'fysisk' || $arrangement_type === 'hybrid') && $sted_adresse): ?>
                 <section>
-                    <div class="border-t border-[#D6D1C6] pt-8">
-                        <h2 class="text-xl font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
+                    <div class="border-t border-[#E7E5E4] pt-8">
+                        <h2 class="text-xl font-bold text-[#111827] mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                             Sted
                         </h2>
 
                         <div class="space-y-4">
                             <div>
-                                <p class="font-semibold text-[#1A1A1A]"><?php echo esc_html($sted_adresse); ?></p>
+                                <p class="font-semibold text-[#111827]"><?php echo esc_html($sted_adresse); ?></p>
                                 <?php if ($sted_by): ?>
-                                <p class="text-[#5A5A5A]"><?php echo esc_html($sted_by); ?></p>
+                                <p class="text-[#57534E]"><?php echo esc_html($sted_by); ?></p>
                                 <?php endif; ?>
                             </div>
 
                             <!-- Google Maps Embed -->
-                            <div class="rounded-lg overflow-hidden border border-[#D6D1C6]">
+                            <div class="rounded-lg overflow-hidden border border-[#E7E5E4]">
                                 <iframe
                                     src="https://maps.google.com/maps?q=<?php echo urlencode($sted_adresse . ($sted_by ? ', ' . $sted_by : '')); ?>&output=embed"
                                     width="100%"
@@ -259,8 +259,8 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 <!-- Digital Meeting Link (Digitalt/Hybrid) -->
                 <?php if (($arrangement_type === 'digitalt' || $arrangement_type === 'hybrid') && $online_lenke && !$is_past): ?>
                 <section>
-                    <div class="border-t border-[#D6D1C6] pt-8">
-                        <h2 class="text-xl font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
+                    <div class="border-t border-[#E7E5E4] pt-8">
+                        <h2 class="text-xl font-bold text-[#111827] mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
                             Digital deltakelse
                         </h2>
@@ -278,8 +278,8 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 <!-- Post-event Resources (Opptak/Dokumentasjon) -->
                 <?php if ($is_past && ($opptak_url || $dokumentasjon_url)): ?>
                 <section>
-                    <div class="border-t border-[#D6D1C6] pt-8">
-                        <h2 class="text-xl font-bold text-[#1A1A1A] mb-4 flex items-center gap-2">
+                    <div class="border-t border-[#E7E5E4] pt-8">
+                        <h2 class="text-xl font-bold text-[#111827] mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Ressurser
                         </h2>
@@ -328,11 +328,11 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                         $access_check = bimverdi_check_event_access($user_id, $adgang ?: 'alle');
                     }
                 ?>
-                <div class="bg-[#F2F0EB] rounded-xl p-6" id="bv-registration-card">
-                    <h3 class="font-bold text-[#1A1A1A] mb-4">Påmelding</h3>
+                <div class="bg-[#F5F5F4] rounded-xl p-6" id="bv-registration-card">
+                    <h3 class="font-bold text-[#111827] mb-4">Påmelding</h3>
 
                     <?php if ($frist_passert): ?>
-                        <p class="text-[#5A5A5A] text-sm mb-4">Påmeldingsfristen har gått ut.</p>
+                        <p class="text-[#57534E] text-sm mb-4">Påmeldingsfristen har gått ut.</p>
 
                     <?php elseif ($existing_registration): ?>
                         <?php $reg_status = get_field('pamelding_status', $existing_registration); ?>
@@ -353,7 +353,7 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                             Meld deg av
                         </button>
                         <?php else: ?>
-                        <p class="text-xs text-[#5A5A5A]">Avmeldingsfristen har passert.</p>
+                        <p class="text-xs text-[#57534E]">Avmeldingsfristen har passert.</p>
                         <?php endif; ?>
 
                     <?php elseif ($pamelding_url): ?>
@@ -365,10 +365,10 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                             'target'     => '_blank',
                             'full_width' => true,
                         ]); ?>
-                        <p class="text-xs text-[#5A5A5A] mt-2">Åpner ekstern påmelding</p>
+                        <p class="text-xs text-[#57534E] mt-2">Åpner ekstern påmelding</p>
 
                     <?php elseif (!$user_id): ?>
-                        <p class="text-[#5A5A5A] text-sm mb-3">Logg inn for å melde deg på.</p>
+                        <p class="text-[#57534E] text-sm mb-3">Logg inn for å melde deg på.</p>
                         <?php bimverdi_button([
                             'text'       => 'Logg inn',
                             'variant'    => 'primary',
@@ -378,7 +378,7 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                         ]); ?>
 
                     <?php elseif (!$access_check['allowed']): ?>
-                        <p class="text-[#5A5A5A] text-sm mb-3"><?php echo esc_html($access_check['message']); ?></p>
+                        <p class="text-[#57534E] text-sm mb-3"><?php echo esc_html($access_check['message']); ?></p>
 
                     <?php else: ?>
                         <button type="button"
@@ -392,14 +392,14 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
 
                     <?php // Capacity info ?>
                     <?php if ($maks_deltakere && !$frist_passert): ?>
-                    <p class="text-xs text-[#5A5A5A] mt-3">
+                    <p class="text-xs text-[#57534E] mt-3">
                         <?php echo $registration_count; ?>/<?php echo intval($maks_deltakere); ?> plasser fylt
                         <?php if ($is_full): ?><span class="text-[#B8860B] font-medium"> – fullt, venteliste</span><?php endif; ?>
                     </p>
                     <?php endif; ?>
 
                     <?php if ($pameldingsfrist && !$frist_passert): ?>
-                    <p class="text-xs text-[#5A5A5A] mt-2 flex items-center gap-1">
+                    <p class="text-xs text-[#57534E] mt-2 flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         Frist: <?php echo date_i18n('j. F Y H:i', strtotime($pameldingsfrist)); ?>
                     </p>
@@ -411,15 +411,15 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
 
                 <!-- Details Section -->
                 <div class="space-y-4">
-                    <h3 class="font-bold text-[#1A1A1A]">Detaljer</h3>
+                    <h3 class="font-bold text-[#111827]">Detaljer</h3>
 
                     <div class="space-y-3 text-sm">
                         <!-- Dato -->
                         <div class="flex items-start gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <div>
-                                <div class="text-[#5A5A5A]">Dato</div>
-                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($date_display); ?></div>
+                                <div class="text-[#57534E]">Dato</div>
+                                <div class="text-[#111827] font-medium"><?php echo esc_html($date_display); ?></div>
                             </div>
                         </div>
 
@@ -427,17 +427,17 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                         <div class="flex items-start gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             <div>
-                                <div class="text-[#5A5A5A]">Tidspunkt</div>
-                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($time_display); ?></div>
+                                <div class="text-[#57534E]">Tidspunkt</div>
+                                <div class="text-[#111827] font-medium"><?php echo esc_html($time_display); ?></div>
                             </div>
                         </div>
 
                         <!-- Type -->
                         <div class="flex items-start gap-3">
-                            <div class="flex-shrink-0 mt-0.5 text-[#5A5A5A]"><?php echo bimverdi_arr_get_type_icon($arrangement_type); ?></div>
+                            <div class="flex-shrink-0 mt-0.5 text-[#57534E]"><?php echo bimverdi_arr_get_type_icon($arrangement_type); ?></div>
                             <div>
-                                <div class="text-[#5A5A5A]">Format</div>
-                                <div class="text-[#1A1A1A] font-medium"><?php echo bimverdi_arr_get_type_label($arrangement_type); ?></div>
+                                <div class="text-[#57534E]">Format</div>
+                                <div class="text-[#111827] font-medium"><?php echo bimverdi_arr_get_type_label($arrangement_type); ?></div>
                             </div>
                         </div>
 
@@ -446,8 +446,8 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                         <div class="flex items-start gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             <div>
-                                <div class="text-[#5A5A5A]">Adgang</div>
-                                <div class="text-[#1A1A1A] font-medium"><?php echo bimverdi_arr_get_adgang_label($adgang); ?></div>
+                                <div class="text-[#57534E]">Adgang</div>
+                                <div class="text-[#111827] font-medium"><?php echo bimverdi_arr_get_adgang_label($adgang); ?></div>
                             </div>
                         </div>
                         <?php endif; ?>
@@ -457,8 +457,8 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                         <div class="flex items-start gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
                             <div>
-                                <div class="text-[#5A5A5A]">Arrangør</div>
-                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($arrangor); ?></div>
+                                <div class="text-[#57534E]">Arrangør</div>
+                                <div class="text-[#111827] font-medium"><?php echo esc_html($arrangor); ?></div>
                             </div>
                         </div>
                         <?php endif; ?>
@@ -478,8 +478,8 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                         <div class="flex items-start gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                             <div>
-                                <div class="text-[#5A5A5A]">Målgrupper</div>
-                                <div class="text-[#1A1A1A] font-medium"><?php echo esc_html($malgrupper_display); ?></div>
+                                <div class="text-[#57534E]">Målgrupper</div>
+                                <div class="text-[#111827] font-medium"><?php echo esc_html($malgrupper_display); ?></div>
                             </div>
                         </div>
                         <?php endif; ?>
@@ -487,33 +487,33 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 </div>
 
                 <!-- Divider -->
-                <div class="border-t border-[#D6D1C6]"></div>
+                <div class="border-t border-[#E7E5E4]"></div>
 
                 <!-- Formål og Målsetting -->
                 <?php if ($formal_tema || $malsetting): ?>
                 <div class="space-y-4">
                     <?php if ($formal_tema): ?>
                     <div>
-                        <h4 class="font-semibold text-[#1A1A1A] mb-2">Formål</h4>
-                        <p class="text-sm text-[#5A5A5A]"><?php echo nl2br(esc_html($formal_tema)); ?></p>
+                        <h4 class="font-semibold text-[#111827] mb-2">Formål</h4>
+                        <p class="text-sm text-[#57534E]"><?php echo nl2br(esc_html($formal_tema)); ?></p>
                     </div>
                     <?php endif; ?>
 
                     <?php if ($malsetting): ?>
                     <div>
-                        <h4 class="font-semibold text-[#1A1A1A] mb-2">Målsetting</h4>
-                        <p class="text-sm text-[#5A5A5A]"><?php echo nl2br(esc_html($malsetting)); ?></p>
+                        <h4 class="font-semibold text-[#111827] mb-2">Målsetting</h4>
+                        <p class="text-sm text-[#57534E]"><?php echo nl2br(esc_html($malsetting)); ?></p>
                     </div>
                     <?php endif; ?>
                 </div>
 
                 <!-- Divider -->
-                <div class="border-t border-[#D6D1C6]"></div>
+                <div class="border-t border-[#E7E5E4]"></div>
                 <?php endif; ?>
 
                 <!-- Share -->
                 <div>
-                    <h4 class="font-semibold text-[#1A1A1A] mb-3">Del arrangement</h4>
+                    <h4 class="font-semibold text-[#111827] mb-3">Del arrangement</h4>
                     <div class="flex gap-2">
                         <?php bimverdi_button([
                             'text'    => 'Kopier lenke',
@@ -574,10 +574,10 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
             if ($has_related):
         ?>
         <!-- Related Content Section -->
-        <div class="border-t border-[#D6D1C6] mt-12 pt-12">
+        <div class="border-t border-[#E7E5E4] mt-12 pt-12">
             <div class="mb-8">
-                <h2 class="text-2xl font-bold text-[#1A1A1A] mb-2">Relatert innhold</h2>
-                <p class="text-[#5A5A5A]">
+                <h2 class="text-2xl font-bold text-[#111827] mb-2">Relatert innhold</h2>
+                <p class="text-[#57534E]">
                     Innhold tagget med
                     <?php foreach ($temagrupper as $i => $gruppe): ?>
                         <a href="<?php echo get_term_link($gruppe); ?>" class="text-[#FF8B5E] hover:underline"><?php echo esc_html($gruppe->name); ?></a><?php echo ($i < count($temagrupper) - 1) ? ', ' : ''; ?>
@@ -590,14 +590,14 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 <?php if ($related_tools->have_posts()): ?>
                 <!-- Related Tools -->
                 <div>
-                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-[#57534E] uppercase tracking-wider mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                         Verktøy
                     </h3>
                     <ul class="space-y-2">
                         <?php while ($related_tools->have_posts()): $related_tools->the_post(); ?>
                         <li>
-                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors block truncate">
                                 <?php the_title(); ?>
                             </a>
                         </li>
@@ -613,14 +613,14 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 <?php if ($related_kilder->have_posts()): ?>
                 <!-- Related Knowledge Sources -->
                 <div>
-                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-[#57534E] uppercase tracking-wider mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
                         Kunnskapskilder
                     </h3>
                     <ul class="space-y-2">
                         <?php while ($related_kilder->have_posts()): $related_kilder->the_post(); ?>
                         <li>
-                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors block truncate">
                                 <?php the_title(); ?>
                             </a>
                         </li>
@@ -636,14 +636,14 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 <?php if ($related_artikler->have_posts()): ?>
                 <!-- Related Articles -->
                 <div>
-                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-[#57534E] uppercase tracking-wider mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                         Artikler
                     </h3>
                     <ul class="space-y-2">
                         <?php while ($related_artikler->have_posts()): $related_artikler->the_post(); ?>
                         <li>
-                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors block truncate">
                                 <?php the_title(); ?>
                             </a>
                         </li>
@@ -659,14 +659,14 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 <?php if ($related_foretak->have_posts()): ?>
                 <!-- Related Companies -->
                 <div>
-                    <h3 class="text-sm font-bold text-[#5A5A5A] uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-[#57534E] uppercase tracking-wider mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
                         Deltakere
                     </h3>
                     <ul class="space-y-2">
                         <?php while ($related_foretak->have_posts()): $related_foretak->the_post(); ?>
                         <li>
-                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#1A1A1A] hover:text-[#FF8B5E] transition-colors block truncate">
+                            <a href="<?php the_permalink(); ?>" class="text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors block truncate">
                                 <?php the_title(); ?>
                             </a>
                         </li>

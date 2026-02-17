@@ -147,7 +147,7 @@ $temagruppe_data = [
 ];
 ?>
 
-<main class="bg-[#FAFAF8] min-h-screen">
+<main class="bg-white min-h-screen">
 
     <!-- Hero Section -->
     <?php get_template_part('template-parts/temagruppe/hero', null, $temagruppe_data); ?>
@@ -168,28 +168,28 @@ $temagruppe_data = [
 
         <!-- Section: Kommende arrangementer -->
         <?php if ($event_count > 0) : ?>
-        <div id="section-arrangementer" class="border-t border-[#D6D1C6] pt-10 mb-10">
+        <div id="section-arrangementer" class="border-t border-[#E7E5E4] pt-10 mb-10">
             <?php get_template_part('template-parts/temagruppe/arrangementer-grid', null, $temagruppe_data); ?>
         </div>
         <?php endif; ?>
 
         <!-- Section: Kunnskapskilder -->
         <?php if ($has_kunnskapskilder) : ?>
-        <div id="section-kunnskapskilder" class="border-t border-[#D6D1C6] pt-10 mb-10">
+        <div id="section-kunnskapskilder" class="border-t border-[#E7E5E4] pt-10 mb-10">
             <?php get_template_part('template-parts/temagruppe/kunnskapskilder-grid', null, $temagruppe_data); ?>
         </div>
         <?php endif; ?>
 
         <!-- Section: Relaterte verktoy -->
         <?php if ($has_verktoy) : ?>
-        <div id="section-verktoy" class="border-t border-[#D6D1C6] pt-10 mb-10">
+        <div id="section-verktoy" class="border-t border-[#E7E5E4] pt-10 mb-10">
             <?php get_template_part('template-parts/temagruppe/verktoy-grid', null, $temagruppe_data); ?>
         </div>
         <?php endif; ?>
 
         <!-- Section: Artikler -->
         <?php if ($has_artikler) : ?>
-        <div id="section-artikler" class="border-t border-[#D6D1C6] pt-10 mb-10">
+        <div id="section-artikler" class="border-t border-[#E7E5E4] pt-10 mb-10">
             <?php get_template_part('template-parts/temagruppe/artikler-grid', null, $temagruppe_data); ?>
         </div>
         <?php endif; ?>
