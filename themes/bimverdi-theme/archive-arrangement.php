@@ -77,13 +77,13 @@ function bimverdi_get_type_label($type) {
 }
 ?>
 
-<div class="min-h-screen bg-[#FAFAF8]">
+<div class="min-h-screen bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 
         <!-- Page Header -->
         <div class="mb-10">
-            <h1 class="text-4xl font-bold text-[#1A1A1A] mb-3">Arrangementer</h1>
-            <p class="text-[#5A5A5A] text-lg">
+            <h1 class="text-4xl font-bold text-[#111827] mb-3">Arrangementer</h1>
+            <p class="text-[#57534E] text-lg">
                 Kurs, seminarer, workshops og nettverksmøter i BIM Verdi.
                 Meld deg på og få faglig påfyll sammen med andre i nettverket.
             </p>
@@ -94,7 +94,7 @@ function bimverdi_get_type_label($type) {
         <!-- ============================================ -->
         <section class="mb-16">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-[#1A1A1A] flex items-center gap-3">
+                <h2 class="text-2xl font-bold text-[#111827] flex items-center gap-3">
                     Kommende arrangementer
                     <?php if ($upcoming_events->have_posts()): ?>
                         <span class="inline-flex items-center text-sm font-medium text-white bg-[#FF8B5E] px-2.5 py-0.5 rounded">
@@ -125,33 +125,33 @@ function bimverdi_get_type_label($type) {
                 ?>
 
                 <!-- Card - matching deltakere design -->
-                <div class="bg-[#F2F0EB] rounded-xl p-8 flex flex-col justify-between h-[285px]">
+                <div class="bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6 flex flex-col justify-between h-[285px]">
 
                     <!-- Top Section -->
                     <div>
                         <!-- Header: Date Badge + Type Badge -->
                         <div class="flex items-start justify-between mb-6">
                             <!-- Date Badge -->
-                            <div class="w-12 h-12 rounded-lg bg-white flex flex-col items-center justify-center flex-shrink-0">
+                            <div class="w-12 h-12 rounded-lg bg-[#F5F5F4] flex flex-col items-center justify-center flex-shrink-0">
                                 <span class="text-lg font-bold text-[#FF8B5E] leading-none"><?php echo date('d', strtotime($dato)); ?></span>
-                                <span class="text-[10px] uppercase text-[#5A5A5A] leading-none mt-0.5"><?php echo date_i18n('M', strtotime($dato)); ?></span>
+                                <span class="text-[10px] uppercase text-[#57534E] leading-none mt-0.5"><?php echo date_i18n('M', strtotime($dato)); ?></span>
                             </div>
 
                             <!-- Type Badge -->
-                            <span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#1A1A1A] border border-[#1A1A1A] px-2.5 py-0.5 rounded">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#111827] border border-[#111827] px-2.5 py-0.5 rounded">
                                 <?php echo bimverdi_get_type_icon($arrangement_type); ?>
                                 <?php echo bimverdi_get_type_label($arrangement_type); ?>
                             </span>
                         </div>
 
                         <!-- Title -->
-                        <h3 class="text-xl font-bold text-[#1A1A1A] mb-2 leading-tight tracking-tight line-clamp-2">
+                        <h3 class="text-xl font-bold text-[#111827] mb-2 leading-tight tracking-tight line-clamp-2">
                             <?php the_title(); ?>
                             <?php echo bimverdi_admin_id_badge(); ?>
                         </h3>
 
                         <!-- Time and Location -->
-                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#5A5A5A]">
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#57534E]">
                             <div class="flex items-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                 <span><?php echo esc_html($time_str); ?></span>
@@ -166,10 +166,10 @@ function bimverdi_get_type_label($type) {
                     </div>
 
                     <!-- Footer Section -->
-                    <div class="flex items-center justify-between pt-4 border-t border-[rgba(214,209,198,0.3)]">
+                    <div class="flex items-center justify-between pt-4 border-t border-[#E7E5E4]">
                         <!-- Temagruppe Label -->
                         <?php if ($first_temagruppe): ?>
-                        <span class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wider truncate max-w-[150px]">
+                        <span class="text-xs font-medium text-[#57534E] uppercase tracking-wider truncate max-w-[150px]">
                             <?php echo esc_html($first_temagruppe); ?>
                         </span>
                         <?php else: ?>
@@ -177,7 +177,7 @@ function bimverdi_get_type_label($type) {
                         <?php endif; ?>
 
                         <!-- Link -->
-                        <a href="<?php the_permalink(); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity">
+                        <a href="<?php the_permalink(); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#111827] hover:opacity-70 transition-opacity">
                             Se arrangement
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                         </a>
@@ -191,11 +191,11 @@ function bimverdi_get_type_label($type) {
 
             <!-- Empty state for upcoming -->
             <div class="py-16 text-center">
-                <div class="w-16 h-16 bg-[#F2F0EB] rounded-lg flex items-center justify-center mx-auto mb-5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[#9D8F7F]"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div class="w-16 h-16 bg-[#F5F5F4] rounded-lg flex items-center justify-center mx-auto mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[#A8A29E]"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </div>
-                <h2 class="text-lg font-semibold text-[#1A1A1A] mb-2">Ingen kommende arrangementer</h2>
-                <p class="text-sm text-[#5A5A5A]">Det er ikke planlagt noen arrangementer for øyeblikket. Sjekk tilbake snart!</p>
+                <h2 class="text-lg font-semibold text-[#111827] mb-2">Ingen kommende arrangementer</h2>
+                <p class="text-sm text-[#57534E]">Det er ikke planlagt noen arrangementer for øyeblikket. Sjekk tilbake snart!</p>
             </div>
 
             <?php endif; ?>
@@ -207,15 +207,15 @@ function bimverdi_get_type_label($type) {
         <?php if ($past_events->have_posts()): ?>
         <section>
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-[#5A5A5A] flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#9D8F7F]"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                <h2 class="text-xl font-semibold text-[#57534E] flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#A8A29E]"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
                     Tidligere arrangementer
-                    <span class="text-sm font-normal text-[#9D8F7F]">(<?php echo $past_events->found_posts; ?>)</span>
+                    <span class="text-sm font-normal text-[#A8A29E]">(<?php echo $past_events->found_posts; ?>)</span>
                 </h2>
             </div>
 
             <!-- Divider -->
-            <div class="border-t border-[#D6D1C6] mb-4"></div>
+            <div class="border-t border-[#E7E5E4] mb-4"></div>
 
             <div class="space-y-0 divide-y divide-[#D6D1C6]">
                 <?php while ($past_events->have_posts()): $past_events->the_post();
@@ -234,17 +234,17 @@ function bimverdi_get_type_label($type) {
                 <div class="py-4 flex flex-col md:flex-row md:items-center gap-4">
 
                     <!-- Date -->
-                    <div class="flex-shrink-0 text-center text-[#9D8F7F] w-14">
+                    <div class="flex-shrink-0 text-center text-[#A8A29E] w-14">
                         <div class="text-lg font-semibold"><?php echo date('d', strtotime($dato)); ?></div>
                         <div class="text-xs uppercase"><?php echo date_i18n('M Y', strtotime($dato)); ?></div>
                     </div>
 
                     <!-- Title and meta -->
                     <div class="flex-1 min-w-0">
-                        <a href="<?php the_permalink(); ?>" class="font-semibold text-[#1A1A1A] hover:opacity-70 transition-opacity block truncate">
+                        <a href="<?php the_permalink(); ?>" class="font-semibold text-[#111827] hover:opacity-70 transition-opacity block truncate">
                             <?php the_title(); ?>
                         </a><?php echo bimverdi_admin_id_badge(); ?>
-                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#5A5A5A] mt-1">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#57534E] mt-1">
                             <span class="flex items-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                 <?php echo esc_html($tid_start); ?>
@@ -259,7 +259,7 @@ function bimverdi_get_type_label($type) {
                     <!-- Temagruppe tags -->
                     <div class="flex flex-wrap gap-1.5">
                         <?php foreach ($temagrupper as $gruppe): ?>
-                            <a href="<?php echo get_term_link($gruppe); ?>" class="text-xs font-medium text-[#5A5A5A] bg-[#F2F0EB] px-2 py-0.5 rounded hover:bg-[#E5E1D8] transition-colors">
+                            <a href="<?php echo get_term_link($gruppe); ?>" class="text-xs font-medium text-[#57534E] bg-[#F5F5F4] px-2 py-0.5 rounded hover:bg-[#E7E5E4] transition-colors">
                                 <?php echo esc_html($gruppe->name); ?>
                             </a>
                         <?php endforeach; ?>
@@ -279,7 +279,7 @@ function bimverdi_get_type_label($type) {
                                 </a>
                             <?php endif; ?>
                             <?php if ($dokumentasjon_url): ?>
-                                <a href="<?php echo esc_url($dokumentasjon_url); ?>" target="_blank" class="inline-flex items-center gap-1 text-xs font-medium text-[#5A5A5A] hover:opacity-70 transition-opacity">
+                                <a href="<?php echo esc_url($dokumentasjon_url); ?>" target="_blank" class="inline-flex items-center gap-1 text-xs font-medium text-[#57534E] hover:opacity-70 transition-opacity">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                     Dokumenter
                                 </a>
@@ -289,7 +289,7 @@ function bimverdi_get_type_label($type) {
 
                     <!-- Link -->
                     <div class="flex-shrink-0">
-                        <a href="<?php the_permalink(); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity">
+                        <a href="<?php the_permalink(); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#111827] hover:opacity-70 transition-opacity">
                             Se
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                         </a>

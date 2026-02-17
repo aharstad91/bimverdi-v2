@@ -112,21 +112,21 @@ foreach (array_keys($type_ressurs_options) as $value) {
 }
 ?>
 
-<div class="min-h-screen bg-[#F7F5EF]">
+<div class="min-h-screen bg-white">
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-[#E5E0D8]">
+    <div class="bg-white border-b border-[#E7E5E4]">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-[#1A1A1A] mb-2">Verktøykatalog</h1>
-                    <p class="text-[#5A5A5A]">
+                    <h1 class="text-3xl font-bold text-[#111827] mb-2">Verktøykatalog</h1>
+                    <p class="text-[#57534E]">
                         Utforsk <?php echo $tools_query->found_posts; ?> digitale verktøy og løsninger fra BIM Verdi-nettverket
                     </p>
                 </div>
                 <?php if ($is_logged_in): ?>
                 <a href="<?php echo esc_url(home_url('/min-side/verktoy/registrer/')); ?>"
-                   class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors flex-shrink-0">
+                   class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#111827] hover:bg-[#1F2937] transition-colors flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     Registrer verktøy
                 </a>
@@ -181,26 +181,26 @@ foreach (array_keys($type_ressurs_options) as $value) {
             ?>
 
             <a href="<?php the_permalink(); ?>"
-               class="verktoy-card group block bg-[#F2F0EB] rounded-xl p-6 hover:bg-[#EBE8E1] transition-colors"
+               class="verktoy-card group block bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6"
                data-title="<?php echo esc_attr(strtolower(get_the_title())); ?>"
                data-formaal="<?php echo esc_attr($formaal); ?>"
                data-type="<?php echo esc_attr($type); ?>">
 
                 <!-- Icon -->
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9D8F7F" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                 </div>
 
                 <!-- Title -->
-                <h3 class="text-base font-semibold text-[#1A1A1A] mb-2 line-clamp-2 group-hover:text-[#333]">
+                <h3 class="text-base font-semibold text-[#111827] mb-2 line-clamp-2 group-hover:text-[#1F2937]">
                     <?php the_title(); ?>
                     <?php echo bimverdi_admin_id_badge(); ?>
                 </h3>
 
                 <!-- Footer -->
-                <div class="flex items-center justify-between pt-4 mt-4 border-t border-[#D6D1C6]/40">
-                    <span class="text-xs text-[#5A5A5A]"><?php echo $eier ? esc_html($eier->post_title) : ''; ?></span>
-                    <span class="inline-flex items-center gap-1 text-sm font-medium text-[#1A1A1A] group-hover:gap-2 transition-all">
+                <div class="flex items-center justify-between pt-4 mt-4 border-t border-[#E7E5E4]">
+                    <span class="text-xs text-[#57534E]"><?php echo $eier ? esc_html($eier->post_title) : ''; ?></span>
+                    <span class="inline-flex items-center gap-1 text-sm font-medium text-[#111827] group-hover:gap-2 transition-all">
                         Se detaljer
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                     </span>
@@ -213,13 +213,13 @@ foreach (array_keys($type_ressurs_options) as $value) {
         <?php else: ?>
 
         <!-- Empty State -->
-        <div class="bg-white rounded-lg border border-[#E5E0D8] text-center py-16 px-6">
-            <div class="w-16 h-16 bg-[#F2F0EB] rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <div class="bg-white rounded-lg border border-[#E7E5E4] text-center py-16 px-6">
+            <div class="w-16 h-16 bg-[#F5F5F4] rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </div>
-            <h3 class="text-xl font-bold text-[#1A1A1A] mb-2">Ingen verktøy funnet</h3>
-            <p class="text-[#5A5A5A] mb-6 max-w-md mx-auto">Prøv å justere filtrene eller søket for å finne det du leter etter</p>
-            <a href="<?php echo get_post_type_archive_link('verktoy'); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors">
+            <h3 class="text-xl font-bold text-[#111827] mb-2">Ingen verktøy funnet</h3>
+            <p class="text-[#57534E] mb-6 max-w-md mx-auto">Prøv å justere filtrene eller søket for å finne det du leter etter</p>
+            <a href="<?php echo get_post_type_archive_link('verktoy'); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#111827] hover:bg-[#1F2937] transition-colors">
                 Vis alle verktøy
             </a>
         </div>

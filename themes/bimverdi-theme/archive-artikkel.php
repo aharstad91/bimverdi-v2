@@ -40,7 +40,7 @@ $temagrupper = get_terms(array(
 ));
 ?>
 
-<div class="bg-gradient-to-b from-gray-50 to-white">
+<div class="bg-white">
     
     <!-- Hero -->
     <div class="container mx-auto px-4 py-12">
@@ -93,14 +93,14 @@ $temagrupper = get_terms(array(
                 $has_thumbnail = has_post_thumbnail();
                 $thumbnail_url = $has_thumbnail ? get_the_post_thumbnail_url(get_the_ID(), 'medium_large') : '';
                 ?>
-                <div class="aspect-[16/9] bg-[#EFE9DE] overflow-hidden">
+                <div class="aspect-[16/9] bg-[#F5F5F4] overflow-hidden">
                     <?php if ($has_thumbnail) : ?>
                         <img src="<?php echo esc_url($thumbnail_url); ?>"
                              alt="<?php the_title_attribute(); ?>"
                              class="w-full h-full object-cover">
                     <?php else : ?>
                         <div class="w-full h-full flex items-center justify-center">
-                            <svg class="w-12 h-12 text-[#D6D1C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-12 h-12 text-[#E7E5E4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                             </svg>
                         </div>
@@ -123,7 +123,7 @@ $temagrupper = get_terms(array(
                     
                     <!-- Title -->
                     <h2 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                        <a href="<?php the_permalink(); ?>" class="hover:text-orange-600">
+                        <a href="<?php the_permalink(); ?>" class="hover:text-[#57534E]">
                             <?php the_title(); ?>
                         </a>
                         <?php echo bimverdi_admin_id_badge(); ?>
@@ -152,7 +152,7 @@ $temagrupper = get_terms(array(
                             <span><?php echo esc_html($author_name); ?></span>
                             <?php if ($bedrift_name) : ?>
                                 <span class="text-gray-300">|</span>
-                                <a href="<?php echo get_permalink($bedrift_id); ?>" class="text-orange-600 hover:underline">
+                                <a href="<?php echo get_permalink($bedrift_id); ?>" class="text-[#111827] hover:underline">
                                     <?php echo esc_html($bedrift_name); ?>
                                 </a>
                             <?php endif; ?>
@@ -234,7 +234,7 @@ $temagrupper = get_terms(array(
     }
     
     .page-numbers li span.current {
-        background: #F97316;
+        background: #111827;
         color: white;
     }
 </style>

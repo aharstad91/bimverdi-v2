@@ -79,7 +79,7 @@ function bimverdi_filter_bar($args = []) {
     ?>
 
     <!-- Filter Bar -->
-    <div class="bv-filter-bar bg-white rounded-lg border border-[#E5E0D8] mb-8">
+    <div class="bv-filter-bar bg-white rounded-lg border border-[#E7E5E4] mb-8">
         <form method="GET" id="<?php echo esc_attr($args['form_id']); ?>">
 
             <!-- Desktop Layout -->
@@ -87,7 +87,7 @@ function bimverdi_filter_bar($args = []) {
 
                 <!-- Search Input -->
                 <div class="relative flex-1 max-w-xs">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5A5A5A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#57534E]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="m21 21-4.3-4.3"/>
                     </svg>
@@ -97,7 +97,7 @@ function bimverdi_filter_bar($args = []) {
                         id="<?php echo esc_attr($args['form_id']); ?>-search"
                         value="<?php echo esc_attr($args['search_value']); ?>"
                         placeholder="<?php echo esc_attr($args['search_placeholder']); ?>"
-                        class="w-full pl-10 pr-4 py-2.5 text-sm border border-[#E5E0D8] rounded-lg focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent text-[#1A1A1A] placeholder-[#9A9A9A]"
+                        class="w-full pl-10 pr-4 py-2.5 text-sm border border-[#E7E5E4] rounded-lg focus:ring-2 focus:ring-[#111827] focus:border-transparent text-[#111827] placeholder-[#9A9A9A]"
                     >
                 </div>
 
@@ -113,19 +113,19 @@ function bimverdi_filter_bar($args = []) {
 
                 <!-- Results + Reset Group -->
                 <div class="flex items-center gap-3">
-                    <p class="text-sm text-[#5A5A5A] whitespace-nowrap">
-                        Viser <span id="visible-count" class="font-medium text-[#1A1A1A]"><?php echo intval($args['result_count']); ?></span>
+                    <p class="text-sm text-[#57534E] whitespace-nowrap">
+                        Viser <span id="visible-count" class="font-medium text-[#111827]"><?php echo intval($args['result_count']); ?></span>
                         <?php if ($args['total_count'] > 0): ?>
                         av <?php echo intval($args['total_count']); ?>
                         <?php endif; ?>
                         <?php echo esc_html($args['result_label']); ?>
                     </p>
                     <?php if ($args['show_reset']): ?>
-                    <span class="text-[#D6D1C6]">|</span>
+                    <span class="text-[#E7E5E4]">|</span>
                     <button
                         type="button"
                         id="<?php echo esc_attr($args['reset_id']); ?>"
-                        class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors whitespace-nowrap"
+                        class="text-sm text-[#57534E] hover:text-[#111827] transition-colors whitespace-nowrap"
                     >
                         Nullstill
                     </button>
@@ -138,7 +138,7 @@ function bimverdi_filter_bar($args = []) {
 
                 <!-- Search Input -->
                 <div class="relative">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5A5A5A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#57534E]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="m21 21-4.3-4.3"/>
                     </svg>
@@ -147,7 +147,7 @@ function bimverdi_filter_bar($args = []) {
                         name="<?php echo esc_attr($args['search_name']); ?>"
                         value="<?php echo esc_attr($args['search_value']); ?>"
                         placeholder="<?php echo esc_attr($args['search_placeholder']); ?>"
-                        class="w-full pl-10 pr-4 py-3 text-sm border border-[#E5E0D8] rounded-lg focus:ring-2 focus:ring-[#1A1A1A] focus:border-transparent text-[#1A1A1A] placeholder-[#9A9A9A]"
+                        class="w-full pl-10 pr-4 py-3 text-sm border border-[#E7E5E4] rounded-lg focus:ring-2 focus:ring-[#111827] focus:border-transparent text-[#111827] placeholder-[#9A9A9A]"
                     >
                 </div>
 
@@ -155,7 +155,7 @@ function bimverdi_filter_bar($args = []) {
                 <div class="flex items-center justify-between">
                     <button
                         type="button"
-                        class="bv-filter-bar__mobile-trigger inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-white border border-[#D6D1C6] rounded-lg"
+                        class="bv-filter-bar__mobile-trigger inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-white border border-[#E7E5E4] rounded-lg"
                         aria-expanded="false"
                         aria-controls="mobile-filter-sheet"
                     >
@@ -163,11 +163,11 @@ function bimverdi_filter_bar($args = []) {
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                         </svg>
                         <span>Filtrer</span>
-                        <span class="bv-filter-bar__mobile-count inline-flex items-center justify-center min-w-[22px] h-5 px-2 text-xs font-medium bg-[#1A1A1A] text-white rounded-full transition-opacity <?php echo $active_filter_count > 0 ? 'opacity-100' : 'opacity-0'; ?>" data-mobile-count><?php echo intval($active_filter_count); ?></span>
+                        <span class="bv-filter-bar__mobile-count inline-flex items-center justify-center min-w-[22px] h-5 px-2 text-xs font-medium bg-[#111827] text-white rounded-full transition-opacity <?php echo $active_filter_count > 0 ? 'opacity-100' : 'opacity-0'; ?>" data-mobile-count><?php echo intval($active_filter_count); ?></span>
                     </button>
 
-                    <p class="text-sm text-[#5A5A5A]">
-                        <span id="visible-count-mobile" class="font-medium text-[#1A1A1A]"><?php echo intval($args['result_count']); ?></span>
+                    <p class="text-sm text-[#57534E]">
+                        <span id="visible-count-mobile" class="font-medium text-[#111827]"><?php echo intval($args['result_count']); ?></span>
                         <?php echo esc_html($args['result_label']); ?>
                     </p>
                 </div>
@@ -182,13 +182,13 @@ function bimverdi_filter_bar($args = []) {
                 <div class="bv-filter-sheet__panel fixed inset-x-0 bottom-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col">
                     <!-- Handle -->
                     <div class="flex justify-center py-3 flex-shrink-0">
-                        <div class="w-12 h-1 bg-[#D6D1C6] rounded-full"></div>
+                        <div class="w-12 h-1 bg-[#E7E5E4] rounded-full"></div>
                     </div>
 
                     <!-- Header -->
-                    <div class="flex items-center justify-between px-4 pb-3 border-b border-[#D6D1C6] flex-shrink-0">
-                        <h2 class="text-lg font-semibold text-[#1A1A1A]">Filtrer</h2>
-                        <button type="button" class="bv-filter-sheet__close p-2 -mr-2 text-[#5A5A5A] hover:text-[#1A1A1A]" aria-label="Lukk">
+                    <div class="flex items-center justify-between px-4 pb-3 border-b border-[#E7E5E4] flex-shrink-0">
+                        <h2 class="text-lg font-semibold text-[#111827]">Filtrer</h2>
+                        <button type="button" class="bv-filter-sheet__close p-2 -mr-2 text-[#57534E] hover:text-[#111827]" aria-label="Lukk">
                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path d="M18 6 6 18M6 6l12 12"/>
                             </svg>
@@ -199,18 +199,18 @@ function bimverdi_filter_bar($args = []) {
                     <div class="overflow-y-auto flex-1 px-4 py-4">
                         <?php foreach ($args['dropdowns'] as $dropdown): ?>
                         <fieldset class="mb-6">
-                            <legend class="text-sm font-medium text-[#1A1A1A] mb-3"><?php echo esc_html($dropdown['label']); ?></legend>
+                            <legend class="text-sm font-medium text-[#111827] mb-3"><?php echo esc_html($dropdown['label']); ?></legend>
                             <div class="space-y-1">
                                 <?php foreach ($dropdown['options'] as $value => $label):
                                     $is_checked = in_array($value, $dropdown['selected'] ?? []);
                                     $mobile_id = 'mobile-' . sanitize_title($dropdown['name']) . '-' . sanitize_title($value);
-                                    $checkbox_classes = 'filter-checkbox w-5 h-5 rounded border-[#D6D1C6] text-[#1A1A1A] focus:ring-[#1A1A1A]';
+                                    $checkbox_classes = 'filter-checkbox w-5 h-5 rounded border-[#E7E5E4] text-[#111827] focus:ring-[#111827]';
                                     if (!empty($dropdown['filter_class'])) {
                                         $checkbox_classes .= ' ' . $dropdown['filter_class'];
                                     }
                                     $count = isset($dropdown['counts'][$value]) ? $dropdown['counts'][$value] : null;
                                 ?>
-                                <label class="flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer hover:bg-[#F7F5EF] <?php echo $is_checked ? 'bg-[#F7F5EF]' : ''; ?>">
+                                <label class="flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer hover:bg-[#F5F5F4] <?php echo $is_checked ? 'bg-[#F5F5F4]' : ''; ?>">
                                     <input
                                         type="checkbox"
                                         id="<?php echo esc_attr($mobile_id); ?>"
@@ -220,9 +220,9 @@ function bimverdi_filter_bar($args = []) {
                                         data-syncs-with="<?php echo esc_attr($dropdown['name']); ?>"
                                         <?php checked($is_checked); ?>
                                     >
-                                    <span class="flex-1 text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>
+                                    <span class="flex-1 text-sm text-[#111827]"><?php echo esc_html($label); ?></span>
                                     <?php if ($count !== null): ?>
-                                    <span class="text-xs text-[#9A9A9A]"><?php echo intval($count); ?></span>
+                                    <span class="text-xs text-[#A8A29E]"><?php echo intval($count); ?></span>
                                     <?php endif; ?>
                                 </label>
                                 <?php endforeach; ?>
@@ -232,16 +232,16 @@ function bimverdi_filter_bar($args = []) {
                     </div>
 
                     <!-- Footer -->
-                    <div class="flex gap-3 p-4 border-t border-[#D6D1C6] flex-shrink-0">
+                    <div class="flex gap-3 p-4 border-t border-[#E7E5E4] flex-shrink-0">
                         <button
                             type="button"
-                            class="bv-filter-sheet__reset flex-1 px-4 py-3 text-sm font-medium text-[#5A5A5A] border border-[#D6D1C6] rounded-lg"
+                            class="bv-filter-sheet__reset flex-1 px-4 py-3 text-sm font-medium text-[#57534E] border border-[#E7E5E4] rounded-lg"
                         >
                             Nullstill
                         </button>
                         <button
                             type="button"
-                            class="bv-filter-sheet__apply flex-1 px-4 py-3 text-sm font-medium text-white bg-[#1A1A1A] rounded-lg"
+                            class="bv-filter-sheet__apply flex-1 px-4 py-3 text-sm font-medium text-white bg-[#111827] rounded-lg"
                         >
                             Vis <span class="bv-filter-sheet__result-count"><?php echo intval($args['result_count']); ?></span> <?php echo esc_html($args['result_label']); ?>
                         </button>
