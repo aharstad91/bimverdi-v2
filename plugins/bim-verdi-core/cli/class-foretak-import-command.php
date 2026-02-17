@@ -1238,6 +1238,504 @@ class BIM_Verdi_CLI_Commands {
     }
 
     /**
+     * Generic email domains that should NOT be used for company matching
+     */
+    private static $generic_domains = [
+        'gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com',
+        'live.com', 'live.no', 'yahoo.com', 'yahoo.no',
+        'icloud.com', 'me.com', 'mac.com',
+        'protonmail.com', 'proton.me',
+        'online.no', 'broadpark.no', 'start.no', 'frisurf.no',
+        'c2i.net', 'lyse.net', 'bbnett.no',
+        'telia.com', 'telenor.no',
+        'outlook.no', 'msn.com', 'aol.com',
+    ];
+
+    /**
+     * Import users from old bimverdi.no
+     *
+     * Imports users from a CSV export of the old site's wp_users + wp_usermeta.
+     * Uses email domain matching to auto-link users to existing foretak.
+     *
+     * ## OPTIONS
+     *
+     * <csv-file>
+     * : Path to the CSV export file from old bimverdi.no
+     *
+     * [--dry-run]
+     * : Run without making changes, just show what would happen
+     *
+     * [--domain-report]
+     * : Show domain→foretak matching report only (implies --dry-run)
+     *
+     * [--skip-password-email]
+     * : Don't send password reset emails (default: skip)
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi user-import /path/to/old-users-export.csv --dry-run --domain-report
+     *     wp bimverdi user-import /path/to/old-users-export.csv --dry-run
+     *     wp bimverdi user-import /path/to/old-users-export.csv --skip-password-email
+     *
+     * @subcommand user-import
+     * @param array $args       Positional arguments
+     * @param array $assoc_args Named arguments
+     */
+    public function user_import($args, $assoc_args) {
+        $csv_file = $args[0];
+        $dry_run = isset($assoc_args['dry-run']) || isset($assoc_args['domain-report']);
+        $domain_report_only = isset($assoc_args['domain-report']);
+
+        if (!file_exists($csv_file)) {
+            WP_CLI::error("CSV file not found: {$csv_file}");
+        }
+
+        WP_CLI::log("=== BIM Verdi User Import ===");
+        WP_CLI::log("CSV: {$csv_file}");
+        WP_CLI::log("Mode: " . ($domain_report_only ? "DOMAIN REPORT" : ($dry_run ? "DRY RUN" : "LIVE IMPORT")));
+        WP_CLI::log("");
+
+        // Read CSV
+        $csv_data = $this->read_csv($csv_file);
+        if (empty($csv_data)) {
+            WP_CLI::error("No data found in CSV");
+        }
+
+        WP_CLI::log("Found " . count($csv_data) . " users in CSV");
+        WP_CLI::log("");
+
+        // Build domain→foretak map from existing users on new site
+        $domain_map = $this->build_domain_map();
+
+        // Domain report
+        WP_CLI::log("=== Domain → Foretak Map ===");
+        WP_CLI::log("(Based on existing users linked to foretak)");
+        WP_CLI::log("");
+        foreach ($domain_map as $domain => $foretak_ids) {
+            $foretak_names = array_map(function($id) {
+                return get_the_title($id) . " (#{$id})";
+            }, $foretak_ids);
+
+            $status = count($foretak_ids) > 1 ? ' [AMBIGUOUS]' : '';
+            WP_CLI::log("  @{$domain} → " . implode(', ', $foretak_names) . $status);
+        }
+        WP_CLI::log("");
+        WP_CLI::log("Total domains mapped: " . count($domain_map));
+        WP_CLI::log("");
+
+        if ($domain_report_only) {
+            // Also show which CSV users would match
+            WP_CLI::log("=== CSV User Matching Preview ===");
+            $match_count = 0;
+            $no_match_count = 0;
+            $ambiguous_count = 0;
+            $skip_count = 0;
+
+            foreach ($csv_data as $row) {
+                $email = strtolower(trim($row['user_email'] ?? ''));
+                if (empty($email)) continue;
+
+                // Check if already exists on new site
+                if (email_exists($email)) {
+                    $skip_count++;
+                    continue;
+                }
+
+                $domain = $this->get_email_domain($email);
+                $name = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+                if (empty($name)) $name = $row['display_name'] ?? $email;
+
+                if (in_array($domain, self::$generic_domains)) {
+                    WP_CLI::log("  [MEDLEM]    {$email} ({$name}) - generic domain");
+                    $no_match_count++;
+                } elseif (isset($domain_map[$domain])) {
+                    if (count($domain_map[$domain]) > 1) {
+                        $names = array_map('get_the_title', $domain_map[$domain]);
+                        WP_CLI::log("  [AMBIGUOUS] {$email} ({$name}) → " . implode(' / ', $names));
+                        $ambiguous_count++;
+                    } else {
+                        $foretak_name = get_the_title($domain_map[$domain][0]);
+                        WP_CLI::log("  [MATCH]     {$email} ({$name}) → {$foretak_name}");
+                        $match_count++;
+                    }
+                } else {
+                    WP_CLI::log("  [MEDLEM]    {$email} ({$name}) - no domain match");
+                    $no_match_count++;
+                }
+            }
+
+            WP_CLI::log("");
+            WP_CLI::log("=== Domain Report Summary ===");
+            WP_CLI::log("Would match to foretak:  {$match_count}");
+            WP_CLI::log("Would be medlem:         {$no_match_count}");
+            WP_CLI::log("Ambiguous (need manual): {$ambiguous_count}");
+            WP_CLI::log("Already on new site:     {$skip_count}");
+            WP_CLI::warning("DOMAIN REPORT ONLY - No changes were made");
+            return;
+        }
+
+        // Stats
+        $stats = [
+            'processed' => 0,
+            'created' => 0,
+            'matched_foretak' => 0,
+            'set_medlem' => 0,
+            'skipped_exists' => 0,
+            'skipped_admin' => 0,
+            'ambiguous' => 0,
+            'errors' => 0,
+        ];
+
+        // Track ambiguous users for summary
+        $ambiguous_users = [];
+
+        foreach ($csv_data as $row) {
+            $stats['processed']++;
+
+            $email = strtolower(trim($row['user_email'] ?? ''));
+            $first_name = trim($row['first_name'] ?? '');
+            $last_name = trim($row['last_name'] ?? '');
+            $display_name = trim($row['display_name'] ?? '');
+            $phone = trim($row['phone'] ?? '');
+            $old_roles = trim($row['roles'] ?? '');
+            $old_company_id = trim($row['old_company_id'] ?? '');
+            $registered = trim($row['user_registered'] ?? '');
+
+            if (empty($email)) {
+                WP_CLI::warning("[SKIP] Row {$stats['processed']} - no email");
+                continue;
+            }
+
+            // Skip admin/system accounts
+            if ($this->is_admin_account($email, $old_roles)) {
+                WP_CLI::log("[SKIP ADMIN] {$email}");
+                $stats['skipped_admin']++;
+                continue;
+            }
+
+            // Check if user already exists on new site
+            if (email_exists($email)) {
+                WP_CLI::log("[EXISTS] {$email} - already on new site");
+                $stats['skipped_exists']++;
+                continue;
+            }
+
+            // Generate unique user_login from email prefix
+            $user_login = $this->generate_unique_login($email);
+
+            // Determine foretak match via domain
+            $domain = $this->get_email_domain($email);
+            $foretak_id = null;
+            $role = 'medlem';
+            $match_type = 'no match';
+
+            if (!in_array($domain, self::$generic_domains) && isset($domain_map[$domain])) {
+                if (count($domain_map[$domain]) === 1) {
+                    $foretak_id = $domain_map[$domain][0];
+                    $role = 'tilleggskontakt';
+                    $match_type = 'domain → ' . get_the_title($foretak_id);
+                } else {
+                    // Ambiguous - set as medlem, flag for manual fix
+                    $match_type = 'AMBIGUOUS (' . count($domain_map[$domain]) . ' foretak)';
+                    $ambiguous_users[] = [
+                        'email' => $email,
+                        'domain' => $domain,
+                        'foretak' => array_map(function($id) {
+                            return get_the_title($id) . " (#{$id})";
+                        }, $domain_map[$domain]),
+                    ];
+                    $stats['ambiguous']++;
+                }
+            }
+
+            $name_display = !empty($first_name) ? "{$first_name} {$last_name}" : $display_name;
+            $foretak_label = $foretak_id ? get_the_title($foretak_id) . " (#{$foretak_id})" : '-';
+            WP_CLI::log("[" . strtoupper($role) . "] {$email} ({$name_display}) → {$match_type}");
+
+            if (!$dry_run) {
+                // Create user with random password
+                $user_id = wp_insert_user([
+                    'user_login'   => $user_login,
+                    'user_email'   => $email,
+                    'user_pass'    => wp_generate_password(24, true, true),
+                    'first_name'   => $first_name,
+                    'last_name'    => $last_name,
+                    'display_name' => !empty($first_name) ? "{$first_name} {$last_name}" : $display_name,
+                    'user_registered' => !empty($registered) ? $registered : current_time('mysql'),
+                    'role'         => $role,
+                ]);
+
+                if (is_wp_error($user_id)) {
+                    WP_CLI::warning("  ERROR: " . $user_id->get_error_message());
+                    $stats['errors']++;
+                    continue;
+                }
+
+                // Save phone
+                if (!empty($phone)) {
+                    update_user_meta($user_id, 'telefon', sanitize_text_field($phone));
+                }
+
+                // Tag as imported for traceability
+                update_user_meta($user_id, 'bimverdi_imported_from', 'old_bimverdi');
+                update_user_meta($user_id, 'bimverdi_import_date', current_time('mysql'));
+
+                // Store old company ID for reference
+                if (!empty($old_company_id)) {
+                    update_user_meta($user_id, 'bimverdi_old_company_id', $old_company_id);
+                }
+
+                // Link to foretak if matched
+                if ($foretak_id) {
+                    update_user_meta($user_id, 'bim_verdi_company_id', $foretak_id);
+                    if (function_exists('update_field')) {
+                        update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user_id);
+                    }
+                    WP_CLI::log("  → Linked to foretak #{$foretak_id}");
+                }
+
+                WP_CLI::log("  → User ID: {$user_id}");
+            }
+
+            $stats['created']++;
+            if ($foretak_id) {
+                $stats['matched_foretak']++;
+            } else {
+                $stats['set_medlem']++;
+            }
+        }
+
+        // Print ambiguous users summary
+        if (!empty($ambiguous_users)) {
+            WP_CLI::log("");
+            WP_CLI::log("=== Ambiguous Domain Matches (needs manual fix) ===");
+            foreach ($ambiguous_users as $au) {
+                WP_CLI::log("  {$au['email']} (@{$au['domain']}):");
+                foreach ($au['foretak'] as $f) {
+                    WP_CLI::log("    - {$f}");
+                }
+            }
+            WP_CLI::log("");
+            WP_CLI::log("Fix these with:");
+            WP_CLI::log("  wp bimverdi assign-tilleggskontakt --user=email@example.com --foretak=<POST_ID>");
+        }
+
+        // Print summary
+        WP_CLI::log("");
+        WP_CLI::log("=== Import Summary ===");
+        WP_CLI::log("Processed:         {$stats['processed']}");
+        WP_CLI::log("Created:           {$stats['created']}");
+        WP_CLI::log("  → Linked foretak: {$stats['matched_foretak']}");
+        WP_CLI::log("  → Set as medlem:  {$stats['set_medlem']}");
+        WP_CLI::log("Skipped (exists):  {$stats['skipped_exists']}");
+        WP_CLI::log("Skipped (admin):   {$stats['skipped_admin']}");
+        WP_CLI::log("Ambiguous:         {$stats['ambiguous']}");
+        WP_CLI::log("Errors:            {$stats['errors']}");
+
+        if ($dry_run) {
+            WP_CLI::warning("DRY RUN - No changes were made");
+        } else {
+            WP_CLI::success("Import completed! {$stats['created']} users created.");
+            WP_CLI::log("");
+            WP_CLI::log("Next steps:");
+            WP_CLI::log("  1. Review ambiguous matches above");
+            WP_CLI::log("  2. Fix with: wp bimverdi assign-tilleggskontakt --user=<email> --foretak=<ID>");
+            WP_CLI::log("  3. Send password reset emails:");
+            WP_CLI::log("     wp user list --meta_key=bimverdi_imported_from --meta_value=old_bimverdi --fields=user_email --format=csv | tail -n +2 | while read email; do wp user reset-password \"\$email\"; done");
+        }
+    }
+
+    /**
+     * Assign a user as tilleggskontakt to a foretak
+     *
+     * ## OPTIONS
+     *
+     * --user=<email>
+     * : Email address of the user to assign
+     *
+     * --foretak=<post-id>
+     * : Post ID of the foretak to assign to
+     *
+     * [--dry-run]
+     * : Show what would happen without making changes
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi assign-tilleggskontakt --user=ola@example.com --foretak=152
+     *     wp bimverdi assign-tilleggskontakt --user=ola@example.com --foretak=152 --dry-run
+     *
+     * @subcommand assign-tilleggskontakt
+     * @param array $args       Positional arguments
+     * @param array $assoc_args Named arguments
+     */
+    public function assign_tilleggskontakt($args, $assoc_args) {
+        $email = $assoc_args['user'] ?? '';
+        $foretak_id = intval($assoc_args['foretak'] ?? 0);
+        $dry_run = isset($assoc_args['dry-run']);
+
+        if (empty($email)) {
+            WP_CLI::error("--user=<email> is required");
+        }
+        if ($foretak_id <= 0) {
+            WP_CLI::error("--foretak=<post-id> is required (positive integer)");
+        }
+
+        // Validate user exists
+        $user = get_user_by('email', $email);
+        if (!$user) {
+            WP_CLI::error("User not found: {$email}");
+        }
+
+        // Validate foretak exists
+        $foretak = get_post($foretak_id);
+        if (!$foretak || $foretak->post_type !== 'foretak') {
+            WP_CLI::error("Foretak not found with ID: {$foretak_id}");
+        }
+
+        $foretak_name = $foretak->post_title;
+        WP_CLI::log("User:    {$user->display_name} ({$email}) [ID: {$user->ID}]");
+        WP_CLI::log("Foretak: {$foretak_name} [ID: {$foretak_id}]");
+
+        // Check if already linked
+        $existing_company = get_user_meta($user->ID, 'bim_verdi_company_id', true);
+        if (!empty($existing_company) && intval($existing_company) === $foretak_id) {
+            WP_CLI::warning("User is already linked to this foretak");
+            return;
+        }
+        if (!empty($existing_company)) {
+            $old_name = get_the_title($existing_company);
+            WP_CLI::warning("User is currently linked to: {$old_name} (#{$existing_company}) - will be changed");
+        }
+
+        if ($dry_run) {
+            WP_CLI::log("");
+            WP_CLI::log("Would:");
+            WP_CLI::log("  1. Set role to 'tilleggskontakt'");
+            WP_CLI::log("  2. Set bim_verdi_company_id = {$foretak_id}");
+            WP_CLI::log("  3. Set ACF tilknyttet_foretak = {$foretak_id}");
+            WP_CLI::warning("DRY RUN - No changes were made");
+            return;
+        }
+
+        // Set role
+        $user_obj = new WP_User($user->ID);
+        $user_obj->set_role('tilleggskontakt');
+
+        // Set company meta (both keys for legacy compatibility)
+        update_user_meta($user->ID, 'bim_verdi_company_id', $foretak_id);
+
+        // Set ACF field
+        if (function_exists('update_field')) {
+            update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user->ID);
+        }
+
+        WP_CLI::success("Assigned {$email} as tilleggskontakt to {$foretak_name} (#{$foretak_id})");
+    }
+
+    /**
+     * Build domain → foretak map from existing users on the site
+     *
+     * Looks at all users who are linked to a foretak and builds a
+     * mapping of email domains to foretak IDs.
+     */
+    private function build_domain_map() {
+        $domain_map = [];
+
+        // Get all users
+        $users = get_users(['number' => -1, 'fields' => ['ID', 'user_email']]);
+
+        foreach ($users as $user) {
+            // Check if user has a foretak
+            $company_id = get_user_meta($user->ID, 'bim_verdi_company_id', true);
+            if (empty($company_id)) {
+                $company_id = get_user_meta($user->ID, 'bimverdi_company_id', true);
+            }
+            if (empty($company_id) && function_exists('get_field')) {
+                $foretak = get_field('tilknyttet_foretak', 'user_' . $user->ID);
+                if ($foretak) {
+                    $company_id = is_object($foretak) ? $foretak->ID : $foretak;
+                }
+            }
+
+            if (empty($company_id)) continue;
+
+            // Verify the foretak post exists
+            if (!get_post($company_id)) continue;
+
+            $domain = $this->get_email_domain($user->user_email);
+            if (empty($domain)) continue;
+
+            // Skip generic domains
+            if (in_array($domain, self::$generic_domains)) continue;
+
+            if (!isset($domain_map[$domain])) {
+                $domain_map[$domain] = [];
+            }
+
+            if (!in_array(intval($company_id), $domain_map[$domain])) {
+                $domain_map[$domain][] = intval($company_id);
+            }
+        }
+
+        // Sort by domain name
+        ksort($domain_map);
+
+        return $domain_map;
+    }
+
+    /**
+     * Extract domain from email address
+     */
+    private function get_email_domain($email) {
+        $parts = explode('@', strtolower(trim($email)));
+        return count($parts) === 2 ? $parts[1] : '';
+    }
+
+    /**
+     * Generate a unique user_login from email prefix
+     */
+    private function generate_unique_login($email) {
+        $prefix = explode('@', $email)[0];
+        // Sanitize: only alphanumeric, dots, hyphens, underscores
+        $login = preg_replace('/[^a-z0-9._-]/', '', strtolower($prefix));
+
+        if (empty($login)) {
+            $login = 'user';
+        }
+
+        // Ensure unique
+        $base = $login;
+        $counter = 1;
+        while (username_exists($login)) {
+            $login = $base . $counter;
+            $counter++;
+        }
+
+        return $login;
+    }
+
+    /**
+     * Check if this is an admin/system account that should be skipped
+     */
+    private function is_admin_account($email, $roles_serialized) {
+        // Skip known admin emails
+        $skip_emails = [
+            'admin@bimverdi.no',
+            'webmaster@bimverdi.no',
+        ];
+        if (in_array(strtolower($email), $skip_emails)) {
+            return true;
+        }
+
+        // Skip if role is administrator
+        if (!empty($roles_serialized) && strpos($roles_serialized, 'administrator') !== false) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Import Arrangement data from live CPT CSV export
      *
      * Imports events from the live bimverdi.no CPT export.
