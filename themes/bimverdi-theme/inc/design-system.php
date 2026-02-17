@@ -24,8 +24,8 @@ class BIM_Verdi_Design_System {
         ?>
         <style>
             /* ============================================
-               BIM VERDI "OATMEAL" DESIGN SYSTEM
-               Warm, structured, enterprise-calm
+               BIM VERDI MARKETPLACE DESIGN SYSTEM
+               Clean, modern, directory-style
                ============================================ */
             :root {
                 /* ---- Brand ---- */
@@ -34,19 +34,20 @@ class BIM_Verdi_Design_System {
                 --color-primary-light: #FFBFA8;
 
                 /* ---- Text ---- */
-                --color-text: #1A1A1A;           /* Primary text */
-                --color-text-secondary: #5A5A5A; /* Secondary/meta text */
-                --color-text-muted: #888888;     /* Muted/disabled text */
+                --color-text: #111827;           /* Primary text (gray-900) */
+                --color-text-secondary: #57534E; /* Secondary/meta text (stone-600) */
+                --color-text-muted: #A8A29E;     /* Muted/disabled text (stone-400) */
 
                 /* ---- Surfaces ---- */
-                --color-bg: #F7F5EF;             /* Warm background (beige) */
-                --color-bg-surface: #EFE9DE;     /* Elevated surface */
+                --color-bg: #FFFFFF;             /* White background */
+                --color-bg-alt: #FAFAF9;         /* Alternating section bg (stone-50) */
+                --color-bg-surface: #F5F5F4;     /* Elevated surface (stone-100) */
                 --color-bg-white: #FFFFFF;       /* Card/panel background */
-                --color-bg-dark: #1A1A1A;        /* Dark sections (hero, CTA, badges) */
+                --color-bg-dark: #111827;        /* Dark sections (hero, CTA, badges) */
 
                 /* ---- Dividers ---- */
-                --color-divider: #D6D1C6;        /* Primary divider */
-                --color-divider-light: #E5E0D5;  /* Subtle divider (list items) */
+                --color-divider: #E7E5E4;        /* Primary divider (stone-200) */
+                --color-divider-light: rgba(231, 229, 228, 0.6); /* Subtle divider */
 
                 /* ---- Temagruppe palette ---- */
                 --color-tg-orange: #FF8B5E;      /* Modellkvalitet */
@@ -65,15 +66,15 @@ class BIM_Verdi_Design_System {
                 /* ---- Legacy aliases ---- */
                 --color-secondary: #5E36FE;
                 --color-secondary-dark: #4E26DE;
-                --color-secondary-light: #DFD7C6;
-                --color-black: #0F0F0F;
-                --color-gray-dark: #383838;
-                --color-gray-medium: #888888;
-                --color-gray-light: #D1D1D1;
+                --color-secondary-light: #E7E5E4;
+                --color-black: #111827;
+                --color-gray-dark: #44403C;
+                --color-gray-medium: #A8A29E;
+                --color-gray-light: #E7E5E4;
                 --color-white: #FFFFFF;
-                --color-beige: #F7F5EF;
-                --color-beige-dark: #EFE9DE;
-                
+                --color-beige: #FAFAF9;
+                --color-beige-dark: #F5F5F4;
+
                 /* Spacing */
                 --spacing-xs: 0.5rem;
                 --spacing-sm: 1rem;
@@ -97,7 +98,8 @@ class BIM_Verdi_Design_System {
                 --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
                 
                 /* Typography */
-                --font-family: 'Moderat', 'Inter', system-ui, -apple-system, sans-serif;
+                --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                --font-family-serif: 'Crimson Text', Georgia, serif;
                 --line-height-tight: 1.2;
                 --line-height-normal: 1.5;
                 --line-height-relaxed: 1.75;
@@ -164,7 +166,7 @@ class BIM_Verdi_Design_System {
                 padding: 0;
                 line-height: var(--line-height-normal);
                 color: var(--color-black);
-                background-color: #FAFAF8;
+                background-color: #FFFFFF;
             }
             
             h1, h2, h3, h4, h5, h6 {
@@ -776,6 +778,232 @@ class BIM_Verdi_Design_System {
             }
             .bv-footer-newsletter .gform_wrapper .gfield_error input[type="email"] {
                 border-bottom-color: #772015 !important;
+            }
+
+            /* ============================================
+               MARKETPLACE CARD COMPONENT
+               ============================================ */
+
+            .bv-card {
+                display: block;
+                height: 100%;
+                background: #FFFFFF;
+                border: 1px solid #E7E5E4;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+                transition: all 0.2s ease;
+                padding: 1.5rem;
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .bv-card:hover {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                border-color: #D6D3D1;
+                text-decoration: none;
+                color: inherit;
+            }
+
+            /* ============================================
+               CATEGORY CHIP
+               ============================================ */
+
+            .bv-chip {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.375rem 0.875rem;
+                border-radius: 100px;
+                font-size: 0.8125rem;
+                font-weight: 500;
+                background: #FFFFFF;
+                color: #57534E;
+                border: 1px solid #E7E5E4;
+                transition: all 0.15s ease;
+                text-decoration: none;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+
+            .bv-chip:hover {
+                background: #F5F5F4;
+                border-color: #D6D3D1;
+                text-decoration: none;
+                color: #111827;
+            }
+
+            .bv-chip.active,
+            .bv-chip--active {
+                background: #111827;
+                color: #FFFFFF;
+                border-color: #111827;
+            }
+
+            .bv-chip.active:hover,
+            .bv-chip--active:hover {
+                background: #1F2937;
+                color: #FFFFFF;
+            }
+
+            /* ============================================
+               HERO ROTATING TEXT
+               ============================================ */
+
+            .bv-hero-rotating {
+                position: relative;
+                display: inline-grid;
+            }
+
+            .bv-hero-rotating > span {
+                grid-area: 1 / 1;
+                opacity: 0;
+                transform: translateY(8px);
+                transition: opacity 0.4s ease, transform 0.4s ease;
+                text-decoration: underline;
+                text-decoration-color: var(--color-divider);
+                text-underline-offset: 6px;
+                text-decoration-thickness: 2px;
+            }
+
+            .bv-hero-rotating > span.active {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Wavy SVG underline for rotating text */
+            .bv-hero-underline {
+                position: absolute;
+                bottom: -6px;
+                left: 0;
+                width: 100%;
+                height: 8px;
+                opacity: 0.6;
+            }
+
+            /* ============================================
+               FAQ ACCORDION
+               ============================================ */
+
+            .bv-faq details {
+                border-bottom: 1px solid #E7E5E4;
+            }
+
+            .bv-faq details:first-child {
+                border-top: 1px solid #E7E5E4;
+            }
+
+            .bv-faq summary {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1.25rem 0;
+                font-size: 1rem;
+                font-weight: 600;
+                color: #111827;
+                cursor: pointer;
+                list-style: none;
+                user-select: none;
+            }
+
+            .bv-faq summary::-webkit-details-marker {
+                display: none;
+            }
+
+            .bv-faq summary::after {
+                content: '';
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+                margin-left: 1rem;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23A8A29E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: center;
+                transition: transform 0.2s ease;
+            }
+
+            .bv-faq details[open] summary::after {
+                transform: rotate(180deg);
+            }
+
+            .bv-faq details p {
+                padding: 0 0 1.25rem 0;
+                margin: 0;
+                color: #57534E;
+                font-size: 0.9375rem;
+                line-height: 1.7;
+            }
+
+            /* ============================================
+               STATS BADGE (hero inline pill)
+               ============================================ */
+
+            .bv-stats-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 1rem;
+                background: #F5F5F4;
+                border: 1px solid #E7E5E4;
+                border-radius: 100px;
+                font-size: 0.8125rem;
+                color: #57534E;
+            }
+
+            .bv-stats-badge .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #22C55E;
+                flex-shrink: 0;
+            }
+
+            /* ============================================
+               SECTION HEADER (title + "Se alle" link)
+               ============================================ */
+
+            .bv-section-header {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                margin-bottom: 2rem;
+            }
+
+            .bv-section-header h2 {
+                margin: 0;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #111827;
+            }
+
+            .bv-section-header a {
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #57534E;
+                text-decoration: none;
+                transition: color 0.15s;
+            }
+
+            .bv-section-header a:hover {
+                color: #111827;
+                text-decoration: none;
+            }
+
+            /* ============================================
+               LINE CLAMP UTILITIES
+               ============================================ */
+
+            .line-clamp-2 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .line-clamp-3 {
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
             }
         </style>
         <?php
