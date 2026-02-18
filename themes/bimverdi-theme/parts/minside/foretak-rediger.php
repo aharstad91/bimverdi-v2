@@ -42,14 +42,9 @@ if (!$is_hovedkontakt && !$is_admin) {
 // Get company data
 $bedriftsnavn = get_field('bedriftsnavn', $company_id) ?: $company->post_title;
 $org_nummer = get_field('organisasjonsnummer', $company_id);
-$logo_id = get_field('logo', $company_id);
-$logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'thumbnail') : '';
 
-// Get Brreg-synced fields (locked)
-$adresse = get_field('adresse', $company_id);
-$postnummer = get_field('postnummer', $company_id);
-$poststed = get_field('poststed', $company_id);
-$land = get_field('land', $company_id);
+// Check if this is a Norwegian company (BRREG fields should be locked)
+$is_norwegian = function_exists('bimverdi_is_norwegian_foretak') ? bimverdi_is_norwegian_foretak($company_id) : true;
 ?>
 
 <!-- Account Layout with Sidenav -->
@@ -61,85 +56,26 @@ $land = get_field('land', $company_id);
     <!-- Form Container (constrained width) -->
     <div class="max-w-2xl">
 
-        <!-- Company Info Badge -->
-        <div class="mb-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center gap-4">
-            <?php if ($logo_url): ?>
-                <img src="<?php echo esc_url($logo_url); ?>"
-                     alt="<?php echo esc_attr($bedriftsnavn); ?>"
-                     class="w-16 h-16 rounded-lg object-contain bg-white border border-[#E7E5E4] flex-shrink-0">
-            <?php else: ?>
-                <div class="w-16 h-16 rounded-lg bg-white border border-[#E7E5E4] flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
-                        <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
-                        <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
-                    </svg>
-                </div>
-            <?php endif; ?>
-            <div>
-                <p class="font-semibold text-[#111827] text-lg"><?php echo esc_html($bedriftsnavn); ?></p>
-                <?php if ($org_nummer): ?>
-                    <p class="text-sm text-[#57534E]"><?php _e('Org.nr:', 'bimverdi'); ?> <?php echo esc_html($org_nummer); ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- Locked Brreg Data Section -->
-        <div class="mb-8 p-6 bg-[#F9F9F9] border border-[#E7E5E4] rounded-lg">
-            <div class="flex items-center gap-2 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <h3 class="font-semibold text-[#111827]"><?php _e('Offisielle data fra Brønnøysundregistrene', 'bimverdi'); ?></h3>
-            </div>
-            <p class="text-sm text-[#57534E] mb-4">
-                <?php _e('Disse opplysningene hentes automatisk fra Brønnøysundregistrene og kan ikke redigeres her. For å oppdatere disse må du melde endring til Brønnøysundregistrene.', 'bimverdi'); ?>
+        <?php if ($is_norwegian && $org_nummer): ?>
+        <!-- BRREG info notice -->
+        <div class="mb-6 p-3 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center gap-3 text-sm text-[#57534E]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <p>
+                <?php _e('Felt merket med', 'bimverdi'); ?>
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#E7E5E4] rounded text-xs font-medium text-[#57534E]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <?php _e('Brreg', 'bimverdi'); ?>
+                </span>
+                <?php _e('hentes fra Brønnøysundregistrene og kan ikke redigeres her.', 'bimverdi'); ?>
             </p>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Bedriftsnavn', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($bedriftsnavn); ?></p>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Organisasjonsnummer', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($org_nummer); ?></p>
-                </div>
-                <?php if ($adresse): ?>
-                <div>
-                    <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Adresse', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($adresse); ?></p>
-                </div>
-                <?php endif; ?>
-                <?php if ($postnummer || $poststed): ?>
-                <div>
-                    <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Poststed', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html(trim($postnummer . ' ' . $poststed)); ?></p>
-                </div>
-                <?php endif; ?>
-                <?php if ($land && $land !== 'Norge'): ?>
-                <div>
-                    <p class="text-xs font-medium text-[#888] uppercase tracking-wide mb-1"><?php _e('Land', 'bimverdi'); ?></p>
-                    <p class="text-sm text-[#111827] bg-white border border-[#E7E5E4] rounded px-3 py-2"><?php echo esc_html($land); ?></p>
-                </div>
-                <?php endif; ?>
-            </div>
         </div>
+        <?php endif; ?>
 
         <!-- Gravity Form -->
-        <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
-            <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
-                    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>
-                </svg>
-                <?php _e('Redigerbar informasjon', 'bimverdi'); ?>
-            </h2>
-            <p class="text-sm text-[#57534E] mb-6">
-                <?php _e('Oppdater beskrivelse, logo, kontaktinformasjon og nettside for foretaket.', 'bimverdi'); ?>
-            </p>
-
+        <div>
             <?php
             // Display Gravity Form ID 7 [System] - Redigering av foretak
             if (function_exists('gravity_form')) {
@@ -148,11 +84,57 @@ $land = get_field('land', $company_id);
                 ), true);
             } else {
                 echo '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">';
-                echo '<strong>Feil:</strong> Skjema er ikke tilgjengelig. Vennligst kontakt administrator.';
+                echo '<strong>' . esc_html__('Feil:', 'bimverdi') . '</strong> ' . esc_html__('Skjema er ikke tilgjengelig. Vennligst kontakt administrator.', 'bimverdi');
                 echo '</div>';
             }
             ?>
         </div>
+
+        <!-- CSS for BRREG locked fields -->
+        <style>
+            .gf-brreg-locked .ginput_container input,
+            .gf-brreg-locked .ginput_container textarea {
+                background-color: #F5F5F4 !important;
+                color: #6B7280 !important;
+                cursor: not-allowed !important;
+                border-color: #E7E5E4 !important;
+            }
+            .gf-brreg-locked .gfield_label::after {
+                content: 'Brreg';
+                display: inline-flex;
+                align-items: center;
+                margin-left: 6px;
+                padding: 1px 6px;
+                background: #E7E5E4;
+                border-radius: 4px;
+                font-size: 0.65em;
+                font-weight: 500;
+                color: #57534E;
+                vertical-align: middle;
+                letter-spacing: 0.02em;
+            }
+            .gf-brreg-locked .gfield_description {
+                color: #9CA3AF;
+                font-style: italic;
+            }
+            /* Also handle the existing gf-readonly-field class */
+            .gf-readonly-field .ginput_container input {
+                background-color: #F5F5F4 !important;
+                color: #6B7280 !important;
+                cursor: not-allowed !important;
+                border-color: #E7E5E4 !important;
+            }
+        </style>
+
+        <!-- JS to enforce readonly on BRREG fields -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.gf-brreg-locked input, .gf-brreg-locked textarea').forEach(function(el) {
+                el.readOnly = true;
+                el.tabIndex = -1;
+            });
+        });
+        </script>
 
         <!-- Help Section -->
         <div class="mt-12 pt-8 border-t border-[#E7E5E4]">

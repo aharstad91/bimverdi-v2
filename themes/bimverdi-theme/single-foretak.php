@@ -391,7 +391,7 @@ $company_kunnskapskilder = get_posts(array(
                     <?php endif; ?>
                 </section>
 
-                <!-- Verktøy Section (vises alltid) -->
+                <!-- Verktøy Section -->
                 <section class="border-t border-[#E7E5E4] pt-10">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-[#111827]">Verktøy</h2>
@@ -426,12 +426,12 @@ $company_kunnskapskilder = get_posts(array(
                     <?php else: ?>
                     <p class="text-[#57534E] text-sm">
                         Ingen registrerte verktøy ennå. Tilbyr dere digitale løsninger?
-                        <a href="<?php echo home_url('/verktoy/'); ?>" class="text-[#FF8B5E] hover:underline">Registrer dem i verktøykatalogen!</a>
+                        <a href="<?php echo home_url('/verktoy/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk verktøykatalogen</a>
                     </p>
                     <?php endif; ?>
                 </section>
 
-                <!-- Temagrupper Section (vises alltid) -->
+                <!-- Temagrupper Section -->
                 <section class="border-t border-[#E7E5E4] pt-10">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-[#111827]">Temagrupper</h2>
@@ -449,12 +449,12 @@ $company_kunnskapskilder = get_posts(array(
                     <?php else: ?>
                     <p class="text-[#57534E] text-sm">
                         Ikke koblet til temagrupper ennå.
-                        <a href="<?php echo home_url('/temagruppe/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk våre temagrupper og bli med!</a>
+                        <a href="<?php echo home_url('/temagruppe/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk våre temagrupper</a>
                     </p>
                     <?php endif; ?>
                 </section>
 
-                <!-- Artikler Section (vises alltid) -->
+                <!-- Artikler Section -->
                 <?php
                     $category_labels = array(
                         'fagartikkel' => 'Fagartikkel',
@@ -512,12 +512,12 @@ $company_kunnskapskilder = get_posts(array(
                     <?php else: ?>
                     <p class="text-[#57534E] text-sm">
                         Ingen publiserte artikler ennå.
-                        <a href="<?php echo home_url('/artikler/'); ?>" class="text-[#FF8B5E] hover:underline">Del deres erfaringer med nettverket!</a>
+                        <a href="<?php echo home_url('/artikler/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk artikler fra nettverket</a>
                     </p>
                     <?php endif; ?>
                 </section>
 
-                <!-- Kunnskapskilder Section (vises alltid) -->
+                <!-- Kunnskapskilder Section -->
                 <?php
                     $kildetype_labels = array(
                         'standard' => 'Standard',
@@ -534,7 +534,7 @@ $company_kunnskapskilder = get_posts(array(
                 ?>
                 <section class="border-t border-[#E7E5E4] pt-10">
                     <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-lg font-bold text-[#111827]">Viktige kunnskapskilder registrert av <?php echo esc_html($company_title); ?></h2>
+                        <h2 class="text-lg font-bold text-[#111827]">Kunnskapskilder</h2>
                         <?php if ($kilde_count > 0): ?>
                         <span class="text-sm text-[#57534E]"><?php echo $kilde_count; ?> kilder</span>
                         <?php endif; ?>
@@ -580,7 +580,7 @@ $company_kunnskapskilder = get_posts(array(
                     <?php else: ?>
                     <p class="text-[#57534E] text-sm">
                         Ingen koblede kunnskapskilder ennå.
-                        <a href="<?php echo home_url('/kunnskapskilder/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk kunnskapsbiblioteket!</a>
+                        <a href="<?php echo home_url('/kunnskapskilder/'); ?>" class="text-[#FF8B5E] hover:underline">Utforsk kunnskapsbiblioteket</a>
                     </p>
                     <?php endif; ?>
                 </section>
@@ -693,7 +693,12 @@ $company_kunnskapskilder = get_posts(array(
                         <?php if ($stiftelsesdato): ?>
                         <div class="py-3">
                             <dt class="text-xs text-[#A8A29E] mb-0.5">Stiftet</dt>
-                            <dd class="text-sm text-[#111827]"><?php echo esc_html(date_i18n('j. F Y', strtotime($stiftelsesdato))); ?></dd>
+                            <?php
+                                    $norske_maneder = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
+                                    $ts = strtotime($stiftelsesdato);
+                                    $dato_norsk = date('j', $ts) . '. ' . $norske_maneder[(int)date('n', $ts) - 1] . ' ' . date('Y', $ts);
+                                ?>
+                                <dd class="text-sm text-[#111827]"><?php echo esc_html($dato_norsk); ?></dd>
                         </div>
                         <?php endif; ?>
 

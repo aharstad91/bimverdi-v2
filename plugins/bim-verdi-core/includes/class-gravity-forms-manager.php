@@ -66,6 +66,10 @@ class BIM_Verdi_Gravity_Forms_Manager {
         require_once plugin_dir_path(__FILE__) . 'handlers/class-kunnskapskilde-form-handler.php';
         new BIM_Verdi_Kunnskapskilde_Form_Handler();
 
+        // Load company edit form handler (editing existing company)
+        require_once plugin_dir_path(__FILE__) . 'handlers/class-company-edit-form-handler.php';
+        new BIM_Verdi_Company_Edit_Form_Handler();
+
         // TODO: Load additional handlers as you create them:
         // - class-event-form-handler.php
         // - class-case-form-handler.php
