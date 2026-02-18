@@ -62,9 +62,9 @@ $tool_updated = get_the_modified_date('d.m.Y', $tool_id);
 
 <!-- Breadcrumb -->
 <nav class="mb-6" aria-label="Brødsmulesti">
-    <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+    <ol class="flex items-center gap-2 text-sm text-[#57534E]">
         <li>
-            <a href="<?php echo esc_url(home_url('/min-side/')); ?>" class="hover:text-[#1A1A1A] transition-colors">
+            <a href="<?php echo esc_url(home_url('/min-side/')); ?>" class="hover:text-[#111827] transition-colors">
                 Min side
             </a>
         </li>
@@ -72,14 +72,14 @@ $tool_updated = get_the_modified_date('d.m.Y', $tool_id);
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </li>
         <li>
-            <a href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>" class="hover:text-[#1A1A1A] transition-colors">
+            <a href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>" class="hover:text-[#111827] transition-colors">
                 Mine verktøy
             </a>
         </li>
         <li>
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </li>
-        <li class="text-[#1A1A1A] font-medium" aria-current="page"><?php echo esc_html($tool_name); ?></li>
+        <li class="text-[#111827] font-medium" aria-current="page"><?php echo esc_html($tool_name); ?></li>
     </ol>
 </nav>
 
@@ -95,14 +95,14 @@ get_template_part('parts/components/page-header', null, [
 <div class="max-w-3xl mx-auto">
     
     <!-- Tool Info Badge -->
-    <div class="mb-8 p-4 bg-[#F7F5EF] border border-[#EFE9DE] rounded-lg flex items-center justify-between">
+    <div class="mb-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
             </svg>
             <div>
-                <p class="font-semibold text-[#1A1A1A]"><?php echo esc_html($tool_name); ?></p>
-                <p class="text-sm text-[#5A5A5A]"><?php echo esc_html($tool_category); ?></p>
+                <p class="font-semibold text-[#111827]"><?php echo esc_html($tool_name); ?></p>
+                <p class="text-sm text-[#57534E]"><?php echo esc_html($tool_category); ?></p>
             </div>
         </div>
         <div class="text-right">
@@ -113,14 +113,14 @@ get_template_part('parts/components/page-header', null, [
             <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full <?php echo $status_class; ?>">
                 <?php echo $status_label; ?>
             </span>
-            <p class="text-xs text-[#5A5A5A] mt-1">Oppdatert <?php echo $tool_updated; ?></p>
+            <p class="text-xs text-[#57534E] mt-1">Oppdatert <?php echo $tool_updated; ?></p>
         </div>
     </div>
     
     <!-- Gravity Form -->
-    <div class="bg-white border border-[#E5E0D5] rounded-lg p-8">
-        <h2 class="text-xl font-bold text-[#1A1A1A] mb-6 flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]">
+    <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
+        <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
                 <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>
             </svg>
@@ -144,8 +144,8 @@ get_template_part('parts/components/page-header', null, [
     </div>
     
     <!-- Danger Zone -->
-    <div class="mt-12 pt-8 border-t border-[#D6D1C6]">
-        <h3 class="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 flex items-center gap-2">
+    <div class="mt-12 pt-8 border-t border-[#E7E5E4]">
+        <h3 class="text-sm font-bold text-[#111827] uppercase tracking-wider mb-4 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
                 <path d="M12 9v4"/>
@@ -171,8 +171,8 @@ get_template_part('parts/components/page-header', null, [
     </div>
     
     <!-- Back Link -->
-    <div class="mt-8 pt-6 border-t border-[#E5E0D5]">
-        <a href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>" class="inline-flex items-center gap-2 text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
+    <div class="mt-8 pt-6 border-t border-[#E7E5E4]">
+        <a href="<?php echo esc_url(home_url('/min-side/mine-verktoy/')); ?>" class="inline-flex items-center gap-2 text-[#57534E] hover:text-[#111827] transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m15 18-6-6 6-6"/>
             </svg>

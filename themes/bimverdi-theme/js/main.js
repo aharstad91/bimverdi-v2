@@ -30,5 +30,19 @@
             }
         });
     });
-    
+
+    // Hero rotating text
+    const rotatingContainer = document.getElementById('hero-rotating');
+    if (rotatingContainer) {
+        const words = rotatingContainer.querySelectorAll('span');
+        if (words.length > 1) {
+            let current = 0;
+            setInterval(function() {
+                words[current].classList.remove('active');
+                current = (current + 1) % words.length;
+                words[current].classList.add('active');
+            }, 3000);
+        }
+    }
+
 })();

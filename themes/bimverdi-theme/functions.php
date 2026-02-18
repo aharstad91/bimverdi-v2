@@ -41,11 +41,19 @@ add_action('after_setup_theme', 'bimverdi_theme_setup');
  * Enqueue Styles and Scripts
  */
 function bimverdi_enqueue_assets() {
+    // Google Fonts: Inter (body) + Crimson Text (hero accent)
+    wp_enqueue_style(
+        'google-fonts',
+        'https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap',
+        array(),
+        null
+    );
+
     // Enqueue compiled Tailwind CSS with daisyUI
     wp_enqueue_style(
         'bimverdi-styles',
         get_template_directory_uri() . '/dist/style.css',
-        array(),
+        array('google-fonts'),
         '2.0.0'
     );
     
@@ -62,7 +70,7 @@ function bimverdi_enqueue_assets() {
         'bimverdi-scripts',
         get_template_directory_uri() . '/js/main.js',
         array(),
-        '2.0.0',
+        '2.1.0',
         true
     );
 }
@@ -264,7 +272,7 @@ function bimverdi_enqueue_menu_styles() {
         margin-top: 0.5rem;
         padding: 0.5rem 0;
         background: white;
-        border: 1px solid #E5E0D5;
+        border: 1px solid #E7E5E4;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         opacity: 0;
@@ -289,15 +297,15 @@ function bimverdi_enqueue_menu_styles() {
         display: block;
         padding: 0.625rem 1rem;
         font-size: 0.875rem;
-        color: #5A5A5A !important;
+        color: #57534E !important;
         text-decoration: none;
         transition: all 0.15s ease;
     }
     
     .sub-menu a:hover,
     .sub-menu a:focus {
-        background-color: #F7F5EF;
-        color: #1A1A1A !important;
+        background-color: #F5F5F4;
+        color: #111827 !important;
     }
     
     /* Submenu item styling */

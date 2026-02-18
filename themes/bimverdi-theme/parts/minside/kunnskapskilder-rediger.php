@@ -79,9 +79,9 @@ $kilde_type_label = isset($kildetype_labels[$kilde_type]) ? $kildetype_labels[$k
 
 <!-- Breadcrumb -->
 <nav class="mb-6" aria-label="Brødsmulesti">
-    <ol class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+    <ol class="flex items-center gap-2 text-sm text-[#57534E]">
         <li>
-            <a href="<?php echo esc_url(bimverdi_minside_url('')); ?>" class="hover:text-[#1A1A1A] transition-colors">
+            <a href="<?php echo esc_url(bimverdi_minside_url('')); ?>" class="hover:text-[#111827] transition-colors">
                 Min side
             </a>
         </li>
@@ -89,14 +89,14 @@ $kilde_type_label = isset($kildetype_labels[$kilde_type]) ? $kildetype_labels[$k
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </li>
         <li>
-            <a href="<?php echo esc_url(bimverdi_minside_url('kunnskapskilder')); ?>" class="hover:text-[#1A1A1A] transition-colors">
+            <a href="<?php echo esc_url(bimverdi_minside_url('kunnskapskilder')); ?>" class="hover:text-[#111827] transition-colors">
                 Kunnskapskilder
             </a>
         </li>
         <li>
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </li>
-        <li class="text-[#1A1A1A] font-medium" aria-current="page"><?php echo esc_html($kilde_navn); ?></li>
+        <li class="text-[#111827] font-medium" aria-current="page"><?php echo esc_html($kilde_navn); ?></li>
     </ol>
 </nav>
 
@@ -112,15 +112,15 @@ get_template_part('parts/components/page-header', null, [
 <div class="max-w-3xl mx-auto">
 
     <!-- Kunnskapskilde Info Badge -->
-    <div class="mb-8 p-4 bg-[#F7F5EF] border border-[#EFE9DE] rounded-lg flex items-center justify-between">
+    <div class="mb-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
             </svg>
             <div>
-                <p class="font-semibold text-[#1A1A1A]"><?php echo esc_html($kilde_navn); ?></p>
-                <p class="text-sm text-[#5A5A5A]"><?php echo esc_html($kilde_type_label); ?></p>
+                <p class="font-semibold text-[#111827]"><?php echo esc_html($kilde_navn); ?></p>
+                <p class="text-sm text-[#57534E]"><?php echo esc_html($kilde_type_label); ?></p>
             </div>
         </div>
         <div class="text-right">
@@ -131,14 +131,14 @@ get_template_part('parts/components/page-header', null, [
             <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full <?php echo $status_class; ?>">
                 <?php echo $status_label; ?>
             </span>
-            <p class="text-xs text-[#5A5A5A] mt-1">Oppdatert <?php echo $kilde_updated; ?></p>
+            <p class="text-xs text-[#57534E] mt-1">Oppdatert <?php echo $kilde_updated; ?></p>
         </div>
     </div>
 
     <!-- Gravity Form -->
-    <div class="bg-white border border-[#E5E0D5] rounded-lg p-8">
-        <h2 class="text-xl font-bold text-[#1A1A1A] mb-6 flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]">
+    <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
+        <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
                 <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>
             </svg>
@@ -164,7 +164,7 @@ get_template_part('parts/components/page-header', null, [
     </div>
 
     <!-- Info Section - No Delete for Kunnskapskilder per requirements -->
-    <div class="mt-12 pt-8 border-t border-[#D6D1C6]">
+    <div class="mt-12 pt-8 border-t border-[#E7E5E4]">
         <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div class="flex items-start gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
@@ -183,8 +183,8 @@ get_template_part('parts/components/page-header', null, [
     </div>
 
     <!-- Back Link -->
-    <div class="mt-8 pt-6 border-t border-[#E5E0D5]">
-        <a href="<?php echo esc_url(bimverdi_minside_url('kunnskapskilder')); ?>" class="inline-flex items-center gap-2 text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors">
+    <div class="mt-8 pt-6 border-t border-[#E7E5E4]">
+        <a href="<?php echo esc_url(bimverdi_minside_url('kunnskapskilder')); ?>" class="inline-flex items-center gap-2 text-[#57534E] hover:text-[#111827] transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m15 18-6-6 6-6"/>
             </svg>

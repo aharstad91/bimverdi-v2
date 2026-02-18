@@ -161,21 +161,21 @@ foreach (array_keys($kategori_options) as $slug) {
 }
 ?>
 
-<div class="min-h-screen bg-[#F7F5EF]">
+<div class="min-h-screen bg-white">
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-[#E5E0D8]">
+    <div class="bg-white border-b border-[#E7E5E4]">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-[#1A1A1A] mb-2">Kunnskapskilder</h1>
-                    <p class="text-[#5A5A5A]">
+                    <h1 class="text-3xl font-bold text-[#111827] mb-2">Kunnskapskilder</h1>
+                    <p class="text-[#57534E]">
                         Utforsk <?php echo $kunnskapskilder_query->found_posts; ?> standarder, veiledere og ressurser fra BIM Verdi-nettverket
                     </p>
                 </div>
                 <?php if ($is_logged_in): ?>
                 <a href="<?php echo esc_url(bimverdi_minside_url('kunnskapskilder/registrer')); ?>"
-                   class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors flex-shrink-0">
+                   class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#111827] hover:bg-[#1F2937] transition-colors flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     Registrer kunnskapskilde
                 </a>
@@ -253,14 +253,14 @@ foreach (array_keys($kategori_options) as $slug) {
                 $kategori_slugs = !empty($kategori_terms_post) ? implode(' ', wp_list_pluck($kategori_terms_post, 'slug')) : '';
             ?>
 
-            <div class="kunnskapskilde-card bg-white rounded-lg border border-[#E5E0D8] overflow-hidden hover:border-[#1A1A1A] transition-colors group"
+            <div class="kunnskapskilde-card bg-white rounded-xl border border-[#E7E5E4] shadow-sm overflow-hidden hover:shadow-md hover:border-[#D6D3D1] transition-all group"
                data-title="<?php echo esc_attr(strtolower($navn)); ?>"
                data-temagruppe="<?php echo esc_attr($temagruppe_slugs); ?>"
                data-kildetype="<?php echo esc_attr($kildetype_val); ?>"
                data-kategori="<?php echo esc_attr($kategori_slugs); ?>">
 
                 <!-- Icon Header -->
-                <div class="h-32 bg-[#F7F5EF] overflow-hidden flex items-center justify-center p-6">
+                <div class="h-32 bg-[#FAFAF9] overflow-hidden flex items-center justify-center p-6">
                     <div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-sm">
                         <?php
                         // Icon based on kildetype
@@ -277,7 +277,7 @@ foreach (array_keys($kategori_options) as $slug) {
                         ];
                         $icon_path = isset($icon_map[$kildetype_val]) ? $icon_map[$kildetype_val] : '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>';
                         ?>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-[#5A5A5A]"><?php echo $icon_path; ?></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><?php echo $icon_path; ?></svg>
                     </div>
                 </div>
 
@@ -287,26 +287,26 @@ foreach (array_keys($kategori_options) as $slug) {
                     <!-- Tags -->
                     <div class="flex flex-wrap gap-2 mb-3">
                         <?php if (!empty($temagruppe_terms_post)): ?>
-                        <span class="text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2 py-1 rounded">
+                        <span class="text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded">
                             <?php echo esc_html($temagruppe_terms_post[0]->name); ?>
                         </span>
                         <?php endif; ?>
                         <?php if ($kildetype_val && isset($kildetype_options[$kildetype_val])): ?>
-                        <span class="text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2 py-1 rounded">
+                        <span class="text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded">
                             <?php echo esc_html($kildetype_options[$kildetype_val]); ?>
                         </span>
                         <?php endif; ?>
                     </div>
 
                     <!-- Title -->
-                    <h3 class="text-lg font-bold text-[#1A1A1A] mb-1 group-hover:text-[#5A5A5A] transition-colors line-clamp-2">
+                    <h3 class="text-lg font-bold text-[#111827] mb-1 group-hover:text-[#57534E] transition-colors line-clamp-2">
                         <?php echo esc_html($navn); ?>
                         <?php echo bimverdi_admin_id_badge(); ?>
                     </h3>
 
                     <!-- Publisher & Year -->
                     <?php if ($utgiver || $utgivelsesaar): ?>
-                    <p class="text-sm text-[#5A5A5A] mb-3">
+                    <p class="text-sm text-[#57534E] mb-3">
                         <?php
                         $meta_parts = array();
                         if ($utgiver) $meta_parts[] = $utgiver;
@@ -321,22 +321,22 @@ foreach (array_keys($kategori_options) as $slug) {
 
                     <!-- Description -->
                     <?php if ($kort_beskrivelse): ?>
-                    <p class="text-sm text-[#5A5A5A] mb-4 line-clamp-2">
+                    <p class="text-sm text-[#57534E] mb-4 line-clamp-2">
                         <?php echo esc_html(wp_trim_words($kort_beskrivelse, 15)); ?>
                     </p>
                     <?php endif; ?>
 
                     <!-- Actions -->
-                    <div class="flex gap-2 pt-4 border-t border-[#E5E0D8]">
+                    <div class="flex gap-2 pt-4 border-t border-[#E7E5E4]">
                         <a href="<?php the_permalink(); ?>"
-                           class="flex-1 px-4 py-2 text-sm font-medium text-center text-[#1A1A1A] bg-[#F2F0EB] rounded-lg hover:bg-[#E5E0D8] transition-colors">
+                           class="flex-1 px-4 py-2 text-sm font-medium text-center text-[#111827] bg-[#F5F5F4] rounded-lg hover:bg-[#E7E5E4] transition-colors">
                             Se detaljer
                         </a>
                         <?php if (!empty($ekstern_lenke)): ?>
                         <a href="<?php echo esc_url($ekstern_lenke); ?>"
                            target="_blank"
                            rel="noopener"
-                           class="px-4 py-2 text-sm font-medium text-center text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
+                           class="px-4 py-2 text-sm font-medium text-center text-white bg-[#111827] rounded-lg hover:bg-[#1F2937] transition-colors">
                             Besøk
                         </a>
                         <?php endif; ?>
@@ -350,13 +350,13 @@ foreach (array_keys($kategori_options) as $slug) {
         <?php else: ?>
 
         <!-- Empty State -->
-        <div class="bg-white rounded-lg border border-[#E5E0D8] text-center py-16 px-6">
-            <div class="w-16 h-16 bg-[#F2F0EB] rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <div class="bg-white rounded-lg border border-[#E7E5E4] text-center py-16 px-6">
+            <div class="w-16 h-16 bg-[#F5F5F4] rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </div>
-            <h3 class="text-xl font-bold text-[#1A1A1A] mb-2">Ingen kunnskapskilder funnet</h3>
-            <p class="text-[#5A5A5A] mb-6 max-w-md mx-auto">Prøv å justere filtrene eller søket for å finne det du leter etter</p>
-            <a href="<?php echo get_post_type_archive_link('kunnskapskilde'); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors">
+            <h3 class="text-xl font-bold text-[#111827] mb-2">Ingen kunnskapskilder funnet</h3>
+            <p class="text-[#57534E] mb-6 max-w-md mx-auto">Prøv å justere filtrene eller søket for å finne det du leter etter</p>
+            <a href="<?php echo get_post_type_archive_link('kunnskapskilde'); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#111827] hover:bg-[#1F2937] transition-colors">
                 Vis alle kunnskapskilder
             </a>
         </div>
@@ -365,13 +365,13 @@ foreach (array_keys($kategori_options) as $slug) {
 
         <?php if (!$is_logged_in): ?>
         <!-- Login Prompt for non-logged-in users -->
-        <div class="bg-white rounded-lg border border-[#E5E0D8] p-8 text-center mt-8">
-            <div class="w-12 h-12 bg-[#F2F0EB] rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+        <div class="bg-white rounded-lg border border-[#E7E5E4] p-8 text-center mt-8">
+            <div class="w-12 h-12 bg-[#F5F5F4] rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
             </div>
-            <h3 class="text-lg font-bold text-[#1A1A1A] mb-2">Vil du bidra?</h3>
-            <p class="text-[#5A5A5A] mb-4">Logg inn for å registrere egne kunnskapskilder og få tilgang til deltakerinnhold</p>
-            <a href="<?php echo home_url('/logg-inn/?redirect_to=' . urlencode(get_post_type_archive_link('kunnskapskilde'))); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#1A1A1A] hover:bg-[#333] transition-colors">
+            <h3 class="text-lg font-bold text-[#111827] mb-2">Vil du bidra?</h3>
+            <p class="text-[#57534E] mb-4">Logg inn for å registrere egne kunnskapskilder og få tilgang til deltakerinnhold</p>
+            <a href="<?php echo home_url('/logg-inn/?redirect_to=' . urlencode(get_post_type_archive_link('kunnskapskilde'))); ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#111827] hover:bg-[#1F2937] transition-colors">
                 Logg inn
             </a>
         </div>

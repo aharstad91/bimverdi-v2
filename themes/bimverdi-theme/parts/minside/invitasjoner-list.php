@@ -102,8 +102,8 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
     <!-- Send New Invitation -->
     <?php if ($remaining_invitations > 0): ?>
     <section class="mb-10">
-        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1"><?php _e('Send invitasjon', 'bimverdi'); ?></h2>
-        <p class="text-sm text-[#5A5A5A] mb-4">
+        <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Send invitasjon', 'bimverdi'); ?></h2>
+        <p class="text-sm text-[#57534E] mb-4">
             <?php printf(
                 __('Du kan invitere %d tilleggskontakt%s til.', 'bimverdi'),
                 $remaining_invitations,
@@ -122,7 +122,7 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
                     name="email"
                     placeholder="kollega@bedrift.no"
                     required
-                    class="flex-grow px-4 py-2.5 border border-[#D1CCC3] rounded-lg focus:ring-2 focus:ring-[#1A1A1A] focus:border-[#1A1A1A] bg-white text-[#1A1A1A]"
+                    class="flex-grow px-4 py-2.5 border border-[#D6D3D1] rounded-lg focus:ring-2 focus:ring-[#111827] focus:border-[#111827] bg-white text-[#111827]"
                 />
                 <?php echo bimverdi_button([
                     'type' => 'submit',
@@ -132,7 +132,7 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
                 ]); ?>
             </div>
 
-            <p class="text-sm text-[#5A5A5A] mt-3">
+            <p class="text-sm text-[#57534E] mt-3">
                 Invitasjonen er gyldig i 7 dager. Kollegaen vil motta en e-post med lenke for å registrere seg.
             </p>
         </form>
@@ -140,48 +140,48 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
         <div id="invite-result" class="mt-4 hidden max-w-xl"></div>
     </section>
 
-    <hr class="border-[#E5E0D8] mb-10">
+    <hr class="border-[#E7E5E4] mb-10">
     <?php endif; ?>
 
     <!-- Current Users -->
     <section class="mb-10">
-        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1">
+        <h2 class="text-lg font-semibold text-[#111827] mb-1">
             <?php printf(__('Brukere i %s', 'bimverdi'), esc_html($company_name)); ?>
         </h2>
-        <p class="text-sm text-[#5A5A5A] mb-4">
+        <p class="text-sm text-[#57534E] mb-4">
             <?php echo count($company_users); ?> bruker<?php echo count($company_users) !== 1 ? 'e' : ''; ?> tilkoblet
         </p>
 
         <?php if (empty($company_users)): ?>
-            <p class="text-[#5A5A5A]">Ingen brukere tilkoblet ennå.</p>
+            <p class="text-[#57534E]">Ingen brukere tilkoblet ennå.</p>
         <?php else: ?>
-            <div class="divide-y divide-[#E5E0D8]">
+            <div class="divide-y divide-[#E7E5E4]">
                 <?php foreach ($company_users as $user): ?>
                     <div class="py-4 flex items-center justify-between <?php echo $user === reset($company_users) ? '' : ''; ?>">
                         <div class="flex items-center gap-3">
                             <?php echo get_avatar($user->ID, 40, '', '', array('class' => 'rounded-full')); ?>
                             <div>
-                                <div class="font-medium text-[#1A1A1A]">
+                                <div class="font-medium text-[#111827]">
                                     <?php echo esc_html($user->display_name); ?>
                                     <?php if ($user->is_hovedkontakt): ?>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#1A1A1A] text-white ml-2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#111827] text-white ml-2">
                                             Hovedkontakt
                                         </span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-sm text-[#5A5A5A]"><?php echo esc_html($user->user_email); ?></div>
+                                <div class="text-sm text-[#57534E]"><?php echo esc_html($user->user_email); ?></div>
                             </div>
                         </div>
                         <div>
                             <?php if (!$user->is_hovedkontakt): ?>
                                 <button type="button"
-                                        class="remove-user-btn text-sm text-[#5A5A5A] hover:text-red-600 transition-colors"
+                                        class="remove-user-btn text-sm text-[#57534E] hover:text-red-600 transition-colors"
                                         data-user-id="<?php echo $user->ID; ?>"
                                         data-user-name="<?php echo esc_attr($user->display_name); ?>">
                                     Fjern tilgang
                                 </button>
                             <?php else: ?>
-                                <span class="text-sm text-[#9A9488]">Kan ikke fjernes</span>
+                                <span class="text-sm text-[#A8A29E]">Kan ikke fjernes</span>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -192,26 +192,26 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
 
     <!-- Pending Invitations -->
     <?php if (!empty($pending_invitations)): ?>
-    <hr class="border-[#E5E0D8] mb-10">
+    <hr class="border-[#E7E5E4] mb-10">
 
     <section class="mb-10">
-        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1"><?php _e('Ventende invitasjoner', 'bimverdi'); ?></h2>
-        <p class="text-sm text-[#5A5A5A] mb-4">
+        <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Ventende invitasjoner', 'bimverdi'); ?></h2>
+        <p class="text-sm text-[#57534E] mb-4">
             <?php echo count($pending_invitations); ?> invitasjon<?php echo count($pending_invitations) !== 1 ? 'er' : ''; ?> venter på svar
         </p>
 
-        <div class="divide-y divide-[#E5E0D8]">
+        <div class="divide-y divide-[#E7E5E4]">
             <?php foreach ($pending_invitations as $invitation): ?>
                 <div class="py-4 flex items-center justify-between">
                     <div>
-                        <div class="font-medium text-[#1A1A1A]"><?php echo esc_html($invitation->email); ?></div>
-                        <div class="text-sm text-[#5A5A5A]">
+                        <div class="font-medium text-[#111827]"><?php echo esc_html($invitation->email); ?></div>
+                        <div class="text-sm text-[#57534E]">
                             Sendt <?php echo date('d.m.Y', strtotime($invitation->created_at)); ?>
                             · Utløper <?php echo date('d.m.Y', strtotime($invitation->expires_at)); ?>
                         </div>
                     </div>
                     <button type="button"
-                            class="revoke-invite-btn text-sm text-[#5A5A5A] hover:text-red-600 transition-colors"
+                            class="revoke-invite-btn text-sm text-[#57534E] hover:text-red-600 transition-colors"
                             data-invitation-id="<?php echo $invitation->id; ?>"
                             data-email="<?php echo esc_attr($invitation->email); ?>">
                         Trekk tilbake
@@ -229,18 +229,18 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
     });
     if (!empty($used_invitations)):
     ?>
-    <hr class="border-[#E5E0D8] mb-10">
+    <hr class="border-[#E7E5E4] mb-10">
 
     <section class="mb-10">
-        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1"><?php _e('Invitasjonshistorikk', 'bimverdi'); ?></h2>
-        <p class="text-sm text-[#5A5A5A] mb-4">Tidligere aksepterte invitasjoner</p>
+        <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Invitasjonshistorikk', 'bimverdi'); ?></h2>
+        <p class="text-sm text-[#57534E] mb-4">Tidligere aksepterte invitasjoner</p>
 
-        <div class="divide-y divide-[#E5E0D8]">
+        <div class="divide-y divide-[#E7E5E4]">
             <?php foreach ($used_invitations as $invitation): ?>
                 <div class="py-4 flex items-center justify-between">
                     <div>
-                        <div class="font-medium text-[#1A1A1A]"><?php echo esc_html($invitation->email); ?></div>
-                        <div class="text-sm text-[#5A5A5A]">
+                        <div class="font-medium text-[#111827]"><?php echo esc_html($invitation->email); ?></div>
+                        <div class="text-sm text-[#57534E]">
                             Akseptert <?php echo date('d.m.Y', strtotime($invitation->used_at)); ?>
                         </div>
                     </div>
@@ -253,10 +253,10 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
 
     <!-- Info about limits (only show if no remaining invitations) -->
     <?php if ($remaining_invitations <= 0): ?>
-    <div class="p-4 bg-[#F7F5EF] border-l-4 border-[#D1CCC3] text-[#5A5A5A]">
-        <strong class="text-[#1A1A1A]">Maksimalt antall tilleggskontakter nådd</strong><br>
+    <div class="p-4 bg-[#F5F5F4] border-l-4 border-[#D6D3D1] text-[#57534E]">
+        <strong class="text-[#111827]">Maksimalt antall tilleggskontakter nådd</strong><br>
         Du har <?php echo $tilleggskontakter_count; ?> tilleggskontakt<?php echo $tilleggskontakter_count !== 1 ? 'er' : ''; ?><?php if ($pending_count > 0): ?> og <?php echo $pending_count; ?> ventende invitasjon<?php echo $pending_count !== 1 ? 'er' : ''; ?><?php endif; ?>.
-        Kontakt <a href="mailto:post@bimverdi.no" class="underline text-[#1A1A1A]">BIM Verdi</a> hvis du trenger flere.
+        Kontakt <a href="mailto:post@bimverdi.no" class="underline text-[#111827]">BIM Verdi</a> hvis du trenger flere.
     </div>
     <?php endif; ?>
 

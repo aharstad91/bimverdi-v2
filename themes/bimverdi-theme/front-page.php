@@ -2,8 +2,8 @@
 /**
  * Front Page Template
  *
- * Homepage for BIM Verdi - v2 redesign
- * Uses Oatmeal design system tokens for consistent theming
+ * Homepage for BIM Verdi - Marketplace-inspired redesign
+ * Clean white/gray directory layout inspired by mcpmarket.com
  */
 
 if (!defined('ABSPATH')) {
@@ -17,8 +17,9 @@ $total_companies = wp_count_posts('foretak')->publish;
 $total_tools = wp_count_posts('verktoy')->publish;
 $total_events = wp_count_posts('arrangement')->publish;
 $total_sources = wp_count_posts('kunnskapskilde')->publish;
+$total_articles = wp_count_posts('artikkel')->publish;
 
-// Temagruppe color mapping (references CSS custom properties)
+// Temagruppe color mapping
 $tg_colors = array(
     'SirkBIM'        => 'var(--color-tg-orange)',
     'ByggesaksBIM'   => 'var(--color-tg-blue)',
@@ -28,7 +29,7 @@ $tg_colors = array(
     'BIMtech'        => 'var(--color-tg-amber)',
 );
 
-// Avatar colors cycle (same palette as temagrupper)
+// Avatar colors cycle
 $avatar_colors = array(
     'var(--color-tg-orange)',
     'var(--color-tg-blue)',
@@ -38,382 +39,392 @@ $avatar_colors = array(
     'var(--color-tg-amber)',
 );
 
-// Kildetype badge config (color + label)
+// Kildetype badge config
 $kildetype_config = array(
-    'standard'       => array('label' => 'Standard',   'color' => 'var(--color-tg-blue)'),
-    'veiledning'     => array('label' => 'Veiledning',  'color' => 'var(--color-tg-green)'),
-    'forskrift'      => array('label' => 'Forskrift',   'color' => 'var(--color-tg-amber)'),
+    'standard'        => array('label' => 'Standard',   'color' => 'var(--color-tg-blue)'),
+    'veiledning'      => array('label' => 'Veiledning', 'color' => 'var(--color-tg-green)'),
+    'forskrift'       => array('label' => 'Forskrift',  'color' => 'var(--color-tg-amber)'),
     'forskrift_norsk' => array('label' => 'Forskrift',  'color' => 'var(--color-tg-amber)'),
-    'forordning_eu'  => array('label' => 'EU',          'color' => 'var(--color-tg-purple)'),
-    'nettressurs'    => array('label' => 'Ressurs',     'color' => 'var(--color-tg-teal)'),
-    'haandbok'       => array('label' => 'Håndbok',     'color' => 'var(--color-primary)'),
+    'forordning_eu'   => array('label' => 'EU',         'color' => 'var(--color-tg-purple)'),
+    'nettressurs'     => array('label' => 'Ressurs',    'color' => 'var(--color-tg-teal)'),
+    'haandbok'        => array('label' => 'Håndbok',    'color' => 'var(--color-primary)'),
 );
+
+// Rotating hero words
+$rotating_words = array('Verktøy', 'Kunnskapskilder', 'Deltakere', 'Arrangementer');
+
+// Category chips for hero
+$category_chips = array(
+    array('label' => 'Alle', 'url' => '/'),
+    array('label' => 'SirkBIM', 'url' => '/temagrupper/sirkbim/'),
+    array('label' => 'ByggesaksBIM', 'url' => '/temagrupper/byggesaksbim/'),
+    array('label' => 'ProsjektBIM', 'url' => '/temagrupper/prosjektbim/'),
+    array('label' => 'EiendomsBIM', 'url' => '/temagrupper/eiendomsbim/'),
+    array('label' => 'MiljøBIM', 'url' => '/temagrupper/miljobim/'),
+    array('label' => 'BIMtech', 'url' => '/temagrupper/bimtech/'),
+);
+
+// "Time ago" for stats badge
+$latest_post = get_posts(array('post_type' => array('verktoy', 'foretak', 'kunnskapskilde', 'artikkel'), 'posts_per_page' => 1, 'post_status' => 'publish'));
+$updated_ago = !empty($latest_post) ? human_time_diff(get_the_time('U', $latest_post[0]), current_time('timestamp')) . ' siden' : 'nylig';
 ?>
 
-<!-- Hero Section -->
-<section class="oat-bg oat-text pt-14 pb-12">
-    <div class="max-w-6xl mx-auto px-4 md:px-8">
-        <div class="max-w-3xl">
+<!-- =============================================
+     HERO SECTION
+     ============================================= -->
+<section class="pt-16 pb-12 bg-white">
+    <div class="max-w-4xl mx-auto px-4 md:px-8 text-center">
 
-            <!-- Badge -->
-            <div class="mb-5">
-                <span class="inline-flex items-center gap-2 oat-bg-surface pl-4 pr-3 py-2 rounded-full text-base oat-text-secondary">
-                    Norges ledende nettverk for praktisk bruk av BIM og AI
-                    <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="font-semibold oat-text hover:underline flex items-center gap-1">Les mer <span>&rsaquo;</span></a>
-                </span>
-            </div>
-
-            <!-- Main Headline -->
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-5 leading-tight oat-text">
-                Vi digitaliserer sammen i praktiske prosjekter basert på dagens kunnskap, krav, forskrifter, standarder, veiledninger og verktøy.
-            </h1>
-
-            <!-- Subtitle -->
-            <p class="text-lg md:text-xl oat-text-secondary mb-8 max-w-2xl leading-relaxed">
-                BIM Verdi er et bransjenettverk som kobler sammen aktører i byggenæringen for å dele kunnskap, erfaringer og verktøy.
-            </p>
-
-            <!-- CTA Buttons -->
-            <div class="flex flex-wrap items-center gap-6 mb-10">
-                <a href="<?php echo esc_url(home_url('/logg-inn/')); ?>" class="bv-btn bv-btn--primary bv-btn--large" style="border-radius: var(--radius-pill)">
-                    Bli med i nettverket
-                </a>
-                <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="oat-text font-medium hover:underline flex items-center gap-1">
-                    Se hvordan det fungerer <span>&rarr;</span>
-                </a>
-            </div>
-
+        <!-- Stats Badge -->
+        <div class="mb-8">
+            <span class="bv-stats-badge">
+                <span class="dot"></span>
+                <?php echo esc_html($total_companies); ?> Deltakere &middot;
+                <?php echo esc_html($total_tools); ?> Verktøy &middot;
+                <?php echo esc_html($total_sources); ?> Kunnskapskilder &middot;
+                Oppdatert: <?php echo esc_html($updated_ago); ?>
+            </span>
         </div>
 
-        <!-- Stats Bar -->
-        <div class="pt-6">
-            <div class="flex flex-wrap items-stretch justify-between gap-y-3">
-                <?php
-                $stats = array(
-                    array('num' => $total_companies, 'label' => 'Deltakere', 'url' => '/deltakere/', 'color' => 'var(--color-tg-blue)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>'),
-                    array('num' => $total_tools, 'label' => 'Verktøy', 'url' => '/verktoy/', 'color' => 'var(--color-tg-orange)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>'),
-                    array('num' => '6', 'label' => 'Temagrupper', 'url' => '#temagrupper', 'color' => 'var(--color-tg-green)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>'),
-                    array('num' => $total_sources, 'label' => 'Kunnskapskilder', 'url' => '/kunnskapskilder/', 'color' => 'var(--color-tg-purple)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>'),
-                    array('num' => $total_events, 'label' => 'Arrangementer', 'url' => '/arrangementer/', 'color' => 'var(--color-tg-teal)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>'),
-                );
-                $total = count($stats);
-                foreach ($stats as $i => $stat):
-                    $href = ($stat['url'][0] === '#') ? $stat['url'] : esc_url(home_url($stat['url']));
-                ?>
-                <a href="<?php echo $href; ?>" class="group flex items-center gap-3 py-3 px-1">
-                    <span class="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0" style="background-color: color-mix(in srgb, <?php echo esc_attr($stat['color']); ?> 12%, transparent)">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color: <?php echo esc_attr($stat['color']); ?>"><?php echo $stat['icon']; ?></svg>
-                    </span>
-                    <div class="leading-tight">
-                        <div class="text-xl font-bold oat-text"><?php echo esc_html($stat['num']); ?></div>
-                        <div class="text-xs oat-text-secondary group-hover:oat-text transition-colors"><?php echo esc_html($stat['label']); ?></div>
-                    </div>
-                </a><?php if ($i < $total - 1): ?><span class="hidden md:block w-px h-8 self-center" style="background-color: var(--color-border-light, #D6D1C6)"></span><?php endif; ?>
+        <!-- Main Headline with rotating text -->
+        <h1 class="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-[#111827] leading-tight mb-6">
+            Oppdag<br>
+            <span class="bv-hero-rotating" id="hero-rotating">
+                <?php foreach ($rotating_words as $i => $word): ?>
+                <span<?php echo $i === 0 ? ' class="active"' : ''; ?>><?php echo esc_html($word); ?></span>
                 <?php endforeach; ?>
+            </span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-lg text-[#57534E] mb-8 max-w-2xl mx-auto leading-relaxed">
+            Norges ledende nettverk for BIM og digitalisering i byggenæringen. Utforsk verktøy, kunnskapskilder og deltakere.
+        </p>
+
+        <!-- Search Bar -->
+        <form action="<?php echo esc_url(home_url('/')); ?>" method="get" class="max-w-2xl mx-auto mb-8">
+            <div class="relative">
+                <input type="search" name="s" placeholder="Søk etter verktøy, foretak, artikler..."
+                       class="w-full pl-12 pr-28 py-4 text-base border border-[#E7E5E4] rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E]/30 focus:border-[#FF8B5E] transition-all"
+                       style="font-family: var(--font-family);">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A8A29E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2 bg-[#111827] text-white text-sm font-medium rounded-lg hover:bg-[#1F2937] transition-colors">
+                    Søk
+                </button>
             </div>
+        </form>
+
+        <!-- Category Chips -->
+        <div class="flex flex-wrap justify-center gap-2">
+            <?php foreach ($category_chips as $i => $chip): ?>
+            <a href="<?php echo esc_url(home_url($chip['url'])); ?>"
+               class="bv-chip<?php echo $i === 0 ? ' active' : ''; ?>">
+                <?php echo esc_html($chip['label']); ?>
+            </a>
+            <?php endforeach; ?>
         </div>
+
     </div>
 </section>
 
-<main class="oat-bg">
+<main>
 
-    <!-- Nytt i Nettverket -->
-    <section class="py-14 border-t oat-border">
+    <!-- =============================================
+         SISTE VERKTØY
+         ============================================= -->
+    <?php
+    $tools = get_posts(array(
+        'post_type'      => 'verktoy',
+        'posts_per_page' => 6,
+        'post_status'    => 'publish',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ));
+    ?>
+    <section class="py-14 bg-[#FAFAF9]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold oat-text mb-1">Nytt i nettverket</h2>
-                <p class="text-base oat-text-secondary">Siste tilskudd til kunnskapsbasen og verktøykatalogen.</p>
+            <div class="bv-section-header">
+                <h2>Siste Verktøy</h2>
+                <a href="<?php echo esc_url(home_url('/verktoy/')); ?>">Se alle (<?php echo esc_html($total_tools); ?>) &rarr;</a>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16">
-
-                <!-- Kunnskapskilder -->
-                <?php
-                $sources = get_posts(array(
-                    'post_type' => 'kunnskapskilde',
-                    'posts_per_page' => 3,
-                    'post_status' => 'publish',
-                    'orderby' => 'date',
-                    'order' => 'DESC',
-                ));
+            <?php if (!empty($tools)): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <?php foreach ($tools as $tool):
+                    $tool_cats = wp_get_post_terms($tool->ID, 'verktoykategori', array('fields' => 'names'));
+                    $tool_cat = !empty($tool_cats) && !is_wp_error($tool_cats) ? $tool_cats[0] : '';
+                    $tool_owner_id = get_field('eier_leverandor', $tool->ID);
+                    $tool_owner_name = $tool_owner_id ? get_the_title($tool_owner_id) : '';
+                    $tool_desc = wp_trim_words(get_the_excerpt($tool) ?: strip_tags($tool->post_content), 18);
                 ?>
-                <div>
-                    <div class="flex justify-between items-baseline mb-3">
-                        <h3 class="text-xl font-bold oat-text">Kunnskapskilder</h3>
-                        <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>" class="text-base oat-text-secondary hover:oat-text flex items-center gap-1">Se alle (<?php echo esc_html($total_sources); ?>) <span>&rarr;</span></a>
-                    </div>
-                    <?php if (!empty($sources)): ?>
-                    <div>
-                        <?php
-                        foreach ($sources as $index => $source):
-                            $kildetype = get_field('kildetype', $source->ID) ?: '';
-                            $type_cfg = isset($kildetype_config[$kildetype]) ? $kildetype_config[$kildetype] : null;
-                            $source_utgiver = get_field('utgiver', $source->ID) ?: '';
-                            if (!$source_utgiver) {
-                                $source_bedrift_id = get_field('tilknyttet_bedrift', $source->ID);
-                                $source_utgiver = $source_bedrift_id ? get_the_title($source_bedrift_id) : '';
-                            }
-                        ?>
-                        <a href="<?php echo esc_url(get_permalink($source)); ?>"
-                           class="flex items-center gap-3 py-3 oat-hover -mx-2 px-2 rounded transition-colors <?php echo $index < count($sources) - 1 ? 'border-b oat-border-light' : ''; ?>">
-                            <span class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: <?php echo $type_cfg ? 'color-mix(in srgb, ' . esc_attr($type_cfg['color']) . ' 12%, transparent)' : 'var(--color-bg-surface, #F0EBE0)'; ?>">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <?php echo $type_cfg ? esc_attr($type_cfg['color']) : 'var(--color-text-secondary, #888)'; ?>">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                </svg>
-                            </span>
-                            <span class="flex-grow min-w-0">
-                                <span class="block text-base font-medium oat-text truncate"><?php echo esc_html($source->post_title); ?></span>
-                                <span class="block text-base oat-text-muted"><?php echo $source_utgiver ? esc_html($source_utgiver) : ''; ?><?php if ($source_utgiver && $type_cfg) echo ' · '; ?><?php if ($type_cfg) echo esc_html($type_cfg['label']); ?></span>
-                            </span>
-                            <span class="oat-text-muted flex-shrink-0">&rarr;</span>
-                        </a>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php else: ?>
-                    <p class="oat-text-secondary py-4">Ingen kunnskapskilder ennå.</p>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Verktøy -->
-                <?php
-                $tools = get_posts(array(
-                    'post_type' => 'verktoy',
-                    'posts_per_page' => 3,
-                    'post_status' => 'publish',
-                    'orderby' => 'date',
-                    'order' => 'DESC',
-                ));
-                ?>
-                <div>
-                    <div class="flex justify-between items-baseline mb-3">
-                        <h3 class="text-xl font-bold oat-text">Verktøy</h3>
-                        <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="text-base oat-text-secondary hover:oat-text flex items-center gap-1">Se alle (<?php echo esc_html($total_tools); ?>) <span>&rarr;</span></a>
-                    </div>
-                    <?php if (!empty($tools)): ?>
-                    <div>
-                        <?php foreach ($tools as $index => $tool):
-                            $tool_cats = wp_get_post_terms($tool->ID, 'verktoykategori', array('fields' => 'names'));
-                            $tool_cat = !empty($tool_cats) && !is_wp_error($tool_cats) ? $tool_cats[0] : '';
-                            $tool_owner_id = get_field('eier_leverandor', $tool->ID);
-                            $tool_owner_name = $tool_owner_id ? get_the_title($tool_owner_id) : '';
-                        ?>
-                        <a href="<?php echo esc_url(get_permalink($tool)); ?>"
-                           class="flex items-center gap-3 py-3 oat-hover -mx-2 px-2 rounded transition-colors border-b oat-border-light">
-                            <span class="flex-shrink-0 w-10 h-10 rounded-lg oat-bg-surface flex items-center justify-center">
-                                <svg class="w-5 h-5 oat-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="<?php echo esc_url(get_permalink($tool)); ?>" class="block group">
+                    <div class="bv-card">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-[#F5F5F4] flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-[#57534E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
                                 </svg>
-                            </span>
-                            <span class="flex-grow min-w-0">
-                                <span class="block text-base font-medium oat-text truncate"><?php echo esc_html($tool->post_title); ?></span>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-semibold text-[#111827] truncate text-sm"><?php echo esc_html($tool->post_title); ?></h3>
                                 <?php if ($tool_owner_name): ?>
-                                <span class="block text-base oat-text-muted">av <?php echo esc_html($tool_owner_name); ?><?php echo $tool_cat ? ' · ' . esc_html($tool_cat) : ''; ?></span>
-                                <?php elseif ($tool_cat): ?>
-                                <span class="block text-base oat-text-muted"><?php echo esc_html($tool_cat); ?></span>
+                                <p class="text-xs text-[#A8A29E] truncate"><?php echo esc_html($tool_owner_name); ?></p>
                                 <?php endif; ?>
-                            </span>
-                            <span class="oat-text-muted flex-shrink-0">&rarr;</span>
-                        </a>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php else: ?>
-                    <p class="oat-text-secondary py-4">Ingen verktøy ennå.</p>
-                    <?php endif; ?>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Deltakere -->
-    <section class="py-14 border-t oat-border">
-        <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start">
-
-                <!-- Left: Ingress + CTA -->
-                <div>
-                    <h2 class="text-2xl font-bold oat-text mb-3">Bli en del av nettverket</h2>
-                    <p class="text-base oat-text-secondary mb-5 leading-relaxed">
-                        <?php echo esc_html($total_companies); ?> foretak deler verktøy, erfaringer og bransjekunnskap. Registrer ditt foretak og få tilgang til hele nettverket.
-                    </p>
-                    <a href="<?php echo esc_url(home_url('/registrer/')); ?>" class="bv-btn bv-btn--primary" style="border-radius: var(--radius-pill)">
-                        Registrer foretak
-                    </a>
-                </div>
-
-                <!-- Right: Newest companies -->
-                <?php
-                $companies = get_posts(array(
-                    'post_type' => 'foretak',
-                    'posts_per_page' => 3,
-                    'post_status' => 'publish',
-                    'orderby' => 'date',
-                    'order' => 'DESC',
-                ));
-                ?>
-                <div>
-                    <div class="flex justify-between items-baseline mb-3">
-                        <h3 class="text-xl font-bold oat-text">Nyeste deltakere</h3>
-                        <a href="<?php echo esc_url(home_url('/deltakere/')); ?>" class="text-base oat-text-secondary hover:oat-text flex items-center gap-1">Se alle (<?php echo esc_html($total_companies); ?>) <span>&rarr;</span></a>
-                    </div>
-                    <?php if (!empty($companies)): ?>
-                    <div>
-                        <?php
-                        foreach ($companies as $index => $company):
-                            $color = $avatar_colors[$index % count($avatar_colors)];
-                            $initial = mb_strtoupper(mb_substr($company->post_title, 0, 1));
-                            $bransje = '';
-                            $terms = wp_get_post_terms($company->ID, 'bransjekategori', array('fields' => 'names'));
-                            if (!empty($terms) && !is_wp_error($terms)) {
-                                $bransje = $terms[0];
-                            }
-                            if (!$bransje) {
-                                $bransje = get_field('bransje_rolle', $company->ID);
-                                if (is_array($bransje)) $bransje = $bransje[0] ?? '';
-                            }
-                        ?>
-                        <a href="<?php echo esc_url(get_permalink($company)); ?>"
-                           class="flex items-center gap-3 py-3 oat-hover -mx-2 px-2 rounded transition-colors <?php echo $index < count($companies) - 1 ? 'border-b oat-border-light' : ''; ?>">
-                            <span class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background-color: <?php echo esc_attr($color); ?>">
-                                <?php echo esc_html($initial); ?>
-                            </span>
-                            <span class="flex-grow min-w-0">
-                                <span class="block text-base font-medium oat-text truncate"><?php echo esc_html($company->post_title); ?></span>
-                                <?php if ($bransje): ?>
-                                <span class="block text-base oat-text-muted"><?php echo esc_html($bransje); ?></span>
-                                <?php endif; ?>
-                            </span>
-                            <span class="oat-text-muted flex-shrink-0">&rarr;</span>
-                        </a>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php else: ?>
-                    <p class="oat-text-secondary py-4">Ingen deltakere ennå.</p>
-                    <?php endif; ?>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Seneste Nytt - Featured + compact -->
-    <section class="py-14 border-t oat-border">
-        <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-bold oat-text">Seneste Nytt</h2>
-                <a href="<?php echo esc_url(home_url('/artikler/')); ?>" class="text-base oat-text-secondary font-medium flex items-center gap-1">Se alle <span>&rarr;</span></a>
-            </div>
-
-            <?php
-            $articles = get_posts(array(
-                'post_type' => 'artikkel',
-                'posts_per_page' => 4,
-                'post_status' => 'publish',
-                'orderby' => 'date',
-                'order' => 'DESC',
-            ));
-
-            if (empty($articles)) {
-                $articles = get_posts(array(
-                    'post_type' => 'post',
-                    'posts_per_page' => 4,
-                    'post_status' => 'publish',
-                    'orderby' => 'date',
-                    'order' => 'DESC',
-                ));
-            }
-
-            // Article category color mapping
-            $art_cat_colors = array(
-                'var(--color-tg-blue)', 'var(--color-tg-green)', 'var(--color-tg-orange)',
-                'var(--color-tg-purple)', 'var(--color-tg-teal)', 'var(--color-tg-amber)',
-            );
-
-            if (!empty($articles)):
-                $featured = $articles[0];
-                $rest = array_slice($articles, 1);
-                $featured_thumb = get_the_post_thumbnail_url($featured->ID, 'large');
-                $featured_date = get_the_date('d. M Y', $featured->ID);
-                $featured_cats = wp_get_post_terms($featured->ID, 'artikkelkategori', array('fields' => 'names'));
-                $featured_cat = (!empty($featured_cats) && !is_wp_error($featured_cats)) ? $featured_cats[0] : '';
-            ?>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                <!-- Featured article -->
-                <a href="<?php echo esc_url(get_permalink($featured)); ?>" class="group block">
-                    <div class="relative aspect-[4/3] rounded-lg overflow-hidden mb-4">
-                        <?php if ($featured_thumb): ?>
-                        <img src="<?php echo esc_url($featured_thumb); ?>" alt="<?php echo esc_attr($featured->post_title); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        <?php else: ?>
-                        <div class="w-full h-full oat-bg-surface flex items-center justify-center">
-                            <svg class="w-16 h-16 oat-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-                            </svg>
+                            </div>
                         </div>
+                        <?php if ($tool_desc): ?>
+                        <p class="text-sm text-[#57534E] line-clamp-2 mb-4"><?php echo esc_html($tool_desc); ?></p>
                         <?php endif; ?>
-                        <?php if ($featured_cat): ?>
-                        <span class="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full text-white" style="background-color: <?php echo esc_attr($art_cat_colors[0]); ?>">
-                            <?php echo esc_html($featured_cat); ?>
+                        <?php if ($tool_cat): ?>
+                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-[#F5F5F4] text-[#57534E] border border-[#E7E5E4]">
+                            <?php echo esc_html($tool_cat); ?>
                         </span>
                         <?php endif; ?>
                     </div>
-                    <div class="text-sm oat-text-muted mb-1.5"><?php echo esc_html($featured_date); ?></div>
-                    <h3 class="text-xl font-bold oat-text mb-2 group-hover:oat-text-secondary transition-colors"><?php echo esc_html($featured->post_title); ?></h3>
-                    <p class="text-base oat-text-secondary line-clamp-2"><?php echo esc_html(wp_trim_words($featured->post_excerpt ?: strip_tags($featured->post_content), 25)); ?></p>
                 </a>
-
-                <!-- Stacked articles -->
-                <div class="flex flex-col gap-0">
-                    <?php foreach ($rest as $r_index => $article):
-                        $thumb = get_the_post_thumbnail_url($article->ID, 'medium');
-                        $date = get_the_date('d. M Y', $article->ID);
-                        $art_cats = wp_get_post_terms($article->ID, 'artikkelkategori', array('fields' => 'names'));
-                        $art_cat = (!empty($art_cats) && !is_wp_error($art_cats)) ? $art_cats[0] : '';
-                        $art_color = $art_cat_colors[($r_index + 1) % count($art_cat_colors)];
-                    ?>
-                    <a href="<?php echo esc_url(get_permalink($article)); ?>"
-                       class="group flex gap-4 py-4 <?php echo $r_index < count($rest) - 1 ? 'border-b oat-border-light' : ''; ?>">
-                        <div class="relative flex-shrink-0 w-28 h-20 rounded-lg overflow-hidden">
-                            <?php if ($thumb): ?>
-                            <img src="<?php echo esc_url($thumb); ?>" alt="<?php echo esc_attr($article->post_title); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <?php else: ?>
-                            <div class="w-full h-full oat-bg-surface flex items-center justify-center">
-                                <svg class="w-8 h-8 oat-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-                                </svg>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="flex-grow min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-sm oat-text-muted"><?php echo esc_html($date); ?></span>
-                                <?php if ($art_cat): ?>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background-color: color-mix(in srgb, <?php echo esc_attr($art_color); ?> 12%, transparent); color: <?php echo esc_attr($art_color); ?>">
-                                    <?php echo esc_html($art_cat); ?>
-                                </span>
-                                <?php endif; ?>
-                            </div>
-                            <h4 class="text-base font-bold oat-text group-hover:oat-text-secondary transition-colors line-clamp-2"><?php echo esc_html($article->post_title); ?></h4>
-                        </div>
-                        <span class="oat-text-muted flex-shrink-0 self-center">&rarr;</span>
-                    </a>
-                    <?php endforeach; ?>
-                </div>
-
+                <?php endforeach; ?>
             </div>
             <?php else: ?>
-            <div class="text-center oat-text-secondary py-8">
-                <p>Ingen artikler publisert ennå.</p>
+            <p class="text-[#57534E] text-center py-8">Ingen verktøy registrert ennå.</p>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- =============================================
+         NYE DELTAKERE
+         ============================================= -->
+    <?php
+    $companies = get_posts(array(
+        'post_type'      => 'foretak',
+        'posts_per_page' => 6,
+        'post_status'    => 'publish',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ));
+    ?>
+    <section class="py-14 bg-white">
+        <div class="max-w-6xl mx-auto px-4 md:px-8">
+            <div class="bv-section-header">
+                <h2>Nye Deltakere</h2>
+                <a href="<?php echo esc_url(home_url('/deltakere/')); ?>">Se alle (<?php echo esc_html($total_companies); ?>) &rarr;</a>
+            </div>
+
+            <?php if (!empty($companies)): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <?php foreach ($companies as $index => $company):
+                    $color = $avatar_colors[$index % count($avatar_colors)];
+                    $initial = mb_strtoupper(mb_substr($company->post_title, 0, 1));
+                    $bransje = '';
+                    $terms = wp_get_post_terms($company->ID, 'bransjekategori', array('fields' => 'names'));
+                    if (!empty($terms) && !is_wp_error($terms)) {
+                        $bransje = $terms[0];
+                    }
+                    if (!$bransje) {
+                        $bransje = get_field('bransje_rolle', $company->ID);
+                        if (is_array($bransje)) $bransje = $bransje[0] ?? '';
+                    }
+                    $company_desc = wp_trim_words(get_the_excerpt($company) ?: strip_tags($company->post_content), 18);
+                ?>
+                <a href="<?php echo esc_url(get_permalink($company)); ?>" class="block group">
+                    <div class="bv-card">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background-color: <?php echo esc_attr($color); ?>">
+                                <?php echo esc_html($initial); ?>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-semibold text-[#111827] truncate text-sm"><?php echo esc_html($company->post_title); ?></h3>
+                                <?php if ($bransje): ?>
+                                <p class="text-xs text-[#A8A29E] truncate"><?php echo esc_html($bransje); ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php if ($company_desc): ?>
+                        <p class="text-sm text-[#57534E] line-clamp-2 mb-4"><?php echo esc_html($company_desc); ?></p>
+                        <?php endif; ?>
+                        <?php if ($bransje): ?>
+                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-[#F5F5F4] text-[#57534E] border border-[#E7E5E4]">
+                            <?php echo esc_html($bransje); ?>
+                        </span>
+                        <?php endif; ?>
+                    </div>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <p class="text-[#57534E] text-center py-8">Ingen deltakere registrert ennå.</p>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- =============================================
+         KUNNSKAPSKILDER
+         ============================================= -->
+    <?php
+    $sources = get_posts(array(
+        'post_type'      => 'kunnskapskilde',
+        'posts_per_page' => 6,
+        'post_status'    => 'publish',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ));
+    ?>
+    <section class="py-14 bg-[#FAFAF9]">
+        <div class="max-w-6xl mx-auto px-4 md:px-8">
+            <div class="bv-section-header">
+                <h2>Kunnskapskilder</h2>
+                <a href="<?php echo esc_url(home_url('/kunnskapskilder/')); ?>">Se alle (<?php echo esc_html($total_sources); ?>) &rarr;</a>
+            </div>
+
+            <?php if (!empty($sources)): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <?php foreach ($sources as $source):
+                    $kildetype = get_field('kildetype', $source->ID) ?: '';
+                    $type_cfg = isset($kildetype_config[$kildetype]) ? $kildetype_config[$kildetype] : null;
+                    $source_utgiver = get_field('utgiver', $source->ID) ?: '';
+                    if (!$source_utgiver) {
+                        $source_bedrift_id = get_field('tilknyttet_bedrift', $source->ID);
+                        $source_utgiver = $source_bedrift_id ? get_the_title($source_bedrift_id) : '';
+                    }
+                    $source_desc = wp_trim_words(get_the_excerpt($source) ?: strip_tags($source->post_content), 18);
+                ?>
+                <a href="<?php echo esc_url(get_permalink($source)); ?>" class="block group">
+                    <div class="bv-card">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: <?php echo $type_cfg ? 'color-mix(in srgb, ' . esc_attr($type_cfg['color']) . ' 12%, transparent)' : '#F5F5F4'; ?>">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <?php echo $type_cfg ? esc_attr($type_cfg['color']) : '#57534E'; ?>">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-semibold text-[#111827] truncate text-sm"><?php echo esc_html($source->post_title); ?></h3>
+                                <?php if ($source_utgiver): ?>
+                                <p class="text-xs text-[#A8A29E] truncate"><?php echo esc_html($source_utgiver); ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php if ($source_desc): ?>
+                        <p class="text-sm text-[#57534E] line-clamp-2 mb-4"><?php echo esc_html($source_desc); ?></p>
+                        <?php endif; ?>
+                        <?php if ($type_cfg): ?>
+                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium border border-[#E7E5E4]" style="background-color: color-mix(in srgb, <?php echo esc_attr($type_cfg['color']); ?> 8%, transparent); color: <?php echo esc_attr($type_cfg['color']); ?>">
+                            <?php echo esc_html($type_cfg['label']); ?>
+                        </span>
+                        <?php endif; ?>
+                    </div>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <p class="text-[#57534E] text-center py-8">Ingen kunnskapskilder registrert ennå.</p>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- =============================================
+         KOMMENDE ARRANGEMENTER (vertical list)
+         ============================================= -->
+    <?php
+    $events = get_posts(array(
+        'post_type'      => 'arrangement',
+        'posts_per_page' => 4,
+        'meta_query'     => array(
+            array(
+                'key'     => 'arrangement_status_toggle',
+                'value'   => 'kommende',
+                'compare' => '=',
+            ),
+        ),
+        'meta_key' => 'arrangement_dato',
+        'orderby'  => 'meta_value',
+        'order'    => 'ASC',
+    ));
+
+    if (empty($events)) {
+        $events = get_posts(array(
+            'post_type'      => 'arrangement',
+            'posts_per_page' => 4,
+            'post_status'    => 'publish',
+            'meta_key'       => 'arrangement_dato',
+            'orderby'        => 'meta_value',
+            'order'          => 'ASC',
+        ));
+    }
+    ?>
+    <section class="py-14 bg-white">
+        <div class="max-w-6xl mx-auto px-4 md:px-8">
+            <div class="bv-section-header">
+                <h2>Kommende Arrangementer</h2>
+                <a href="<?php echo esc_url(home_url('/arrangementer/')); ?>">Se alle (<?php echo esc_html($total_events); ?>) &rarr;</a>
+            </div>
+
+            <?php if (!empty($events)): ?>
+            <div class="space-y-3">
+                <?php
+                foreach ($events as $event):
+                    $event_date = get_field('arrangement_dato', $event->ID) ?: get_field('dato', $event->ID) ?: date('Y-m-d', strtotime($event->post_date));
+                    $event_time_start = get_field('arrangement_tid_start', $event->ID) ?: get_field('tid_start', $event->ID) ?: '';
+                    $event_time_end = get_field('arrangement_tid_slutt', $event->ID) ?: get_field('tid_slutt', $event->ID) ?: '';
+                    $event_format = get_field('arrangement_format', $event->ID) ?: get_field('format', $event->ID) ?: '';
+                    $event_temagruppe = wp_get_post_terms($event->ID, 'temagruppe', array('fields' => 'names'));
+                    if (is_wp_error($event_temagruppe)) $event_temagruppe = array();
+                    $event_tg_name = !empty($event_temagruppe) ? $event_temagruppe[0] : '';
+                    $event_tg_color = isset($tg_colors[$event_tg_name]) ? $tg_colors[$event_tg_name] : '';
+
+                    $date_obj = DateTime::createFromFormat('Y-m-d', $event_date) ?: DateTime::createFromFormat('Ymd', $event_date);
+                    $day = $date_obj ? $date_obj->format('d') : '';
+                    $month = $date_obj ? strtoupper($date_obj->format('M')) : '';
+                    $month_map = array('JAN' => 'JAN', 'FEB' => 'FEB', 'MAR' => 'MAR', 'APR' => 'APR', 'MAY' => 'MAI', 'JUN' => 'JUN', 'JUL' => 'JUL', 'AUG' => 'AUG', 'SEP' => 'SEP', 'OCT' => 'OKT', 'NOV' => 'NOV', 'DEC' => 'DES');
+                    $month = isset($month_map[$month]) ? $month_map[$month] : $month;
+                ?>
+                <a href="<?php echo esc_url(get_permalink($event)); ?>"
+                   class="flex items-center gap-5 rounded-xl p-4 border border-[#E7E5E4] bg-white hover:shadow-md hover:border-[#D6D3D1] transition-all group">
+
+                    <!-- Date badge -->
+                    <div class="flex-shrink-0 w-14 h-14 rounded-lg flex flex-col items-center justify-center text-white bg-[#111827]">
+                        <span class="text-lg font-bold leading-none"><?php echo esc_html($day); ?></span>
+                        <span class="text-[10px] font-semibold tracking-wider leading-none mt-0.5"><?php echo esc_html($month); ?></span>
+                    </div>
+
+                    <!-- Event details -->
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-semibold text-sm text-[#111827] mb-1 line-clamp-1 group-hover:text-[#57534E] transition-colors"><?php echo esc_html($event->post_title); ?></h3>
+                        <div class="flex flex-wrap items-center gap-2 text-xs text-[#A8A29E]">
+                            <?php if ($event_tg_name && $event_tg_color): ?>
+                            <span class="font-medium px-2 py-0.5 rounded-full" style="background-color: color-mix(in srgb, <?php echo esc_attr($event_tg_color); ?> 12%, transparent); color: <?php echo esc_attr($event_tg_color); ?>"><?php echo esc_html($event_tg_name); ?></span>
+                            <?php endif; ?>
+                            <?php if ($event_format): ?>
+                            <span><?php echo esc_html($event_format); ?></span>
+                            <?php endif; ?>
+                            <?php if ($event_time_start): ?>
+                            <span>&middot; <?php echo esc_html($event_time_start); ?><?php echo $event_time_end ? '–' . esc_html($event_time_end) : ''; ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <span class="flex-shrink-0 text-[#A8A29E] group-hover:text-[#111827] transition-colors">&rarr;</span>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <div class="rounded-xl border border-[#E7E5E4] p-8 text-center">
+                <p class="text-[#57534E]">Ingen arrangementer planlagt akkurat nå.</p>
+                <p class="text-sm text-[#A8A29E] mt-1">Sjekk tilbake snart for kommende arrangementer.</p>
             </div>
             <?php endif; ?>
         </div>
     </section>
 
-    <!-- Våre Temagrupper -->
-    <section class="py-14 border-t oat-border">
+    <!-- =============================================
+         TEMAGRUPPER
+         ============================================= -->
+    <section class="py-14 bg-[#FAFAF9]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <h2 class="text-2xl font-bold oat-text mb-6">Temagrupper</h2>
+            <div class="bv-section-header">
+                <h2>Temagrupper</h2>
+                <a href="<?php echo esc_url(home_url('/temagrupper/')); ?>">Se alle &rarr;</a>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <?php
@@ -428,152 +439,210 @@ $kildetype_config = array(
 
                 foreach ($theme_groups as $group):
                 ?>
-                <a href="<?php echo esc_url(home_url('/temagrupper/' . $group['slug'] . '/')); ?>"
-                   class="block rounded-xl border oat-border-light p-5 hover:shadow-sm transition-all group oat-bg"
-                   style="border-color: color-mix(in srgb, <?php echo esc_attr($group['color']); ?> 25%, var(--color-border-light, #D6D1C6))">
-                    <div class="flex items-start justify-between mb-4">
-                        <span class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: color-mix(in srgb, <?php echo esc_attr($group['color']); ?> 15%, transparent)">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <?php echo esc_attr($group['color']); ?>"><?php echo $group['icon']; ?></svg>
-                        </span>
-                        <span class="oat-text-muted group-hover:oat-text-secondary transition-colors">&rarr;</span>
+                <a href="<?php echo esc_url(home_url('/temagrupper/' . $group['slug'] . '/')); ?>" class="block group">
+                    <div class="bv-card" style="border-left: 3px solid <?php echo esc_attr($group['color']); ?>">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: color-mix(in srgb, <?php echo esc_attr($group['color']); ?> 12%, transparent)">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <?php echo esc_attr($group['color']); ?>"><?php echo $group['icon']; ?></svg>
+                            </div>
+                            <span class="text-[#A8A29E] group-hover:text-[#111827] transition-colors">&rarr;</span>
+                        </div>
+                        <h3 class="font-semibold text-[#111827] text-base mb-1"><?php echo esc_html($group['title']); ?></h3>
+                        <p class="text-sm text-[#57534E] leading-relaxed"><?php echo esc_html($group['desc']); ?></p>
                     </div>
-                    <h3 class="font-bold oat-text text-lg mb-1"><?php echo esc_html($group['title']); ?></h3>
-                    <p class="text-sm oat-text-secondary leading-relaxed mb-3"><?php echo esc_html($group['desc']); ?></p>
-                    <span class="text-sm font-semibold oat-text">Les mer</span>
                 </a>
                 <?php endforeach; ?>
             </div>
         </div>
     </section>
 
-    <!-- Kommende Arrangementer -->
-    <section class="py-14 border-t oat-border">
+    <!-- =============================================
+         SENESTE ARTIKLER
+         ============================================= -->
+    <?php
+    $articles = get_posts(array(
+        'post_type'      => 'artikkel',
+        'posts_per_page' => 4,
+        'post_status'    => 'publish',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ));
+
+    if (empty($articles)) {
+        $articles = get_posts(array(
+            'post_type'      => 'post',
+            'posts_per_page' => 4,
+            'post_status'    => 'publish',
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        ));
+    }
+
+    $art_cat_colors = array(
+        'var(--color-tg-blue)', 'var(--color-tg-green)', 'var(--color-tg-orange)',
+        'var(--color-tg-purple)', 'var(--color-tg-teal)', 'var(--color-tg-amber)',
+    );
+    ?>
+    <section class="py-14 bg-white">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-bold oat-text">Kommende Arrangementer</h2>
-                <a href="<?php echo esc_url(home_url('/arrangementer/')); ?>" class="text-base oat-text-secondary font-medium flex items-center gap-1">Se alle <span>&rarr;</span></a>
+            <div class="bv-section-header">
+                <h2>Seneste Artikler</h2>
+                <a href="<?php echo esc_url(home_url('/artikler/')); ?>">Se alle &rarr;</a>
             </div>
 
-            <?php
-            $events = get_posts(array(
-                'post_type' => 'arrangement',
-                'posts_per_page' => 3,
-                'meta_query' => array(
-                    array(
-                        'key' => 'arrangement_status_toggle',
-                        'value' => 'kommende',
-                        'compare' => '=',
-                    ),
-                ),
-                'meta_key' => 'arrangement_dato',
-                'orderby' => 'meta_value',
-                'order' => 'ASC',
-            ));
-
-            if (empty($events)) {
-                $events = get_posts(array(
-                    'post_type' => 'arrangement',
-                    'posts_per_page' => 3,
-                    'post_status' => 'publish',
-                    'meta_key' => 'arrangement_dato',
-                    'orderby' => 'meta_value',
-                    'order' => 'ASC',
-                ));
-            }
-
-            if (!empty($events)):
+            <?php if (!empty($articles)):
+                $featured = $articles[0];
+                $rest = array_slice($articles, 1);
+                $featured_thumb = get_the_post_thumbnail_url($featured->ID, 'large');
+                $featured_date = get_the_date('d. M Y', $featured->ID);
+                $featured_cats = wp_get_post_terms($featured->ID, 'artikkelkategori', array('fields' => 'names'));
+                $featured_cat = (!empty($featured_cats) && !is_wp_error($featured_cats)) ? $featured_cats[0] : '';
             ?>
-            <div class="space-y-3">
-                <?php
-                foreach ($events as $event):
-                    $event_date = get_field('arrangement_dato', $event->ID) ?: get_field('dato', $event->ID) ?: date('Y-m-d', strtotime($event->post_date));
-                    $event_time_start = get_field('arrangement_tid_start', $event->ID) ?: get_field('tid_start', $event->ID) ?: '';
-                    $event_time_end = get_field('arrangement_tid_slutt', $event->ID) ?: get_field('tid_slutt', $event->ID) ?: '';
-                    $event_type = wp_get_post_terms($event->ID, 'arrangementstype', array('fields' => 'names'));
-                    if (is_wp_error($event_type)) $event_type = array();
-                    $event_format = get_field('arrangement_format', $event->ID) ?: get_field('format', $event->ID) ?: '';
-                    $event_temagruppe = wp_get_post_terms($event->ID, 'temagruppe', array('fields' => 'names'));
-                    if (is_wp_error($event_temagruppe)) $event_temagruppe = array();
-                    $event_tg_name = !empty($event_temagruppe) ? $event_temagruppe[0] : '';
-                    $event_tg_color = isset($tg_colors[$event_tg_name]) ? $tg_colors[$event_tg_name] : '';
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                    $date_obj = DateTime::createFromFormat('Y-m-d', $event_date) ?: DateTime::createFromFormat('Ymd', $event_date);
-                    $day = $date_obj ? $date_obj->format('d') : '';
-                    $month = $date_obj ? strtoupper($date_obj->format('M')) : '';
-
-                    $month_map = array('JAN' => 'JAN', 'FEB' => 'FEB', 'MAR' => 'MAR', 'APR' => 'APR', 'MAY' => 'MAI', 'JUN' => 'JUN', 'JUL' => 'JUL', 'AUG' => 'AUG', 'SEP' => 'SEP', 'OCT' => 'OKT', 'NOV' => 'NOV', 'DEC' => 'DES');
-                    $month = isset($month_map[$month]) ? $month_map[$month] : $month;
-                ?>
-                <a href="<?php echo esc_url(get_permalink($event)); ?>"
-                   class="flex items-center gap-5 rounded-lg p-4 border hover:shadow-sm transition-all group"
-                   style="background-color: #FAFAF7; border-color: var(--color-border-light, #D6D1C6)">
-
-                    <!-- Date badge -->
-                    <div class="flex-shrink-0 w-14 h-14 rounded-lg flex flex-col items-center justify-center text-white" style="background-color: #1A1A1A">
-                        <span class="text-lg font-bold leading-none"><?php echo esc_html($day); ?></span>
-                        <span class="text-[10px] font-semibold tracking-wider leading-none mt-0.5"><?php echo esc_html($month); ?></span>
+                <!-- Featured article -->
+                <a href="<?php echo esc_url(get_permalink($featured)); ?>" class="group block">
+                    <div class="relative aspect-[4/3] rounded-xl overflow-hidden mb-4">
+                        <?php if ($featured_thumb): ?>
+                        <img src="<?php echo esc_url($featured_thumb); ?>" alt="<?php echo esc_attr($featured->post_title); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <?php else: ?>
+                        <div class="w-full h-full bg-[#F5F5F4] flex items-center justify-center">
+                            <svg class="w-16 h-16 text-[#A8A29E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                            </svg>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($featured_cat): ?>
+                        <span class="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full text-white" style="background-color: <?php echo esc_attr($art_cat_colors[0]); ?>">
+                            <?php echo esc_html($featured_cat); ?>
+                        </span>
+                        <?php endif; ?>
                     </div>
+                    <div class="text-sm text-[#A8A29E] mb-1.5"><?php echo esc_html($featured_date); ?></div>
+                    <h3 class="text-xl font-bold text-[#111827] mb-2 group-hover:text-[#57534E] transition-colors"><?php echo esc_html($featured->post_title); ?></h3>
+                    <p class="text-sm text-[#57534E] line-clamp-2"><?php echo esc_html(wp_trim_words($featured->post_excerpt ?: strip_tags($featured->post_content), 25)); ?></p>
+                </a>
 
-                    <!-- Event details -->
-                    <div class="flex-grow min-w-0">
-                        <h3 class="font-bold text-base mb-0.5 line-clamp-1 group-hover:opacity-70 transition-opacity" style="color: #1A1A1A"><?php echo esc_html($event->post_title); ?></h3>
-                        <div class="flex flex-wrap items-center gap-2 text-sm" style="color: #888">
-                            <?php if ($event_tg_name && $event_tg_color): ?>
-                            <span class="font-semibold text-xs px-2 py-0.5 rounded-full" style="background-color: color-mix(in srgb, <?php echo esc_attr($event_tg_color); ?> 12%, transparent); color: <?php echo esc_attr($event_tg_color); ?>"><?php echo esc_html($event_tg_name); ?></span>
-                            <?php endif; ?>
-                            <?php if ($event_format || !empty($event_type)): ?>
-                            <span><?php echo esc_html($event_format ?: (!empty($event_type) ? $event_type[0] : '')); ?></span>
-                            <?php endif; ?>
-                            <?php if ($event_time_start): ?>
-                            <span>&middot; <?php echo esc_html($event_time_start); ?><?php echo $event_time_end ? '–' . esc_html($event_time_end) : ''; ?></span>
+                <!-- Stacked articles -->
+                <div class="flex flex-col gap-0">
+                    <?php foreach ($rest as $r_index => $article):
+                        $thumb = get_the_post_thumbnail_url($article->ID, 'medium');
+                        $date = get_the_date('d. M Y', $article->ID);
+                        $art_cats = wp_get_post_terms($article->ID, 'artikkelkategori', array('fields' => 'names'));
+                        $art_cat = (!empty($art_cats) && !is_wp_error($art_cats)) ? $art_cats[0] : '';
+                        $art_color = $art_cat_colors[($r_index + 1) % count($art_cat_colors)];
+                    ?>
+                    <a href="<?php echo esc_url(get_permalink($article)); ?>"
+                       class="group flex gap-4 py-4 <?php echo $r_index < count($rest) - 1 ? 'border-b border-[#E7E5E4]' : ''; ?>">
+                        <div class="relative flex-shrink-0 w-28 h-20 rounded-lg overflow-hidden">
+                            <?php if ($thumb): ?>
+                            <img src="<?php echo esc_url($thumb); ?>" alt="<?php echo esc_attr($article->post_title); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <?php else: ?>
+                            <div class="w-full h-full bg-[#F5F5F4] flex items-center justify-center">
+                                <svg class="w-8 h-8 text-[#A8A29E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                                </svg>
+                            </div>
                             <?php endif; ?>
                         </div>
-                    </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs text-[#A8A29E]"><?php echo esc_html($date); ?></span>
+                                <?php if ($art_cat): ?>
+                                <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background-color: color-mix(in srgb, <?php echo esc_attr($art_color); ?> 12%, transparent); color: <?php echo esc_attr($art_color); ?>">
+                                    <?php echo esc_html($art_cat); ?>
+                                </span>
+                                <?php endif; ?>
+                            </div>
+                            <h4 class="text-sm font-semibold text-[#111827] group-hover:text-[#57534E] transition-colors line-clamp-2"><?php echo esc_html($article->post_title); ?></h4>
+                        </div>
+                        <span class="text-[#A8A29E] flex-shrink-0 self-center group-hover:text-[#111827] transition-colors">&rarr;</span>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
 
-                    <!-- Arrow -->
-                    <span class="flex-shrink-0 text-sm" style="color: #888">&rarr;</span>
-                </a>
-                <?php endforeach; ?>
             </div>
             <?php else: ?>
-            <div class="oat-bg-white rounded-lg border oat-border-light p-8 text-center">
-                <p class="oat-text-secondary">Ingen arrangementer planlagt akkurat nå.</p>
-                <p class="text-base oat-text-muted mt-1">Sjekk tilbake snart for kommende arrangementer.</p>
+            <div class="text-center text-[#57534E] py-8">
+                <p>Ingen artikler publisert ennå.</p>
             </div>
             <?php endif; ?>
         </div>
     </section>
 
-    <!-- Nettverket i tall -->
-    <section class="py-16 border-t oat-border">
+    <!-- =============================================
+         NETTVERKET I TALL
+         ============================================= -->
+    <section class="py-16 bg-[#FAFAF9]">
         <div class="max-w-6xl mx-auto px-4 md:px-8">
-            <h2 class="text-2xl font-bold oat-text text-center mb-10">Nettverket i tall</h2>
+            <h2 class="text-2xl font-bold text-[#111827] text-center mb-10">Nettverket i tall</h2>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                 <div class="text-center">
-                    <div class="text-3xl md:text-4xl font-bold oat-text"><?php echo esc_html($total_companies); ?></div>
-                    <div class="text-base oat-text-secondary mt-1">Deltakere</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#111827]"><?php echo esc_html($total_companies); ?></div>
+                    <div class="text-sm text-[#57534E] mt-1">Deltakere</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl md:text-4xl font-bold oat-text"><?php echo esc_html($total_tools); ?></div>
-                    <div class="text-base oat-text-secondary mt-1">Verktøy</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#111827]"><?php echo esc_html($total_tools); ?></div>
+                    <div class="text-sm text-[#57534E] mt-1">Verktøy</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl md:text-4xl font-bold oat-text"><?php echo esc_html($total_events); ?></div>
-                    <div class="text-base oat-text-secondary mt-1">Arrangementer</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#111827]"><?php echo esc_html($total_events); ?></div>
+                    <div class="text-sm text-[#57534E] mt-1">Arrangementer</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl md:text-4xl font-bold oat-text"><?php echo esc_html($total_sources); ?></div>
-                    <div class="text-base oat-text-secondary mt-1">Kunnskapskilder</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#111827]"><?php echo esc_html($total_sources); ?></div>
+                    <div class="text-sm text-[#57534E] mt-1">Kunnskapskilder</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl md:text-4xl font-bold oat-text">6</div>
-                    <div class="text-base oat-text-secondary mt-1">Temagrupper</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#111827]">6</div>
+                    <div class="text-sm text-[#57534E] mt-1">Temagrupper</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl md:text-4xl font-bold oat-text">2012</div>
-                    <div class="text-base oat-text-secondary mt-1">Etablert</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#111827]">2012</div>
+                    <div class="text-sm text-[#57534E] mt-1">Etablert</div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =============================================
+         FAQ
+         ============================================= -->
+    <section class="py-14 bg-white">
+        <div class="max-w-3xl mx-auto px-4 md:px-8">
+            <h2 class="text-2xl font-bold text-[#111827] text-center mb-10">Ofte stilte spørsmål</h2>
+
+            <div class="bv-faq">
+                <details>
+                    <summary>Hva er BIM Verdi?</summary>
+                    <p>BIM Verdi er et bransjenettverk for aktører i byggenæringen som ønsker å dele kunnskap, erfaringer og verktøy knyttet til BIM (Building Information Modelling) og digitalisering. Nettverket ble etablert i 2012 og samler både offentlige og private aktører.</p>
+                </details>
+
+                <details>
+                    <summary>Hvem kan bli deltaker?</summary>
+                    <p>Alle foretak og organisasjoner som jobber med BIM og digitalisering i byggenæringen kan bli deltaker. Dette inkluderer arkitekter, rådgivende ingeniører, entreprenører, eiendomsforvaltere, programvareleverandører og offentlige myndigheter.</p>
+                </details>
+
+                <details>
+                    <summary>Hva er en temagruppe?</summary>
+                    <p>Temagrupper er faglige arbeidsgrupper som fokuserer på spesifikke tema innen BIM. Eksempler er SirkBIM (sirkulær økonomi), ByggesaksBIM (digitale byggesaker), ProsjektBIM (prosjektledelse), EiendomsBIM (drift og forvaltning), MiljøBIM (bærekraft) og BIMtech (teknologi og innovasjon).</p>
+                </details>
+
+                <details>
+                    <summary>Hva koster det å delta?</summary>
+                    <p>BIM Verdi har ulike deltakernivåer tilpasset ulike behov og organisasjonsstørrelser. Kontakt oss for mer informasjon om priser og vilkår for ditt foretak.</p>
+                </details>
+
+                <details>
+                    <summary>Hvordan registrerer jeg verktøy?</summary>
+                    <p>Etter at du har logget inn på Min Side, kan du registrere verktøy som foretaket ditt bruker eller leverer. Verktøyene blir synlige i verktøykatalogen og hjelper andre deltakere med å finne riktige løsninger.</p>
+                </details>
+
+                <details>
+                    <summary>Hva er kunnskapskilder?</summary>
+                    <p>Kunnskapskilder er en samling av standarder, veiledninger, forskrifter, håndbøker og nettressurser som er relevante for BIM og digitalisering i byggenæringen. Disse er kuratert og kategorisert for å gjøre det enkelt å finne relevant informasjon.</p>
+                </details>
             </div>
         </div>
     </section>

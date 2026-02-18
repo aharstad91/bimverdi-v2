@@ -13,15 +13,15 @@
 get_header();
 ?>
 
-<main class="bg-[#FAFAF8] min-h-screen">
+<main class="bg-white min-h-screen">
 
     <!-- Page Header -->
-    <section class="bg-[#F7F5EF] border-b border-[#D6D1C6]">
+    <section class="bg-[#FAFAF9] border-b border-[#E7E5E4]">
         <div class="max-w-[1280px] mx-auto px-4 py-8 lg:py-12">
-            <h1 class="text-3xl lg:text-4xl font-bold text-[#1A1A1A] mb-4">
+            <h1 class="text-3xl lg:text-4xl font-bold text-[#111827] mb-4">
                 Temagrupper
             </h1>
-            <p class="text-lg text-[#5A5A5A] max-w-3xl">
+            <p class="text-lg text-[#57534E] max-w-3xl">
                 BIM Verdi har seks temagrupper som arbeider med ulike fokusomrader innen BIM og digitalisering.
                 Meld deg inn i en eller flere grupper for a delta i faglige diskusjoner og samarbeid.
             </p>
@@ -60,7 +60,7 @@ get_header();
 
         <?php else : ?>
         <div class="text-center py-16">
-            <p class="text-lg text-[#5A5A5A]">
+            <p class="text-lg text-[#57534E]">
                 Ingen temagrupper funnet.
             </p>
         </div>

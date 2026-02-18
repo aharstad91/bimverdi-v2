@@ -116,7 +116,7 @@ function bimverdi_minside_type_label($type) {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                 <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            <p class="text-[#1A1A1A]"><?php _e('Du er nå avmeldt arrangementet.', 'bimverdi'); ?></p>
+            <p class="text-[#111827]"><?php _e('Du er nå avmeldt arrangementet.', 'bimverdi'); ?></p>
         </div>
     </div>
 <?php endif; ?>
@@ -135,16 +135,16 @@ function bimverdi_minside_type_label($type) {
             <col style="width: 14%">
         </colgroup>
         <thead>
-            <tr class="border-b border-[#E5E0D8]">
-                <th class="text-left py-3 px-4 text-xs font-medium text-[#5A5A5A]"><?php _e('Arrangement', 'bimverdi'); ?></th>
-                <th class="text-left py-3 px-2 text-xs font-medium text-[#5A5A5A]"><?php _e('Dato', 'bimverdi'); ?></th>
-                <th class="text-left py-3 px-2 text-xs font-medium text-[#5A5A5A]"><?php _e('Type', 'bimverdi'); ?></th>
-                <th class="text-left py-3 px-2 text-xs font-medium text-[#5A5A5A]"><?php _e('Sted', 'bimverdi'); ?></th>
-                <th class="text-left py-3 px-2 text-xs font-medium text-[#5A5A5A]"><?php _e('Status', 'bimverdi'); ?></th>
-                <th class="text-right py-3 px-4 text-xs font-medium text-[#5A5A5A]"><?php _e('Handlinger', 'bimverdi'); ?></th>
+            <tr class="border-b border-[#E7E5E4]">
+                <th class="text-left py-3 px-4 text-xs font-medium text-[#57534E]"><?php _e('Arrangement', 'bimverdi'); ?></th>
+                <th class="text-left py-3 px-2 text-xs font-medium text-[#57534E]"><?php _e('Dato', 'bimverdi'); ?></th>
+                <th class="text-left py-3 px-2 text-xs font-medium text-[#57534E]"><?php _e('Type', 'bimverdi'); ?></th>
+                <th class="text-left py-3 px-2 text-xs font-medium text-[#57534E]"><?php _e('Sted', 'bimverdi'); ?></th>
+                <th class="text-left py-3 px-2 text-xs font-medium text-[#57534E]"><?php _e('Status', 'bimverdi'); ?></th>
+                <th class="text-right py-3 px-4 text-xs font-medium text-[#57534E]"><?php _e('Handlinger', 'bimverdi'); ?></th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-[#E5E0D8]">
+        <tbody class="divide-y divide-[#E7E5E4]">
             <?php foreach ($user_registered_events as $reg_data):
                 $event = $reg_data['event'];
                 $event_id = $reg_data['event_id'];
@@ -169,7 +169,7 @@ function bimverdi_minside_type_label($type) {
                 $status_classes = [
                     'bekreftet' => 'text-green-700',
                     'venteliste' => 'text-yellow-700',
-                    'avmeldt' => 'text-[#5A5A5A]',
+                    'avmeldt' => 'text-[#57534E]',
                 ];
                 $status_labels = [
                     'bekreftet' => __('Påmeldt', 'bimverdi'),
@@ -180,31 +180,31 @@ function bimverdi_minside_type_label($type) {
                 <tr>
                     <td class="py-3 px-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-[#F2F0EB] rounded flex items-center justify-center flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]">
+                            <div class="w-8 h-8 bg-[#F5F5F4] rounded flex items-center justify-center flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]">
                                     <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
                                     <line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/>
                                     <line x1="3" x2="21" y1="10" y2="10"/>
                                 </svg>
                             </div>
-                            <span class="font-medium text-[#1A1A1A]"><?php echo esc_html($event->post_title); ?></span>
+                            <span class="font-medium text-[#111827]"><?php echo esc_html($event->post_title); ?></span>
                         </div>
                     </td>
-                    <td class="py-3 px-2 text-[#5A5A5A]"><?php echo esc_html($date_display); ?></td>
-                    <td class="py-3 px-2 text-[#5A5A5A]">
+                    <td class="py-3 px-2 text-[#57534E]"><?php echo esc_html($date_display); ?></td>
+                    <td class="py-3 px-2 text-[#57534E]">
                         <span class="flex items-center gap-1">
                             <?php echo bimverdi_minside_type_icon($arrangement_type); ?>
                             <?php echo bimverdi_minside_type_label($arrangement_type); ?>
                         </span>
                     </td>
-                    <td class="py-3 px-2 text-[#5A5A5A]"><?php echo esc_html($location_display); ?></td>
+                    <td class="py-3 px-2 text-[#57534E]"><?php echo esc_html($location_display); ?></td>
                     <td class="py-3 px-2 <?php echo esc_attr($status_classes[$reg_status] ?? 'text-green-700'); ?>">
                         <?php echo esc_html($status_labels[$reg_status] ?? __('Påmeldt', 'bimverdi')); ?>
                     </td>
                     <td class="py-3 px-4">
                         <div class="flex items-center justify-end gap-1">
-                            <a href="<?php echo get_permalink($event_id); ?>" class="p-1.5 rounded hover:bg-[#F2F0EB] transition-colors" title="<?php esc_attr_e('Se', 'bimverdi'); ?>">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#5A5A5A]">
+                            <a href="<?php echo get_permalink($event_id); ?>" class="p-1.5 rounded hover:bg-[#F5F5F4] transition-colors" title="<?php esc_attr_e('Se', 'bimverdi'); ?>">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
                                     <circle cx="12" cy="12" r="3"/>
                                 </svg>
@@ -212,7 +212,7 @@ function bimverdi_minside_type_label($type) {
                             <?php if ($reg_status !== 'avmeldt'): ?>
                                 <button type="button"
                                         onclick="confirmUnregister(<?php echo $reg_id; ?>, '<?php echo esc_js($event->post_title); ?>')"
-                                        class="p-1.5 rounded hover:bg-red-50 transition-colors text-[#5A5A5A] hover:text-red-600"
+                                        class="p-1.5 rounded hover:bg-red-50 transition-colors text-[#57534E] hover:text-red-600"
                                         title="<?php esc_attr_e('Meld av', 'bimverdi'); ?>">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -229,7 +229,7 @@ function bimverdi_minside_type_label($type) {
     </table>
 
     <!-- Footer -->
-    <div class="py-3 px-4 text-right text-sm text-[#5A5A5A] border-t border-[#E5E0D8]">
+    <div class="py-3 px-4 text-right text-sm text-[#57534E] border-t border-[#E7E5E4]">
         <?php printf(__('Viser %d av %d påmeldinger', 'bimverdi'), count($user_registered_events), count($user_registered_events)); ?>
     </div>
 </section>
@@ -253,11 +253,11 @@ function confirmUnregister(regId, eventTitle) {
 <?php endif; ?>
 
 <!-- CTA: Se alle arrangementer -->
-<section class="<?php echo !empty($user_registered_events) ? 'mt-8 pt-8 border-t border-[#E5E0D8]' : ''; ?>">
+<section class="<?php echo !empty($user_registered_events) ? 'mt-8 pt-8 border-t border-[#E7E5E4]' : ''; ?>">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1"><?php _e('Utforsk arrangementer', 'bimverdi'); ?></h2>
-            <p class="text-sm text-[#5A5A5A]"><?php _e('Se alle kommende møter, workshops og nettverkssamlinger', 'bimverdi'); ?></p>
+            <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Utforsk arrangementer', 'bimverdi'); ?></h2>
+            <p class="text-sm text-[#57534E]"><?php _e('Se alle kommende møter, workshops og nettverkssamlinger', 'bimverdi'); ?></p>
         </div>
         <?php bimverdi_button([
             'text'    => __('Se alle arrangementer', 'bimverdi'),

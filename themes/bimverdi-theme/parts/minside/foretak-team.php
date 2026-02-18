@@ -202,9 +202,9 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
 
     <?php if ($is_readonly): ?>
         <!-- Read-only info banner for tilleggskontakter -->
-        <div class="mb-8 px-4 py-3 bg-[#F7F5EF] border-l-4 border-[#D6D1C6]">
-            <p class="text-sm text-[#5A5A5A]">
-                <strong class="text-[#1A1A1A]"><?php _e('Oversikt over kolleger', 'bimverdi'); ?></strong><br>
+        <div class="mb-8 px-4 py-3 bg-[#F5F5F4] border-l-4 border-[#E7E5E4]">
+            <p class="text-sm text-[#57534E]">
+                <strong class="text-[#111827]"><?php _e('Oversikt over kolleger', 'bimverdi'); ?></strong><br>
                 <?php _e('Kun hovedkontakt kan invitere eller fjerne brukere.', 'bimverdi'); ?>
             </p>
         </div>
@@ -212,7 +212,7 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
 
     <!-- Stats (Variant B: inline with dividers) -->
     <div class="grid grid-cols-2 mb-10">
-        <div class="py-4 pr-6 border-r border-[#D6D1C6]">
+        <div class="py-4 pr-6 border-r border-[#E7E5E4]">
             <div class="flex items-center gap-2 mb-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -220,9 +220,9 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
-                <span class="text-sm text-[#5A5A5A]"><?php _e('Brukere tilknyttet', 'bimverdi'); ?></span>
+                <span class="text-sm text-[#57534E]"><?php _e('Brukere tilknyttet', 'bimverdi'); ?></span>
             </div>
-            <p class="text-2xl font-semibold text-[#1A1A1A]"><?php echo count($company_users); ?></p>
+            <p class="text-2xl font-semibold text-[#111827]"><?php echo count($company_users); ?></p>
         </div>
         <div class="py-4 pl-6">
             <div class="flex items-center gap-2 mb-1">
@@ -232,9 +232,9 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
                     <line x1="19" x2="19" y1="8" y2="14"/>
                     <line x1="22" x2="16" y1="11" y2="11"/>
                 </svg>
-                <span class="text-sm text-[#5A5A5A]"><?php _e('Tilleggskontakter', 'bimverdi'); ?></span>
+                <span class="text-sm text-[#57534E]"><?php _e('Tilleggskontakter', 'bimverdi'); ?></span>
             </div>
-            <p class="text-2xl font-semibold text-[#1A1A1A]"><?php echo max(0, count($company_users) - 1); ?></p>
+            <p class="text-2xl font-semibold text-[#111827]"><?php echo max(0, count($company_users) - 1); ?></p>
         </div>
     </div>
 
@@ -242,18 +242,18 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
         <?php if (!$is_active_member): ?>
             <!-- Company not yet approved -->
             <div class="mb-10 p-4 bg-[#FEF9E7] border-l-4 border-[#D6A74A]">
-                <p class="text-sm text-[#5A5A5A]">
-                    <strong class="text-[#1A1A1A]"><?php _e('Foretaket er ikke godkjent ennå', 'bimverdi'); ?></strong><br>
+                <p class="text-sm text-[#57534E]">
+                    <strong class="text-[#111827]"><?php _e('Foretaket er ikke godkjent ennå', 'bimverdi'); ?></strong><br>
                     <?php _e('Du kan ikke sende invitasjoner før foretaket er godkjent av BIM Verdi.', 'bimverdi'); ?>
-                    <?php _e('Ta kontakt på', 'bimverdi'); ?> <a href="mailto:post@bimverdi.no" class="underline text-[#1A1A1A]">post@bimverdi.no</a> <?php _e('hvis dette tar lang tid.', 'bimverdi'); ?>
+                    <?php _e('Ta kontakt på', 'bimverdi'); ?> <a href="mailto:post@bimverdi.no" class="underline text-[#111827]">post@bimverdi.no</a> <?php _e('hvis dette tar lang tid.', 'bimverdi'); ?>
                 </p>
             </div>
         <?php elseif ($invitations && $remaining_invitations > 0): ?>
 
             <!-- Send New Invitation Section -->
-            <section class="mb-10 pb-10 border-b border-[#E5E0D8]">
-                <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1"><?php _e('Inviter ny kollega', 'bimverdi'); ?></h2>
-                <p class="text-sm text-[#5A5A5A] mb-5">
+            <section class="mb-10 pb-10 border-b border-[#E7E5E4]">
+                <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Inviter ny kollega', 'bimverdi'); ?></h2>
+                <p class="text-sm text-[#57534E] mb-5">
                     <?php printf(
                         __('Du kan invitere %d tilleggskontakt%s til.', 'bimverdi'),
                         $remaining_invitations,
@@ -272,7 +272,7 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
                             name="email"
                             placeholder="kollega@bedrift.no"
                             required
-                            class="flex-grow px-4 py-2.5 border border-[#D1CCC3] rounded-lg focus:ring-2 focus:ring-[#1A1A1A] focus:border-[#1A1A1A] bg-white text-[#1A1A1A]"
+                            class="flex-grow px-4 py-2.5 border border-[#D6D3D1] rounded-lg focus:ring-2 focus:ring-[#111827] focus:border-[#111827] bg-white text-[#111827]"
                         />
                         <?php echo bimverdi_button([
                             'type' => 'submit',
@@ -282,7 +282,7 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
                         ]); ?>
                     </div>
 
-                    <p class="text-sm text-[#5A5A5A] mt-3">
+                    <p class="text-sm text-[#57534E] mt-3">
                         <?php _e('Invitasjonen er gyldig i 7 dager. Kollegaen vil motta en e-post med lenke for å registrere seg.', 'bimverdi'); ?>
                     </p>
                 </form>
@@ -293,9 +293,9 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
         <?php elseif ($invitations && $remaining_invitations <= 0): ?>
 
             <!-- Max invitations reached -->
-            <div class="mb-10 p-4 bg-[#F7F5EF] border-l-4 border-[#D1CCC3]">
-                <p class="text-sm text-[#5A5A5A]">
-                    <strong class="text-[#1A1A1A]"><?php _e('Maksimalt antall tilleggskontakter nådd', 'bimverdi'); ?></strong><br>
+            <div class="mb-10 p-4 bg-[#F5F5F4] border-l-4 border-[#D6D3D1]">
+                <p class="text-sm text-[#57534E]">
+                    <strong class="text-[#111827]"><?php _e('Maksimalt antall tilleggskontakter nådd', 'bimverdi'); ?></strong><br>
                     <?php
                     $tilleggskontakter_count = count($company_users) - 1;
                     printf(
@@ -312,7 +312,7 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
                         );
                     }
                     ?>.
-                    <?php _e('Kontakt', 'bimverdi'); ?> <a href="mailto:post@bimverdi.no" class="underline text-[#1A1A1A]">BIM Verdi</a> <?php _e('hvis du trenger flere.', 'bimverdi'); ?>
+                    <?php _e('Kontakt', 'bimverdi'); ?> <a href="mailto:post@bimverdi.no" class="underline text-[#111827]">BIM Verdi</a> <?php _e('hvis du trenger flere.', 'bimverdi'); ?>
                 </p>
             </div>
 
@@ -320,53 +320,53 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
     <?php endif; ?>
 
     <!-- Team Members List -->
-    <section class="mb-10 <?php echo (!$is_readonly && !empty($pending_invitations)) ? 'pb-10 border-b border-[#E5E0D8]' : ''; ?>">
-        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1"><?php _e('Teammedlemmer', 'bimverdi'); ?></h2>
-        <p class="text-sm text-[#5A5A5A] mb-5">
+    <section class="mb-10 <?php echo (!$is_readonly && !empty($pending_invitations)) ? 'pb-10 border-b border-[#E7E5E4]' : ''; ?>">
+        <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Teammedlemmer', 'bimverdi'); ?></h2>
+        <p class="text-sm text-[#57534E] mb-5">
             <?php echo count($company_users); ?> bruker<?php echo count($company_users) !== 1 ? 'e' : ''; ?> tilkoblet
         </p>
 
         <?php if (empty($company_users)): ?>
-            <p class="text-[#5A5A5A]"><?php _e('Ingen brukere tilkoblet ennå.', 'bimverdi'); ?></p>
+            <p class="text-[#57534E]"><?php _e('Ingen brukere tilkoblet ennå.', 'bimverdi'); ?></p>
         <?php else: ?>
-            <div class="divide-y divide-[#E5E0D8]">
+            <div class="divide-y divide-[#E7E5E4]">
                 <?php foreach ($company_users as $member): ?>
                     <div class="py-4 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <?php echo get_avatar($member->ID, 40, '', '', ['class' => 'rounded-full']); ?>
                             <div>
-                                <div class="font-medium text-[#1A1A1A] flex items-center gap-2">
+                                <div class="font-medium text-[#111827] flex items-center gap-2">
                                     <?php echo esc_html($member->display_name); ?>
                                     <?php if ($member->is_hovedkontakt): ?>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#FF8B5E] text-white">
                                             <?php _e('Hovedkontakt', 'bimverdi'); ?>
                                         </span>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A]">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#F5F5F4] text-[#57534E]">
                                             <?php _e('Tilleggskontakt', 'bimverdi'); ?>
                                         </span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-sm text-[#5A5A5A]"><?php echo esc_html($member->user_email); ?></div>
+                                <div class="text-sm text-[#57534E]"><?php echo esc_html($member->user_email); ?></div>
                             </div>
                         </div>
 
                         <div>
                             <?php if ($member->is_hovedkontakt): ?>
                                 <?php if ($is_hovedkontakt): ?>
-                                    <span class="text-sm text-[#9A9488]"><?php _e('Du', 'bimverdi'); ?></span>
+                                    <span class="text-sm text-[#A8A29E]"><?php _e('Du', 'bimverdi'); ?></span>
                                 <?php else: ?>
-                                    <span class="text-sm text-[#9A9488]"><?php _e('Hovedkontakt', 'bimverdi'); ?></span>
+                                    <span class="text-sm text-[#A8A29E]"><?php _e('Hovedkontakt', 'bimverdi'); ?></span>
                                 <?php endif; ?>
                             <?php elseif (!$is_readonly): ?>
                                 <button type="button"
-                                        class="remove-user-btn text-sm text-[#5A5A5A] hover:text-red-600 transition-colors"
+                                        class="remove-user-btn text-sm text-[#57534E] hover:text-red-600 transition-colors"
                                         data-user-id="<?php echo $member->ID; ?>"
                                         data-user-name="<?php echo esc_attr($member->display_name); ?>">
                                     <?php _e('Fjern', 'bimverdi'); ?>
                                 </button>
                             <?php elseif ($member->ID === $user_id): ?>
-                                <span class="text-sm text-[#9A9488]"><?php _e('Du', 'bimverdi'); ?></span>
+                                <span class="text-sm text-[#A8A29E]"><?php _e('Du', 'bimverdi'); ?></span>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -378,23 +378,23 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
     <!-- Pending Invitations (only visible to hovedkontakt for privacy) -->
     <?php if (!$is_readonly && !empty($pending_invitations)): ?>
     <section class="mb-10">
-        <h2 class="text-lg font-semibold text-[#1A1A1A] mb-1"><?php _e('Ventende invitasjoner', 'bimverdi'); ?></h2>
-        <p class="text-sm text-[#5A5A5A] mb-5">
+        <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Ventende invitasjoner', 'bimverdi'); ?></h2>
+        <p class="text-sm text-[#57534E] mb-5">
             <?php echo count($pending_invitations); ?> invitasjon<?php echo count($pending_invitations) !== 1 ? 'er' : ''; ?> venter på svar
         </p>
 
-        <div class="divide-y divide-[#E5E0D8]">
+        <div class="divide-y divide-[#E7E5E4]">
             <?php foreach ($pending_invitations as $invitation): ?>
                 <div class="py-4 flex items-center justify-between">
                     <div>
-                        <div class="font-medium text-[#1A1A1A]"><?php echo esc_html($invitation->email); ?></div>
-                        <div class="text-sm text-[#5A5A5A]">
+                        <div class="font-medium text-[#111827]"><?php echo esc_html($invitation->email); ?></div>
+                        <div class="text-sm text-[#57534E]">
                             <?php _e('Sendt', 'bimverdi'); ?> <?php echo date('d.m.Y', strtotime($invitation->created_at)); ?>
                             · <?php _e('Utløper', 'bimverdi'); ?> <?php echo date('d.m.Y', strtotime($invitation->expires_at)); ?>
                         </div>
                     </div>
                     <button type="button"
-                            class="revoke-invite-btn text-sm text-[#5A5A5A] hover:text-red-600 transition-colors"
+                            class="revoke-invite-btn text-sm text-[#57534E] hover:text-red-600 transition-colors"
                             data-invitation-id="<?php echo $invitation->id; ?>"
                             data-email="<?php echo esc_attr($invitation->email); ?>">
                         <?php _e('Trekk tilbake', 'bimverdi'); ?>

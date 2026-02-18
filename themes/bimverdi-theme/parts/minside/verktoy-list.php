@@ -49,20 +49,20 @@ if ($company_id) {
 <div class="overflow-x-auto">
     <table class="w-full text-left text-sm">
         <thead>
-            <tr class="border-b border-[#E5E0D8]">
-                <th class="py-3 pr-4 text-xs font-medium text-[#5A5A5A]"><?php _e('Verktøy', 'bimverdi'); ?></th>
-                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A] hidden sm:table-cell"><?php _e('Type', 'bimverdi'); ?></th>
-                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A] hidden md:table-cell"><?php _e('Plattform', 'bimverdi'); ?></th>
-                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A]"><?php _e('Status', 'bimverdi'); ?></th>
-                <th class="px-4 py-3 text-xs font-medium text-[#5A5A5A] hidden lg:table-cell"><?php _e('Sist oppdatert', 'bimverdi'); ?></th>
-                <th class="pl-4 py-3 text-xs font-medium text-[#5A5A5A] text-right"><?php _e('Handlinger', 'bimverdi'); ?></th>
+            <tr class="border-b border-[#E7E5E4]">
+                <th class="py-3 pr-4 text-xs font-medium text-[#57534E]"><?php _e('Verktøy', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden sm:table-cell"><?php _e('Type', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden md:table-cell"><?php _e('Plattform', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#57534E]"><?php _e('Status', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden lg:table-cell"><?php _e('Sist oppdatert', 'bimverdi'); ?></th>
+                <th class="pl-4 py-3 text-xs font-medium text-[#57534E] text-right"><?php _e('Handlinger', 'bimverdi'); ?></th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($user_tools)): ?>
             <!-- Empty row with message -->
             <tr>
-                <td colspan="6" class="py-8 text-center text-[#5A5A5A]">
+                <td colspan="6" class="py-8 text-center text-[#57534E]">
                     <?php _e('Ingen verktøy registrert ennå.', 'bimverdi'); ?>
                 </td>
             </tr>
@@ -74,22 +74,22 @@ if ($company_id) {
                 $status_label = $tool_status === 'publish' ? __('Aktiv', 'bimverdi') : ($tool_status === 'pending' ? __('Venter', 'bimverdi') : __('Kladd', 'bimverdi'));
                 $updated_date = get_the_modified_date('d.m.Y', $tool->ID);
             ?>
-            <tr class="border-b border-[#E5E0D8] hover:bg-[#FAFAF8] transition-colors group">
+            <tr class="border-b border-[#E7E5E4] hover:bg-[#F5F5F4] transition-colors group">
                 <!-- Verktøy Name & Vendor -->
                 <td class="py-4 pr-4">
                     <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-[#F2F0EB] rounded flex items-center justify-center flex-shrink-0 overflow-hidden self-center">
+                        <div class="w-10 h-10 bg-[#F5F5F4] rounded flex items-center justify-center flex-shrink-0 overflow-hidden self-center">
                             <?php if ($logo): ?>
                                 <img src="<?php echo esc_url(is_array($logo) ? ($logo['sizes']['thumbnail'] ?? $logo['url']) : $logo); ?>" alt="" class="w-full h-full object-cover" />
                             <?php else: ?>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#9D8F7F]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#A8A29E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
                             <?php endif; ?>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <a href="<?php echo get_permalink($tool->ID); ?>" class="font-medium text-[#1A1A1A] hover:text-[#F97316] transition-colors block leading-tight">
+                            <a href="<?php echo get_permalink($tool->ID); ?>" class="font-medium text-[#111827] hover:text-[#F97316] transition-colors block leading-tight">
                                 <?php echo esc_html($tool->post_title); ?>
                             </a>
-                            <p class="text-xs text-[#5A5A5A] mt-0.5"><?php echo esc_html(get_field('vendor', $tool->ID) ?: ''); ?></p>
+                            <p class="text-xs text-[#57534E] mt-0.5"><?php echo esc_html(get_field('vendor', $tool->ID) ?: ''); ?></p>
                         </div>
                     </div>
                 </td>
@@ -98,14 +98,14 @@ if ($company_id) {
                 <td class="px-4 py-4 hidden sm:table-cell align-middle">
                     <?php $type = get_field('type_verktoey', $tool->ID); ?>
                     <?php if ($type): ?>
-                        <span class="inline-block text-xs font-medium bg-[#F2F0EB] text-[#5A5A5A] px-2.5 py-1 rounded">
+                        <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2.5 py-1 rounded">
                             <?php echo esc_html($type); ?>
                         </span>
                     <?php endif; ?>
                 </td>
 
                 <!-- Plattform -->
-                <td class="px-4 py-4 hidden md:table-cell align-middle text-sm text-[#5A5A5A]">
+                <td class="px-4 py-4 hidden md:table-cell align-middle text-sm text-[#57534E]">
                     <?php 
                     $plattformer = get_field('plattform', $tool->ID);
                     if ($plattformer && is_array($plattformer)) {
@@ -123,17 +123,17 @@ if ($company_id) {
                 </td>
 
                 <!-- Sist oppdatert -->
-                <td class="px-4 py-4 hidden lg:table-cell align-middle text-sm text-[#5A5A5A]">
+                <td class="px-4 py-4 hidden lg:table-cell align-middle text-sm text-[#57534E]">
                     <?php echo $updated_date; ?>
                 </td>
 
                 <!-- Actions -->
                 <td class="pl-4 py-4 text-right align-middle">
                     <div class="flex items-center justify-end gap-1">
-                        <a href="<?php echo get_permalink($tool->ID); ?>" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="<?php esc_attr_e('Se', 'bimverdi'); ?>">
+                        <a href="<?php echo get_permalink($tool->ID); ?>" class="p-2 text-[#57534E] hover:text-[#111827] hover:bg-[#F5F5F4] rounded transition-colors" title="<?php esc_attr_e('Se', 'bimverdi'); ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                         </a>
-                        <a href="<?php echo home_url('/min-side/rediger-verktoy/?id=' . $tool->ID); ?>" class="p-2 text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F2F0EB] rounded transition-colors" title="<?php esc_attr_e('Rediger', 'bimverdi'); ?>">
+                        <a href="<?php echo home_url('/min-side/rediger-verktoy/?id=' . $tool->ID); ?>" class="p-2 text-[#57534E] hover:text-[#111827] hover:bg-[#F5F5F4] rounded transition-colors" title="<?php esc_attr_e('Rediger', 'bimverdi'); ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                         </a>
                     </div>
@@ -146,7 +146,7 @@ if ($company_id) {
     
     <?php if (!empty($user_tools)): ?>
     <!-- Tool count -->
-    <div class="flex justify-end py-3 text-xs text-[#5A5A5A]">
+    <div class="flex justify-end py-3 text-xs text-[#57534E]">
         <?php printf(_n('Viser %d av %d verktøy', 'Viser %d av %d verktøy', count($user_tools), 'bimverdi'), count($user_tools), count($user_tools)); ?>
     </div>
     <?php endif; ?>
@@ -154,19 +154,19 @@ if ($company_id) {
 
 <?php if (empty($user_tools)): ?>
 <!-- MAL / PLACEHOLDER Section (Per UI-CONTRACT) -->
-<div class="border-t border-[#E5E0D8] mt-16 pt-10">
+<div class="border-t border-[#E7E5E4] mt-16 pt-10">
     <div class="text-center mb-8">
-        <span class="inline-block text-xs font-bold uppercase tracking-wider text-[#9D8F7F] bg-[#F7F5EF] px-3 py-1 rounded">
+        <span class="inline-block text-xs font-bold uppercase tracking-wider text-[#A8A29E] bg-[#F5F5F4] px-3 py-1 rounded">
             <?php _e('MAL / PLACEHOLDER', 'bimverdi'); ?>
         </span>
     </div>
     
-    <div class="max-w-lg mx-auto text-center py-12 px-6 bg-[#FAFAF8] rounded-lg border border-dashed border-[#D6D1C6]">
-        <div class="w-16 h-16 bg-[#F2F0EB] rounded-lg flex items-center justify-center mx-auto mb-5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[#9D8F7F]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+    <div class="max-w-lg mx-auto text-center py-12 px-6 bg-[#F5F5F4] rounded-lg border border-dashed border-[#E7E5E4]">
+        <div class="w-16 h-16 bg-[#F5F5F4] rounded-lg flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[#A8A29E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
         </div>
-        <h3 class="text-lg font-semibold text-[#1A1A1A] mb-2"><?php _e('Ingen verktøy aktivert', 'bimverdi'); ?></h3>
-        <p class="text-sm text-[#5A5A5A] mb-6 leading-relaxed">
+        <h3 class="text-lg font-semibold text-[#111827] mb-2"><?php _e('Ingen verktøy aktivert', 'bimverdi'); ?></h3>
+        <p class="text-sm text-[#57534E] mb-6 leading-relaxed">
             <?php _e('Du har foreløpig ikke tilgang til noen verktøy. Kom i gang ved å opprette et nytt prosjekt eller søk i katalogen.', 'bimverdi'); ?>
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">

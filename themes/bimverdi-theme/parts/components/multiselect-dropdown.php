@@ -73,19 +73,19 @@ function bimverdi_multiselect_dropdown($args = []) {
         <!-- Trigger Button -->
         <button
             type="button"
-            class="bv-multiselect__trigger flex items-center gap-2 px-3 py-2 text-sm border border-[#D6D1C6] rounded-lg bg-white hover:border-[#888] transition-colors cursor-pointer whitespace-nowrap"
+            class="bv-multiselect__trigger flex items-center gap-2 px-3 py-2 text-sm border border-[#E7E5E4] rounded-lg bg-white hover:border-[#A8A29E] transition-colors cursor-pointer whitespace-nowrap"
             aria-haspopup="listbox"
             aria-expanded="false"
             aria-controls="<?php echo esc_attr($dropdown_id); ?>"
             id="<?php echo esc_attr($id); ?>-trigger"
         >
-            <span class="bv-multiselect__label text-[#1A1A1A]"><?php echo esc_html($args['label']); ?></span>
+            <span class="bv-multiselect__label text-[#111827]"><?php echo esc_html($args['label']); ?></span>
             <span
-                class="bv-multiselect__count inline-flex items-center justify-center min-w-[22px] h-5 px-2 text-xs font-medium bg-[#1A1A1A] text-white rounded-full transition-opacity <?php echo $has_selection ? 'opacity-100' : 'opacity-0'; ?>"
+                class="bv-multiselect__count inline-flex items-center justify-center min-w-[22px] h-5 px-2 text-xs font-medium bg-[#111827] text-white rounded-full transition-opacity <?php echo $has_selection ? 'opacity-100' : 'opacity-0'; ?>"
                 data-count
                 aria-hidden="<?php echo $has_selection ? 'false' : 'true'; ?>"
             ><?php echo intval($selected_count); ?></span>
-            <svg class="bv-multiselect__chevron w-4 h-4 text-[#5A5A5A] transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="bv-multiselect__chevron w-4 h-4 text-[#57534E] transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="m6 9 6 6 6-6"/>
             </svg>
         </button>
@@ -93,7 +93,7 @@ function bimverdi_multiselect_dropdown($args = []) {
         <!-- Dropdown Panel -->
         <div
             id="<?php echo esc_attr($dropdown_id); ?>"
-            class="bv-multiselect__dropdown hidden absolute z-30 mt-1 w-56 bg-white border border-[#D6D1C6] rounded-lg shadow-sm max-h-64 overflow-y-auto"
+            class="bv-multiselect__dropdown hidden absolute z-30 mt-1 w-56 bg-white border border-[#E7E5E4] rounded-lg shadow-sm max-h-64 overflow-y-auto"
             role="listbox"
             aria-multiselectable="true"
             aria-labelledby="<?php echo esc_attr($id); ?>-trigger"
@@ -104,14 +104,14 @@ function bimverdi_multiselect_dropdown($args = []) {
                 <?php foreach ($args['options'] as $value => $label):
                     $is_checked = in_array($value, $args['selected']);
                     $checkbox_id = $id . '-' . sanitize_title($value);
-                    $checkbox_classes = 'filter-checkbox w-4 h-4 rounded border-[#D6D1C6] text-[#1A1A1A] focus:ring-[#1A1A1A] focus:ring-offset-0';
+                    $checkbox_classes = 'filter-checkbox w-4 h-4 rounded border-[#E7E5E4] text-[#111827] focus:ring-[#111827] focus:ring-offset-0';
                     if ($args['filter_class']) {
                         $checkbox_classes .= ' ' . $args['filter_class'];
                     }
                     $count = isset($args['counts'][$value]) ? $args['counts'][$value] : null;
                 ?>
                 <label
-                    class="bv-multiselect__option flex items-center gap-3 px-3 py-2 rounded cursor-pointer hover:bg-[#F7F5EF] <?php echo $is_checked ? 'bg-[#F7F5EF]' : ''; ?>"
+                    class="bv-multiselect__option flex items-center gap-3 px-3 py-2 rounded cursor-pointer hover:bg-[#F5F5F4] <?php echo $is_checked ? 'bg-[#F5F5F4]' : ''; ?>"
                     for="<?php echo esc_attr($checkbox_id); ?>"
                 >
                     <input
@@ -122,9 +122,9 @@ function bimverdi_multiselect_dropdown($args = []) {
                         class="<?php echo esc_attr($checkbox_classes); ?>"
                         <?php checked($is_checked); ?>
                     >
-                    <span class="flex-1 text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>
+                    <span class="flex-1 text-sm text-[#111827]"><?php echo esc_html($label); ?></span>
                     <?php if ($count !== null): ?>
-                    <span class="text-xs text-[#9A9A9A]"><?php echo intval($count); ?></span>
+                    <span class="text-xs text-[#A8A29E]"><?php echo intval($count); ?></span>
                     <?php endif; ?>
                 </label>
                 <?php endforeach; ?>
