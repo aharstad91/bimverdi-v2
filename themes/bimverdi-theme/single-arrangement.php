@@ -703,8 +703,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMessage(text, isError) {
         if (!msgEl) return;
         msgEl.textContent = text;
-        msgEl.className = 'mt-3 text-sm p-3 rounded-lg ' +
-            (isError ? 'bg-red-50 text-[#772015]' : 'bg-green-50 text-[#4a7c29]');
+        msgEl.className = 'mt-3 text-sm p-3 rounded-lg font-medium ' +
+            (isError ? 'bg-red-50 text-[#772015]' : 'bg-[#f0fdf4] text-[#4a7c29] border border-[#bbf7d0]');
     }
 
     function setLoading(btn, loading) {
@@ -729,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(function(res) {
                     if (res.success) {
                         showMessage(res.data.message, false);
-                        setTimeout(function() { location.reload(); }, 1500);
+                        setTimeout(function() { location.reload(); }, 3000);
                     } else {
                         showMessage(res.data.message || 'Noe gikk galt.', true);
                         setLoading(btn, false);
@@ -759,7 +759,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(function(res) {
                     if (res.success) {
                         showMessage(res.data.message, false);
-                        setTimeout(function() { location.reload(); }, 1500);
+                        setTimeout(function() { location.reload(); }, 3000);
                     } else {
                         showMessage(res.data.message || 'Noe gikk galt.', true);
                         setLoading(btn, false);

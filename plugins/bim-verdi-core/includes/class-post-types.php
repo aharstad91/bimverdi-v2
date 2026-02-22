@@ -172,7 +172,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Arrangement', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'custom-fields'),
+            'supports'              => array('title', 'editor', 'custom-fields', 'thumbnail'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,

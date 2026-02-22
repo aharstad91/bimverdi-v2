@@ -110,8 +110,8 @@ function bimverdi_ajax_register_event() {
     do_action('bimverdi_pamelding_created', $pamelding_id, $arrangement_id, $user_id);
 
     $message = $is_waitlist
-        ? 'Du er satt på venteliste for dette arrangementet.'
-        : 'Du er påmeldt! Sjekk e-posten din for bekreftelse og kalenderfil.';
+        ? 'Du er satt på venteliste. Bekreftelse er sendt til din e-postadresse.'
+        : 'Du er påmeldt! Bekreftelse er sendt til din e-postadresse.';
 
     wp_send_json_success([
         'message'         => $message,
