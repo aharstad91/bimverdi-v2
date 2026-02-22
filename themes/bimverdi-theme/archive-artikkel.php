@@ -18,7 +18,7 @@ $query_args = array(
     'post_status' => 'publish',
     'posts_per_page' => 12,
     'paged' => get_query_var('paged') ? get_query_var('paged') : 1,
-    'orderby' => 'modified',
+    'orderby' => 'date',
     'order' => 'DESC',
 );
 
