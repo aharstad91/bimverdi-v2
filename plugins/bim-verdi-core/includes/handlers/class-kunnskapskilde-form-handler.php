@@ -286,6 +286,12 @@ class BIM_Verdi_Kunnskapskilde_Form_Handler {
                     }
                     break;
             }
+
+            // In edit mode: skip personvern consent (already given at creation)
+            if ($field->label === 'Personvern og vilkår' || (isset($field->inputs) && is_array($field->inputs) && !empty($field->inputs[0]['name']) && $field->inputs[0]['name'] === 'personvern_samtykke')) {
+                $field->isRequired = false;
+                $field->cssClass = (isset($field->cssClass) ? $field->cssClass . ' ' : '') . 'gf-hidden-edit-mode';
+            }
         }
 
         return $form;

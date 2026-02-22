@@ -135,6 +135,9 @@ get_template_part('parts/components/page-header', null, [
         </div>
     </div>
 
+    <!-- Hide personvern field in edit mode (consent already given at creation) -->
+    <style>.gf-hidden-edit-mode { display: none !important; }</style>
+
     <!-- Gravity Form -->
     <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
         <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
