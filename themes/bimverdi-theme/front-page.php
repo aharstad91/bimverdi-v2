@@ -51,7 +51,7 @@ $kildetype_config = array(
 );
 
 // Rotating hero words
-$rotating_words = array('deltakere', 'arrangementer', 'verktøykatalog', 'kunnskapskilder');
+$rotating_words = array('Se verktøykatalog', 'Utforsk verktøykatalog', 'Les om kunnskapskilder', 'Våre deltakere');
 
 // Category chips for hero
 $category_chips = array(
@@ -100,7 +100,7 @@ if (!empty($latest_post)) {
 
         <!-- Main Headline with rotating text -->
         <h1 class="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-[#111827] leading-tight mb-6">
-            Oppdag våre<br>
+            BIM Verdi<br>
             <span class="bv-hero-rotating" id="hero-rotating">
                 <?php foreach ($rotating_words as $i => $word): ?>
                 <span<?php echo $i === 0 ? ' class="active"' : ''; ?>><?php echo esc_html($word); ?></span>
