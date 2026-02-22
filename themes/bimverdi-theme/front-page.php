@@ -64,9 +64,21 @@ $category_chips = array(
     array('label' => 'BIMtech', 'url' => '/temagrupper/bimtech/'),
 );
 
-// "Time ago" for stats badge
+// "Time ago" for stats badge (Norwegian)
 $latest_post = get_posts(array('post_type' => array('verktoy', 'foretak', 'kunnskapskilde', 'artikkel'), 'posts_per_page' => 1, 'post_status' => 'publish'));
-$updated_ago = !empty($latest_post) ? human_time_diff(get_the_time('U', $latest_post[0]), current_time('timestamp')) . ' siden' : 'nylig';
+if (!empty($latest_post)) {
+    $diff = current_time('timestamp') - get_the_time('U', $latest_post[0]);
+    $days = (int) floor($diff / DAY_IN_SECONDS);
+    if ($days < 1) {
+        $updated_ago = 'i dag';
+    } elseif ($days === 1) {
+        $updated_ago = '1 dag siden';
+    } else {
+        $updated_ago = $days . ' dager siden';
+    }
+} else {
+    $updated_ago = 'nylig';
+}
 ?>
 
 <!-- =============================================
