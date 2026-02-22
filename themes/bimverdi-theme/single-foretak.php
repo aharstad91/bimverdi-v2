@@ -200,7 +200,7 @@ $company_kunnskapskilder = get_posts(array(
 
                 <div>
                     <div class="flex items-center gap-3 mb-1">
-                        <h1 class="text-3xl font-bold text-[#111827]"><?php echo esc_html($company_title); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
+                        <h1 class="text-3xl font-bold text-[#111827]"><?php echo esc_html($company_title); ?><?php echo bimverdi_admin_id_badge(); ?><?php echo bimverdi_admin_user_badge(); ?></h1>
                         <?php if ($er_aktiv_deltaker): ?>
                             <span class="inline-flex items-center gap-1 text-xs font-medium text-[#166534] bg-[#DCFCE7] px-2.5 py-1 rounded-full">
                                 <span class="w-1.5 h-1.5 bg-[#166534] rounded-full"></span>

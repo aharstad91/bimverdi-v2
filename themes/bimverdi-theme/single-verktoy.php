@@ -177,7 +177,7 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 </div>
                 <?php endif; ?>
                 <div>
-                    <h1 class="text-3xl font-bold text-[#111827] mb-1"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
+                    <h1 class="text-3xl font-bold text-[#111827] mb-1"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?><?php echo bimverdi_admin_user_badge(); ?></h1>
                     <?php if ($eier): ?>
                     <p class="text-[#57534E]">
                         <a href="<?php echo get_permalink($eier->ID); ?>" class="hover:underline">

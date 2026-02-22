@@ -41,6 +41,69 @@ function bimverdi_admin_id_badge($post_id = null) {
 }
 
 /**
+ * Returns a small admin badge with user ID and wp-admin user edit link.
+ * Shows the author/registerer of a resource. Only visible for admins.
+ *
+ * @param int|null $post_id Post ID (defaults to current post)
+ * @return string HTML badge or empty string
+ */
+function bimverdi_admin_user_badge($post_id = null) {
+    if (!current_user_can('manage_options')) {
+        return '';
+    }
+
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+
+    if (!$post_id) {
+        return '';
+    }
+
+    // Determine the responsible user based on post type
+    $post_type = get_post_type($post_id);
+    $user_id = 0;
+
+    if ($post_type === 'foretak') {
+        // Foretak: use hovedkontaktperson
+        $user_id = get_field('hovedkontaktperson', $post_id);
+        if (is_array($user_id)) {
+            $user_id = $user_id['ID'] ?? 0;
+        }
+    } else {
+        // Verktøy, kunnskapskilde, etc.: try registrert_av first, then post_author
+        $registrert_av = get_field('registrert_av', $post_id);
+        if ($registrert_av) {
+            $user_id = is_array($registrert_av) ? ($registrert_av['ID'] ?? 0) : $registrert_av;
+        }
+        if (!$user_id) {
+            $user_id = get_post_field('post_author', $post_id);
+        }
+    }
+
+    if (!$user_id) {
+        return '';
+    }
+
+    $user = get_userdata($user_id);
+    if (!$user) {
+        return '';
+    }
+
+    $edit_url = admin_url('user-edit.php?user_id=' . $user_id);
+    $display = $user->display_name ?: $user->user_login;
+
+    return sprintf(
+        '<a href="%s" class="bv-admin-badge bv-admin-badge--user" title="Redaktør: %s (bruker #%d)" target="_blank">👤 %s #%d</a>',
+        esc_url($edit_url),
+        esc_attr($display),
+        (int) $user_id,
+        esc_html($display),
+        (int) $user_id
+    );
+}
+
+/**
  * Outputs inline styles for admin badges (called once).
  */
 function bimverdi_admin_badge_styles() {
@@ -70,6 +133,15 @@ function bimverdi_admin_badge_styles() {
         .bv-admin-badge:hover {
             background: #DDD6FE;
             color: #5B21B6;
+        }
+        .bv-admin-badge--user {
+            color: #0369A1;
+            background: #E0F2FE;
+            border-color: #7DD3FC;
+        }
+        .bv-admin-badge--user:hover {
+            background: #BAE6FD;
+            color: #0C4A6E;
         }
         .bv-admin-badge--small {
             font-size: 10px;

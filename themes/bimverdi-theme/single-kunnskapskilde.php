@@ -124,7 +124,7 @@ $kilde_created = get_the_date('d.m.Y');
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
             <div class="flex-1">
-                <h1 class="text-3xl font-bold text-[#111827] mb-1"><?php echo esc_html($kunnskapskilde_navn); ?><?php echo bimverdi_admin_id_badge(); ?></h1>
+                <h1 class="text-3xl font-bold text-[#111827] mb-1"><?php echo esc_html($kunnskapskilde_navn); ?><?php echo bimverdi_admin_id_badge(); ?><?php echo bimverdi_admin_user_badge(); ?></h1>
                 <?php if ($utgiver): ?>
                 <p class="text-[#57534E]"><?php echo esc_html($utgiver); ?><?php if ($utgivelsesaar): ?> - <?php echo esc_html($utgivelsesaar); ?><?php endif; ?></p>
                 <?php endif; ?>
