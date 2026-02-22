@@ -194,7 +194,6 @@ foreach (array_keys($type_ressurs_options) as $value) {
                 <!-- Title -->
                 <h3 class="text-base font-semibold text-[#111827] mb-2 line-clamp-2 group-hover:text-[#1F2937]">
                     <?php the_title(); ?>
-                    <?php echo bimverdi_admin_id_badge(); ?>
                 </h3>
 
                 <!-- Footer -->
