@@ -150,10 +150,8 @@ if ($existing_foretak_id && get_post_status($existing_foretak_id) === 'publish')
         
         <!-- Help Section -->
         <div class="mt-6 text-center text-sm text-gray-500">
-            <p>Har du allerede et registrert foretak? 
-                <a href="<?php echo home_url('/koble-foretak/'); ?>" class="text-orange-600 hover:underline">
-                    Koble til eksisterende foretak
-                </a>
+            <p>Trenger du hjelp? Kontakt oss på
+                <a href="mailto:post@bimverdi.no" class="text-orange-600 hover:underline">post@bimverdi.no</a>
             </p>
         </div>
         
