@@ -20,16 +20,18 @@
     });
     
     function initBrregAutocomplete() {
-        // Find the company name field (foretak) - this is the primary search field
-        // Look for "Foretak" field first (Field ID 2 in Form 2)
+        // Find the company name field - primary search field
+        // Supports both plain HTML form (id="bedriftsnavn") and GF Form 2 (input_2_2)
         const foretakField = document.querySelector(
+            '#bedriftsnavn, ' +
             'input[id*="input_2_2"], ' +
             'input[name*="foretak" i], ' +
             'input[name*="bedriftsnavn" i]'
         );
-        
-        // Also get the org number field for filling (Field ID 1 in Form 2)
+
+        // Also get the org number field for filling
         const orgnrField = document.querySelector(
+            '#organisasjonsnummer, ' +
             'input[id*="input_2_1"], ' +
             'input[name*="organisasjonsnummer" i]'
         );
@@ -319,33 +321,32 @@
         // Set flag to prevent search from triggering during fill
         isFillingForm = true;
         
-        // Field mappings for Gravity Forms Form ID 2
+        // Field mappings - supports both plain HTML form and GF Form 2
         // Format: [CSS selector, value, field description]
         const fieldMappings = [
-            // Org number (Field 1)
-            ['input[id*="input_2_1"]', company.orgnr, 'orgnr'],
-            ['input[name*="organisasjonsnummer" i]', company.orgnr, 'orgnr-name'],
-            
-            // Company name / Foretak (Field 2)
-            ['input[id*="input_2_2"]', company.navn, 'navn'],
-            ['input[name*="foretak" i]', company.navn, 'foretak-name'],
-            ['input[name*="bedriftsnavn" i]', company.navn, 'bedriftsnavn-name'],
-            
-            // Address (Field 5)
-            ['input[id*="input_2_5"]', company.adresse, 'adresse'],
-            ['input[name*="gateadresse" i]', company.adresse, 'adresse-name'],
-            
-            // Postal code (Field 6)
-            ['input[id*="input_2_6"]', company.postnummer, 'postnummer'],
-            ['input[name*="postnummer" i]', company.postnummer, 'postnummer-name'],
-            
-            // City (Field 7)
-            ['input[id*="input_2_7"]', company.poststed, 'poststed'],
-            ['input[name*="poststed" i]', company.poststed, 'poststed-name'],
-            
-            // Website (Field 8)
-            ['input[id*="input_2_8"]', company.hjemmeside, 'hjemmeside'],
-            ['input[name*="nettside" i]', company.hjemmeside, 'nettside-name'],
+            // Org number
+            ['#organisasjonsnummer', company.orgnr, 'orgnr'],
+            ['input[id*="input_2_1"]', company.orgnr, 'orgnr-gf'],
+
+            // Company name
+            ['#bedriftsnavn', company.navn, 'navn'],
+            ['input[id*="input_2_2"]', company.navn, 'navn-gf'],
+
+            // Address
+            ['#gateadresse', company.adresse, 'adresse'],
+            ['input[id*="input_2_5"]', company.adresse, 'adresse-gf'],
+
+            // Postal code
+            ['#postnummer', company.postnummer, 'postnummer'],
+            ['input[id*="input_2_6"]', company.postnummer, 'postnummer-gf'],
+
+            // City
+            ['#poststed', company.poststed, 'poststed'],
+            ['input[id*="input_2_7"]', company.poststed, 'poststed-gf'],
+
+            // Website
+            ['#nettside', company.hjemmeside, 'nettside'],
+            ['input[id*="input_2_8"]', company.hjemmeside, 'nettside-gf'],
         ];
         
         let filledFields = [];
@@ -402,15 +403,10 @@
             <span>Hentet data for <strong>${escapeHtml(companyName)}</strong> fra Brønnøysundregistrene</span>
         `;
         
-        // Find the form wrapper or use inputField's parent
+        // Insert message before the form or after the input
         const form = inputField.closest('form') || inputField.closest('.gform_wrapper');
         if (form) {
-            const firstField = form.querySelector('.gfield, .gform_body');
-            if (firstField) {
-                firstField.parentNode.insertBefore(msg, firstField);
-            } else {
-                inputField.parentElement.appendChild(msg);
-            }
+            form.parentNode.insertBefore(msg, form);
         } else {
             inputField.parentElement.appendChild(msg);
         }

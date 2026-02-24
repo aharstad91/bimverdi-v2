@@ -26,6 +26,17 @@ $is_hovedkontakt = bimverdi_is_hovedkontakt($user_id, $company_id);
 $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
 ?>
 
+<!-- Success message after registration -->
+<?php if (isset($_GET['registered']) && $_GET['registered'] === '1'): ?>
+<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    <p class="text-green-800 text-sm">Foretaket ditt er nå registrert i BIM Verdi!</p>
+</div>
+<?php endif; ?>
+
 <!-- Account Layout with Sidenav -->
 <?php get_template_part('parts/components/account-layout', null, [
     'title' => __('Mitt foretak', 'bimverdi'),

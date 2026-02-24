@@ -2,8 +2,8 @@
 /**
  * Part: Registrer foretak
  *
- * Skjema for registrering av nytt foretak via Gravity Forms med BRreg autocomplete.
- * Brukes på /min-side/foretak/registrer/ og /min-side/registrer-foretak/
+ * Plain HTML form for company registration with BRreg autocomplete.
+ * POST handler in mu-plugins/bimverdi-foretak-registration.php
  *
  * @package BimVerdi_Theme
  */
@@ -19,6 +19,57 @@ if ($existing_foretak_id && get_post_status($existing_foretak_id) === 'publish')
     wp_redirect(home_url('/min-side/foretak/'));
     exit;
 }
+
+// Error messages
+$bv_error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
+$error_messages = [
+    'nonce'             => 'Noe gikk galt. Vennligst prøv igjen.',
+    'rate_limit'        => 'For mange forsøk. Vennligst vent litt før du prøver igjen.',
+    'missing_name'      => 'Bedriftsnavn er påkrevd.',
+    'invalid_orgnr'     => 'Organisasjonsnummer må være 9 siffer.',
+    'missing_description' => 'Bedriftsbeskrivelse er påkrevd.',
+    'missing_bransje'   => 'Velg minst én bransje/rolle.',
+    'orgnr_exists'      => 'Dette organisasjonsnummeret er allerede registrert i BIM Verdi.',
+    'invalid_file_type' => 'Ugyldig filtype. Bruk JPG, PNG, GIF, WebP eller SVG.',
+    'file_too_large'    => 'Filen er for stor. Maks 2 MB.',
+    'upload_failed'     => 'Opplasting av logo feilet. Prøv igjen.',
+    'system'            => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
+];
+$error_message = $error_messages[$bv_error] ?? '';
+
+// Bransje/rolle options
+$bransje_options = [
+    'bestiller_byggherre'    => 'Bestiller/byggherre',
+    'boligutvikler'          => 'Boligutvikler',
+    'arkitekt_radgiver'      => 'Arkitekt/rådgiver',
+    'radgivende_ingenior'    => 'Rådgivende ingeniør',
+    'entreprenor_byggmester'  => 'Entreprenør/byggmester',
+    'byggevareprodusent'     => 'Byggevareprodusent',
+    'byggevarehandel'        => 'Byggevarehandel',
+    'eiendom_drift'          => 'Eiendom/drift',
+    'digital_leverandor'     => 'Leverandør av digitale verktøy, innhold og løsninger',
+    'organisasjon'           => 'Organisasjon, nettverk m.m.',
+    'tjenesteleverandor'     => 'Tjenesteleverandør',
+    'offentlig'              => 'Offentlig instans',
+    'utdanning'              => 'Utdanningsinstitusjon',
+    'annet'                  => 'Annet',
+];
+
+// Kundetype options
+$kundetype_options = [
+    'bestiller_byggherre'    => 'Bestiller/byggherre',
+    'arkitekt_radgiver'      => 'Arkitekt/rådgiver',
+    'entreprenor_byggmester'  => 'Entreprenør/byggmester',
+    'byggevareprodusent'     => 'Byggevareprodusent',
+    'byggevarehandel'        => 'Byggevarehandel',
+    'eiendom_drift'          => 'Eiendom/drift',
+    'digital_leverandor'     => 'Leverandør av digitale verktøy',
+    'organisasjon'           => 'Organisasjon',
+    'tjenesteleverandor'     => 'Tjenesteleverandør',
+    'offentlig'              => 'Offentlig instans',
+    'utdanning'              => 'Utdanningsinstitusjon',
+    'annet'                  => 'Annet',
+];
 ?>
 
 <!-- Breadcrumb -->
@@ -57,21 +108,200 @@ get_template_part('parts/components/page-header', null, [
         </div>
     </div>
 
-    <!-- Gravity Form -->
-    <div class="bg-white rounded-lg border border-[#E7E5E4] p-6">
-        <?php
-        if (function_exists('gravity_form')) {
-            // Form ID 2 = [Bruker] - Registrering av foretak
-            gravity_form(2, false, false, false, null, true, 12);
-        } else {
-            ?>
-            <div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                Gravity Forms er ikke aktivert. Kontakt administrator.
-            </div>
-            <?php
-        }
-        ?>
+    <!-- Error Message -->
+    <?php if ($error_message): ?>
+    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p class="text-red-800 text-sm"><?php echo esc_html($error_message); ?></p>
     </div>
+    <?php endif; ?>
+
+    <!-- Registration Form -->
+    <form method="post" action="" enctype="multipart/form-data" class="space-y-6">
+        <?php wp_nonce_field('bimverdi_register_foretak'); ?>
+
+        <!-- Honeypot -->
+        <div style="position: absolute; left: -9999px;" aria-hidden="true">
+            <label for="bv_website_url">Ikke fyll ut dette feltet</label>
+            <input type="text" name="bv_website_url" id="bv_website_url" value="" tabindex="-1" autocomplete="off">
+        </div>
+
+        <!-- Company Name -->
+        <div>
+            <label for="bedriftsnavn" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                Bedriftsnavn <span class="text-red-600">*</span>
+            </label>
+            <input type="text"
+                   id="bedriftsnavn"
+                   name="bedriftsnavn"
+                   required
+                   autocomplete="organization"
+                   placeholder="Søk etter foretaksnavn..."
+                   class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
+        </div>
+
+        <!-- Org Number -->
+        <div>
+            <label for="organisasjonsnummer" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                Organisasjonsnummer <span class="text-red-600">*</span>
+            </label>
+            <input type="text"
+                   id="organisasjonsnummer"
+                   name="organisasjonsnummer"
+                   required
+                   pattern="\d{9}"
+                   maxlength="9"
+                   inputmode="numeric"
+                   autocomplete="off"
+                   placeholder="9 siffer"
+                   class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
+            <p class="mt-1 text-xs text-[#888888]">Fylles inn automatisk fra Brønnøysundregistrene</p>
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label for="beskrivelse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                Bedriftsbeskrivelse <span class="text-red-600">*</span>
+            </label>
+            <textarea id="beskrivelse"
+                      name="beskrivelse"
+                      required
+                      rows="4"
+                      placeholder="Kort beskrivelse av foretaket..."
+                      class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E] resize-y"></textarea>
+        </div>
+
+        <!-- Logo -->
+        <div>
+            <label for="logo" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                Logo
+            </label>
+            <input type="file"
+                   id="logo"
+                   name="logo"
+                   accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                   class="w-full text-sm text-[#5A5A5A] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-[#E5E0D5] file:text-sm file:font-medium file:bg-[#F7F5EF] file:text-[#1A1A1A] hover:file:bg-[#EFE9DE] file:cursor-pointer file:transition-colors">
+            <p class="mt-1 text-xs text-[#888888]">JPG, PNG, GIF, WebP eller SVG. Maks 2 MB.</p>
+        </div>
+
+        <!-- Divider -->
+        <hr class="border-[#E5E0D5]">
+
+        <!-- Address Section -->
+        <div>
+            <h3 class="text-base font-semibold text-[#1A1A1A] mb-4">Adresse</h3>
+            <div class="space-y-4">
+                <div>
+                    <label for="gateadresse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                        Gateadresse
+                    </label>
+                    <input type="text"
+                           id="gateadresse"
+                           name="gateadresse"
+                           autocomplete="street-address"
+                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A]">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="postnummer" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                            Postnummer
+                        </label>
+                        <input type="text"
+                               id="postnummer"
+                               name="postnummer"
+                               maxlength="4"
+                               inputmode="numeric"
+                               autocomplete="postal-code"
+                               class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A]">
+                    </div>
+
+                    <div>
+                        <label for="poststed" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                            Poststed
+                        </label>
+                        <input type="text"
+                               id="poststed"
+                               name="poststed"
+                               autocomplete="address-level2"
+                               class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A]">
+                    </div>
+                </div>
+            </div>
+            <p class="mt-1 text-xs text-[#888888]">Fylles inn automatisk fra Brønnøysundregistrene</p>
+        </div>
+
+        <!-- Website -->
+        <div>
+            <label for="nettside" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                Nettside
+            </label>
+            <input type="url"
+                   id="nettside"
+                   name="nettside"
+                   placeholder="https://"
+                   autocomplete="url"
+                   class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
+        </div>
+
+        <!-- Divider -->
+        <hr class="border-[#E5E0D5]">
+
+        <!-- Bransje / Rolle -->
+        <fieldset>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
+                Vår rolle/fag/bransje <span class="text-red-600">*</span>
+            </legend>
+            <p class="text-xs text-[#888888] mb-3">Du kan velge flere</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <?php foreach ($bransje_options as $value => $label): ?>
+                <label class="flex items-start gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
+                    <input type="checkbox"
+                           name="bransje_rolle[]"
+                           value="<?php echo esc_attr($value); ?>"
+                           class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
+                    <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>
+                </label>
+                <?php endforeach; ?>
+            </div>
+        </fieldset>
+
+        <!-- Kundetype -->
+        <fieldset>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
+                Kundetyper
+            </legend>
+            <p class="text-xs text-[#888888] mb-3">Hvem er dine kunder? Du kan velge flere</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <?php foreach ($kundetype_options as $value => $label): ?>
+                <label class="flex items-start gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
+                    <input type="checkbox"
+                           name="kundetyper[]"
+                           value="<?php echo esc_attr($value); ?>"
+                           class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
+                    <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>
+                </label>
+                <?php endforeach; ?>
+            </div>
+        </fieldset>
+
+        <!-- Divider -->
+        <hr class="border-[#E5E0D5]">
+
+        <!-- Submit -->
+        <div class="pt-2">
+            <button type="submit"
+                    name="bimverdi_register_foretak"
+                    value="1"
+                    class="w-full px-6 py-3.5 bg-[#FF8B5E] text-white font-semibold rounded-lg hover:bg-[#E07A52] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF8B5E]">
+                Registrer foretak
+            </button>
+        </div>
+    </form>
 
     <!-- Help Link -->
     <div class="mt-6 text-center text-sm text-[#57534E]">
@@ -81,71 +311,3 @@ get_template_part('parts/components/page-header', null, [
     </div>
 
 </div>
-
-<style>
-/* Gravity Forms styling for this page */
-.gform_wrapper .gform_button,
-.gform_wrapper input[type="submit"] {
-    background: #FF8B5E !important;
-    color: white !important;
-    padding: 0.875rem 2rem !important;
-    border: none !important;
-    border-radius: 0.5rem !important;
-    font-size: 1rem !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    width: 100% !important;
-    margin-top: 1rem !important;
-}
-
-.gform_wrapper .gform_button:hover,
-.gform_wrapper input[type="submit"]:hover {
-    background: #e07a52 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(255, 139, 94, 0.3) !important;
-}
-
-.gform_wrapper .gfield_label {
-    font-weight: 600 !important;
-    color: #111827 !important;
-    margin-bottom: 0.5rem !important;
-}
-
-.gform_wrapper input[type="text"],
-.gform_wrapper input[type="url"],
-.gform_wrapper input[type="email"],
-.gform_wrapper input[type="tel"],
-.gform_wrapper textarea,
-.gform_wrapper select {
-    width: 100% !important;
-    padding: 0.75rem 1rem !important;
-    border: 1px solid #E7E5E4 !important;
-    border-radius: 0.5rem !important;
-    font-size: 1rem !important;
-    transition: border-color 0.2s, box-shadow 0.2s !important;
-}
-
-.gform_wrapper input[type="text"]:focus,
-.gform_wrapper input[type="url"]:focus,
-.gform_wrapper input[type="email"]:focus,
-.gform_wrapper input[type="tel"]:focus,
-.gform_wrapper textarea:focus,
-.gform_wrapper select:focus {
-    border-color: #FF8B5E !important;
-    box-shadow: 0 0 0 3px rgba(255, 139, 94, 0.1) !important;
-    outline: none !important;
-}
-
-.gform_wrapper .gfield_description {
-    font-size: 0.875rem !important;
-    color: #57534E !important;
-    margin-top: 0.25rem !important;
-}
-
-.gform_wrapper .gform_footer {
-    margin-top: 1.5rem !important;
-    padding-top: 1rem !important;
-    border-top: 1px solid #E7E5E4 !important;
-}
-</style>
