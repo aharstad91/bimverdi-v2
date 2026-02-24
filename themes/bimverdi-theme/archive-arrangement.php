@@ -134,7 +134,7 @@ function bimverdi_get_type_label($type) {
                             <!-- Date Badge -->
                             <div class="w-12 h-12 rounded-lg bg-[#F5F5F4] flex flex-col items-center justify-center flex-shrink-0">
                                 <span class="text-lg font-bold text-[#FF8B5E] leading-none"><?php echo date('d', strtotime($dato)); ?></span>
-                                <span class="text-[10px] uppercase text-[#57534E] leading-none mt-0.5"><?php echo date_i18n('M', strtotime($dato)); ?></span>
+                                <span class="text-[10px] uppercase text-[#57534E] leading-none mt-0.5"><?php echo wp_date('M', strtotime($dato)); ?></span>
                             </div>
 
                             <!-- Type Badge -->
@@ -236,7 +236,7 @@ function bimverdi_get_type_label($type) {
                     <!-- Date -->
                     <div class="flex-shrink-0 text-center text-[#A8A29E] w-14">
                         <div class="text-lg font-semibold"><?php echo date('d', strtotime($dato)); ?></div>
-                        <div class="text-xs uppercase"><?php echo date_i18n('M Y', strtotime($dato)); ?></div>
+                        <div class="text-xs uppercase"><?php echo wp_date('M Y', strtotime($dato)); ?></div>
                     </div>
 
                     <!-- Title and meta -->

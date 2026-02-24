@@ -93,9 +93,9 @@ function bimverdi_arr_get_adgang_label($adgang) {
 }
 
 // Format date display
-$date_display = date_i18n('j. F Y', strtotime($dato));
+$date_display = wp_date('j. F Y', strtotime($dato));
 if ($slutt_dato && $slutt_dato !== $dato) {
-    $date_display = date_i18n('j.', strtotime($dato)) . ' – ' . date_i18n('j. F Y', strtotime($slutt_dato));
+    $date_display = wp_date('j.', strtotime($dato)) . ' – ' . wp_date('j. F Y', strtotime($slutt_dato));
 }
 
 // Format time display
@@ -149,8 +149,8 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
 
             <!-- Date badge -->
             <div class="absolute top-4 left-4 bg-white rounded-lg px-4 py-3 text-center">
-                <div class="text-2xl font-bold text-[#FF8B5E] leading-none"><?php echo date('d', strtotime($dato)); ?></div>
-                <div class="text-xs uppercase text-[#57534E]"><?php echo date_i18n('M', strtotime($dato)); ?></div>
+                <div class="text-2xl font-bold text-[#FF8B5E] leading-none"><?php echo wp_date('d', strtotime($dato)); ?></div>
+                <div class="text-xs uppercase text-[#57534E]"><?php echo wp_date('M', strtotime($dato)); ?></div>
             </div>
 
             <!-- Status badge -->
@@ -401,7 +401,7 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                     <?php if ($pameldingsfrist && !$frist_passert): ?>
                     <p class="text-xs text-[#57534E] mt-2 flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Frist: <?php echo date_i18n('j. F Y H:i', strtotime($pameldingsfrist)); ?>
+                        Frist: <?php echo wp_date('j. F Y H:i', strtotime($pameldingsfrist)); ?>
                     </p>
                     <?php endif; ?>
 

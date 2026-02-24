@@ -385,16 +385,14 @@ if (!empty($latest_post)) {
                     $event_time_start = get_field('arrangement_tid_start', $event->ID) ?: get_field('tid_start', $event->ID) ?: '';
                     $event_time_end = get_field('arrangement_tid_slutt', $event->ID) ?: get_field('tid_slutt', $event->ID) ?: '';
                     $event_format = get_field('arrangement_format', $event->ID) ?: get_field('format', $event->ID) ?: '';
-                    $event_temagruppe = wp_get_post_terms($event->ID, 'temagruppe', array('fields' => 'names'));
-                    if (is_wp_error($event_temagruppe)) $event_temagruppe = array();
-                    $event_tg_name = !empty($event_temagruppe) ? $event_temagruppe[0] : '';
+                    $event_tg_terms = get_the_terms($event->ID, 'temagruppe');
+                    $event_tg_name = ($event_tg_terms && !is_wp_error($event_tg_terms)) ? $event_tg_terms[0]->name : '';
                     $event_tg_color = isset($tg_colors[$event_tg_name]) ? $tg_colors[$event_tg_name] : '';
 
                     $date_obj = DateTime::createFromFormat('Y-m-d', $event_date) ?: DateTime::createFromFormat('Ymd', $event_date);
-                    $day = $date_obj ? $date_obj->format('d') : '';
-                    $month = $date_obj ? strtoupper($date_obj->format('M')) : '';
-                    $month_map = array('JAN' => 'JAN', 'FEB' => 'FEB', 'MAR' => 'MAR', 'APR' => 'APR', 'MAY' => 'MAI', 'JUN' => 'JUN', 'JUL' => 'JUL', 'AUG' => 'AUG', 'SEP' => 'SEP', 'OCT' => 'OKT', 'NOV' => 'NOV', 'DEC' => 'DES');
-                    $month = isset($month_map[$month]) ? $month_map[$month] : $month;
+                    $ts = $date_obj ? $date_obj->getTimestamp() : 0;
+                    $day = $ts ? wp_date('d', $ts) : '';
+                    $month = $ts ? strtoupper(wp_date('M', $ts)) : '';
                 ?>
                 <a href="<?php echo esc_url(get_permalink($event)); ?>"
                    class="flex items-center gap-5 rounded-xl p-4 border border-[#E7E5E4] bg-white hover:shadow-md hover:border-[#D6D3D1] transition-all group">

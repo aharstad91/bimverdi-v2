@@ -1021,6 +1021,40 @@ class BIM_Verdi_Design_System {
                 -webkit-box-orient: vertical;
                 overflow: hidden;
             }
+
+            /* ============================================
+               GRAVITY FORMS BUTTON STYLING
+               Global brand override — replaces per-template inline styles
+               ============================================ */
+
+            .gform_wrapper .gform_button,
+            .gform_wrapper input[type="submit"],
+            .gform_wrapper button[type="submit"] {
+                background: var(--color-primary) !important;
+                color: #ffffff !important;
+                border: none !important;
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                font-size: 14px !important;
+                font-weight: 500 !important;
+                font-family: var(--font-family) !important;
+                cursor: pointer !important;
+                transition: background 0.15s ease !important;
+            }
+            .gform_wrapper .gform_button:hover,
+            .gform_wrapper input[type="submit"]:hover,
+            .gform_wrapper button[type="submit"]:hover {
+                background: var(--color-primary-dark) !important;
+            }
+
+            /* Keep footer newsletter submit dark (override above) */
+            .bv-footer-newsletter .gform_wrapper input[type="submit"] {
+                background: #1A1A1A !important;
+            }
+            .bv-footer-newsletter .gform_wrapper input[type="submit"]:hover {
+                opacity: 0.8 !important;
+                background: #1A1A1A !important;
+            }
         </style>
         <?php
     }
