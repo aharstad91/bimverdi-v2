@@ -25,7 +25,6 @@ $prefill_email = isset($_GET['email']) ? sanitize_email(urldecode($_GET['email']
 // Error messages
 $error_messages = array(
     'invalid_email' => 'Vennligst oppgi en gyldig e-postadresse.',
-    'exists'        => 'Denne e-postadressen er allerede registrert. <a href="' . esc_url(home_url('/logg-inn/')) . '" style="color: inherit; font-weight: 600;">Logg inn her</a>',
     'rate_limit'    => 'For mange forsøk. Vent litt og prøv igjen.',
     'nonce'         => 'Noe gikk galt. Vennligst prøv igjen.',
     'system'        => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',

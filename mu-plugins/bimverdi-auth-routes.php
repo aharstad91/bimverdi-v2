@@ -62,6 +62,9 @@ class BIMVerdi_Auth_Routes {
         // Filter logout URL - high priority to override any other filters
         add_filter('logout_url', [$this, 'custom_logout_url'], 999, 2);
 
+        // Intercept wp-login.php?action=logout → redirect to custom /logg-ut/
+        add_action('login_form_logout', [$this, 'intercept_wp_logout']);
+
         // Handle login form submission
         add_action('init', [$this, 'handle_login_submission']);
 
@@ -156,6 +159,18 @@ class BIMVerdi_Auth_Routes {
         wp_logout();
 
         // Redirect to login page with logged out message
+        wp_redirect(add_query_arg('logged_out', '1', home_url('/logg-inn/')));
+        exit;
+    }
+
+    /**
+     * Intercept wp-login.php?action=logout and redirect to custom /logg-ut/
+     * Prevents the English "Do you really want to log out?" confirmation page.
+     */
+    public function intercept_wp_logout() {
+        // Perform logout directly (skip WP's confirmation page)
+        check_admin_referer('log-out');
+        wp_logout();
         wp_redirect(add_query_arg('logged_out', '1', home_url('/logg-inn/')));
         exit;
     }

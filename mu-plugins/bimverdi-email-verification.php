@@ -89,13 +89,7 @@ class BIMVerdi_Email_Verification {
             exit;
         }
 
-        // Check if email already exists as WordPress user
-        if (email_exists($email)) {
-            wp_redirect(add_query_arg(array('bv_error' => 'exists', 'email' => urlencode($email)), $redirect_base));
-            exit;
-        }
-
-        // Rate limiting: max 3 per email per hour
+        // Rate limiting: max 3 per email per hour (check before any user lookup)
         $rate_key = 'bv_signup_' . md5($email);
         $attempts = (int) get_transient($rate_key);
         if ($attempts >= 3) {
@@ -104,12 +98,21 @@ class BIMVerdi_Email_Verification {
         }
         set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
 
+        // Security: Always show success to prevent email enumeration.
+        // If user exists, send a "you already have an account" email instead.
+        if (email_exists($email)) {
+            $this->send_already_registered_email($email);
+            wp_redirect(add_query_arg(array('success' => '1', 'email' => urlencode($email)), $redirect_base));
+            exit;
+        }
+
         // Create pending registration
         $pending = $this->create_pending_registration($email);
 
         if (!$pending) {
             error_log('BIMVerdi: Failed to create pending registration for ' . $email);
-            wp_redirect(add_query_arg(array('bv_error' => 'system', 'email' => urlencode($email)), $redirect_base));
+            // Still show success to prevent enumeration
+            wp_redirect(add_query_arg(array('success' => '1', 'email' => urlencode($email)), $redirect_base));
             exit;
         }
 
@@ -624,6 +627,99 @@ class BIMVerdi_Email_Verification {
 </html>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Send "already registered" email to prevent user enumeration.
+     * Shows no error to the user — they just get a helpful email instead.
+     */
+    private function send_already_registered_email($email) {
+        $login_url = home_url('/logg-inn/');
+        $reset_url = home_url('/glemt-passord/');
+
+        $subject = 'Du har allerede en BIM Verdi-konto';
+
+        ob_start();
+        ?>
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Du har allerede en konto</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #F5F3EE; color: #1A1A1A;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F5F3EE;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 520px; margin: 0 auto;">
+
+                    <!-- Logo -->
+                    <tr>
+                        <td style="text-align: center; padding-bottom: 32px;">
+                            <span style="font-size: 20px; font-weight: 700; color: #1A1A1A;">BIM Verdi</span>
+                        </td>
+                    </tr>
+
+                    <!-- Main Card -->
+                    <tr>
+                        <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);">
+                                <tr>
+                                    <td style="padding: 40px;">
+
+                                        <p style="margin: 0 0 24px 0; color: #1A1A1A; font-size: 16px; line-height: 1.6;">
+                                            Hei!
+                                        </p>
+
+                                        <p style="margin: 0 0 24px 0; color: #1A1A1A; font-size: 16px; line-height: 1.6;">
+                                            Noen prøvde å registrere en konto med denne e-postadressen, men du har allerede en konto hos BIM Verdi.
+                                        </p>
+
+                                        <!-- CTA Button -->
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 32px 0;">
+                                            <tr>
+                                                <td align="center">
+                                                    <a href="<?php echo esc_url($login_url); ?>"
+                                                       style="display: inline-block; background-color: #1A1A1A; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 500;">
+                                                        Logg inn
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <p style="margin: 0 0 16px 0; color: #6B6B6B; font-size: 14px; line-height: 1.6;">
+                                            Husker du ikke passordet?
+                                            <a href="<?php echo esc_url($reset_url); ?>" style="color: #1A1A1A; font-weight: 500;">Tilbakestill passordet</a>
+                                        </p>
+
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 24px 0; text-align: center;">
+                            <p style="margin: 0; color: #9B9B9B; font-size: 11px;">
+                                Du mottar denne e-posten fordi <?php echo esc_html($email); ?> ble brukt til å forsøke registrering på BIM Verdi.<br>
+                                Hvis dette ikke var deg, kan du trygt ignorere denne e-posten.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        <?php
+        $message = ob_get_clean();
+
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+        return wp_mail($email, $subject, $message, $headers);
     }
 }
 
