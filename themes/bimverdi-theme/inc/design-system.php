@@ -858,8 +858,11 @@ class BIM_Verdi_Design_System {
                 opacity: 0;
                 transform: translateY(8px);
                 transition: opacity 0.4s ease, transform 0.4s ease;
+            }
+
+            #hero-rotating > span {
                 text-decoration: underline;
-                text-decoration-color: var(--color-divider);
+                text-decoration-color: #D6D3D1;
                 text-underline-offset: 6px;
                 text-decoration-thickness: 2px;
             }
@@ -869,14 +872,27 @@ class BIM_Verdi_Design_System {
                 transform: translateY(0);
             }
 
-            /* Wavy SVG underline for rotating text */
-            .bv-hero-underline {
-                position: absolute;
-                bottom: -6px;
-                left: 0;
-                width: 100%;
+            /* Hero pagination dots (vertical) */
+            .bv-hero-dot {
+                width: 8px;
                 height: 8px;
-                opacity: 0.6;
+                border-radius: 50%;
+                border: none;
+                padding: 0;
+                background: #D6D3D1;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                flex-shrink: 0;
+            }
+
+            .bv-hero-dot.active {
+                height: 24px;
+                border-radius: 4px;
+                background: #111827;
+            }
+
+            .bv-hero-dot:hover:not(.active) {
+                background: #A8A29E;
             }
 
             /* ============================================

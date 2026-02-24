@@ -50,18 +50,33 @@ $kildetype_config = array(
     'haandbok'        => array('label' => 'Håndbok',    'color' => 'var(--color-primary)'),
 );
 
-// Rotating hero words
-$rotating_words = array('Se verktøykatalog', 'Utforsk verktøykatalog', 'Les om kunnskapskilder', 'Våre deltakere');
+// Hero slides: title + description pairs
+$hero_slides = array(
+    array(
+        'title' => 'Utforsk verktøykatalogen',
+        'desc'  => 'Finn programvare, standarder og digitale tjenester som brukes i norsk byggenæring.',
+    ),
+    array(
+        'title' => 'Les kunnskapskilder',
+        'desc'  => 'Standarder, veiledere og forskrifter samlet på ett sted — alltid oppdatert.',
+    ),
+    array(
+        'title' => 'Se våre deltakere',
+        'desc'  => 'Over ' . $total_companies . ' foretak fra hele byggenæringen deler erfaringer og verktøy.',
+    ),
+    array(
+        'title' => 'Finn arrangement',
+        'desc'  => 'Workshops, webinarer og nettverksmøter for BIM-miljøet i Norge.',
+    ),
+);
 
-// Category chips for hero
-$category_chips = array(
-    array('label' => 'Alle', 'url' => '/'),
-    array('label' => 'SirkBIM', 'url' => '/temagrupper/sirkbim/'),
-    array('label' => 'ByggesaksBIM', 'url' => '/temagrupper/byggesaksbim/'),
-    array('label' => 'ProsjektBIM', 'url' => '/temagrupper/prosjektbim/'),
-    array('label' => 'EiendomsBIM', 'url' => '/temagrupper/eiendomsbim/'),
-    array('label' => 'MiljøBIM', 'url' => '/temagrupper/miljobim/'),
-    array('label' => 'BIMtech', 'url' => '/temagrupper/bimtech/'),
+// CPT quick links for hero
+$cpt_links = array(
+    array('label' => 'Verktøy',          'url' => '/verktoy/',          'count' => $total_tools),
+    array('label' => 'Kunnskapskilder',   'url' => '/kunnskapskilder/',  'count' => $total_sources),
+    array('label' => 'Deltakere',         'url' => '/deltakere/',        'count' => $total_companies),
+    array('label' => 'Arrangement',       'url' => '/arrangement/',      'count' => $total_events),
+    array('label' => 'Artikler',          'url' => '/artikler/',         'count' => $total_articles),
 );
 
 // "Time ago" for stats badge (Norwegian)
@@ -85,7 +100,7 @@ if (!empty($latest_post)) {
      HERO SECTION
      ============================================= -->
 <section class="pt-16 pb-12 bg-white">
-    <div class="max-w-4xl mx-auto px-4 md:px-8 text-center">
+    <div class="max-w-6xl mx-auto px-4 md:px-8">
 
         <!-- Stats Badge -->
         <div class="mb-8">
@@ -98,42 +113,46 @@ if (!empty($latest_post)) {
             </span>
         </div>
 
-        <!-- Main Headline with rotating text -->
-        <h1 class="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-[#111827] leading-tight mb-6">
-            BIM Verdi<br>
-            <span class="bv-hero-rotating" id="hero-rotating">
-                <?php foreach ($rotating_words as $i => $word): ?>
-                <span<?php echo $i === 0 ? ' class="active"' : ''; ?>><?php echo esc_html($word); ?></span>
-                <?php endforeach; ?>
-            </span>
+        <!-- Main Headline -->
+        <h1 class="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-[#111827] leading-tight mb-2">
+            BIM Verdi
         </h1>
 
-        <!-- Subtitle -->
-        <p class="text-lg text-[#57534E] mb-8 max-w-2xl mx-auto leading-relaxed">
-            Norges ledende nettverk for BIM og digitalisering i byggenæringen. Utforsk verktøy, kunnskapskilder og deltakere.
-        </p>
-
-        <!-- Search Bar -->
-        <form action="<?php echo esc_url(home_url('/')); ?>" method="get" class="max-w-2xl mx-auto mb-8">
-            <div class="relative">
-                <input type="search" name="s" placeholder="Søk etter verktøy, foretak, artikler..."
-                       class="w-full pl-12 pr-28 py-4 text-base border border-[#E7E5E4] rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E]/30 focus:border-[#FF8B5E] transition-all"
-                       style="font-family: var(--font-family);">
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A8A29E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2 bg-[#111827] text-white text-sm font-medium rounded-lg hover:bg-[#1F2937] transition-colors">
-                    Søk
-                </button>
+        <!-- Rotating content with vertical dots -->
+        <div class="flex gap-5 mb-8">
+            <!-- Vertical pagination dots -->
+            <div class="flex flex-col items-center gap-2 pt-2" id="hero-dots">
+                <?php foreach ($hero_slides as $i => $slide): ?>
+                <button class="bv-hero-dot<?php echo $i === 0 ? ' active' : ''; ?>" data-index="<?php echo $i; ?>" aria-label="Slide <?php echo $i + 1; ?>"></button>
+                <?php endforeach; ?>
             </div>
-        </form>
 
-        <!-- Category Chips -->
-        <div class="flex flex-wrap justify-center gap-2">
-            <?php foreach ($category_chips as $i => $chip): ?>
-            <a href="<?php echo esc_url(home_url($chip['url'])); ?>"
-               class="bv-chip<?php echo $i === 0 ? ' active' : ''; ?>">
-                <?php echo esc_html($chip['label']); ?>
+            <!-- Rotating title + description -->
+            <div>
+                <div class="mb-3">
+                    <span class="bv-hero-rotating text-2xl md:text-3xl lg:text-[2.25rem] font-medium text-[#57534E]" id="hero-rotating">
+                        <?php foreach ($hero_slides as $i => $slide): ?>
+                        <span<?php echo $i === 0 ? ' class="active"' : ''; ?>><?php echo esc_html($slide['title']); ?></span>
+                        <?php endforeach; ?>
+                    </span>
+                </div>
+                <div class="max-w-xl">
+                    <span class="bv-hero-rotating text-base text-[#78716C] leading-relaxed" id="hero-desc">
+                        <?php foreach ($hero_slides as $i => $slide): ?>
+                        <span<?php echo $i === 0 ? ' class="active"' : ''; ?>><?php echo esc_html($slide['desc']); ?></span>
+                        <?php endforeach; ?>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CPT Quick Links -->
+        <div class="flex flex-wrap gap-2">
+            <?php foreach ($cpt_links as $link): ?>
+            <a href="<?php echo esc_url(home_url($link['url'])); ?>"
+               class="bv-chip">
+                <?php echo esc_html($link['label']); ?>
+                <span class="text-[#A8A29E] ml-1"><?php echo esc_html($link['count']); ?></span>
             </a>
             <?php endforeach; ?>
         </div>

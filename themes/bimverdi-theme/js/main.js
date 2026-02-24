@@ -31,18 +31,49 @@
         });
     });
 
-    // Hero rotating text
-    const rotatingContainer = document.getElementById('hero-rotating');
-    if (rotatingContainer) {
-        const words = rotatingContainer.querySelectorAll('span');
-        if (words.length > 1) {
-            let current = 0;
-            setInterval(function() {
-                words[current].classList.remove('active');
-                current = (current + 1) % words.length;
-                words[current].classList.add('active');
-            }, 3000);
+    // Hero rotating slides (title + description + dots)
+    const heroTitles = document.getElementById('hero-rotating');
+    const heroDescs = document.getElementById('hero-desc');
+    const heroDots = document.getElementById('hero-dots');
+    const heroCounter = document.getElementById('hero-counter');
+
+    if (heroTitles && heroDescs) {
+        const titles = heroTitles.querySelectorAll(':scope > span');
+        const descs = heroDescs.querySelectorAll(':scope > span');
+        const dots = heroDots ? heroDots.querySelectorAll('.bv-hero-dot') : [];
+        const total = titles.length;
+        let current = 0;
+        let timer;
+
+        function goToSlide(index) {
+            titles[current].classList.remove('active');
+            descs[current].classList.remove('active');
+            if (dots[current]) dots[current].classList.remove('active');
+
+            current = index % total;
+
+            titles[current].classList.add('active');
+            descs[current].classList.add('active');
+            if (dots[current]) dots[current].classList.add('active');
+            if (heroCounter) heroCounter.textContent = (current + 1) + ' / ' + total;
         }
+
+        function startAutoplay() {
+            timer = setInterval(function() {
+                goToSlide(current + 1);
+            }, 4000);
+        }
+
+        // Dot click handlers
+        dots.forEach(function(dot) {
+            dot.addEventListener('click', function() {
+                clearInterval(timer);
+                goToSlide(parseInt(this.dataset.index));
+                startAutoplay();
+            });
+        });
+
+        if (total > 1) startAutoplay();
     }
 
 })();
