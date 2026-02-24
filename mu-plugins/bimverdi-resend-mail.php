@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
  * MERK: Endre til noreply@bimverdi.no når domenet er verifisert i Resend.
  * Før det fungerer kun onboarding@resend.dev (Resend sandbox).
  */
-define('BIMVERDI_RESEND_FROM_EMAIL', 'onboarding@resend.dev'); // TODO: Endre til noreply@bimverdi.no
+define('BIMVERDI_RESEND_FROM_EMAIL', 'noreply@bimverdi.no');
 define('BIMVERDI_RESEND_FROM_NAME', 'BIM Verdi');
 define('BIMVERDI_RESEND_REPLY_TO', 'andreas@aharstad.no'); // Midlertidig - endre til hei@bimverdi.no
 
