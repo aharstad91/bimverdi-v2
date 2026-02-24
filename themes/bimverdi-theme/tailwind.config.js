@@ -31,9 +31,9 @@ module.exports = {
         },
         // Beige/warm neutrals (hjem.no aesthetic)
         'bim-beige': {
-          DEFAULT: '#F7F5EF',  // --surface-dim: Main background
-          100: '#F7F5EF',      // Main surface (warm white)
-          200: '#EFE9DE',      // --state-hover: Hover state
+          DEFAULT: '#F5F5F4',  // stone-100: Subtle surface
+          100: '#F5F5F4',      // stone-100: Subtle surface
+          200: '#E7E5E4',      // stone-200: Hover state
           300: '#DFD7C6',      // Darker beige
           400: '#CABBA6',      // --on-surface-dim-variant
           500: '#C8BBA3',      // --tertiary-variant: Warm neutral
@@ -137,8 +137,8 @@ module.exports = {
           
           // Base: Backgrounds (warm beige palette)
           "base-100": "#FFFFFF",          // White
-          "base-200": "#F7F5EF",          // --surface-dim (warm beige)
-          "base-300": "#EFE9DE",          // --state-hover (darker beige)
+          "base-200": "#F5F5F4",          // stone-100 (neutral light)
+          "base-300": "#E7E5E4",          // stone-200 (neutral hover)
           "base-content": "#0F0F0F",      // --primary (main text black)
           
           // State colors (from hjem.no CSS variables)

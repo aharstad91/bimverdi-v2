@@ -72,8 +72,8 @@ class BIM_Verdi_Design_System {
                 --color-gray-medium: #A8A29E;
                 --color-gray-light: #E7E5E4;
                 --color-white: #FFFFFF;
-                --color-beige: #FAFAF9;
-                --color-beige-dark: #F5F5F4;
+                --color-beige: #F5F5F4;
+                --color-beige-dark: #E7E5E4;
 
                 /* Spacing */
                 --spacing-xs: 0.5rem;

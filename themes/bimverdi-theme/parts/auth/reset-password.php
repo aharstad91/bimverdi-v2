@@ -39,7 +39,7 @@ if (!empty($key) && !empty($login)) {
 }
 ?>
 
-<main class="min-h-screen bg-[#F7F5EF] py-12 px-4">
+<main class="min-h-screen bg-white py-12 px-4">
     <div class="max-w-md mx-auto">
 
         <!-- Main Card -->
@@ -48,7 +48,7 @@ if (!empty($key) && !empty($login)) {
             <?php if ($is_valid): ?>
                 <!-- Valid Token - Show Form -->
                 <div class="text-center mb-6">
-                    <div class="inline-flex items-center justify-center w-12 h-12 bg-[#F7F5EF] rounded-full mb-4">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -120,7 +120,7 @@ if (!empty($key) && !empty($login)) {
                 </form>
 
                 <!-- Security Tips -->
-                <div class="mt-4 p-4 bg-[#F7F5EF] border border-[#E5E0D5] rounded-lg">
+                <div class="mt-4 p-4 bg-gray-50 border border-[#E5E0D5] rounded-lg">
                     <h3 class="text-sm font-semibold text-[#1A1A1A] mt-0 mb-2 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
@@ -175,7 +175,7 @@ if (!empty($key) && !empty($login)) {
                         </a>
 
                         <a href="<?php echo home_url('/logg-inn/'); ?>"
-                           class="w-full block text-center px-6 py-3 border border-[#E5E0D5] text-[#1A1A1A] font-medium rounded-lg hover:bg-[#F7F5EF] transition-colors">
+                           class="w-full block text-center px-6 py-3 border border-[#E5E0D5] text-[#1A1A1A] font-medium rounded-lg hover:bg-gray-50 transition-colors">
                             Tilbake til innlogging
                         </a>
                     </div>

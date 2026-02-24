@@ -76,7 +76,7 @@ if ($temagruppe_term) {
         ?>
         <li class="flex items-start gap-3">
             <!-- Date badge -->
-            <div class="flex-shrink-0 w-14 text-center py-1 px-2 bg-[#F7F5EF] rounded text-xs font-medium text-[#5A5A5A]">
+            <div class="flex-shrink-0 w-14 text-center py-1 px-2 bg-gray-100 rounded text-xs font-medium text-[#5A5A5A]">
                 <?php echo esc_html($formatted_date ?: 'TBA'); ?>
             </div>
 

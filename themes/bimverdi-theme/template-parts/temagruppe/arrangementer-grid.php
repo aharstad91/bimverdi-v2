@@ -118,7 +118,7 @@ $months_no = [
                 </div>
 
                 <?php if ($event_type) : ?>
-                <span class="px-2 py-0.5 bg-[#F7F5EF] rounded text-xs font-medium text-[#5A5A5A]">
+                <span class="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium text-[#5A5A5A]">
                     <?php echo esc_html($event_type); ?>
                 </span>
                 <?php endif; ?>

@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) exit;
 $temagruppe_navn = get_the_title();
 ?>
 
-<section class="bg-[#F7F5EF] rounded-lg p-5">
+<section class="bg-gray-50 rounded-lg p-5">
     <h3 class="text-base font-semibold text-[#1A1A1A] mb-2">
         Bli med i <?php echo esc_html($temagruppe_navn); ?>
     </h3>

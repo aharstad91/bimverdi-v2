@@ -91,7 +91,7 @@ $months_no = [
         <article class="bg-white rounded-lg border border-[#E5E0D8] overflow-hidden flex flex-col">
             <!-- Thumbnail -->
             <?php if ($thumbnail_url) : ?>
-            <div class="aspect-[16/9] overflow-hidden bg-[#F7F5EF]">
+            <div class="aspect-[16/9] overflow-hidden bg-gray-100">
                 <img
                     src="<?php echo esc_url($thumbnail_url); ?>"
                     alt=""
@@ -100,7 +100,7 @@ $months_no = [
                 >
             </div>
             <?php else : ?>
-            <div class="aspect-[16/9] bg-gradient-to-br from-[#F7F5EF] to-[#EFE9DE] flex items-center justify-center">
+            <div class="aspect-[16/9] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                 <?php echo bimverdi_icon('file-text', 32, 'text-[#C4BFB3]'); ?>
             </div>
             <?php endif; ?>
@@ -110,7 +110,7 @@ $months_no = [
                 <!-- Category Badge -->
                 <?php if ($category) : ?>
                 <div class="mb-2">
-                    <span class="px-2 py-1 bg-[#F7F5EF] rounded text-xs font-medium text-[#5A5A5A]">
+                    <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-[#5A5A5A]">
                         <?php echo esc_html($category); ?>
                     </span>
                 </div>

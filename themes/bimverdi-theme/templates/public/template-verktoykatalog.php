@@ -75,7 +75,7 @@ $tools_query = new WP_Query($args);
 $is_logged_in = is_user_logged_in();
 ?>
 
-<div class="min-h-screen bg-[#F7F5EF]">
+<div class="min-h-screen bg-white">
     
     <!-- Page Header -->
     <div class="bg-white border-b border-[#E5E0D8]">
@@ -127,7 +127,7 @@ $is_logged_in = is_user_logged_in();
                         <label class="block text-sm font-medium text-[#1A1A1A] mb-3">Temagruppe</label>
                         <div class="space-y-2 max-h-48 overflow-y-auto">
                             <?php foreach ($formaalstema_options as $value => $label): ?>
-                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#F7F5EF]">
+                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-gray-50">
                                 <input type="checkbox" 
                                        name="formaalstema[]" 
                                        value="<?php echo esc_attr($value); ?>"
@@ -144,7 +144,7 @@ $is_logged_in = is_user_logged_in();
                         <label class="block text-sm font-medium text-[#1A1A1A] mb-3">Type ressurs</label>
                         <div class="space-y-2 max-h-48 overflow-y-auto">
                             <?php foreach ($type_ressurs_options as $value => $label): ?>
-                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#F7F5EF]">
+                            <label class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-gray-50">
                                 <input type="checkbox" 
                                        name="type_ressurs[]" 
                                        value="<?php echo esc_attr($value); ?>"
@@ -190,7 +190,7 @@ $is_logged_in = is_user_logged_in();
                data-type="<?php echo esc_attr($type); ?>">
                 
                 <!-- Logo/Image -->
-                <div class="h-40 bg-[#F7F5EF] overflow-hidden flex items-center justify-center p-6">
+                <div class="h-40 bg-gray-50 overflow-hidden flex items-center justify-center p-6">
                     <?php if ($logo_url): ?>
                         <img src="<?php echo esc_url($logo_url); ?>" 
                              alt="<?php the_title(); ?>" 
