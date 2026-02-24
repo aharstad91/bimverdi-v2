@@ -21,16 +21,15 @@ if (is_user_logged_in()) {
 $error = isset($_GET['login_error']) ? sanitize_text_field($_GET['login_error']) : '';
 $logged_out = isset($_GET['logged_out']);
 $reset_success = isset($_GET['reset']) && $_GET['reset'] === 'success';
-$username = isset($_GET['username']) ? sanitize_user(urldecode($_GET['username'])) : '';
+// Security: Do not pre-fill username from URL (prevents enumeration via URL params)
 $redirect_to = isset($_GET['redirect_to']) ? esc_url($_GET['redirect_to']) : home_url('/min-side/');
 
-// Error messages
+// Error messages — generic for all credential errors to prevent user enumeration
 $error_messages = [
-    'empty'            => 'Vennligst fyll ut brukernavn og passord.',
-    'invalid'          => 'Ugyldig brukernavn eller passord.',
-    'invalid_user'     => 'Denne brukeren finnes ikke.',
-    'invalid_password' => 'Feil passord. Prøv igjen.',
-    'nonce'            => 'Noe gikk galt. Vennligst prøv igjen.',
+    'empty'   => 'Vennligst fyll ut brukernavn og passord.',
+    'invalid' => 'Feil e-post eller passord. Prøv igjen.',
+    'nonce'   => 'Noe gikk galt. Vennligst prøv igjen.',
+    'blocked' => 'For mange mislykkede forsøk. Prøv igjen om noen minutter.',
 ];
 
 $error_message = $error_messages[$error] ?? '';
@@ -454,7 +453,7 @@ $error_message = $error_messages[$error] ?? '';
                         <input type="text"
                                class="form-input"
                                name="username"
-                               value="<?php echo esc_attr($username); ?>"
+                               value=""
                                required
                                autocomplete="username"
                                autofocus>

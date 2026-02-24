@@ -245,10 +245,23 @@ class BIMVerdi_Auth_Routes {
         $username = sanitize_user($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $remember = isset($_POST['remember']);
-        $redirect_to = $_POST['redirect_to'] ?? home_url('/min-side/');
+        // Security: Validate redirect_to to prevent open redirect
+        $redirect_to = wp_validate_redirect(
+            esc_url_raw($_POST['redirect_to'] ?? ''),
+            home_url('/min-side/')
+        );
 
         if (empty($username) || empty($password)) {
             wp_redirect(add_query_arg('login_error', 'empty', home_url('/logg-inn/')));
+            exit;
+        }
+
+        // Rate limiting: 5 attempts per 20 minutes per IP+username
+        $rate_key = 'bv_login_fail_' . substr(hash('sha256',
+            ($_SERVER['REMOTE_ADDR'] ?? '') . '|' . strtolower($username)), 0, 32);
+        $rate_data = get_transient($rate_key);
+        if ($rate_data !== false && ($rate_data['count'] ?? 0) >= 5) {
+            wp_redirect(add_query_arg('login_error', 'blocked', home_url('/logg-inn/')));
             exit;
         }
 
@@ -260,24 +273,34 @@ class BIMVerdi_Auth_Routes {
         ], is_ssl());
 
         if (is_wp_error($user)) {
-            $error_code = 'invalid';
+            // Security: Use generic error code for ALL credential failures
+            // to prevent user enumeration (OWASP OAT-014)
+            $credential_errors = ['invalid_username', 'invalid_email', 'incorrect_password',
+                                  'empty_username', 'empty_password', 'invalidcombo'];
+            $error_code = !empty(array_intersect($user->get_error_codes(), $credential_errors))
+                ? 'invalid'
+                : 'invalid';
 
-            // Check specific error types
-            if (in_array('invalid_username', $user->get_error_codes()) ||
-                in_array('invalid_email', $user->get_error_codes())) {
-                $error_code = 'invalid_user';
-            } elseif (in_array('incorrect_password', $user->get_error_codes())) {
-                $error_code = 'invalid_password';
+            // Security: Timing normalization — run dummy bcrypt hash for non-existent users
+            // so response time is consistent regardless of whether user exists
+            $user_not_found_codes = ['invalid_username', 'invalid_email', 'invalidcombo'];
+            if (!empty(array_intersect($user->get_error_codes(), $user_not_found_codes))) {
+                wp_check_password(bin2hex(random_bytes(16)),
+                    '$P$BIx5M8FKfHagxQDqRGUyFhbXw3AFAO.');
             }
 
-            wp_redirect(add_query_arg([
-                'login_error' => $error_code,
-                'username' => urlencode($username),
-            ], home_url('/logg-inn/')));
+            // Rate limiting: increment failure count
+            $rate_data = get_transient($rate_key) ?: ['count' => 0];
+            $rate_data['count']++;
+            set_transient($rate_key, $rate_data, 1200); // 20 min lockout window
+
+            // Security: Do NOT include username in URL (leaks whether user exists)
+            wp_redirect(add_query_arg('login_error', $error_code, home_url('/logg-inn/')));
             exit;
         }
 
-        // Successful login
+        // Successful login — clear rate limit on success
+        delete_transient($rate_key);
         wp_redirect(esc_url_raw($redirect_to));
         exit;
     }
@@ -583,3 +606,25 @@ new BIMVerdi_Auth_Routes();
 function bimverdi_auth_url($route, $params = []) {
     return BIMVerdi_Auth_Routes::get_url($route, $params);
 }
+
+/**
+ * Security: Block REST API user listing for unauthenticated requests
+ * Prevents user enumeration via /wp-json/wp/v2/users
+ */
+add_filter('rest_endpoints', function ($endpoints) {
+    if (!is_user_logged_in()) {
+        unset($endpoints['/wp/v2/users']);
+        unset($endpoints['/wp/v2/users/(?P<id>[\d]+)']);
+    }
+    return $endpoints;
+});
+
+/**
+ * Security: Block ?author=N enumeration for unauthenticated users
+ */
+add_action('template_redirect', function () {
+    if ((is_author() || isset($_GET['author'])) && !is_user_logged_in()) {
+        wp_redirect(home_url('/'), 301);
+        exit;
+    }
+});
