@@ -65,14 +65,18 @@ if (empty($kilde_posts)) {
 }
 $my_kunnskapskilder_count = count($kilde_posts);
 
-// Get upcoming events the user is registered for
+// Get events the user is registered for — match arrangementer-list.php query
 $my_events_count = 0;
 $registrations = get_posts([
-    'post_type' => 'pamelding',
+    'post_type'      => 'pamelding',
     'posts_per_page' => -1,
-    'post_status' => 'publish',
-    'fields' => 'ids',
-    'meta_query' => [['key' => 'bruker', 'value' => $user_id]],
+    'post_status'    => 'publish',
+    'fields'         => 'ids',
+    'meta_query'     => [
+        'relation' => 'OR',
+        ['key' => 'bruker', 'value' => $user_id],
+        ['key' => 'pamelding_bruker', 'value' => $user_id],
+    ],
 ]);
 $my_events_count = count($registrations);
 
