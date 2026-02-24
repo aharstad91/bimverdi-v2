@@ -75,7 +75,12 @@ add_action('init', function () {
     // --- Sanitize editable inputs ---
     $beskrivelse = sanitize_textarea_field($_POST['beskrivelse'] ?? '');
     $telefon     = sanitize_text_field($_POST['telefon'] ?? '');
+    $epost       = sanitize_email($_POST['epost'] ?? '');
     $nettside    = esc_url_raw($_POST['nettside'] ?? '');
+
+    // Sanitize taxonomy selections
+    $bransje_rolle = array_map('sanitize_text_field', (array) ($_POST['bransje_rolle'] ?? []));
+    $kundetyper    = array_map('sanitize_text_field', (array) ($_POST['kundetyper'] ?? []));
 
     // --- Handle logo upload (optional) ---
     $logo_attachment_id = 0;
@@ -138,6 +143,7 @@ add_action('init', function () {
     if (function_exists('update_field')) {
         update_field('beskrivelse', $beskrivelse, $company_id);
         update_field('telefon', $telefon, $company_id);
+        update_field('epost', $epost, $company_id);
         update_field('nettside', $nettside, $company_id);
         update_field('hjemmeside', $nettside, $company_id);
 
@@ -147,12 +153,29 @@ add_action('init', function () {
     } else {
         update_post_meta($company_id, 'beskrivelse', $beskrivelse);
         update_post_meta($company_id, 'telefon', $telefon);
+        update_post_meta($company_id, 'epost', $epost);
         update_post_meta($company_id, 'nettside', $nettside);
         update_post_meta($company_id, 'hjemmeside', $nettside);
 
         if ($logo_attachment_id) {
             set_post_thumbnail($company_id, $logo_attachment_id);
         }
+    }
+
+    // --- Update taxonomies ---
+    $cpt_tax_industry = defined('BV_TAX_INDUSTRY') ? BV_TAX_INDUSTRY : 'bransjekategori';
+    $cpt_tax_customer = defined('BV_TAX_CUSTOMER_TYPE') ? BV_TAX_CUSTOMER_TYPE : 'kundetype';
+
+    if (!empty($bransje_rolle)) {
+        wp_set_object_terms($company_id, $bransje_rolle, $cpt_tax_industry);
+    } else {
+        wp_set_object_terms($company_id, [], $cpt_tax_industry);
+    }
+
+    if (!empty($kundetyper)) {
+        wp_set_object_terms($company_id, $kundetyper, $cpt_tax_customer);
+    } else {
+        wp_set_object_terms($company_id, [], $cpt_tax_customer);
     }
 
     // Clear rate limit on success
