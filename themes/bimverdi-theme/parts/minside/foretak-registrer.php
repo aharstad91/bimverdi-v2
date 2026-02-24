@@ -75,10 +75,8 @@ get_template_part('parts/components/page-header', null, [
 
     <!-- Help Link -->
     <div class="mt-6 text-center text-sm text-[#57534E]">
-        <p>Har du allerede et registrert foretak?
-            <a href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>" class="text-[#FF8B5E] hover:underline">
-                Se din foretaksprofil
-            </a>
+        <p>Trenger du hjelp? Kontakt oss på
+            <a href="mailto:post@bimverdi.no" class="text-[#FF8B5E] hover:underline">post@bimverdi.no</a>
         </p>
     </div>
 
