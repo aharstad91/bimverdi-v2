@@ -29,7 +29,7 @@ $primary_route = bimverdi_get_primary_route();
     <?php wp_head(); ?>
 </head>
 
-<body <?php body_class('bg-[#F5F5F4]'); ?>>
+<body <?php body_class('bg-white'); ?>>
 <?php wp_body_open(); ?>
 
 <!-- Primary Header: Logo + Back Link + Logout -->
