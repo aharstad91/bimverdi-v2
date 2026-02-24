@@ -11,7 +11,7 @@
 get_header();
 ?>
 
-<div class="min-h-screen bg-bim-beige-100">
+<div class="min-h-screen bg-white">
     
     <!-- Concept Header -->
     <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">

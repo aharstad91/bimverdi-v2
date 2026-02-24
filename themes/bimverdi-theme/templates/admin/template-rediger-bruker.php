@@ -50,7 +50,7 @@ if (function_exists('get_template_part')) {
 }
 ?>
 
-<div class="min-h-screen bg-bim-beige-100 py-8">
+<div class="min-h-screen bg-white py-8">
     <div class="container mx-auto px-4 max-w-2xl">
         
         <div class="mb-8">

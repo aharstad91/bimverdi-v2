@@ -30,7 +30,7 @@ $error_messages = [
 $error_message = $error_messages[$error] ?? '';
 ?>
 
-<main class="min-h-screen bg-[#F7F5EF] py-12 px-4">
+<main class="min-h-screen bg-white py-12 px-4">
     <div class="max-w-md mx-auto">
 
         <!-- Logo/Brand -->
@@ -62,7 +62,7 @@ $error_message = $error_messages[$error] ?? '';
                         har vi sendt en ny verifiseringslenke.
                     </p>
 
-                    <div class="p-4 bg-[#F7F5EF] border border-[#E5E0D5] rounded-lg text-left mb-6">
+                    <div class="p-4 bg-gray-50 border border-[#E5E0D5] rounded-lg text-left mb-6">
                         <p class="text-sm text-[#5A5A5A]">
                             <strong class="text-[#1A1A1A]">Finner du ikke e-posten?</strong>
                         </p>
@@ -81,7 +81,7 @@ $error_message = $error_messages[$error] ?? '';
             <?php else: ?>
                 <!-- Form State -->
                 <div class="text-center mb-6">
-                    <div class="inline-flex items-center justify-center w-12 h-12 bg-[#F7F5EF] rounded-full mb-4">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10c0-.63.3-1.22.8-1.6"/>
                             <path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"/>
@@ -155,7 +155,7 @@ $error_message = $error_messages[$error] ?? '';
                 <!-- Alternative Actions -->
                 <div class="space-y-3">
                     <a href="<?php echo home_url('/registrer/'); ?>"
-                       class="w-full block text-center px-6 py-3 border border-[#E5E0D5] text-[#1A1A1A] font-medium rounded-lg hover:bg-[#F7F5EF] transition-colors">
+                       class="w-full block text-center px-6 py-3 border border-[#E5E0D5] text-[#1A1A1A] font-medium rounded-lg hover:bg-gray-50 transition-colors">
                         Registrer deg på nytt
                     </a>
 

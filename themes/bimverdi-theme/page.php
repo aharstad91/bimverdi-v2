@@ -166,7 +166,7 @@ get_header(); ?>
 .bv-prose blockquote {
     margin: 32px 0;
     padding: 24px 32px;
-    background-color: #F7F5EF;
+    background-color: #F5F5F4;
     border-left: 4px solid #FF8B5E;
     border-radius: 0 8px 8px 0;
 }
@@ -236,20 +236,20 @@ get_header(); ?>
 
 .bv-prose th {
     font-weight: 600;
-    background-color: #F7F5EF;
+    background-color: #F5F5F4;
 }
 
 .bv-prose code {
     font-family: 'SF Mono', Monaco, monospace;
     font-size: 0.875em;
-    background-color: #F7F5EF;
+    background-color: #F5F5F4;
     padding: 2px 6px;
     border-radius: 4px;
 }
 
 .bv-prose pre {
     background-color: #1A1A1A;
-    color: #F7F5EF;
+    color: #F5F5F4;
     padding: 24px;
     border-radius: 8px;
     overflow-x: auto;

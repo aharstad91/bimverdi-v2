@@ -29,7 +29,7 @@ if (count($sections) < 2) {
             <li>
                 <a
                     href="#<?php echo esc_attr($id); ?>"
-                    class="section-nav-link inline-flex items-center px-4 py-2 text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-[#F7F5EF] rounded-lg transition-colors whitespace-nowrap"
+                    class="section-nav-link inline-flex items-center px-4 py-2 text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] hover:bg-gray-50 rounded-lg transition-colors whitespace-nowrap"
                     data-section="<?php echo esc_attr($id); ?>"
                 >
                     <?php echo esc_html($label); ?>
@@ -53,7 +53,7 @@ if (count($sections) < 2) {
 /* Active state for section nav */
 .section-nav-link.active {
     color: #1A1A1A;
-    background-color: #F7F5EF;
+    background-color: #F5F5F4;
 }
 
 /* Smooth scroll for the page */

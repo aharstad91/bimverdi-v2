@@ -112,8 +112,8 @@ function bimverdi_is_account_route_active($route, $current_route) {
                     <li>
                         <a href="<?php echo esc_url($url); ?>"
                            class="flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors <?php echo $is_active
-                               ? 'bg-[#F7F5EF] text-[#1A1A1A] font-medium'
-                               : 'text-[#5A5A5A] hover:bg-[#F7F5EF] hover:text-[#1A1A1A]'; ?>"
+                               ? 'bg-gray-100 text-[#1A1A1A] font-medium'
+                               : 'text-[#5A5A5A] hover:bg-gray-50 hover:text-[#1A1A1A]'; ?>"
                            <?php echo $is_active ? 'aria-current="page"' : ''; ?>>
                             <span class="flex-shrink-0 <?php echo $is_active ? 'text-[#1A1A1A]' : 'text-[#888888]'; ?>">
                                 <?php echo $icon_svg; ?>

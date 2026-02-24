@@ -184,7 +184,7 @@ get_template_part('parts/components/page-header', null, [
                    id="logo"
                    name="logo"
                    accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
-                   class="w-full text-sm text-[#5A5A5A] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-[#E5E0D5] file:text-sm file:font-medium file:bg-[#F7F5EF] file:text-[#1A1A1A] hover:file:bg-[#EFE9DE] file:cursor-pointer file:transition-colors">
+                   class="w-full text-sm text-[#5A5A5A] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-[#E5E0D5] file:text-sm file:font-medium file:bg-gray-100 file:text-[#1A1A1A] hover:file:bg-gray-200 file:cursor-pointer file:transition-colors">
             <p class="mt-1 text-xs text-[#888888]">JPG, PNG, GIF, WebP eller SVG. Maks 2 MB.</p>
         </div>
 

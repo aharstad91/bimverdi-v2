@@ -95,11 +95,11 @@ if (empty($kunnskapskilder)) {
             <!-- Type Badge -->
             <div class="mb-3">
                 <?php if ($kategori) : ?>
-                <span class="px-2 py-1 bg-[#F7F5EF] rounded text-xs font-medium text-[#5A5A5A]">
+                <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-[#5A5A5A]">
                     <?php echo esc_html($kategori); ?>
                 </span>
                 <?php elseif ($kildetype) : ?>
-                <span class="px-2 py-1 bg-[#F7F5EF] rounded text-xs font-medium text-[#5A5A5A]">
+                <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-[#5A5A5A]">
                     <?php echo esc_html($type_config['label']); ?>
                 </span>
                 <?php endif; ?>
