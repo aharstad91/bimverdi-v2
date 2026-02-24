@@ -45,6 +45,7 @@ if ($company_id) {
     ],
 ]); ?>
 
+<?php if (!empty($user_tools)): ?>
 <!-- Tools Table -->
 <div class="overflow-x-auto">
     <table class="w-full text-left text-sm">
@@ -59,14 +60,6 @@ if ($company_id) {
             </tr>
         </thead>
         <tbody>
-            <?php if (empty($user_tools)): ?>
-            <!-- Empty row with message -->
-            <tr>
-                <td colspan="6" class="py-8 text-center text-[#57534E]">
-                    <?php _e('Ingen verktøy registrert ennå.', 'bimverdi'); ?>
-                </td>
-            </tr>
-            <?php else: ?>
             <?php foreach ($user_tools as $tool): 
                 $logo = get_field('logo', $tool->ID);
                 $tool_status = get_post_status($tool->ID);
@@ -140,34 +133,26 @@ if ($company_id) {
                 </td>
             </tr>
             <?php endforeach; ?>
-            <?php endif; ?>
         </tbody>
     </table>
-    
-    <?php if (!empty($user_tools)): ?>
+
     <!-- Tool count -->
     <div class="flex justify-end py-3 text-xs text-[#57534E]">
         <?php printf(_n('Viser %d av %d verktøy', 'Viser %d av %d verktøy', count($user_tools), 'bimverdi'), count($user_tools), count($user_tools)); ?>
     </div>
-    <?php endif; ?>
 </div>
+<?php endif; ?>
 
 <?php if (empty($user_tools)): ?>
-<!-- MAL / PLACEHOLDER Section (Per UI-CONTRACT) -->
-<div class="border-t border-[#E7E5E4] mt-16 pt-10">
-    <div class="text-center mb-8">
-        <span class="inline-block text-xs font-bold uppercase tracking-wider text-[#A8A29E] bg-[#F5F5F4] px-3 py-1 rounded">
-            <?php _e('MAL / PLACEHOLDER', 'bimverdi'); ?>
-        </span>
-    </div>
-    
-    <div class="max-w-lg mx-auto text-center py-12 px-6 bg-[#F5F5F4] rounded-lg border border-dashed border-[#E7E5E4]">
+<!-- Empty state -->
+<div class="mt-8">
+    <div class="max-w-lg mx-auto text-center py-12 px-6">
         <div class="w-16 h-16 bg-[#F5F5F4] rounded-lg flex items-center justify-center mx-auto mb-5">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[#A8A29E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
         </div>
-        <h3 class="text-lg font-semibold text-[#111827] mb-2"><?php _e('Ingen verktøy aktivert', 'bimverdi'); ?></h3>
+        <h3 class="text-lg font-semibold text-[#111827] mb-2"><?php _e('Ingen verktøy registrert ennå', 'bimverdi'); ?></h3>
         <p class="text-sm text-[#57534E] mb-6 leading-relaxed">
-            <?php _e('Du har foreløpig ikke tilgang til noen verktøy. Kom i gang ved å opprette et nytt prosjekt eller søk i katalogen.', 'bimverdi'); ?>
+            <?php _e('Registrer verktøy foretaket ditt bruker i BIM-arbeid, eller utforsk verktøykatalogen.', 'bimverdi'); ?>
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <?php bimverdi_button([
@@ -176,13 +161,14 @@ if ($company_id) {
                 'href'    => home_url('/verktoy/'),
                 'icon'    => 'search',
             ]); ?>
+            <?php if (bimverdi_can_access('register_tool')): ?>
             <?php bimverdi_button([
-                'text'    => __('Les mer', 'bimverdi'),
+                'text'    => __('Registrer verktøy', 'bimverdi'),
                 'variant' => 'secondary',
-                'href'    => home_url('/min-side/registrer-verktoy/'),
-                'icon'    => 'arrow-right',
-                'icon_position' => 'right',
+                'href'    => home_url('/min-side/verktoy/registrer/'),
+                'icon'    => 'plus',
             ]); ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
