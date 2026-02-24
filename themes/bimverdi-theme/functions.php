@@ -88,6 +88,12 @@ function bimverdi_add_webawesome_loader() {
 add_action('wp_head', 'bimverdi_add_webawesome_loader', 5);
 
 /**
+ * Load Taxonomy Helpers
+ * Provides cached slug-to-name conversion for taxonomy terms
+ */
+require_once get_template_directory() . '/inc/taxonomy-helpers.php';
+
+/**
  * Load Min Side Helpers
  * Provides routing, auth, and navigation helpers for /min-side/*
  */

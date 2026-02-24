@@ -56,10 +56,10 @@ $kommune = get_field('kommune', $company_id);
 $stiftelsesdato = get_field('stiftelsesdato', $company_id);
 $bedriftsnavn = get_field('bedriftsnavn', $company_id);
 
-// Hent taxonomier
-$bransjekategorier = wp_get_post_terms($company_id, 'bransjekategori', array('fields' => 'all'));
-$kundetyper = wp_get_post_terms($company_id, 'kundetype', array('fields' => 'all'));
-$temagrupper = wp_get_post_terms($company_id, 'temagruppe', array('fields' => 'all'));
+// Hent taxonomier — get_the_terms() uses WP cache, avoids extra queries
+$bransjekategorier = get_the_terms($company_id, 'bransjekategori');
+$kundetyper = get_the_terms($company_id, 'kundetype');
+$temagrupper = get_the_terms($company_id, 'temagruppe');
 
 // Hent foretakets verktøy (ACF post_object lagrer ID som integer)
 $company_tools = get_posts(array(
@@ -234,20 +234,6 @@ $company_kunnskapskilder = get_posts(array(
 
                 <!-- Om foretaket Section -->
                 <?php
-                // Labels for bransje_rolle
-                $bransje_labels = array(
-                    'bestiller_byggherre' => 'Bestiller/byggherre',
-                    'arkitekt_radgiver' => 'Arkitekt/rådgiver',
-                    'entreprenor_byggmester' => 'Entreprenør/byggmester',
-                    'byggevareprodusent' => 'Byggevareprodusent',
-                    'byggevarehandel' => 'Byggevarehandel',
-                    'eiendom_drift' => 'Eiendom/drift',
-                    'digital_leverandor' => 'Digital leverandør',
-                    'organisasjon' => 'Organisasjon/nettverk',
-                    'tjenesteleverandor' => 'Tjenesteleverandør',
-                    'offentlig' => 'Offentlig instans',
-                    'utdanning' => 'Utdanning',
-                );
 
                 // Labels for interesseomrader
                 $interesse_labels = array(
@@ -278,19 +264,7 @@ $company_kunnskapskilder = get_posts(array(
                         <p class="text-[#57534E] italic mb-6">Ingen beskrivelse tilgjengelig.</p>
                     <?php endif; ?>
 
-                    <!-- Bransje/rolle -->
-                    <?php if (!empty($bransje_rolle) && is_array($bransje_rolle)): ?>
-                    <div class="mb-4">
-                        <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-2">Bransje/rolle</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <?php foreach ($bransje_rolle as $rolle): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
-                                <?php echo esc_html(isset($bransje_labels[$rolle]) ? $bransje_labels[$rolle] : $rolle); ?>
-                            </span>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <?php endif; ?>
+                    <!-- Bransje/rolle (from taxonomy, displayed in Tags section below) -->
 
                     <!-- Interesseområder -->
                     <?php if (!empty($interesseomrader) && is_array($interesseomrader)): ?>
@@ -306,28 +280,14 @@ $company_kunnskapskilder = get_posts(array(
                     </div>
                     <?php endif; ?>
 
-                    <!-- Kundetyper (fra ACF) -->
-                    <?php
-                    $kundetype_labels = array(
-                        'bestiller' => 'Bestillere/byggherrer',
-                        'arkitekt' => 'Arkitekter/rådgivere',
-                        'entreprenor' => 'Entreprenører',
-                        'produsent' => 'Produsenter',
-                        'handel' => 'Handel',
-                        'eiendom' => 'Eiendomsforvaltere',
-                        'digital' => 'Digitale leverandører',
-                        'tjeneste' => 'Tjenesteytere',
-                        'utdanning' => 'Utdanning',
-                        'brukere' => 'Sluttbrukere',
-                    );
-                    ?>
+                    <!-- Kundetyper (from ACF checkbox, using taxonomy lookup for readable names) -->
                     <?php if (!empty($kundetyper_acf) && is_array($kundetyper_acf)): ?>
                     <div class="mb-4">
                         <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-2">Kundetyper</h3>
                         <div class="flex flex-wrap gap-2">
-                            <?php foreach ($kundetyper_acf as $kundetype): ?>
+                            <?php foreach ($kundetyper_acf as $kundetype_slug): ?>
                             <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
-                                <?php echo esc_html(isset($kundetype_labels[$kundetype]) ? $kundetype_labels[$kundetype] : $kundetype); ?>
+                                <?php echo esc_html(bimverdi_get_readable_term($kundetype_slug, 'kundetype')); ?>
                             </span>
                             <?php endforeach; ?>
                         </div>

@@ -247,15 +247,7 @@ if (!empty($latest_post)) {
                 <?php foreach ($companies as $index => $company):
                     $color = $avatar_colors[$index % count($avatar_colors)];
                     $initial = mb_strtoupper(mb_substr($company->post_title, 0, 1));
-                    $bransje = '';
-                    $terms = wp_get_post_terms($company->ID, 'bransjekategori', array('fields' => 'names'));
-                    if (!empty($terms) && !is_wp_error($terms)) {
-                        $bransje = $terms[0];
-                    }
-                    if (!$bransje) {
-                        $bransje = get_field('bransje_rolle', $company->ID);
-                        if (is_array($bransje)) $bransje = $bransje[0] ?? '';
-                    }
+                    $bransje = bimverdi_get_first_term_name($company->ID, 'bransjekategori');
                     $company_desc = wp_trim_words(get_the_excerpt($company) ?: strip_tags($company->post_content), 18);
                 ?>
                 <a href="<?php echo esc_url(get_permalink($company)); ?>" class="block group">
@@ -272,12 +264,7 @@ if (!empty($latest_post)) {
                             </div>
                         </div>
                         <?php if ($company_desc): ?>
-                        <p class="text-sm text-[#57534E] line-clamp-2 mb-4"><?php echo esc_html($company_desc); ?></p>
-                        <?php endif; ?>
-                        <?php if ($bransje): ?>
-                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-[#F5F5F4] text-[#57534E] border border-[#E7E5E4]">
-                            <?php echo esc_html($bransje); ?>
-                        </span>
+                        <p class="text-sm text-[#57534E] line-clamp-2"><?php echo esc_html($company_desc); ?></p>
                         <?php endif; ?>
                     </div>
                 </a>
