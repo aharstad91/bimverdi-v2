@@ -1,10 +1,10 @@
 <?php
 /**
  * Min Side - Dashboard Part
- * 
- * Shows quick stats, shortcuts, and profile overview.
+ *
+ * Action-first layout: quick actions up top, stats + company as secondary info.
  * Used by template-minside-universal.php
- * 
+ *
  * @package BimVerdi_Theme
  */
 
@@ -65,7 +65,7 @@ if (empty($kilde_posts)) {
 }
 $my_kunnskapskilder_count = count($kilde_posts);
 
-// Get events the user is registered for — match arrangementer-list.php query
+// Get events the user is registered for
 $my_events_count = 0;
 $registrations = get_posts([
     'post_type'      => 'pamelding',
@@ -80,7 +80,20 @@ $registrations = get_posts([
 ]);
 $my_events_count = count($registrations);
 
-// Get company role info for welcome message
+// Company logo
+$logo_url = '';
+if ($company_id) {
+    $logo = get_field('logo', $company_id);
+    if ($logo) {
+        if (is_array($logo)) {
+            $logo_url = $logo['sizes']['thumbnail'] ?? $logo['url'] ?? '';
+        } else {
+            $logo_url = wp_get_attachment_image_url($logo, 'thumbnail') ?: '';
+        }
+    }
+}
+
+// Company role
 $user_role_label = '';
 $company_role_label = '';
 if ($company) {
@@ -93,27 +106,11 @@ if ($company) {
 
 ?>
 
-<!-- Page Header -->
-<?php get_template_part('parts/components/page-header', null, [
-    'title' => __('Dashbord', 'bimverdi'),
-    'description' => sprintf(__('Velkommen tilbake, %s', 'bimverdi'), $current_user->display_name),
+<!-- Account Layout with Sidenav -->
+<?php get_template_part('parts/components/account-layout', null, [
+    'title' => sprintf(__('Hei, %s', 'bimverdi'), $current_user->first_name ?: $current_user->display_name),
+    'description' => $company ? esc_html(get_the_title($company_id)) . ($user_role_label ? ' · ' . esc_html($user_role_label) : '') : __('Velkommen til Min Side', 'bimverdi'),
 ]); ?>
-
-<?php if ($company && $user_role_label): ?>
-<p class="text-sm text-[#57534E] -mt-4 mb-6">
-    <?php
-    $role_text = sprintf(
-        'Du er %s i %s',
-        esc_html($user_role_label),
-        '<a href="' . esc_url(home_url('/min-side/foretak/')) . '" class="text-[#111827] underline hover:no-underline">' . esc_html(get_the_title($company_id)) . '</a>'
-    );
-    if ($company_role_label) {
-        $role_text .= sprintf(', som er %s i BIM Verdi', esc_html($company_role_label));
-    }
-    echo $role_text . '.';
-    ?>
-</p>
-<?php endif; ?>
 
 <!-- Success Messages -->
 <?php if (isset($_GET['welcome']) && $_GET['welcome'] == '1'):
@@ -148,114 +145,91 @@ if ($company) {
     </div>
 <?php endif; ?>
 
-<!-- Quick Stats -->
-<div class="grid grid-cols-3 mb-12">
+<!-- Quick Actions — 2x2 grid -->
+<div class="grid grid-cols-2 gap-3 mb-10">
 
-    <!-- Mine verktøy -->
-    <div class="py-4 pr-6 border-r border-[#E7E5E4]">
-        <div class="flex items-center gap-2 mb-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-            <h3 class="text-sm text-[#57534E]"><?php _e('Mine verktøy', 'bimverdi'); ?></h3>
+    <a href="<?php echo esc_url(home_url('/min-side/registrer-verktoy/')); ?>" class="group flex items-center gap-4 p-5 rounded-xl border border-[#E7E5E4] hover:border-[#FF8B5E] hover:shadow-sm transition-all">
+        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-100 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         </div>
-        <p class="text-2xl font-semibold text-[#111827] mb-1"><?php echo esc_html($my_tools_count); ?></p>
-        <a href="<?php echo esc_url(home_url('/min-side/verktoy/')); ?>" class="text-sm text-[#57534E] hover:text-[#111827]">
-            <?php _e('Se alle', 'bimverdi'); ?> →
-        </a>
-    </div>
+        <div>
+            <span class="text-sm font-semibold text-[#111827] group-hover:text-[#EA580C] transition-colors"><?php _e('Registrer verktøy', 'bimverdi'); ?></span>
+            <p class="text-xs text-[#78716C] mt-0.5"><?php _e('Legg til nytt BIM-verktøy', 'bimverdi'); ?></p>
+        </div>
+    </a>
 
-    <!-- Mine kunnskapskilder -->
-    <div class="py-4 px-6 border-r border-[#E7E5E4]">
-        <div class="flex items-center gap-2 mb-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-            <h3 class="text-sm text-[#57534E]"><?php _e('Mine kunnskapskilder', 'bimverdi'); ?></h3>
+    <a href="<?php echo esc_url(home_url('/min-side/kunnskapskilder/registrer/')); ?>" class="group flex items-center gap-4 p-5 rounded-xl border border-[#E7E5E4] hover:border-[#005898] hover:shadow-sm transition-all">
+        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005898" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         </div>
-        <p class="text-2xl font-semibold text-[#111827] mb-1"><?php echo esc_html($my_kunnskapskilder_count); ?></p>
-        <a href="<?php echo esc_url(home_url('/min-side/kunnskapskilder/')); ?>" class="text-sm text-[#57534E] hover:text-[#111827]">
-            <?php _e('Se alle', 'bimverdi'); ?> →
-        </a>
-    </div>
+        <div>
+            <span class="text-sm font-semibold text-[#111827] group-hover:text-[#005898] transition-colors"><?php _e('Registrer kunnskapskilde', 'bimverdi'); ?></span>
+            <p class="text-xs text-[#78716C] mt-0.5"><?php _e('Del en veiledning eller standard', 'bimverdi'); ?></p>
+        </div>
+    </a>
 
-    <!-- Mine arrangementer -->
-    <div class="py-4 pl-6">
-        <div class="flex items-center gap-2 mb-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <h3 class="text-sm text-[#57534E]"><?php _e('Mine arrangementer', 'bimverdi'); ?></h3>
+    <a href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>" class="group flex items-center gap-4 p-5 rounded-xl border border-[#E7E5E4] hover:border-[#57534E] hover:shadow-sm transition-all">
+        <div class="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0 group-hover:bg-stone-200 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>
         </div>
-        <p class="text-2xl font-semibold text-[#111827] mb-1"><?php echo esc_html($my_events_count); ?></p>
-        <a href="<?php echo esc_url(home_url('/min-side/arrangementer/')); ?>" class="text-sm text-[#57534E] hover:text-[#111827]">
-            <?php _e('Se alle', 'bimverdi'); ?> →
-        </a>
-    </div>
+        <div>
+            <span class="text-sm font-semibold text-[#111827]"><?php _e('Mitt foretak', 'bimverdi'); ?></span>
+            <p class="text-xs text-[#78716C] mt-0.5"><?php _e('Foretaksprofil og kolleger', 'bimverdi'); ?></p>
+        </div>
+    </a>
+
+    <a href="<?php echo esc_url(home_url('/min-side/profil/')); ?>" class="group flex items-center gap-4 p-5 rounded-xl border border-[#E7E5E4] hover:border-[#57534E] hover:shadow-sm transition-all">
+        <div class="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0 group-hover:bg-stone-200 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div>
+            <span class="text-sm font-semibold text-[#111827]"><?php _e('Min profil', 'bimverdi'); ?></span>
+            <p class="text-xs text-[#78716C] mt-0.5"><?php _e('Rediger personlig informasjon', 'bimverdi'); ?></p>
+        </div>
+    </a>
+
 </div>
 
-<!-- Snarveier Section (Subtle action links) -->
-<div class="mb-12">
-    <h2 class="text-lg font-semibold text-[#111827] mb-4"><?php _e('Snarveier', 'bimverdi'); ?></h2>
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+<!-- Stats + Company — compact secondary row -->
+<div class="flex items-center gap-6 text-sm text-[#57534E] pt-6 border-t border-[#E7E5E4]">
 
-        <a href="<?php echo home_url('/min-side/registrer-verktoy/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F5F5F4] transition-colors group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#111827]"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span class="text-sm font-medium text-[#111827]"><?php _e('Registrer verktøy', 'bimverdi'); ?></span>
-        </a>
+    <!-- Stats inline -->
+    <a href="<?php echo esc_url(home_url('/min-side/verktoy/')); ?>" class="flex items-center gap-2 hover:text-[#111827] transition-colors">
+        <span class="font-semibold text-[#111827] text-base"><?php echo esc_html($my_tools_count); ?></span>
+        <?php _e('verktøy', 'bimverdi'); ?>
+    </a>
 
-        <a href="<?php echo home_url('/min-side/kunnskapskilder/registrer/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F5F5F4] transition-colors group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#111827]"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span class="text-sm font-medium text-[#111827]"><?php _e('Registrer kunnskapskilde', 'bimverdi'); ?></span>
-        </a>
+    <span class="text-[#D6D3D1]">&middot;</span>
 
-        <a href="<?php echo home_url('/min-side/foretak/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F5F5F4] transition-colors group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#111827]"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path></svg>
-            <span class="text-sm font-medium text-[#111827]"><?php _e('Mitt foretak', 'bimverdi'); ?></span>
-        </a>
+    <a href="<?php echo esc_url(home_url('/min-side/kunnskapskilder/')); ?>" class="flex items-center gap-2 hover:text-[#111827] transition-colors">
+        <span class="font-semibold text-[#111827] text-base"><?php echo esc_html($my_kunnskapskilder_count); ?></span>
+        <?php _e('kunnskapskilder', 'bimverdi'); ?>
+    </a>
 
-        <a href="<?php echo home_url('/min-side/profil/'); ?>" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#F5F5F4] transition-colors group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888] group-hover:text-[#111827]"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span class="text-sm font-medium text-[#111827]"><?php _e('Min profil', 'bimverdi'); ?></span>
-        </a>
+    <span class="text-[#D6D3D1]">&middot;</span>
 
-    </div>
-</div>
+    <a href="<?php echo esc_url(home_url('/min-side/arrangementer/')); ?>" class="flex items-center gap-2 hover:text-[#111827] transition-colors">
+        <span class="font-semibold text-[#111827] text-base"><?php echo esc_html($my_events_count); ?></span>
+        <?php _e('arrangementer', 'bimverdi'); ?>
+    </a>
 
-<!-- Foretak Info (Borderless section with divider) -->
-<?php if ($company): ?>
-<div class="pt-8 border-t border-[#E7E5E4]">
-    <h2 class="text-lg font-semibold text-[#111827] mb-4"><?php _e('Mitt foretak', 'bimverdi'); ?></h2>
-    <div class="flex items-start gap-4">
-        <?php
-        $logo = get_field('logo', $company_id);
-        $logo_url = '';
-        if ($logo) {
-            if (is_array($logo)) {
-                $logo_url = $logo['sizes']['thumbnail'] ?? $logo['url'] ?? '';
-            } else {
-                $logo_url = wp_get_attachment_image_url($logo, 'thumbnail') ?: '';
-            }
-        }
-        if ($logo_url): ?>
-            <img src="<?php echo esc_url($logo_url); ?>" alt="" class="w-14 h-14 rounded-lg object-cover">
-        <?php else: ?>
-            <div class="w-14 h-14 rounded-lg bg-[#F5F5F4] flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#888]"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path></svg>
-            </div>
+    <?php if ($company): ?>
+    <span class="text-[#D6D3D1]">&middot;</span>
+
+    <a href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>" class="flex items-center gap-2 hover:text-[#111827] transition-colors">
+        <?php if ($logo_url): ?>
+            <img src="<?php echo esc_url($logo_url); ?>" alt="" class="w-5 h-5 rounded object-cover">
         <?php endif; ?>
+        <?php echo esc_html(get_the_title($company_id)); ?>
+    </a>
+    <?php endif; ?>
 
-        <div class="flex-1 min-w-0">
-            <h3 class="text-base font-semibold text-[#111827]"><?php echo esc_html(get_the_title($company_id)); ?></h3>
-            <?php $org_nr = get_field('organisasjonsnummer', $company_id); ?>
-            <?php if ($org_nr): ?>
-                <p class="text-sm text-[#57534E]"><?php _e('Org.nr:', 'bimverdi'); ?> <?php echo esc_html($org_nr); ?></p>
-            <?php endif; ?>
-            <a href="<?php echo home_url('/min-side/foretak/'); ?>" class="inline-block mt-2 text-sm text-[#57534E] hover:text-[#111827]">
-                <?php _e('Vis detaljer', 'bimverdi'); ?> →
-            </a>
-        </div>
-    </div>
 </div>
-<?php else: ?>
+
+<?php if (!$company): ?>
 <!-- No company connected -->
-<div class="pt-8 border-t border-[#E7E5E4]">
-    <h2 class="text-lg font-semibold text-[#111827] mb-4"><?php _e('Mitt foretak', 'bimverdi'); ?></h2>
-    <p class="text-[#57534E] mb-4"><?php _e('Du er ikke koblet til et foretak ennå.', 'bimverdi'); ?></p>
+<div class="mt-8 pt-6 border-t border-[#E7E5E4]">
+    <p class="text-sm text-[#57534E] mb-4"><?php _e('Du er ikke koblet til et foretak ennå.', 'bimverdi'); ?></p>
     <?php bimverdi_button([
         'text'    => __('Registrer foretak', 'bimverdi'),
         'variant' => 'primary',
@@ -264,3 +238,5 @@ if ($company) {
     ]); ?>
 </div>
 <?php endif; ?>
+
+<?php get_template_part('parts/components/account-layout-end'); ?>

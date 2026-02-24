@@ -101,10 +101,25 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
                     $bransjer = get_the_terms($company_id, 'bransjekategori');
                     if ($bransjer && !is_wp_error($bransjer)):
                     ?>
+                        <p class="text-xs font-medium text-[#57534E] uppercase tracking-wide mb-1"><?php _e('Rolle/bransje', 'bimverdi'); ?></p>
                         <div class="flex flex-wrap gap-2 mb-3">
                             <?php foreach ($bransjer as $bransje): ?>
                                 <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded">
                                     <?php echo esc_html($bransje->name); ?>
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php
+                    $kundetyper = get_the_terms($company_id, 'kundetype');
+                    if ($kundetyper && !is_wp_error($kundetyper)):
+                    ?>
+                        <p class="text-xs font-medium text-[#57534E] uppercase tracking-wide mb-1"><?php _e('Kundetyper', 'bimverdi'); ?></p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <?php foreach ($kundetyper as $kundetype): ?>
+                                <span class="inline-block text-xs font-medium bg-[#FFF8F5] text-[#C2613A] px-2 py-1 rounded">
+                                    <?php echo esc_html($kundetype->name); ?>
                                 </span>
                             <?php endforeach; ?>
                         </div>
