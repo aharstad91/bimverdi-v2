@@ -408,13 +408,24 @@ class BIMVerdi_Access_Control {
         );
         
         $current_path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-        
+
         // Remove site path if in subdirectory
         $site_path = trim(parse_url(home_url(), PHP_URL_PATH), '/');
         if ($site_path && strpos($current_path, $site_path) === 0) {
             $current_path = trim(substr($current_path, strlen($site_path)), '/');
         }
-        
+
+        // Pages that should be accessible without company (open to all logged-in users)
+        $open_pages = array(
+            'min-side/foretak/registrer',
+            'min-side/registrer-foretak',
+        );
+        foreach ($open_pages as $open_page) {
+            if (strpos($current_path, $open_page) === 0) {
+                return;
+            }
+        }
+
         foreach ($protected_pages as $page_path => $feature) {
             if (strpos($current_path, $page_path) === 0) {
                 if (!self::can_access($feature)) {
