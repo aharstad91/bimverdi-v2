@@ -42,13 +42,6 @@ if (!empty($key) && !empty($login)) {
 <main class="min-h-screen bg-[#F7F5EF] py-12 px-4">
     <div class="max-w-md mx-auto">
 
-        <!-- Logo/Brand -->
-        <div class="text-center mb-8">
-            <a href="<?php echo home_url('/'); ?>" class="inline-block">
-                <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 58px; width: auto;">
-            </a>
-        </div>
-
         <!-- Main Card -->
         <div class="bg-white border border-[#E5E0D5] rounded-lg p-8">
 
@@ -127,7 +120,7 @@ if (!empty($key) && !empty($login)) {
                 </form>
 
                 <!-- Security Tips -->
-                <div class="mt-6 p-4 bg-[#F7F5EF] border border-[#E5E0D5] rounded-lg">
+                <div class="mt-4 p-3 bg-[#F7F5EF] border border-[#E5E0D5] rounded-lg">
                     <h3 class="text-sm font-semibold text-[#1A1A1A] mb-2 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
