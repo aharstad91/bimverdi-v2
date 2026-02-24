@@ -6,6 +6,7 @@
  * Replaces Gravity Forms Form #7 with a direct POST handler.
  *
  * Pattern: POST-Redirect-GET (PRG)
+ * Hook: template_redirect (runs after CPTs/taxonomies are registered on init)
  * - Success: /min-side/foretak/?updated=1
  * - Error:   /min-side/foretak/rediger/?bv_error=<code>
  *
@@ -20,7 +21,7 @@ if (!defined('ABSPATH')) {
 /**
  * Handle foretak edit form submission
  */
-add_action('init', function () {
+add_action('template_redirect', function () {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['bimverdi_edit_foretak'])) {
         return;
     }
@@ -166,16 +167,18 @@ add_action('init', function () {
     $cpt_tax_industry = defined('BV_TAX_INDUSTRY') ? BV_TAX_INDUSTRY : 'bransjekategori';
     $cpt_tax_customer = defined('BV_TAX_CUSTOMER_TYPE') ? BV_TAX_CUSTOMER_TYPE : 'kundetype';
 
-    if (!empty($bransje_rolle)) {
-        wp_set_object_terms($company_id, $bransje_rolle, $cpt_tax_industry);
+    $bransje_result = wp_set_object_terms($company_id, !empty($bransje_rolle) ? $bransje_rolle : [], $cpt_tax_industry);
+    if (is_wp_error($bransje_result)) {
+        error_log('BIMVerdi: Failed to set bransjekategori terms: ' . $bransje_result->get_error_message());
     } else {
-        wp_set_object_terms($company_id, [], $cpt_tax_industry);
+        error_log('BIMVerdi: Set bransjekategori terms: ' . implode(', ', $bransje_rolle) . ' → result: ' . implode(', ', (array) $bransje_result));
     }
 
-    if (!empty($kundetyper)) {
-        wp_set_object_terms($company_id, $kundetyper, $cpt_tax_customer);
+    $kundetype_result = wp_set_object_terms($company_id, !empty($kundetyper) ? $kundetyper : [], $cpt_tax_customer);
+    if (is_wp_error($kundetype_result)) {
+        error_log('BIMVerdi: Failed to set kundetype terms: ' . $kundetype_result->get_error_message());
     } else {
-        wp_set_object_terms($company_id, [], $cpt_tax_customer);
+        error_log('BIMVerdi: Set kundetype terms: ' . implode(', ', $kundetyper) . ' → result: ' . implode(', ', (array) $kundetype_result));
     }
 
     // Clear rate limit on success
