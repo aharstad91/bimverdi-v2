@@ -68,6 +68,14 @@ $lovpalagte            = get_field('lovpalagte_standarder', $kunnskapskilde_id);
 $ant_anbefalte         = get_field('ant_anbefalte_standarder', $kunnskapskilde_id);
 $anbefalte             = get_field('anbefalte_standarder', $kunnskapskilde_id);
 
+// Handle array values (ACF can return string or array for select fields)
+if (is_array($current_spraak)) $current_spraak = reset($current_spraak);
+if (is_array($current_utgivelsesaar)) $current_utgivelsesaar = reset($current_utgivelsesaar);
+if (is_array($current_tilgang)) $current_tilgang = reset($current_tilgang);
+if (is_array($current_kildetype)) $current_kildetype = reset($current_kildetype);
+if (is_array($current_geo)) $current_geo = reset($current_geo);
+if (is_array($current_dataformat)) $current_dataformat = reset($current_dataformat);
+
 $kilde_status  = get_post_status($kunnskapskilde_id);
 $kilde_updated = get_the_modified_date('d.m.Y', $kunnskapskilde_id);
 

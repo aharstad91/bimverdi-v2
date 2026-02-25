@@ -53,8 +53,11 @@ $current_teknologi = get_field('type_teknologi', $tool_id);
 $current_anvendelser = get_field('anvendelser', $tool_id);
 if (!is_array($current_anvendelser)) $current_anvendelser = [];
 
-// Handle array values for formaalstema (can be string or array)
+// Handle array values (ACF can return string or array for radio/select fields)
 if (is_array($current_formaalstema)) $current_formaalstema = reset($current_formaalstema);
+if (is_array($current_bim)) $current_bim = reset($current_bim);
+if (is_array($current_ressurs)) $current_ressurs = reset($current_ressurs);
+if (is_array($current_teknologi)) $current_teknologi = reset($current_teknologi);
 
 $tool_category_terms = wp_get_post_terms($tool_id, 'verktoykategori');
 $tool_category = !empty($tool_category_terms) ? $tool_category_terms[0]->name : 'Ukategorisert';
