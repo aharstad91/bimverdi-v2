@@ -114,7 +114,7 @@ $anvendelser_options = [
 ]); ?>
 
 <!-- Form Container -->
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl">
 
     <!-- Company Info -->
     <?php if ($company): ?>

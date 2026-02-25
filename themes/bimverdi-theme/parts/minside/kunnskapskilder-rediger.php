@@ -192,7 +192,7 @@ if (is_wp_error($current_kategorier)) $current_kategorier = [];
     'description' => 'Oppdater informasjon om ' . esc_html($kilde_navn)
 ]); ?>
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl">
 
     <!-- Kunnskapskilde Info Badge -->
     <div class="mb-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center justify-between">

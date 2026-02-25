@@ -106,7 +106,7 @@ if (is_wp_error($kategorier)) $kategorier = [];
     'description' => 'Del standarder, veiledere og andre ressurser med BIM Verdi-nettverket'
 ]); ?>
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl">
 
     <?php if ($company): ?>
     <div class="mb-8 flex items-center gap-3 text-sm text-[#57534E]">

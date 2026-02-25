@@ -135,7 +135,7 @@ $anvendelser_options = [
     'description' => 'Oppdater informasjon om ' . esc_html($tool_name)
 ]); ?>
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl">
 
     <!-- Tool Info Badge -->
     <div class="mb-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg flex items-center justify-between">
