@@ -28,7 +28,7 @@ class BIMVerdi_Company_Invitations {
     const TOKEN_EXPIRY = 604800;
     
     /** @var int Maximum invitations per company (default) */
-    const DEFAULT_MAX_INVITATIONS = 50;
+    const DEFAULT_MAX_INVITATIONS = 10;
     
     /**
      * Constructor - initialize hooks

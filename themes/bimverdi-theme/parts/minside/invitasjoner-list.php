@@ -61,7 +61,7 @@ $all_invitations = $invitations->get_company_invitations($company_id);
 $company_users = $invitations->get_company_users($company_id);
 
 // Calculate remaining invitations based on actual users (excluding hovedkontakt)
-$max_tilleggskontakter = 2; // Default max
+$max_tilleggskontakter = 10; // Default max
 $acf_max = get_field('antall_invitasjoner_tillatt', $company_id);
 if ($acf_max && $acf_max > 0) {
     $max_tilleggskontakter = (int) $acf_max;

@@ -77,7 +77,7 @@ usort($company_users, function($a, $b) {
 // Get invitations data
 $invitations = null;
 $pending_invitations = [];
-$max_tilleggskontakter = 50;  // Default from DEFAULT_MAX_INVITATIONS constant
+$max_tilleggskontakter = 10;  // Default from DEFAULT_MAX_INVITATIONS constant
 $remaining_invitations = 0;
 
 if (function_exists('bimverdi_get_invitations')) {
