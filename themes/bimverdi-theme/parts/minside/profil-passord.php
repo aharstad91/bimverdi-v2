@@ -86,67 +86,57 @@ $display_name = trim($first_name . ' ' . $last_name) ?: $current_user->display_n
         <?php endif; ?>
 
         <!-- Password Form -->
-        <div class="bg-white border border-[#E7E5E4] rounded-lg p-8">
-            <h2 class="text-xl font-bold text-[#111827] mb-6 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <?php _e('Nytt passord', 'bimverdi'); ?>
-            </h2>
+        <form method="post" class="space-y-6">
+            <?php wp_nonce_field('bimverdi_change_password'); ?>
 
-            <form method="post" class="space-y-6">
-                <?php wp_nonce_field('bimverdi_change_password'); ?>
+            <div>
+                <label for="current_password" class="block text-sm font-medium text-[#111827] mb-2">
+                    <?php _e('Nåværende passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
+                </label>
+                <input type="password"
+                       id="current_password"
+                       name="current_password"
+                       required
+                       class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
+            </div>
 
-                <div>
-                    <label for="current_password" class="block text-sm font-medium text-[#111827] mb-2">
-                        <?php _e('Nåværende passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="password"
-                           id="current_password"
-                           name="current_password"
-                           required
-                           class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
-                </div>
+            <div>
+                <label for="new_password" class="block text-sm font-medium text-[#111827] mb-2">
+                    <?php _e('Nytt passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
+                </label>
+                <input type="password"
+                       id="new_password"
+                       name="new_password"
+                       required
+                       minlength="8"
+                       class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
+                <p class="mt-2 text-xs text-[#57534E]"><?php _e('Minst 8 tegn', 'bimverdi'); ?></p>
+            </div>
 
-                <div class="border-t border-[#E7E5E4] pt-6">
-                    <label for="new_password" class="block text-sm font-medium text-[#111827] mb-2">
-                        <?php _e('Nytt passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="password"
-                           id="new_password"
-                           name="new_password"
-                           required
-                           minlength="8"
-                           class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
-                    <p class="mt-2 text-xs text-[#57534E]"><?php _e('Minst 8 tegn', 'bimverdi'); ?></p>
-                </div>
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-[#111827] mb-2">
+                    <?php _e('Bekreft nytt passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
+                </label>
+                <input type="password"
+                       id="confirm_password"
+                       name="confirm_password"
+                       required
+                       minlength="8"
+                       class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
+            </div>
 
-                <div>
-                    <label for="confirm_password" class="block text-sm font-medium text-[#111827] mb-2">
-                        <?php _e('Bekreft nytt passord', 'bimverdi'); ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="password"
-                           id="confirm_password"
-                           name="confirm_password"
-                           required
-                           minlength="8"
-                           class="w-full px-4 py-3 border border-[#E7E5E4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent">
-                </div>
-
-                <div class="pt-4">
-                    <?php bimverdi_button([
-                        'text'       => __('Oppdater passord', 'bimverdi'),
-                        'variant'    => 'primary',
-                        'type'       => 'submit',
-                        'full_width' => true,
-                        'size'       => 'large',
-                        'icon'       => 'check',
-                    ]); ?>
-                    <input type="hidden" name="bimverdi_change_password" value="1">
-                </div>
-            </form>
-        </div>
+            <div class="pt-4">
+                <?php bimverdi_button([
+                    'text'       => __('Oppdater passord', 'bimverdi'),
+                    'variant'    => 'primary',
+                    'type'       => 'submit',
+                    'full_width' => true,
+                    'size'       => 'large',
+                    'icon'       => 'check',
+                ]); ?>
+                <input type="hidden" name="bimverdi_change_password" value="1">
+            </div>
+        </form>
 
         <!-- Security Tips -->
         <div class="mt-8 p-4 bg-[#F5F5F4] border border-[#E7E5E4] rounded-lg">
