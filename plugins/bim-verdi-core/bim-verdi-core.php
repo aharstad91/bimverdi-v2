@@ -126,11 +126,7 @@ class BIM_Verdi_Core {
         // Initialize email notifications
         BIM_Verdi_Email_Notifications::get_instance();
         
-        // Initialize Gravity Forms manager (if Gravity Forms is active)
-        if (class_exists('GFForms')) {
-            BIM_Verdi_Gravity_Forms_Manager::get_instance();
-            BIM_Verdi_Profile_Form_Migration::maybe_migrate();
-        }
+        // Gravity Forms removed — all forms replaced with plain HTML + mu-plugin handlers.
         
         // Set ACF JSON save/load points
         $this->setup_acf_json();
