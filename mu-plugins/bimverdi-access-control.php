@@ -62,6 +62,9 @@ class BIMVerdi_Access_Control {
         
         // Template redirect for protected pages
         add_action('template_redirect', array($this, 'check_page_access'));
+
+        // Sync hovedkontakt user meta when foretak is saved in wp-admin
+        add_action('save_post_foretak', array($this, 'sync_hovedkontakt_user_meta'), 30, 2);
     }
     
     /**
@@ -194,6 +197,41 @@ class BIMVerdi_Access_Control {
         return self::user_has_company($user_id) ? 'foretak' : 'profil';
     }
     
+    /**
+     * Sync hovedkontakt user meta when foretak is saved in wp-admin.
+     * Ensures the user selected as hovedkontaktperson gets bimverdi_company_id set.
+     *
+     * @param int $post_id Foretak post ID
+     * @param WP_Post $post Post object
+     */
+    public function sync_hovedkontakt_user_meta($post_id, $post) {
+        // Skip autosave, revisions, and non-publish posts
+        if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+            return;
+        }
+        if ($post->post_status !== 'publish') {
+            return;
+        }
+
+        $hovedkontakt_id = get_field('hovedkontaktperson', $post_id);
+        if (empty($hovedkontakt_id)) {
+            $hovedkontakt_id = get_post_meta($post_id, 'hovedkontaktperson', true);
+        }
+
+        if (empty($hovedkontakt_id) || !get_userdata($hovedkontakt_id)) {
+            return;
+        }
+
+        // Update all three meta keys to ensure consistency
+        update_user_meta($hovedkontakt_id, 'bimverdi_company_id', $post_id);
+        update_user_meta($hovedkontakt_id, 'bim_verdi_company_id', $post_id);
+        if (function_exists('update_field')) {
+            update_field('tilknyttet_foretak', $post_id, 'user_' . $hovedkontakt_id);
+        } else {
+            update_user_meta($hovedkontakt_id, 'tilknyttet_foretak', $post_id);
+        }
+    }
+
     /**
      * Show company status in user admin
      */
