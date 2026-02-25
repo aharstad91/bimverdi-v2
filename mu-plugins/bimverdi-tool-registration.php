@@ -78,8 +78,12 @@ add_action('init', function () {
 
     // --- Sanitize inputs ---
     $tool_name       = sanitize_text_field($_POST['tool_name'] ?? '');
+    $kort_beskrivelse = sanitize_text_field($_POST['kort_beskrivelse'] ?? '');
     $description     = wp_kses_post($_POST['description'] ?? '');
+    $versjon         = sanitize_text_field($_POST['versjon'] ?? '');
     $tool_url        = esc_url_raw($_POST['tool_url'] ?? '');
+    $produktbeskrivelse_url = esc_url_raw($_POST['produktbeskrivelse_url'] ?? '');
+    $nedlasting_url  = esc_url_raw($_POST['nedlasting_url'] ?? '');
     $formaalstema    = sanitize_text_field($_POST['formaalstema'] ?? '');
     $bim_kompatibilitet = sanitize_text_field($_POST['bim_kompatibilitet'] ?? '');
     $type_ressurs    = sanitize_text_field($_POST['type_ressurs'] ?? '');
@@ -89,6 +93,11 @@ add_action('init', function () {
     // --- Validate required fields ---
     if (empty($tool_name)) {
         wp_redirect(add_query_arg('bv_error', 'missing_name', $redirect_error));
+        exit;
+    }
+
+    if (empty($kort_beskrivelse)) {
+        wp_redirect(add_query_arg('bv_error', 'missing_kort_beskrivelse', $redirect_error));
         exit;
     }
 
@@ -214,8 +223,12 @@ add_action('init', function () {
     // --- Save ACF fields ---
     if (function_exists('update_field')) {
         update_field('verktoy_navn', $tool_name, $post_id);
+        update_field('kort_beskrivelse', $kort_beskrivelse, $post_id);
         update_field('detaljert_beskrivelse', $description, $post_id);
+        update_field('versjon', $versjon, $post_id);
         update_field('verktoy_lenke', $tool_url, $post_id);
+        update_field('produktbeskrivelse_url', $produktbeskrivelse_url, $post_id);
+        update_field('nedlasting_url', $nedlasting_url, $post_id);
         update_field('eier_leverandor', intval($company_id), $post_id);
 
         if ($formaalstema) update_field('formaalstema', $formaalstema, $post_id);
@@ -230,8 +243,12 @@ add_action('init', function () {
         }
     } else {
         update_post_meta($post_id, 'verktoy_navn', $tool_name);
+        update_post_meta($post_id, 'kort_beskrivelse', $kort_beskrivelse);
         update_post_meta($post_id, 'detaljert_beskrivelse', $description);
+        update_post_meta($post_id, 'versjon', $versjon);
         update_post_meta($post_id, 'verktoy_lenke', $tool_url);
+        update_post_meta($post_id, 'produktbeskrivelse_url', $produktbeskrivelse_url);
+        update_post_meta($post_id, 'nedlasting_url', $nedlasting_url);
         update_post_meta($post_id, 'eier_leverandor', intval($company_id));
 
         if ($logo_attachment_id) {

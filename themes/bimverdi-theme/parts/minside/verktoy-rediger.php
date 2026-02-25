@@ -46,6 +46,10 @@ if (!$can_edit) {
 $tool_name = $tool->post_title;
 $description = get_field('detaljert_beskrivelse', $tool_id) ?: $tool->post_content;
 $tool_url = get_field('verktoy_lenke', $tool_id);
+$kort_beskrivelse = get_field('kort_beskrivelse', $tool_id) ?: get_post_meta($tool_id, 'kort_beskrivelse', true);
+$versjon = get_field('versjon', $tool_id) ?: get_post_meta($tool_id, 'versjon', true);
+$produktbeskrivelse_url = get_field('produktbeskrivelse_url', $tool_id) ?: get_post_meta($tool_id, 'produktbeskrivelse_url', true);
+$nedlasting_url = get_field('nedlasting_url', $tool_id) ?: get_post_meta($tool_id, 'nedlasting_url', true);
 $current_formaalstema = get_field('formaalstema', $tool_id);
 $current_bim = get_field('bim_kompatibilitet', $tool_id);
 $current_ressurs = get_field('type_ressurs', $tool_id);
@@ -75,6 +79,7 @@ $error_messages = [
     'rate_limit'         => 'For mange forsøk. Vennligst vent litt.',
     'no_company'         => 'Du må ha et foretak tilknyttet kontoen din.',
     'missing_name'       => 'Verktøynavn er påkrevd.',
+    'missing_kort_beskrivelse' => 'Kort beskrivelse er påkrevd.',
     'missing_anvendelser'=> 'Du må velge minst én anvendelse.',
     'invalid_file_type'  => 'Ugyldig filtype. Tillatte: jpg, png, gif, webp, svg.',
     'file_too_large'     => 'Filen er for stor. Maks 2 MB.',
@@ -182,6 +187,17 @@ $anvendelser_options = [
                    class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
         </div>
 
+        <!-- Kort beskrivelse -->
+        <div>
+            <label for="kort_beskrivelse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                Kort beskrivelse <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="kort_beskrivelse" name="kort_beskrivelse" required maxlength="100"
+                   value="<?php echo esc_attr($kort_beskrivelse); ?>"
+                   class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
+            <p class="mt-1 text-xs text-[#888888]">Vises i liste- og kortvisning. Maks 100 tegn.</p>
+        </div>
+
         <!-- Beskrivelse -->
         <div>
             <label for="description" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Detaljert beskrivelse</label>
@@ -190,11 +206,35 @@ $anvendelser_options = [
             <p class="mt-1 text-xs text-[#888888]">HTML-formatering er tillatt.</p>
         </div>
 
-        <!-- Lenke -->
+        <!-- Versjon -->
+        <div>
+            <label for="versjon" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Versjon</label>
+            <input type="text" id="versjon" name="versjon"
+                   value="<?php echo esc_attr($versjon); ?>"
+                   class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
+        </div>
+
+        <!-- Lenke til verktøy -->
         <div>
             <label for="tool_url" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Lenke til verktøy</label>
             <input type="url" id="tool_url" name="tool_url"
                    value="<?php echo esc_attr($tool_url); ?>"
+                   class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
+        </div>
+
+        <!-- Link til produktbeskrivelse -->
+        <div>
+            <label for="produktbeskrivelse_url" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Link til produktbeskrivelse</label>
+            <input type="url" id="produktbeskrivelse_url" name="produktbeskrivelse_url"
+                   value="<?php echo esc_attr($produktbeskrivelse_url); ?>"
+                   class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
+        </div>
+
+        <!-- Link til nedlasting -->
+        <div>
+            <label for="nedlasting_url" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Link til nedlasting</label>
+            <input type="url" id="nedlasting_url" name="nedlasting_url"
+                   value="<?php echo esc_attr($nedlasting_url); ?>"
                    class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
         </div>
 
