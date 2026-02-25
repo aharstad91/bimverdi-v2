@@ -11,12 +11,42 @@
                 <p class="text-[#5A5A5A] text-sm mb-4">
                     Motta nyheter og invitasjoner til våre arrangement.
                 </p>
+
                 <?php
-                if (function_exists('gravity_form')) {
-                    $newsletter_form_id = get_option('bimverdi_newsletter_gf_created', 17);
-                    gravity_form($newsletter_form_id, false, false, false, null, true);
-                }
-                ?>
+                $nl_status = isset($_GET['newsletter']) ? sanitize_text_field($_GET['newsletter']) : '';
+                if ($nl_status === 'success'): ?>
+                    <div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm mb-4">
+                        Takk for påmeldingen! Du vil motta nyheter fra oss.
+                    </div>
+                <?php elseif ($nl_status === 'invalid_email'): ?>
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm mb-4">
+                        Vennligst oppgi en gyldig e-postadresse.
+                    </div>
+                <?php elseif ($nl_status === 'rate_limit'): ?>
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm mb-4">
+                        For mange forsøk. Vennligst prøv igjen senere.
+                    </div>
+                <?php elseif ($nl_status === 'error'): ?>
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm mb-4">
+                        Noe gikk galt. Vennligst prøv igjen.
+                    </div>
+                <?php endif; ?>
+
+                <form method="post" action="" class="flex gap-2">
+                    <?php wp_nonce_field('bimverdi_newsletter_signup'); ?>
+                    <input type="hidden" name="bimverdi_newsletter_signup" value="1">
+                    <!-- Honeypot -->
+                    <div style="position:absolute;left:-9999px;" aria-hidden="true">
+                        <input type="text" name="bv_website_url" tabindex="-1" autocomplete="off">
+                    </div>
+                    <input type="email" name="newsletter_email" required
+                           placeholder="Din e-postadresse"
+                           class="flex-1 min-w-0 px-3 py-2.5 border border-[#E7E5E4] rounded-lg text-sm text-[#111827] placeholder:text-[#A8A29E] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
+                    <button type="submit"
+                            class="px-4 py-2.5 bg-[#FF8B5E] text-white text-sm font-semibold rounded-lg hover:bg-[#e87a4f] transition-colors flex-shrink-0">
+                        Meld på
+                    </button>
+                </form>
             </div>
 
             <!-- Organisering Column -->

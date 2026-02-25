@@ -214,7 +214,7 @@ class BIMVerdi_Email_Verification {
         }
 
         if (empty($user_company)) {
-            $user->set_role('subscriber');
+            $user->set_role('medlem');
             update_user_meta($user_id, 'bimverdi_account_type', 'profil');
             update_user_meta($user_id, 'bimverdi_company_id', '');
         } else {
@@ -232,8 +232,8 @@ class BIMVerdi_Email_Verification {
 
         error_log('BIMVerdi: User created and logged in: ' . $user_id . ' (' . $email . ')');
 
-        // Redirect to profile edit (so new users complete their profile)
-        wp_redirect(add_query_arg('welcome', '1', home_url('/min-side/profil/rediger/')));
+        // Redirect to dashboard with welcome flag
+        wp_redirect(add_query_arg('welcome', '1', home_url('/min-side/')));
         exit;
     }
 

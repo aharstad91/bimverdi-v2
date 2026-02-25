@@ -331,12 +331,11 @@ function bimverdi_brreg_format_company($data) {
 
 /**
  * =============================================================================
- * GRAVITY FORMS: Auto-sync Brreg data til ACF-felt ved foretak-opprettelse
+ * Auto-sync Brreg data til ACF-felt ved foretak-opprettelse
  * =============================================================================
- * Når et foretak opprettes via Gravity Forms, hent full data fra Brreg
- * og lagre til ACF-feltene for å sikre at alt er korrekt.
+ * Hent full data fra Brreg og lagre til ACF-feltene for å sikre at alt er korrekt.
+ * Called by save_post_foretak hook and migration function.
  */
-add_action('gform_advancedpostcreation_post_after_creation', 'bimverdi_sync_brreg_on_foretak_creation', 10, 4);
 
 function bimverdi_sync_brreg_on_foretak_creation($post_id, $feed, $entry, $form) {
     // Sjekk at det er et foretak

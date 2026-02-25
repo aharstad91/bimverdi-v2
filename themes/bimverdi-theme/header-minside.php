@@ -65,12 +65,12 @@ $primary_route = bimverdi_get_primary_route();
         <div class="flex items-center justify-between h-12">
             
             <!-- Main navigation items (dynamic from helper) -->
-            <div class="flex items-center h-12 gap-x-8">
+            <div class="flex items-center h-12 gap-x-4 sm:gap-x-8 overflow-x-auto">
                 <?php foreach ($nav_items as $key => $item):
                     $is_active = bimverdi_is_minside_route($item['routes']);
                 ?>
                 <a href="<?php echo esc_url($item['url']); ?>"
-                   class="relative flex items-center gap-2 h-12 text-sm <?php echo $is_active ? 'font-semibold text-[#111827]' : 'font-medium text-[#57534E] hover:text-[#111827]'; ?> transition-colors">
+                   class="relative flex items-center gap-2 h-12 text-sm whitespace-nowrap <?php echo $is_active ? 'font-semibold text-[#111827]' : 'font-medium text-[#57534E] hover:text-[#111827]'; ?> transition-colors">
                     <?php echo bimverdi_icon($item['icon'], 20); ?>
                     <?php echo esc_html($item['label']); ?>
                     

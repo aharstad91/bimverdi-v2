@@ -95,11 +95,8 @@ class BIM_Verdi_Core {
         // Load ACF user profile fields registration
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/acf/register-user-fields.php';
         
-        // Load Gravity Forms manager (orchestrates all form handlers)
-        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/class-gravity-forms-manager.php';
-
-        // Load profile form migration
-        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/setup/class-profile-form-migration.php';
+        // Gravity Forms removed — all forms replaced with plain HTML + mu-plugin handlers.
+        // Former files: class-gravity-forms-manager.php, setup/class-profile-form-migration.php
 
         // Load WP-CLI commands
         if (defined('WP_CLI') && WP_CLI) {
