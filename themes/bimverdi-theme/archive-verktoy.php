@@ -247,6 +247,65 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sheetResultCount) sheetResultCount.textContent = count;
     }
 
+    // Build URL from current filter state (read only from desktop dropdowns to avoid duplicates)
+    function updateURL() {
+        var params = new URLSearchParams();
+        var searchTerm = searchInput ? searchInput.value.trim() : '';
+        if (searchTerm) params.set('s', searchTerm);
+
+        var filterMap = {
+            'formaalstema': '.filter-formaal:checked',
+            'type_ressurs': '.filter-type:checked'
+        };
+        Object.keys(filterMap).forEach(function(key) {
+            var checked = document.querySelectorAll('[data-multiselect] ' + filterMap[key]);
+            checked.forEach(function(cb) { params.append(key, cb.value); });
+        });
+
+        var newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        history.replaceState(null, '', newURL);
+    }
+
+    // Restore filters from URL params on page load
+    function restoreFromURL() {
+        var params = new URLSearchParams(window.location.search);
+        if (!params.toString()) return false;
+
+        var hasFilters = false;
+
+        // Restore search
+        var s = params.get('s');
+        if (s && searchInput) {
+            searchInput.value = s;
+            hasFilters = true;
+        }
+
+        // Restore checkboxes
+        var filterMap = {
+            'formaalstema': '.filter-formaal',
+            'type_ressurs': '.filter-type'
+        };
+        Object.keys(filterMap).forEach(function(key) {
+            var values = params.getAll(key);
+            if (values.length > 0) {
+                hasFilters = true;
+                values.forEach(function(val) {
+                    // Check desktop checkbox
+                    var cb = document.querySelector(filterMap[key] + '[value="' + CSS.escape(val) + '"]');
+                    if (cb) {
+                        cb.checked = true;
+                        cb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    // Check mobile checkbox
+                    var mobileCb = document.querySelector('#mobile-filter-sheet input[value="' + CSS.escape(val) + '"]' + filterMap[key].replace('.', '.'));
+                    if (mobileCb) mobileCb.checked = true;
+                });
+            }
+        });
+
+        return hasFilters;
+    }
+
     function applyFilters() {
         var searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
         var selectedFormaal = Array.from(document.querySelectorAll('.filter-formaal:checked')).map(function(cb) { return cb.value; });
@@ -270,6 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         updateVisibleCount(visibleCards);
+        updateURL();
     }
 
     if (searchInput) {
@@ -307,10 +367,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Apply filters on page load if URL has params
-    if (window.location.search) {
-        applyFilters();
-    }
+    // Restore filters from URL and apply
+    restoreFromURL();
+    applyFilters();
 });
 </script>
 
