@@ -79,6 +79,7 @@ $tools_query = new WP_Query($args);
 $is_logged_in = is_user_logged_in();
 
 // Calculate counts for each filter option (static counts - total items per value)
+// Uses LIKE because values can be stored as comma-separated strings
 $formaalstema_counts = array();
 foreach (array_keys($formaalstema_options) as $value) {
     $count_query = new WP_Query([
@@ -89,7 +90,7 @@ foreach (array_keys($formaalstema_options) as $value) {
         'meta_query' => [[
             'key' => 'formaalstema',
             'value' => $value,
-            'compare' => '=',
+            'compare' => 'LIKE',
         ]],
     ]);
     $formaalstema_counts[$value] = $count_query->found_posts;
@@ -97,6 +98,7 @@ foreach (array_keys($formaalstema_options) as $value) {
 
 $type_ressurs_counts = array();
 foreach (array_keys($type_ressurs_options) as $value) {
+    $search_value = str_replace('_', ' ', $value); // Digital_tjeneste → Digital tjeneste
     $count_query = new WP_Query([
         'post_type' => 'verktoy',
         'post_status' => 'publish',
@@ -104,8 +106,8 @@ foreach (array_keys($type_ressurs_options) as $value) {
         'fields' => 'ids',
         'meta_query' => [[
             'key' => 'type_ressurs',
-            'value' => $value,
-            'compare' => '=',
+            'value' => $search_value,
+            'compare' => 'LIKE',
         ]],
     ]);
     $type_ressurs_counts[$value] = $count_query->found_posts;
@@ -176,15 +178,40 @@ foreach (array_keys($type_ressurs_options) as $value) {
             <?php while ($tools_query->have_posts()): $tools_query->the_post();
                 $eier_id = get_field('eier_leverandor', get_the_ID());
                 $eier = $eier_id ? get_post($eier_id) : null;
-                $formaal = get_field('formaalstema', get_the_ID());
-                $type = get_field('type_ressurs', get_the_ID());
+                $formaal_raw = get_field('formaalstema', get_the_ID());
+                $type_raw = get_field('type_ressurs', get_the_ID());
+
+                // Normalize formaalstema: extract short tags from descriptive strings
+                // Data can be: "ProsjektBIM" or "Prosjektering og bygging (ProsjektBIM), Miljøberegninger (MiljøBIM)"
+                $formaal_tags = array();
+                $formaal_str = is_array($formaal_raw) ? implode(', ', $formaal_raw) : (string) $formaal_raw;
+                $formaal_keys = array_keys($formaalstema_options);
+                foreach ($formaal_keys as $tag) {
+                    if (stripos($formaal_str, $tag) !== false) {
+                        $formaal_tags[] = $tag;
+                    }
+                }
+                // Also check for "Opplæring" variants
+                if (stripos($formaal_str, 'Opplæring') !== false || stripos($formaal_str, 'opplæring') !== false) {
+                    if (!in_array('Opplæring', $formaal_tags)) $formaal_tags[] = 'Opplæring';
+                }
+
+                // Normalize type_ressurs: match against known option keys
+                $type_tags = array();
+                $type_str = is_array($type_raw) ? implode(', ', $type_raw) : (string) $type_raw;
+                foreach ($type_ressurs_options as $key => $label) {
+                    // Match key or label in the stored string (case-insensitive)
+                    if (stripos($type_str, $label) !== false || stripos($type_str, str_replace('_', ' ', $key)) !== false) {
+                        $type_tags[] = $key;
+                    }
+                }
             ?>
 
             <a href="<?php the_permalink(); ?>"
                class="verktoy-card group block bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6"
                data-title="<?php echo esc_attr(strtolower(get_the_title())); ?>"
-               data-formaal="<?php echo esc_attr($formaal); ?>"
-               data-type="<?php echo esc_attr($type); ?>">
+               data-formaal="<?php echo esc_attr(implode(',', $formaal_tags)); ?>"
+               data-type="<?php echo esc_attr(implode(',', $type_tags)); ?>">
 
                 <!-- Icon -->
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-5">
@@ -315,12 +342,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         cards.forEach(function(card) {
             var title = card.dataset.title || '';
-            var cardFormaal = card.dataset.formaal || '';
-            var cardType = card.dataset.type || '';
+            var cardFormaals = (card.dataset.formaal || '').split(',').filter(Boolean);
+            var cardTypes = (card.dataset.type || '').split(',').filter(Boolean);
 
             var matchesSearch = !searchTerm || title.includes(searchTerm);
-            var matchesFormaal = selectedFormaal.length === 0 || selectedFormaal.includes(cardFormaal);
-            var matchesType = selectedType.length === 0 || selectedType.includes(cardType);
+            var matchesFormaal = selectedFormaal.length === 0 || selectedFormaal.some(function(f) { return cardFormaals.indexOf(f) !== -1; });
+            var matchesType = selectedType.length === 0 || selectedType.some(function(t) { return cardTypes.indexOf(t) !== -1; });
 
             var isVisible = matchesSearch && matchesFormaal && matchesType;
 
