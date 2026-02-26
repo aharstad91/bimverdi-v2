@@ -32,6 +32,8 @@ $primary_route = bimverdi_get_primary_route();
 <body <?php body_class('bg-white'); ?>>
 <?php wp_body_open(); ?>
 
+<?php get_template_part('parts/components/announcement-bar'); ?>
+
 <!-- Primary Header: Logo + Back Link + Logout -->
 <header class="bg-white border-b border-[#E7E5E4] sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6">

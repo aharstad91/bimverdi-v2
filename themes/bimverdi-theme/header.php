@@ -10,6 +10,8 @@
 <body <?php body_class('bg-white'); ?>>
 <?php wp_body_open(); ?>
 
+<?php get_template_part('parts/components/announcement-bar'); ?>
+
 <!-- Public Header: Logo + Main Nav + Login button -->
 <header class="bg-white border-b border-[#E7E5E4]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
