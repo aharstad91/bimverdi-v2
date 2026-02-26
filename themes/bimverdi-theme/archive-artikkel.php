@@ -40,18 +40,15 @@ $temagrupper = get_terms(array(
 ));
 ?>
 
-<div class="bg-white">
-    
-    <!-- Hero -->
-    <div class="container mx-auto px-4 py-12">
-        <div class="max-w-3xl">
-            <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Artikler</h1>
-        </div>
-    </div>
-    
-</div>
+<?php get_template_part('parts/components/archive-intro', null, [
+    'acf_prefix'       => 'artikler',
+    'fallback_title'   => 'Artikler',
+    'fallback_ingress' => 'Artikler og fagstoff fra deltakere i BIM Verdi.',
+    'count'            => $articles->found_posts,
+    'count_label'      => 'artikler',
+]); ?>
 
-<div class="container mx-auto px-4 py-8">
+<div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
     <!-- Filters -->
     <div class="mb-8 flex flex-wrap gap-4">

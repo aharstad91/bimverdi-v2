@@ -1,0 +1,176 @@
+{
+    "key": "group_archive_intros",
+    "title": "Arkivside-introer",
+    "fields": [
+        {
+            "key": "field_archive_tab_deltakere",
+            "label": "Deltakere",
+            "type": "tab",
+            "placement": "left"
+        },
+        {
+            "key": "field_archive_deltakere_tittel",
+            "label": "Tittel",
+            "name": "deltakere_tittel",
+            "type": "text",
+            "instructions": "Overskrift på /deltakere/. La stå tom for standard.",
+            "required": 0,
+            "placeholder": "Deltakere"
+        },
+        {
+            "key": "field_archive_deltakere_ingress",
+            "label": "Ingress",
+            "name": "deltakere_ingress",
+            "type": "textarea",
+            "instructions": "Kort introduksjonstekst (maks 200 tegn). La stå tom for standard.",
+            "required": 0,
+            "maxlength": 200,
+            "rows": 2,
+            "new_lines": ""
+        },
+        {
+            "key": "field_archive_tab_verktoy",
+            "label": "Verktøy",
+            "type": "tab",
+            "placement": "left"
+        },
+        {
+            "key": "field_archive_verktoy_tittel",
+            "label": "Tittel",
+            "name": "verktoy_tittel",
+            "type": "text",
+            "instructions": "Overskrift på /verktoy/. La stå tom for standard.",
+            "required": 0,
+            "placeholder": "Verktøykatalog"
+        },
+        {
+            "key": "field_archive_verktoy_ingress",
+            "label": "Ingress",
+            "name": "verktoy_ingress",
+            "type": "textarea",
+            "instructions": "Kort introduksjonstekst (maks 200 tegn). La stå tom for standard.",
+            "required": 0,
+            "maxlength": 200,
+            "rows": 2,
+            "new_lines": ""
+        },
+        {
+            "key": "field_archive_tab_kunnskapskilder",
+            "label": "Kunnskapskilder",
+            "type": "tab",
+            "placement": "left"
+        },
+        {
+            "key": "field_archive_kunnskapskilder_tittel",
+            "label": "Tittel",
+            "name": "kunnskapskilder_tittel",
+            "type": "text",
+            "instructions": "Overskrift på /kunnskapskilder/. La stå tom for standard.",
+            "required": 0,
+            "placeholder": "Kunnskapskilder"
+        },
+        {
+            "key": "field_archive_kunnskapskilder_ingress",
+            "label": "Ingress",
+            "name": "kunnskapskilder_ingress",
+            "type": "textarea",
+            "instructions": "Kort introduksjonstekst (maks 200 tegn). La stå tom for standard.",
+            "required": 0,
+            "maxlength": 200,
+            "rows": 2,
+            "new_lines": ""
+        },
+        {
+            "key": "field_archive_tab_arrangement",
+            "label": "Arrangementer",
+            "type": "tab",
+            "placement": "left"
+        },
+        {
+            "key": "field_archive_arrangement_tittel",
+            "label": "Tittel",
+            "name": "arrangement_tittel",
+            "type": "text",
+            "instructions": "Overskrift på /arrangement/. La stå tom for standard.",
+            "required": 0,
+            "placeholder": "Arrangementer"
+        },
+        {
+            "key": "field_archive_arrangement_ingress",
+            "label": "Ingress",
+            "name": "arrangement_ingress",
+            "type": "textarea",
+            "instructions": "Kort introduksjonstekst (maks 200 tegn). La stå tom for standard.",
+            "required": 0,
+            "maxlength": 200,
+            "rows": 2,
+            "new_lines": ""
+        },
+        {
+            "key": "field_archive_tab_artikler",
+            "label": "Artikler",
+            "type": "tab",
+            "placement": "left"
+        },
+        {
+            "key": "field_archive_artikler_tittel",
+            "label": "Tittel",
+            "name": "artikler_tittel",
+            "type": "text",
+            "instructions": "Overskrift på /artikler/. La stå tom for standard.",
+            "required": 0,
+            "placeholder": "Artikler"
+        },
+        {
+            "key": "field_archive_artikler_ingress",
+            "label": "Ingress",
+            "name": "artikler_ingress",
+            "type": "textarea",
+            "instructions": "Kort introduksjonstekst (maks 200 tegn). La stå tom for standard.",
+            "required": 0,
+            "maxlength": 200,
+            "rows": 2,
+            "new_lines": ""
+        },
+        {
+            "key": "field_archive_tab_temagrupper",
+            "label": "Temagrupper",
+            "type": "tab",
+            "placement": "left"
+        },
+        {
+            "key": "field_archive_temagrupper_tittel",
+            "label": "Tittel",
+            "name": "temagrupper_tittel",
+            "type": "text",
+            "instructions": "Overskrift på /temagruppe/. La stå tom for standard.",
+            "required": 0,
+            "placeholder": "Temagrupper"
+        },
+        {
+            "key": "field_archive_temagrupper_ingress",
+            "label": "Ingress",
+            "name": "temagrupper_ingress",
+            "type": "textarea",
+            "instructions": "Kort introduksjonstekst (maks 200 tegn). La stå tom for standard.",
+            "required": 0,
+            "maxlength": 200,
+            "rows": 2,
+            "new_lines": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "bimverdi-archive-intros"
+            }
+        ]
+    ],
+    "style": "default",
+    "position": "normal",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "active": true
+}

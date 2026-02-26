@@ -78,16 +78,14 @@ function bimverdi_get_type_label($type) {
 ?>
 
 <div class="min-h-screen bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 
-        <!-- Page Header -->
-        <div class="mb-10">
-            <h1 class="text-4xl font-bold text-[#111827] mb-3">Arrangementer</h1>
-            <p class="text-[#57534E] text-lg">
-                Kurs, seminarer, workshops og nettverksmøter i BIM Verdi.
-                Meld deg på og få faglig påfyll sammen med andre i nettverket.
-            </p>
-        </div>
+    <?php get_template_part('parts/components/archive-intro', null, [
+        'acf_prefix'       => 'arrangement',
+        'fallback_title'   => 'Arrangementer',
+        'fallback_ingress' => 'Kurs, seminarer, workshops og nettverksmøter i BIM Verdi.',
+    ]); ?>
+
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- ============================================ -->
         <!-- KOMMENDE ARRANGEMENTER (GRID) -->

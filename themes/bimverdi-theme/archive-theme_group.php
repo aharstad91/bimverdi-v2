@@ -15,21 +15,14 @@ get_header();
 
 <main class="bg-white min-h-screen">
 
-    <!-- Page Header -->
-    <section class="bg-[#FAFAF9] border-b border-[#E7E5E4]">
-        <div class="max-w-[1280px] mx-auto px-4 py-8 lg:py-12">
-            <h1 class="text-3xl lg:text-4xl font-bold text-[#111827] mb-4">
-                Temagrupper
-            </h1>
-            <p class="text-lg text-[#57534E] max-w-3xl">
-                BIM Verdi har seks temagrupper som arbeider med ulike fokusomrader innen BIM og digitalisering.
-                Meld deg inn i en eller flere grupper for a delta i faglige diskusjoner og samarbeid.
-            </p>
-        </div>
-    </section>
+    <?php get_template_part('parts/components/archive-intro', null, [
+        'acf_prefix'       => 'temagrupper',
+        'fallback_title'   => 'Temagrupper',
+        'fallback_ingress' => 'BIM Verdis temagrupper arbeider med ulike fokusområder innen BIM og digitalisering.',
+    ]); ?>
 
     <!-- Grid Content -->
-    <div class="max-w-[1280px] mx-auto px-4 py-8 lg:py-12">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
 
         <?php if (have_posts()) : ?>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
