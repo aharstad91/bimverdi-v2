@@ -936,6 +936,38 @@ class BIM_Verdi_Design_System {
             }
 
             /* ============================================
+               VIEW TOGGLE (grid/list switcher)
+               ============================================ */
+
+            .bv-view-toggle {
+                display: none;
+                align-items: center;
+                background: #F5F5F4;
+                border-radius: 0.5rem;
+                padding: 0.125rem;
+            }
+            @media (min-width: 768px) {
+                .bv-view-toggle { display: flex; }
+            }
+            .bv-view-toggle__btn {
+                padding: 0.5rem 0.625rem;
+                border-radius: 0.375rem;
+                transition: all 0.15s ease;
+                border: none;
+                background: transparent;
+                color: #57534E;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+            }
+            .bv-view-toggle__btn--active,
+            .bv-view-toggle__btn[aria-pressed="true"] {
+                background: #FFFFFF;
+                color: #111827;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            }
+
+            /* ============================================
                TAG CLOUD (archive headers)
                ============================================ */
 
