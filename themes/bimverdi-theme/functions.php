@@ -73,6 +73,15 @@ function bimverdi_enqueue_assets() {
         '2.1.0',
         true
     );
+
+    // View toggle (grid/list) for archive pages
+    wp_enqueue_script(
+        'bimverdi-view-toggle',
+        get_template_directory_uri() . '/js/view-toggle.js',
+        array('bimverdi-scripts'),
+        '1.0.0',
+        true
+    );
 }
 add_action('wp_enqueue_scripts', 'bimverdi_enqueue_assets');
 
