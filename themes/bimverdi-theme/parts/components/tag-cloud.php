@@ -26,7 +26,7 @@ if (!defined('ABSPATH')) {
 
 $taxonomies   = $args['taxonomies'] ?? [];
 $meta_filters = $args['meta_filters'] ?? [];
-$max_tags     = $args['max_tags'] ?? 20;
+$max_tags     = $args['max_tags'] ?? 12;
 
 // Collect all tags: ['label' => string, 'filter_class' => string|null, 'filter_value' => string]
 $tags = [];

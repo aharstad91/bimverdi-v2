@@ -127,7 +127,7 @@ foreach (array_keys($type_ressurs_options) as $value) {
                 ['options' => $formaalstema_options, 'filter_class' => 'filter-formaal'],
                 ['options' => $type_ressurs_options, 'filter_class' => 'filter-type'],
             ],
-            'max_tags' => 15,
+            'max_tags' => 12,
         ],
     ]); ?>
 

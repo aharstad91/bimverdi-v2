@@ -65,7 +65,7 @@ if (!function_exists('bimverdi_get_initials')) {
                 ['taxonomy' => 'bransjekategori', 'filter_class' => null],
                 ['taxonomy' => 'temagruppe', 'filter_class' => null],
             ],
-            'max_tags' => 20,
+            'max_tags' => 8,
         ],
     ]); ?>
 

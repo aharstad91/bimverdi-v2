@@ -174,7 +174,7 @@ foreach (array_keys($kategori_options) as $slug) {
                 ['taxonomy' => 'temagruppe', 'filter_class' => 'filter-temagruppe'],
                 ['taxonomy' => 'kunnskapskildekategori', 'filter_class' => 'filter-kategori'],
             ],
-            'max_tags' => 18,
+            'max_tags' => 12,
         ],
     ]); ?>
 
