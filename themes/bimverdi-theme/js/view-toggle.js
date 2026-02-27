@@ -24,14 +24,8 @@
 
             function setView(mode) {
                 var isGrid = (mode === 'grid');
-                gridEl.classList.toggle('hidden', !isGrid);
-                listEl.classList.toggle('hidden', isGrid);
-
-                // Active button styling
-                btnGrid.className = 'bv-view-toggle__btn bv-view-toggle__btn--grid px-2.5 py-2 rounded-md transition-all ' +
-                    (isGrid ? 'bg-white text-[#111827] shadow-sm' : 'text-[#57534E]');
-                btnList.className = 'bv-view-toggle__btn bv-view-toggle__btn--list px-2.5 py-2 rounded-md transition-all ' +
-                    (isGrid ? 'text-[#57534E]' : 'bg-white text-[#111827] shadow-sm');
+                gridEl.style.display = isGrid ? '' : 'none';
+                listEl.style.display = isGrid ? 'none' : '';
 
                 btnGrid.setAttribute('aria-pressed', isGrid ? 'true' : 'false');
                 btnList.setAttribute('aria-pressed', isGrid ? 'false' : 'true');

@@ -170,7 +170,7 @@ if (!function_exists('bimverdi_get_initials')) {
         </div>
 
         <!-- List View (hidden by default) -->
-        <div id="foretak-list" class="hidden">
+        <div id="foretak-list" style="display:none">
             <div class="bg-white rounded-xl border border-[#E7E5E4] overflow-hidden">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-[#FAFAF9] border-b border-[#E7E5E4]">

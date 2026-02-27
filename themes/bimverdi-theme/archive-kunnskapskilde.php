@@ -347,7 +347,7 @@ foreach (array_keys($kategori_options) as $slug) {
         </div>
 
         <!-- List View (hidden by default) -->
-        <div id="kunnskapskilde-list" class="hidden mb-8">
+        <div id="kunnskapskilde-list" style="display:none" class="mb-8">
             <div class="bg-white rounded-xl border border-[#E7E5E4] overflow-hidden">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-[#FAFAF9] border-b border-[#E7E5E4]">

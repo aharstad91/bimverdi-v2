@@ -243,7 +243,7 @@ foreach (array_keys($type_ressurs_options) as $value) {
         </div>
 
         <!-- List View (hidden by default) -->
-        <div id="verktoy-list" class="hidden mb-8">
+        <div id="verktoy-list" style="display:none" class="mb-8">
             <div class="bg-white rounded-xl border border-[#E7E5E4] overflow-hidden">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-[#FAFAF9] border-b border-[#E7E5E4]">
