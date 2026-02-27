@@ -79,7 +79,7 @@ function bimverdi_enqueue_assets() {
         'bimverdi-view-toggle',
         get_template_directory_uri() . '/js/view-toggle.js',
         array('bimverdi-scripts'),
-        '1.0.0',
+        '1.1.0',
         true
     );
 }
