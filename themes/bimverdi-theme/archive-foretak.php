@@ -60,6 +60,13 @@ if (!function_exists('bimverdi_get_initials')) {
         'fallback_ingress' => 'Utforsk nettverket av foretak som samarbeider for økt produktivitet i byggenæringen.',
         'count'            => $total_foretak,
         'count_label'      => 'foretak',
+        'tag_cloud'        => [
+            'taxonomies' => [
+                ['taxonomy' => 'bransjekategori', 'filter_class' => null],
+                ['taxonomy' => 'temagruppe', 'filter_class' => null],
+            ],
+            'max_tags' => 20,
+        ],
     ]); ?>
 
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">

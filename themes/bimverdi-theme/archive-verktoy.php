@@ -122,6 +122,13 @@ foreach (array_keys($type_ressurs_options) as $value) {
         'fallback_ingress' => 'Digitale verktøy og løsninger fra BIM Verdi-nettverket.',
         'count'            => $tools_query->found_posts,
         'count_label'      => 'verktøy',
+        'tag_cloud'        => [
+            'meta_filters' => [
+                ['options' => $formaalstema_options, 'filter_class' => 'filter-formaal'],
+                ['options' => $type_ressurs_options, 'filter_class' => 'filter-type'],
+            ],
+            'max_tags' => 15,
+        ],
     ]); ?>
 
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">

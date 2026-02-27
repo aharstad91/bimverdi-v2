@@ -169,6 +169,13 @@ foreach (array_keys($kategori_options) as $slug) {
         'fallback_ingress' => 'Standarder, veiledere og ressurser fra BIM Verdi-nettverket.',
         'count'            => $kunnskapskilder_query->found_posts,
         'count_label'      => 'kunnskapskilder',
+        'tag_cloud'        => [
+            'taxonomies' => [
+                ['taxonomy' => 'temagruppe', 'filter_class' => 'filter-temagruppe'],
+                ['taxonomy' => 'kunnskapskildekategori', 'filter_class' => 'filter-kategori'],
+            ],
+            'max_tags' => 18,
+        ],
     ]); ?>
 
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">

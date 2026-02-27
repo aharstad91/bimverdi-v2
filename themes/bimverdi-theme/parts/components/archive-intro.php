@@ -12,6 +12,10 @@
  *       'fallback_ingress' => 'Digitale verktøy og løsninger.',
  *       'count'            => 36,          // optional
  *       'count_label'      => 'verktøy',   // optional
+ *       'tag_cloud'        => [             // optional - tag cloud in right column
+ *           'taxonomies'   => [['taxonomy' => 'temagruppe', 'filter_class' => 'filter-temagruppe']],
+ *           'max_tags'     => 20,
+ *       ],
  *   ]);
  *
  * @package BimVerdi_Theme
@@ -26,6 +30,7 @@ $fallback_title   = $args['fallback_title'] ?? '';
 $fallback_ingress = $args['fallback_ingress'] ?? '';
 $count            = $args['count'] ?? null;
 $count_label      = $args['count_label'] ?? '';
+$tag_cloud        = $args['tag_cloud'] ?? null;
 
 // Get from ACF Options Page, fall back to hardcoded defaults
 $title   = '';
@@ -62,8 +67,10 @@ if (!$ingress) {
                     </p>
                 <?php endif; ?>
             </div>
-            <div>
-                <!-- Reservert for tag cloud / visuelt element -->
+            <div class="flex items-center">
+                <?php if ($tag_cloud): ?>
+                    <?php get_template_part('parts/components/tag-cloud', null, $tag_cloud); ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>

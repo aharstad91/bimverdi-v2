@@ -936,6 +936,74 @@ class BIM_Verdi_Design_System {
             }
 
             /* ============================================
+               TAG CLOUD (archive headers)
+               ============================================ */
+
+            .bv-tag-cloud {
+                display: none;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                align-items: flex-start;
+                align-content: flex-start;
+            }
+
+            @media (min-width: 1024px) {
+                .bv-tag-cloud {
+                    display: flex;
+                }
+            }
+
+            @keyframes bv-tag-fade-in {
+                from { opacity: 0; transform: translateY(4px) rotate(var(--tag-rotate, 0deg)); }
+                to   { opacity: 1; transform: translateY(0) rotate(var(--tag-rotate, 0deg)); }
+            }
+
+            .bv-tag-cloud__tag {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.375rem 0.875rem;
+                border-radius: 100px;
+                font-size: 0.8125rem;
+                font-weight: 500;
+                color: #57534E;
+                background: #FFFFFF;
+                border: 1px solid #D6D1C6;
+                white-space: nowrap;
+                transform: rotate(var(--tag-rotate, 0deg));
+                animation: bv-tag-fade-in 0.35s ease-out forwards;
+                animation-delay: var(--tag-delay, 0s);
+                opacity: 0;
+                transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+            }
+
+            button.bv-tag-cloud__tag {
+                cursor: pointer;
+            }
+
+            button.bv-tag-cloud__tag:hover {
+                transform: rotate(0deg);
+                border-color: #111827;
+                color: #111827;
+            }
+
+            button.bv-tag-cloud__tag:focus-visible {
+                outline: 2px solid #FF8B5E;
+                outline-offset: 2px;
+            }
+
+            span.bv-tag-cloud__tag {
+                cursor: default;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .bv-tag-cloud__tag {
+                    animation: none;
+                    opacity: 1;
+                    transform: rotate(0deg) !important;
+                }
+            }
+
+            /* ============================================
                LINE CLAMP UTILITIES
                ============================================ */
 
