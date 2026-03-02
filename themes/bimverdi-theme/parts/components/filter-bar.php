@@ -113,6 +113,14 @@ function bimverdi_filter_bar($args = []) {
 
                 <!-- Results + Reset Group -->
                 <div class="flex items-center gap-3">
+                    <?php
+                    // Render view toggle if configured
+                    if (!empty($args['view_toggle'])) {
+                        require_once get_template_directory() . '/parts/components/view-toggle.php';
+                        bimverdi_view_toggle($args['view_toggle']);
+                        echo '<span class="text-[#E7E5E4]">|</span>';
+                    }
+                    ?>
                     <p class="text-sm text-[#57534E] whitespace-nowrap">
                         Viser <span id="visible-count" class="font-medium text-[#111827]"><?php echo intval($args['result_count']); ?></span>
                         <?php if ($args['total_count'] > 0): ?>

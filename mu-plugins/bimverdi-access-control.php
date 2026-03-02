@@ -442,7 +442,8 @@ class BIMVerdi_Access_Control {
             'min-side/registrer-verktoy' => 'register_tool',
             'min-side/rediger-verktoy' => 'edit_tool',
             'min-side/temagrupper' => 'join_temagruppe',
-            'min-side/foretak' => 'company_profile',
+            'min-side/foretak/rediger' => 'company_profile',
+            'min-side/foretak/kolleger' => 'company_profile',
         );
         
         $current_path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
