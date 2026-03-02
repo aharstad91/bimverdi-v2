@@ -10,8 +10,8 @@
 
 get_header();
 
-// Include view toggle component
-require_once get_template_directory() . '/parts/components/view-toggle.php';
+// Include filter bar component (includes view-toggle)
+require_once get_template_directory() . '/parts/components/filter-bar.php';
 
 // Get all foretak in random order
 $args = array(
@@ -71,15 +71,6 @@ if (!function_exists('bimverdi_get_initials')) {
 
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- View Toggle -->
-        <div class="flex justify-end mb-6">
-            <?php bimverdi_view_toggle([
-                'storage_key' => 'bv-view-foretak',
-                'grid_id'     => 'foretak-grid',
-                'list_id'     => 'foretak-list',
-            ]); ?>
-        </div>
-
         <!-- Member Grid & List -->
         <?php if ($members_query->have_posts()):
 
@@ -89,6 +80,7 @@ if (!function_exists('bimverdi_get_initials')) {
             $logo_id = get_field('logo');
             $logo_url = $logo_id ? (is_array($logo_id) ? $logo_id['sizes']['medium'] : wp_get_attachment_url($logo_id)) : '';
             $bransjekategorier_terms = wp_get_post_terms(get_the_ID(), 'bransjekategori', array('fields' => 'names'));
+            $all_bransjer = wp_get_post_terms(get_the_ID(), 'bransjekategori', array('fields' => 'slugs'));
             $poststed = get_field('poststed');
             $adresse = get_field('adresse');
             $postnummer = get_field('postnummer');
@@ -106,16 +98,82 @@ if (!function_exists('bimverdi_get_initials')) {
                 'poststed'         => $poststed,
                 'map_url'          => $map_url,
                 'bransje'          => $bransje_display,
+                'bransje_slugs'    => implode(',', $all_bransjer),
                 'membership_level' => $membership_level,
             ];
         endwhile; wp_reset_postdata();
+
+        // Build filter options from data
+        $bransje_terms = get_terms(['taxonomy' => 'bransjekategori', 'hide_empty' => true]);
+        $bransje_options = [];
+        $bransje_counts = [];
+        if (!is_wp_error($bransje_terms)) {
+            foreach ($bransje_terms as $term) {
+                $bransje_options[$term->slug] = $term->name;
+                $bransje_counts[$term->slug] = $term->count;
+            }
+        }
+
+        $medlemskap_options = [
+            'partner'           => 'Partner',
+            'prosjektdeltaker'  => 'Prosjektdeltaker',
+            'deltaker'          => 'Deltaker',
+        ];
+        // Count membership levels
+        $medlemskap_counts = [];
+        foreach ($items as $item) {
+            $level = strtolower($item['membership_level']);
+            if ($level && isset($medlemskap_options[$level])) {
+                $medlemskap_counts[$level] = ($medlemskap_counts[$level] ?? 0) + 1;
+            }
+        }
+
+        $dropdowns = [
+            [
+                'name'         => 'bransje[]',
+                'label'        => 'Bransje',
+                'options'      => $bransje_options,
+                'selected'     => [],
+                'counts'       => $bransje_counts,
+                'filter_class' => 'filter-bransje',
+            ],
+            [
+                'name'         => 'medlemskap[]',
+                'label'        => 'Medlemskap',
+                'options'      => $medlemskap_options,
+                'selected'     => [],
+                'counts'       => $medlemskap_counts,
+                'filter_class' => 'filter-medlemskap',
+            ],
+        ];
+
+        bimverdi_filter_bar([
+            'form_id'            => 'foretak-filter-form',
+            'search_name'        => 's',
+            'search_value'       => '',
+            'search_placeholder' => 'Søk etter foretak...',
+            'dropdowns'          => $dropdowns,
+            'result_count'       => count($items),
+            'total_count'        => count($items),
+            'result_label'       => 'foretak',
+            'reset_id'           => 'reset-filters',
+            'view_toggle'        => [
+                'storage_key' => 'bv-view-foretak',
+                'grid_id'     => 'foretak-grid',
+                'list_id'     => 'foretak-list',
+            ],
+        ]);
         ?>
 
         <!-- Grid View -->
         <div id="foretak-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php foreach ($items as $item): ?>
 
-            <div class="bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6 flex flex-col justify-between h-[285px]">
+            <div class="foretak-card bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6 flex flex-col justify-between h-[285px]"
+                 data-title="<?php echo esc_attr(mb_strtolower($item['title'])); ?>"
+                 data-bransje="<?php echo esc_attr($item['bransje_slugs']); ?>"
+                 data-medlemskap="<?php echo esc_attr(strtolower($item['membership_level'])); ?>"
+                 data-poststed="<?php echo esc_attr(mb_strtolower($item['poststed'])); ?>">
                 <div>
                     <div class="flex items-start justify-between mb-6">
                         <div class="w-16 h-16 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -184,7 +242,11 @@ if (!function_exists('bimverdi_get_initials')) {
                     </thead>
                     <tbody class="divide-y divide-[#E7E5E4]">
                         <?php foreach ($items as $item): ?>
-                        <tr class="hover:bg-[#FAFAF9] transition-colors">
+                        <tr class="foretak-card hover:bg-[#FAFAF9] transition-colors"
+                            data-title="<?php echo esc_attr(mb_strtolower($item['title'])); ?>"
+                            data-bransje="<?php echo esc_attr($item['bransje_slugs']); ?>"
+                            data-medlemskap="<?php echo esc_attr(strtolower($item['membership_level'])); ?>"
+                            data-poststed="<?php echo esc_attr(mb_strtolower($item['poststed'])); ?>">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -236,5 +298,74 @@ if (!function_exists('bimverdi_get_initials')) {
 
     </div>
 </div>
+
+<!-- Live Filter Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var searchInput = document.getElementById('foretak-filter-form-search');
+    var checkboxes = document.querySelectorAll('.filter-checkbox');
+    var gridEl = document.getElementById('foretak-grid');
+    var listEl = document.getElementById('foretak-list');
+    var visibleCountEl = document.getElementById('visible-count');
+    var visibleCountMobile = document.getElementById('visible-count-mobile');
+    var resetBtn = document.getElementById('reset-filters');
+    var sheetResultCount = document.querySelector('.bv-filter-sheet__result-count');
+
+    var debounceTimer;
+
+    function updateVisibleCount(count) {
+        if (visibleCountEl) visibleCountEl.textContent = count;
+        if (visibleCountMobile) visibleCountMobile.textContent = count;
+        if (sheetResultCount) sheetResultCount.textContent = count;
+    }
+
+    function applyFilters() {
+        var searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        var selectedBransje = Array.from(document.querySelectorAll('.filter-bransje:checked')).map(function(cb) { return cb.value; });
+        var selectedMedlemskap = Array.from(document.querySelectorAll('.filter-medlemskap:checked')).map(function(cb) { return cb.value; });
+
+        var allCards = document.querySelectorAll('.foretak-card');
+        allCards.forEach(function(card) {
+            var title = card.dataset.title || '';
+            var poststed = card.dataset.poststed || '';
+            var bransje = card.dataset.bransje || '';
+            var medlemskap = card.dataset.medlemskap || '';
+
+            var matchesSearch = !searchTerm || title.includes(searchTerm) || poststed.includes(searchTerm);
+            var matchesBransje = selectedBransje.length === 0 || selectedBransje.some(function(b) { return bransje.includes(b); });
+            var matchesMedlemskap = selectedMedlemskap.length === 0 || selectedMedlemskap.includes(medlemskap);
+
+            card.style.display = (matchesSearch && matchesBransje && matchesMedlemskap) ? '' : 'none';
+        });
+
+        // Count from active container only
+        var activeContainer = (listEl && listEl.style.display !== 'none') ? listEl : gridEl;
+        var visibleCards = activeContainer ? activeContainer.querySelectorAll('.foretak-card:not([style*="display: none"])').length : 0;
+        updateVisibleCount(visibleCards);
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFilters, 200);
+        });
+    }
+
+    checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', applyFilters);
+    });
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (searchInput) searchInput.value = '';
+            checkboxes.forEach(function(cb) {
+                cb.checked = false;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            applyFilters();
+        });
+    }
+});
+</script>
 
 <?php get_footer(); ?>
