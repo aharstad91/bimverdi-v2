@@ -16,6 +16,7 @@ $demo_templates = [
     'okosystem-flyt'               => 'parts/demos/okosystem-flyt',
     'foretak-verktoy-matrise'      => 'parts/demos/matrise',
     'temagruppe-tidslinje'         => 'parts/demos/tidslinje',
+    'okosystem-vertikal'           => 'parts/demos/okosystem-vertikal',
 ];
 
 if (isset($demo_templates[$slug])) {
