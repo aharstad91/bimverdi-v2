@@ -53,6 +53,7 @@ class BIM_Verdi_Post_Types {
         $this->register_prosjekt();
         $this->register_theme_group();
         $this->register_artikkel();
+        $this->register_demo();
     }
     
     /**
@@ -341,6 +342,43 @@ class BIM_Verdi_Post_Types {
         );
 
         register_post_type('artikkel', $args);
+    }
+
+    /**
+     * Register Demo CPT (Visual Prototypes / Connecting the Dots)
+     */
+    private function register_demo() {
+        $labels = array(
+            'name'                  => _x('Demoer', 'Post Type General Name', 'bim-verdi-core'),
+            'singular_name'         => _x('Demo', 'Post Type Singular Name', 'bim-verdi-core'),
+            'menu_name'             => __('Demoer', 'bim-verdi-core'),
+            'all_items'             => __('Alle demoer', 'bim-verdi-core'),
+            'add_new_item'          => __('Legg til ny demo', 'bim-verdi-core'),
+            'edit_item'             => __('Rediger demo', 'bim-verdi-core'),
+            'view_item'             => __('Vis demo', 'bim-verdi-core'),
+            'search_items'          => __('Sok demoer', 'bim-verdi-core'),
+            'not_found'             => __('Ingen demoer funnet', 'bim-verdi-core'),
+        );
+
+        $args = array(
+            'label'                 => __('Demo', 'bim-verdi-core'),
+            'labels'                => $labels,
+            'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields'),
+            'public'                => true,
+            'show_ui'               => true,
+            'show_in_menu'          => true,
+            'menu_position'         => 11,
+            'menu_icon'             => 'dashicons-visibility',
+            'show_in_admin_bar'     => true,
+            'show_in_nav_menus'     => true,
+            'can_export'            => true,
+            'has_archive'           => true,
+            'rewrite'               => array('slug' => 'demo'),
+            'capability_type'       => 'post',
+            'show_in_rest'          => true,
+        );
+
+        register_post_type('demo', $args);
     }
 
     /**
