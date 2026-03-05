@@ -26,22 +26,6 @@ get_header();
             <?php while (have_posts()) : the_post(); ?>
             <a href="<?php the_permalink(); ?>" class="group block bg-white rounded-lg border border-[#E7E5E4] overflow-hidden hover:shadow-lg hover:border-[#FF8B5E]/30 transition-all duration-300">
 
-                <!-- Preview area -->
-                <div class="h-48 bg-gradient-to-br from-[#1A1A1A] to-[#333] flex items-center justify-center relative overflow-hidden">
-                    <?php if (has_post_thumbnail()) : ?>
-                        <?php the_post_thumbnail('medium_large', ['class' => 'w-full h-full object-cover']); ?>
-                    <?php else : ?>
-                        <div class="text-center">
-                            <svg style="width:48px;height:48px" class="text-[#FF8B5E]/60 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-                            </svg>
-                            <span class="text-white/40 text-xs uppercase tracking-wider">Prototype</span>
-                        </div>
-                    <?php endif; ?>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-
-                <!-- Content -->
                 <div class="p-5">
                     <h2 class="text-lg font-semibold text-[#1A1A1A] group-hover:text-[#FF8B5E] transition-colors mb-2">
                         <?php the_title(); ?>
