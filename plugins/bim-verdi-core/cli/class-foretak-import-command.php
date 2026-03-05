@@ -2007,6 +2007,676 @@ class BIM_Verdi_CLI_Commands {
             WP_CLI::success("Import completed!");
         }
     }
+
+    /**
+     * Import Verktøy data from Formidable Forms CSV export
+     *
+     * Updates existing verktøy posts with correct ACF-formatted data from FF CSV.
+     * Also creates new verktøy posts for entries not yet in WordPress.
+     *
+     * ## OPTIONS
+     *
+     * <csv-file>
+     * : Path to the Formidable Forms CSV export file
+     *
+     * [--dry-run]
+     * : Run without making changes, just show what would be imported
+     *
+     * [--force]
+     * : Overwrite existing field values (default: only update empty/broken fields)
+     *
+     * [--create-new]
+     * : Also create new verktøy posts for CSV entries not found in WP
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi verktoy-import /path/to/verktoy.csv --dry-run
+     *     wp bimverdi verktoy-import /path/to/verktoy.csv --force --create-new
+     *
+     * @param array $args       Positional arguments
+     * @param array $assoc_args Named arguments
+     */
+    public function verktoy_import($args, $assoc_args) {
+        $csv_file = $args[0];
+        $dry_run = isset($assoc_args['dry-run']);
+        $force = isset($assoc_args['force']);
+        $create_new = isset($assoc_args['create-new']);
+
+        if (!file_exists($csv_file)) {
+            WP_CLI::error("CSV file not found: {$csv_file}");
+        }
+
+        WP_CLI::log("=== BIM Verdi Verktøy Import ===");
+        WP_CLI::log("CSV: {$csv_file}");
+        WP_CLI::log("Mode: " . ($dry_run ? "DRY RUN" : "LIVE"));
+        WP_CLI::log("Overwrite: " . ($force ? "Yes" : "No (empty/broken fields only)"));
+        WP_CLI::log("Create new: " . ($create_new ? "Yes" : "No"));
+        WP_CLI::log("");
+
+        // Read CSV
+        $csv_data = $this->read_csv($csv_file);
+        if (empty($csv_data)) {
+            WP_CLI::error("No data found in CSV");
+        }
+
+        WP_CLI::log("Found " . count($csv_data) . " entries in CSV");
+
+        // Build map of existing verktøy posts (title → post_id)
+        $existing = $this->build_verktoy_map();
+        WP_CLI::log("Found " . count($existing) . " existing verktøy posts in WP");
+        WP_CLI::log("");
+
+        // FF label → ACF key mappings
+        $bim_komp_map = $this->get_bim_kompatibilitet_map();
+        $formaalstema_map = $this->get_formaalstema_map();
+        $type_ressurs_map = $this->get_type_ressurs_map();
+        $type_teknologi_map = $this->get_type_teknologi_map();
+        $anvendelser_map = $this->get_anvendelser_map();
+
+        // Test entries to skip
+        $skip_emails = array(
+            'andreas@aharstad.no', 'andreas@aharstad.com', 'aharstad@hotmail.com',
+            'test11@krogshus.no', 'dimitris@test.com',
+        );
+        $skip_names = array('xxx', 'xxxxx', 'Testverktøy 1', 'Testverktøy 2', 'dimitristool');
+
+        $stats = array(
+            'processed' => 0,
+            'matched' => 0,
+            'updated' => 0,
+            'created' => 0,
+            'skipped_test' => 0,
+            'skipped_draft' => 0,
+            'skipped_no_name' => 0,
+            'skipped_not_visible' => 0,
+            'not_found' => 0,
+            'fields_updated' => 0,
+        );
+
+        // Track which CSV names we've seen (for duplicate handling - use latest)
+        $seen_names = array();
+
+        // Sort CSV by timestamp descending so we process latest first
+        usort($csv_data, function($a, $b) {
+            $ta = $a['Timestamp'] ?? '';
+            $tb = $b['Timestamp'] ?? '';
+            return strcmp($tb, $ta);
+        });
+
+        foreach ($csv_data as $row) {
+            $stats['processed']++;
+
+            $entry_id = trim($row['ID'] ?? '');
+            $entry_status = trim($row['Entry Status'] ?? '0');
+            $verktoy_navn = trim($row['Verktøynavn'] ?? '');
+            $email = trim($row['E-post til den som registrerer verktøyet'] ?? '');
+            $synlig = trim($row['Jeg ønsker å være synlig med denne informasjon på BIM Verdi. Du kan oppdatere informasjonen her senere.'] ?? '');
+
+            // Skip draft/trashed FF entries
+            if ($entry_status !== '0') {
+                WP_CLI::log("[SKIP] FF#{$entry_id} \"{$verktoy_navn}\" - Draft/trashed (status: {$entry_status})");
+                $stats['skipped_draft']++;
+                continue;
+            }
+
+            // Skip empty names
+            if (empty($verktoy_navn)) {
+                WP_CLI::log("[SKIP] FF#{$entry_id} - Empty name");
+                $stats['skipped_no_name']++;
+                continue;
+            }
+
+            // Skip test entries
+            if (in_array($email, $skip_emails) || in_array($verktoy_navn, $skip_names)) {
+                WP_CLI::log("[SKIP] FF#{$entry_id} \"{$verktoy_navn}\" - Test entry ({$email})");
+                $stats['skipped_test']++;
+                continue;
+            }
+
+            // Skip if we've already processed a newer entry for same name
+            $name_key = mb_strtolower($verktoy_navn);
+            if (isset($seen_names[$name_key])) {
+                WP_CLI::log("[SKIP] FF#{$entry_id} \"{$verktoy_navn}\" - Older duplicate (newer: FF#{$seen_names[$name_key]})");
+                $stats['skipped_draft']++;
+                continue;
+            }
+            $seen_names[$name_key] = $entry_id;
+
+            // Find matching WP post
+            $post_id = $this->find_verktoy_post($verktoy_navn, $existing);
+
+            if (!$post_id && !$create_new) {
+                // Check visibility before reporting
+                if (stripos($synlig, 'Nei') !== false) {
+                    WP_CLI::log("[SKIP] FF#{$entry_id} \"{$verktoy_navn}\" - Not visible + not in WP");
+                    $stats['skipped_not_visible']++;
+                } else {
+                    WP_CLI::log("[NOT IN WP] FF#{$entry_id} \"{$verktoy_navn}\" (use --create-new to add)");
+                    $stats['not_found']++;
+                }
+                continue;
+            }
+
+            if (!$post_id && $create_new) {
+                // Check visibility
+                if (stripos($synlig, 'Nei') !== false) {
+                    WP_CLI::log("[SKIP] FF#{$entry_id} \"{$verktoy_navn}\" - Said 'Nei' to visibility");
+                    $stats['skipped_not_visible']++;
+                    continue;
+                }
+
+                // Create new post
+                WP_CLI::log("[CREATE] FF#{$entry_id} \"{$verktoy_navn}\"");
+
+                if (!$dry_run) {
+                    $post_id = wp_insert_post(array(
+                        'post_title' => sanitize_text_field($verktoy_navn),
+                        'post_type' => 'verktoy',
+                        'post_status' => 'publish',
+                        'post_content' => '',
+                    ));
+
+                    if (is_wp_error($post_id)) {
+                        WP_CLI::warning("  → Failed to create: " . $post_id->get_error_message());
+                        continue;
+                    }
+
+                    // Store FF entry ID for tracking
+                    update_post_meta($post_id, 'ff_entry_id', absint($entry_id));
+
+                    WP_CLI::log("  → Created post #{$post_id}");
+                } else {
+                    WP_CLI::log("  → Would create new post");
+                    $stats['created']++;
+                    continue;
+                }
+                $stats['created']++;
+            }
+
+            if (!$post_id) {
+                continue;
+            }
+
+            $stats['matched']++;
+            $post_title = get_the_title($post_id);
+            $post_status = get_post_status($post_id);
+            WP_CLI::log("[MATCH] FF#{$entry_id} \"{$verktoy_navn}\" → Post #{$post_id} \"{$post_title}\" ({$post_status})");
+
+            // Store FF entry ID for tracking
+            if (!$dry_run) {
+                update_post_meta($post_id, 'ff_entry_id', absint($entry_id));
+            }
+
+            // Prepare field updates
+            $field_count = 0;
+
+            // --- verktoy_navn ---
+            $field_count += $this->update_verktoy_field(
+                $post_id, 'verktoy_navn', sanitize_text_field($verktoy_navn), $force, $dry_run
+            );
+
+            // --- kort_beskrivelse ---
+            $kort = trim($row['Kort beskrivelse av verktøyet - maks 100 tegn'] ?? '');
+            if (!empty($kort)) {
+                $field_count += $this->update_verktoy_field(
+                    $post_id, 'kort_beskrivelse', sanitize_text_field($kort), $force, $dry_run
+                );
+            }
+
+            // --- detaljert_beskrivelse ---
+            $detalj = trim($row['Beskrivelse av verktøy/programvare - maks 1000 tegn'] ?? '');
+            if (!empty($detalj)) {
+                $field_count += $this->update_verktoy_field(
+                    $post_id, 'detaljert_beskrivelse', wp_kses_post($detalj), $force, $dry_run
+                );
+            }
+
+            // --- verktoy_lenke ---
+            $lenke = trim($row['Link til produktbeskrivelse hos leverandøren'] ?? '');
+            if (!empty($lenke) && filter_var($lenke, FILTER_VALIDATE_URL)) {
+                $field_count += $this->update_verktoy_field(
+                    $post_id, 'verktoy_lenke', esc_url_raw($lenke), $force, $dry_run
+                );
+            }
+
+            // --- nedlastingslenke ---
+            $nedl = trim($row['Link til nedlasting'] ?? '');
+            if (!empty($nedl) && filter_var($nedl, FILTER_VALIDATE_URL)) {
+                $field_count += $this->update_verktoy_field(
+                    $post_id, 'nedlastingslenke', esc_url_raw($nedl), $force, $dry_run
+                );
+            }
+
+            // --- versjon ---
+            $versjon = trim($row['Versjon'] ?? '');
+            if (!empty($versjon)) {
+                $field_count += $this->update_verktoy_field(
+                    $post_id, 'versjon', sanitize_text_field($versjon), $force, $dry_run
+                );
+            }
+
+            // --- verktoy_logo_url (stored as URL string, not ACF image) ---
+            $logo_url = trim($row['Logo verktøy'] ?? '');
+            if (!empty($logo_url) && filter_var($logo_url, FILTER_VALIDATE_URL)) {
+                $field_count += $this->update_verktoy_meta(
+                    $post_id, 'verktoy_logo_url', esc_url_raw($logo_url), $force, $dry_run
+                );
+            }
+
+            // --- formaalstema (checkbox → ACF keys) ---
+            $tema_raw = trim($row['Tema'] ?? '');
+            if (!empty($tema_raw)) {
+                $tema_keys = $this->map_csv_values_to_acf_keys($tema_raw, $formaalstema_map);
+                if (!empty($tema_keys)) {
+                    $field_count += $this->update_verktoy_checkbox(
+                        $post_id, 'formaalstema', $tema_keys, $force, $dry_run
+                    );
+                }
+            }
+
+            // --- bim_kompatibilitet (checkbox → ACF keys) ---
+            $bim_raw = trim($row['Åpen BIM-kompatibilitet'] ?? '');
+            if (!empty($bim_raw)) {
+                $bim_keys = $this->map_csv_values_to_acf_keys($bim_raw, $bim_komp_map);
+                if (!empty($bim_keys)) {
+                    $field_count += $this->update_verktoy_checkbox(
+                        $post_id, 'bim_kompatibilitet', $bim_keys, $force, $dry_run
+                    );
+                }
+            }
+
+            // --- type_ressurs (checkbox → ACF keys) ---
+            $ressurs_raw = trim($row['Type ressurs'] ?? '');
+            if (!empty($ressurs_raw)) {
+                $ressurs_keys = $this->map_csv_values_to_acf_keys($ressurs_raw, $type_ressurs_map);
+                if (!empty($ressurs_keys)) {
+                    $field_count += $this->update_verktoy_checkbox(
+                        $post_id, 'type_ressurs', $ressurs_keys, $force, $dry_run
+                    );
+                }
+            }
+
+            // --- type_teknologi (radio → single ACF key) ---
+            $tek_raw = trim($row['Type teknologi'] ?? '');
+            if (!empty($tek_raw)) {
+                $tek_key = $this->map_type_teknologi($tek_raw, $type_teknologi_map);
+                if (!empty($tek_key)) {
+                    $field_count += $this->update_verktoy_field(
+                        $post_id, 'type_teknologi', $tek_key, $force, $dry_run
+                    );
+                }
+            }
+
+            // --- anvendelser (checkbox → ACF keys) ---
+            $anv_raw = trim($row['Anvendelser'] ?? '');
+            if (!empty($anv_raw)) {
+                $anv_keys = $this->map_csv_values_to_acf_keys($anv_raw, $anvendelser_map);
+                if (!empty($anv_keys)) {
+                    $field_count += $this->update_verktoy_checkbox(
+                        $post_id, 'anvendelser', $anv_keys, $force, $dry_run
+                    );
+                }
+            }
+
+            // --- eier_leverandor (foretak lookup by org number) ---
+            $org_nr = $this->clean_org_number($row['Organisasjonsnummer'] ?? '');
+            $leverandor_navn = trim($row['Leverandør'] ?? '');
+            if (!empty($org_nr) || !empty($leverandor_navn)) {
+                $foretak_id = $this->find_foretak($org_nr, $leverandor_navn);
+                if ($foretak_id) {
+                    $field_count += $this->update_verktoy_field(
+                        $post_id, 'eier_leverandor', absint($foretak_id), $force, $dry_run
+                    );
+                }
+            }
+
+            // --- Kontaktperson (stored as hidden meta) ---
+            $kp_fornavn = trim($row['Fornavn'] ?? '');
+            $kp_etternavn = trim($row['Etternavn'] ?? '');
+            $kp_epost = trim($row['E-post til den som registrerer verktøyet'] ?? '');
+            $kp_navn = trim($kp_fornavn . ' ' . $kp_etternavn);
+            if (!empty($kp_navn) && $kp_navn !== '') {
+                $field_count += $this->update_verktoy_meta(
+                    $post_id, '_kontaktperson_navn', sanitize_text_field($kp_navn), $force, $dry_run
+                );
+            }
+            if (!empty($kp_epost) && is_email($kp_epost)) {
+                $field_count += $this->update_verktoy_meta(
+                    $post_id, '_kontaktperson_epost', sanitize_email($kp_epost), $force, $dry_run
+                );
+            }
+
+            if ($field_count > 0) {
+                $stats['updated']++;
+                $stats['fields_updated'] += $field_count;
+            } else {
+                WP_CLI::log("  → No fields to update");
+            }
+        }
+
+        // Summary
+        WP_CLI::log("");
+        WP_CLI::log("=== Verktøy Import Summary ===");
+        WP_CLI::log("Processed:     {$stats['processed']}");
+        WP_CLI::log("Matched:       {$stats['matched']}");
+        WP_CLI::log("Updated:       {$stats['updated']}");
+        WP_CLI::log("Fields set:    {$stats['fields_updated']}");
+        WP_CLI::log("Created:       {$stats['created']}");
+        WP_CLI::log("Skip (test):   {$stats['skipped_test']}");
+        WP_CLI::log("Skip (draft):  {$stats['skipped_draft']}");
+        WP_CLI::log("Skip (empty):  {$stats['skipped_no_name']}");
+        WP_CLI::log("Skip (hidden): {$stats['skipped_not_visible']}");
+        WP_CLI::log("Not in WP:     {$stats['not_found']}");
+
+        if ($dry_run) {
+            WP_CLI::warning("DRY RUN - No changes were made");
+        } else {
+            WP_CLI::success("Verktøy import completed!");
+        }
+    }
+
+    // ─── Verktøy Import Helpers ─────────────────────────────────────────
+
+    /**
+     * Build map of existing verktøy posts: normalized_title → post_id
+     */
+    private function build_verktoy_map() {
+        $posts = get_posts(array(
+            'post_type' => 'verktoy',
+            'post_status' => array('publish', 'draft', 'pending'),
+            'posts_per_page' => -1,
+        ));
+
+        $map = array();
+        foreach ($posts as $p) {
+            $key = mb_strtolower(html_entity_decode(trim($p->post_title), ENT_QUOTES, 'UTF-8'));
+            // If duplicate title, keep the published one
+            if (isset($map[$key])) {
+                $existing_status = get_post_status($map[$key]);
+                if ($existing_status === 'publish') {
+                    continue;
+                }
+            }
+            $map[$key] = $p->ID;
+        }
+        return $map;
+    }
+
+    /**
+     * Find verktøy post by title (with fuzzy matching)
+     */
+    private function find_verktoy_post($csv_name, $existing_map) {
+        $key = mb_strtolower(trim($csv_name));
+
+        // Exact match
+        if (isset($existing_map[$key])) {
+            return $existing_map[$key];
+        }
+
+        // Try with HTML entity decoding
+        $decoded = mb_strtolower(html_entity_decode($csv_name, ENT_QUOTES, 'UTF-8'));
+        if (isset($existing_map[$decoded])) {
+            return $existing_map[$decoded];
+        }
+
+        // Fuzzy: strip " - " suffix from CSV name (e.g., "RealTime LCA - effektiviser...")
+        // Try matching just the first part
+        foreach ($existing_map as $existing_key => $pid) {
+            if (strpos($existing_key, $key) === 0 || strpos($key, $existing_key) === 0) {
+                return $pid;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Update ACF field only if currently empty/broken (unless --force)
+     * Returns 1 if updated, 0 if skipped
+     */
+    private function update_verktoy_field($post_id, $field_name, $new_value, $force, $dry_run) {
+        $current = get_field($field_name, $post_id);
+
+        // Consider broken serialized data as empty
+        $is_broken = false;
+        if (is_string($current) && (
+            strpos($current, 'a:') === 0 ||
+            strpos($current, 's:') === 0 ||
+            strpos($current, ' er på plass') !== false
+        )) {
+            $is_broken = true;
+        }
+
+        if (!$force && !empty($current) && !$is_broken) {
+            return 0;
+        }
+
+        $display = is_array($new_value) ? implode(', ', $new_value) : $new_value;
+        $display = mb_strlen($display) > 60 ? mb_substr($display, 0, 57) . '...' : $display;
+        $prefix = $is_broken ? '  → [FIX]' : '  →';
+        WP_CLI::log("{$prefix} {$field_name}: {$display}");
+
+        if (!$dry_run) {
+            update_field($field_name, $new_value, $post_id);
+        }
+        return 1;
+    }
+
+    /**
+     * Update ACF checkbox field with proper array format
+     * Returns 1 if updated, 0 if skipped
+     */
+    private function update_verktoy_checkbox($post_id, $field_name, $new_keys, $force, $dry_run) {
+        $current_raw = get_post_meta($post_id, $field_name, true);
+
+        // Detect broken data: string instead of array, or serialized mess
+        $is_broken = false;
+        if (!empty($current_raw)) {
+            if (is_string($current_raw) && !is_serialized($current_raw)) {
+                $is_broken = true; // Comma-separated string
+            } elseif (is_string($current_raw) && strpos($current_raw, 's:') === 0) {
+                $is_broken = true; // Double-serialized
+            }
+        }
+
+        // If not broken, check via ACF
+        if (!$is_broken) {
+            $current_acf = get_field($field_name, $post_id);
+            if (!$force && !empty($current_acf) && is_array($current_acf)) {
+                return 0; // Already has valid data
+            }
+        }
+
+        $display = implode(', ', $new_keys);
+        $display = mb_strlen($display) > 60 ? mb_substr($display, 0, 57) . '...' : $display;
+        $prefix = $is_broken ? '  → [FIX]' : '  →';
+        WP_CLI::log("{$prefix} {$field_name}: {$display}");
+
+        if (!$dry_run) {
+            update_field($field_name, $new_keys, $post_id);
+        }
+        return 1;
+    }
+
+    /**
+     * Update raw post meta (for non-ACF fields like _kontaktperson_*)
+     * Returns 1 if updated, 0 if skipped
+     */
+    private function update_verktoy_meta($post_id, $meta_key, $new_value, $force, $dry_run) {
+        $current = get_post_meta($post_id, $meta_key, true);
+
+        if (!$force && !empty($current)) {
+            return 0;
+        }
+
+        $display = mb_strlen($new_value) > 60 ? mb_substr($new_value, 0, 57) . '...' : $new_value;
+        WP_CLI::log("  → {$meta_key}: {$display}");
+
+        if (!$dry_run) {
+            update_post_meta($post_id, $meta_key, $new_value);
+        }
+        return 1;
+    }
+
+    /**
+     * Map comma-separated CSV values to ACF checkbox keys
+     */
+    private function map_csv_values_to_acf_keys($csv_string, $label_to_key_map) {
+        $parts = array_map('trim', explode(',', $csv_string));
+        $keys = array();
+
+        foreach ($parts as $part) {
+            if (empty($part)) continue;
+            $lower = mb_strtolower($part);
+
+            foreach ($label_to_key_map as $pattern => $acf_key) {
+                if (mb_strtolower($pattern) === $lower) {
+                    if (!in_array($acf_key, $keys)) {
+                        $keys[] = $acf_key;
+                    }
+                    break;
+                }
+            }
+        }
+
+        return $keys;
+    }
+
+    /**
+     * Map type_teknologi (radio) - handles serialized PHP junk in CSV
+     */
+    private function map_type_teknologi($raw_value, $map) {
+        // Decode serialized PHP garbage
+        $clean = $raw_value;
+
+        // Strip nested serialization: s:NN:"...";
+        while (preg_match('/^s:\d+:"(.*)";$/', $clean, $m)) {
+            $clean = $m[1];
+        }
+
+        // Strip serialized array wrapper: a:1:{i:0;s:NN:"..."}
+        if (preg_match('/a:\d+:\{.*s:\d+:"([^"]+)"/', $clean, $m)) {
+            $clean = $m[1];
+        }
+
+        $clean = trim($clean);
+        if (empty($clean)) return '';
+
+        $lower = mb_strtolower($clean);
+        foreach ($map as $pattern => $acf_key) {
+            if (mb_strtolower($pattern) === $lower) {
+                return $acf_key;
+            }
+        }
+
+        // Partial matching for messy values
+        if (strpos($lower, 'bruker ki') !== false || strpos($lower, 'bruker kunstig') !== false) {
+            if (strpos($lower, 'ikke') !== false) {
+                return 'ikke_ki';
+            }
+            return 'bruker_ki';
+        }
+        if (strpos($lower, 'planlegger') !== false) {
+            return 'planlegger_ki';
+        }
+        if (strpos($lower, 'avklaring') !== false) {
+            return 'under_avklaring';
+        }
+
+        WP_CLI::warning("  → Unknown type_teknologi: \"{$clean}\"");
+        return '';
+    }
+
+    // ─── Label → ACF Key Mapping Tables ─────────────────────────────────
+
+    private function get_bim_kompatibilitet_map() {
+        return array(
+            // FF labels with "er på plass" suffix
+            'IFC/BIM-kompatibel er på plass' => 'ifc_kompatibel',
+            'IFC-eksport er på plass' => 'ifc_eksport',
+            'IFC-import er på plass' => 'ifc_import',
+            'kobling mot IFC er på plass' => 'kobling_ifc',
+            // FF labels without suffix (older format)
+            'IFC/BIM-kompatibel' => 'ifc_kompatibel',
+            'IFC-eksport' => 'ifc_eksport',
+            'IFC-import' => 'ifc_import',
+            'Kobling mot IFC' => 'kobling_ifc',
+            // Direct matches
+            'Planlagt/under utvikling' => 'planlagt',
+            'vet ikke/not sure' => 'vet_ikke',
+            'Vet ikke' => 'vet_ikke',
+        );
+    }
+
+    private function get_formaalstema_map() {
+        return array(
+            'Byggesak/byggesøknad (ByggesaksBIM)' => 'byggesak',
+            'Prosjektering og bygging (ProsjektBIM)' => 'prosjekt',
+            'Eiendomsdrift og vedlikehold (EiendomsBIM)' => 'eiendom',
+            'Miljøberegninger (MiljøBIM)' => 'miljo',
+            'Ombruk og resirkulering (SirkBIM)' => 'sirk',
+            'Validering' => 'validering',
+            'Opplæringsverktøy' => 'opplaering',
+            'Samhandling og visualisering' => 'samhandling',
+            'Prosjektutvikling' => 'prosjektutvikling',
+        );
+    }
+
+    private function get_type_ressurs_map() {
+        return array(
+            'Programvare' => 'programvare',
+            'Standard eller forskrift' => 'standard',
+            'Metodikk eller rutinebeskrivelse' => 'metodikk',
+            'Veileder' => 'veileder',
+            'Nettside' => 'nettside',
+            'Digital tjeneste' => 'digital_tjeneste',
+            'SaaS' => 'saas',
+            'Kurs og opplæring' => 'kurs',
+        );
+    }
+
+    private function get_type_teknologi_map() {
+        return array(
+            'Løsningen bruker KI (kunstig intelligens) i dag.' => 'bruker_ki',
+            'Løsningen bruker IKKE KI (kunstig intelligens) i dag.' => 'ikke_ki',
+            'Vi planlegger å inkludere KI i nær fremtid' => 'planlegger_ki',
+            'Under avklaring' => 'under_avklaring',
+            // Short forms
+            'Bruker KI i dag' => 'bruker_ki',
+            'Bruker ikke KI' => 'ikke_ki',
+            'Planlegger å inkludere KI' => 'planlegger_ki',
+        );
+    }
+
+    private function get_anvendelser_map() {
+        return array(
+            // Exact matches from FF
+            'Design og modellering' => 'design',
+            'GIS/kart' => 'gis',
+            'Digitalt innhold' => 'dokumenter',
+            'skanning' => 'dokumenter',
+            'dokumenter og egenskaper' => 'dokumenter',
+            'Prosjektledelse og dokumentstyring' => 'prosjektledelse',
+            'Prosjektledelse' => 'prosjektledelse',
+            'Kostnadsanalyse og budsjett' => 'kostnad',
+            'Kostnadsanalyse' => 'kostnad',
+            'Simulering og analyse' => 'simulering',
+            'Simulering' => 'simulering',
+            'Feltarbeid og inspeksjon' => 'feltarbeid',
+            'Feltarbeid' => 'feltarbeid',
+            'Fasilitetsstyring' => 'fasilitets',
+            'FDVU' => 'fasilitets',
+            'Fasilitetsstyring, FDVU' => 'fasilitets',
+            'Bærekraft og miljø' => 'barekraft',
+            'Bærekraft' => 'barekraft',
+            'Kommunikasjon og samarbeid' => 'kommunikasjon',
+            'Kommunikasjon' => 'kommunikasjon',
+            'Logistikk' => 'logistikk',
+            'økonomi og handel' => 'logistikk',
+            'Logistikk, økonomi og handel' => 'logistikk',
+            'Kompetansesystemer' => 'kompetanse',
+        );
+    }
 }
 
 // Register WP-CLI command
