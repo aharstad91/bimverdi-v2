@@ -239,15 +239,69 @@ if (!empty($theme_groups)) {
 .bv-ev-stat b.c3 { color: #10B981; }
 .bv-ev-stat b.c4 { color: #F59E0B; }
 
-/* Mobile */
+/* ─── Mobile: hide SVG, show flow-list ─────────────────────────────── */
+.bv-ev-mobile { display: none; }
+
 @media (max-width: 768px) {
     .bv-ev-title { font-size: 1.5rem; }
-    .bv-ev-detail {
-        position: fixed; top: auto; bottom: 0; left: 0; right: 0;
-        width: 100%; border-radius: 16px 16px 0 0; max-height: 50vh; overflow-y: auto;
-    }
+    .bv-ev-viz { display: none; }
+    .bv-ev-mobile { display: block; max-width: 1400px; margin: 0 auto; padding: 1rem 1rem 0; }
     .bv-ev-stats { gap: 1rem; }
     .bv-ev-stat b { font-size: 1.375rem; }
+
+    /* Temagruppe card at top */
+    .bv-ev-m-tg {
+        background: #FF8B5E; color: #fff; border-radius: 12px;
+        padding: 1rem 1.25rem; font-size: 1.125rem; font-weight: 700;
+        text-align: center; margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(255,139,94,0.3);
+    }
+
+    /* Category section */
+    .bv-ev-m-section { position: relative; padding-left: 28px; margin-bottom: 2rem; }
+
+    /* Vertical flow stripe */
+    .bv-ev-m-section::before {
+        content: '';
+        position: absolute; left: 8px; top: 0; bottom: 0; width: 3px;
+        border-radius: 2px;
+    }
+    .bv-ev-m-section[data-type="foretak"]::before { background: #3B82F6; }
+    .bv-ev-m-section[data-type="verktoy"]::before { background: #8B5CF6; }
+    .bv-ev-m-section[data-type="kunnskap"]::before { background: #10B981; }
+    .bv-ev-m-section[data-type="arrangement"]::before { background: #F59E0B; }
+
+    /* Flow dot connector at top of stripe */
+    .bv-ev-m-section::after {
+        content: '';
+        position: absolute; left: 4px; top: -8px;
+        width: 11px; height: 11px; border-radius: 50%;
+        border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+    }
+    .bv-ev-m-section[data-type="foretak"]::after { background: #3B82F6; }
+    .bv-ev-m-section[data-type="verktoy"]::after { background: #8B5CF6; }
+    .bv-ev-m-section[data-type="kunnskap"]::after { background: #10B981; }
+    .bv-ev-m-section[data-type="arrangement"]::after { background: #F59E0B; }
+
+    /* Section header */
+    .bv-ev-m-label {
+        font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.08em; margin-bottom: 0.5rem;
+    }
+
+    /* Entity items */
+    .bv-ev-m-item {
+        display: flex; align-items: center; gap: 0.5rem;
+        background: #fff; border: 1px solid #E7E5E4; border-radius: 8px;
+        padding: 0.625rem 0.75rem; margin-bottom: 0.5rem;
+        font-size: 0.8125rem; font-weight: 500; color: #1A1A1A;
+        text-decoration: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .bv-ev-m-item:hover { border-color: #D6D1C6; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .bv-ev-m-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Empty state */
+    .bv-ev-m-empty { font-size: 0.8125rem; color: #888; font-style: italic; }
 }
 </style>
 
@@ -330,6 +384,36 @@ if (!empty($theme_groups)) {
         </button>
         <div id="bv-ev-detail-body"></div>
     </div>
+</div>
+
+<!-- Mobile: Flow-list fallback (hidden on desktop) -->
+<div class="bv-ev-mobile">
+    <div class="bv-ev-m-tg"><?php echo esc_html($ecosystem_data['temagruppe']['label']); ?></div>
+
+    <?php
+    $mobile_sections = [
+        ['key' => 'foretak', 'type' => 'foretak', 'label' => 'Foretak', 'color' => '#3B82F6', 'items' => $ecosystem_data['foretak']],
+        ['key' => 'verktoy', 'type' => 'verktoy', 'label' => 'Verktoy', 'color' => '#8B5CF6', 'items' => $ecosystem_data['verktoy']],
+        ['key' => 'kunnskapskilder', 'type' => 'kunnskap', 'label' => 'Kunnskapskilder', 'color' => '#10B981', 'items' => $ecosystem_data['kunnskapskilder']],
+        ['key' => 'arrangementer', 'type' => 'arrangement', 'label' => 'Arrangementer', 'color' => '#F59E0B', 'items' => $ecosystem_data['arrangementer']],
+    ];
+    foreach ($mobile_sections as $sec) : ?>
+    <div class="bv-ev-m-section" data-type="<?php echo esc_attr($sec['type']); ?>">
+        <div class="bv-ev-m-label" style="color:<?php echo esc_attr($sec['color']); ?>">
+            <?php echo esc_html($sec['label']); ?> (<?php echo count($sec['items']); ?>)
+        </div>
+        <?php if (empty($sec['items'])) : ?>
+            <span class="bv-ev-m-empty">Ingen <?php echo esc_html(strtolower($sec['label'])); ?> koblet enda</span>
+        <?php else : ?>
+            <?php foreach ($sec['items'] as $item) : ?>
+            <a href="<?php echo esc_url($item['url']); ?>" class="bv-ev-m-item">
+                <span class="bv-ev-m-dot" style="background:<?php echo esc_attr($sec['color']); ?>"></span>
+                <?php echo esc_html($item['label']); ?>
+            </a>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+    <?php endforeach; ?>
 </div>
 
 <!-- Stats -->
