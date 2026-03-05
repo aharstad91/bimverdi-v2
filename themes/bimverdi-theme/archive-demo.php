@@ -20,7 +20,7 @@ get_header();
     </div>
 
     <!-- Demo Grid -->
-    <div class="max-w-[1280px] mx-auto px-4 py-10">
+    <div class="max-w-[1280px] mx-auto px-4 pt-16 pb-10">
         <?php if (have_posts()) : ?>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php while (have_posts()) : the_post(); ?>
