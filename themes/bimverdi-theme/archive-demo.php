@@ -32,7 +32,7 @@ get_header();
                         <?php the_post_thumbnail('medium_large', ['class' => 'w-full h-full object-cover']); ?>
                     <?php else : ?>
                         <div class="text-center">
-                            <svg class="w-12 h-12 text-[#FF8B5E]/60 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg style="width:48px;height:48px" class="text-[#FF8B5E]/60 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                             </svg>
                             <span class="text-white/40 text-xs uppercase tracking-wider">Prototype</span>
@@ -51,7 +51,7 @@ get_header();
                     <?php endif; ?>
                     <div class="mt-4 flex items-center text-xs text-[#FF8B5E] font-medium">
                         <span>Se demo</span>
-                        <svg class="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg style="width:14px;height:14px;flex-shrink:0" class="ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </div>
