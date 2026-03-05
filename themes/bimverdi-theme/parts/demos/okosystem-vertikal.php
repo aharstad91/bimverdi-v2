@@ -111,6 +111,46 @@ if (empty($ecosystem_data)) {
 }
 
 $json_data = wp_json_encode($ecosystem_data);
+
+// ─── Hero data from temagruppe ──────────────────────────────────────────────
+$hero = ['title' => 'BIMtech', 'description' => '', 'fagansvarlig' => null, 'tg_url' => '#'];
+if (!empty($theme_groups)) {
+    $tg_id = $theme_groups[0]->ID;
+    $hero['title'] = $theme_groups[0]->post_title;
+    $hero['tg_url'] = get_permalink($tg_id);
+
+    // Description: kort_beskrivelse ACF field or post content
+    $kort = get_field('kort_beskrivelse', $tg_id);
+    if ($kort) {
+        $hero['description'] = $kort;
+    } else {
+        $content = get_the_content(null, false, $tg_id);
+        if ($content) {
+            $hero['description'] = wp_strip_all_tags(apply_filters('the_content', $content));
+        }
+    }
+
+    // Fagansvarlig
+    $fa_navn = get_field('fagansvarlig_navn', $tg_id);
+    if ($fa_navn) {
+        $fa_tittel = get_field('fagansvarlig_tittel', $tg_id);
+        $fa_bilde_id = get_field('fagansvarlig_bilde', $tg_id);
+        $fa_linkedin = get_field('fagansvarlig_linkedin', $tg_id);
+        $fa_bilde = $fa_bilde_id ? wp_get_attachment_image_url($fa_bilde_id, 'thumbnail') : null;
+        $parts = explode(' ', $fa_navn);
+        $initials = count($parts) >= 2
+            ? strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1))
+            : strtoupper(substr($fa_navn, 0, 2));
+
+        $hero['fagansvarlig'] = [
+            'navn' => $fa_navn,
+            'tittel' => $fa_tittel,
+            'bilde' => $fa_bilde,
+            'linkedin' => $fa_linkedin,
+            'initials' => $initials,
+        ];
+    }
+}
 ?>
 
 <main class="bv-ev" style="background:#FAFAF9;min-height:100vh">
@@ -211,20 +251,75 @@ $json_data = wp_json_encode($ecosystem_data);
 }
 </style>
 
-<!-- Header -->
-<div class="bv-ev-header">
-    <a href="<?php echo esc_url(get_post_type_archive_link('demo')); ?>" class="bv-ev-back">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        Alle demoer
-    </a>
-    <h1 class="bv-ev-title">Okosystem-flyt (vertikal)</h1>
-    <p class="bv-ev-subtitle">
-        Temagruppen i sentrum, med fire likeverdige kategorier som strekker seg nedover — foretak, verktoy, kunnskapskilder og arrangementer.
-    </p>
-    <?php if ($using_mock) : ?>
-        <span class="bv-ev-mock">Viser demo-data</span>
-    <?php endif; ?>
+<!-- Hero (matches /temagruppe/ layout) -->
+<section style="background:#FAFAF8">
+    <div style="max-width:1280px;margin:0 auto;padding:2rem 1rem 0">
+
+        <!-- Breadcrumb -->
+        <nav style="margin-bottom:1.5rem;font-size:0.875rem;color:#5A5A5A;display:flex;align-items:center;gap:0.5rem">
+            <a href="<?php echo esc_url(home_url('/temagruppe/')); ?>" style="color:#FF8B5E;text-decoration:none">Temagrupper</a>
+            <svg style="width:14px;height:14px" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span style="color:#1A1A1A;font-weight:500"><?php echo esc_html($hero['title']); ?></span>
+        </nav>
+
+        <div style="display:flex;flex-wrap:wrap;gap:2rem 4rem;align-items:flex-start">
+
+            <!-- Left: Title + Description -->
+            <div style="flex:2;min-width:280px">
+                <h1 style="font-size:2.25rem;font-weight:700;color:#1A1A1A;margin:0 0 1rem;line-height:1.2">
+                    <?php echo esc_html($hero['title']); ?>
+                </h1>
+                <?php if ($hero['description']) : ?>
+                <p style="font-size:1.125rem;color:#5A5A5A;line-height:1.7;max-width:640px">
+                    <?php echo esc_html($hero['description']); ?>
+                </p>
+                <?php endif; ?>
+            </div>
+
+            <!-- Right: Fagradgiver + CTA -->
+            <div style="flex:1;min-width:240px;max-width:360px">
+                <?php if ($hero['fagansvarlig']) : $fa = $hero['fagansvarlig']; ?>
+                <div style="display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:1.5rem">
+                    <?php if ($fa['bilde']) : ?>
+                    <img src="<?php echo esc_url($fa['bilde']); ?>" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover">
+                    <?php else : ?>
+                    <div style="width:48px;height:48px;border-radius:50%;background:#FF8B5E;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:0.875rem;flex-shrink:0">
+                        <?php echo esc_html($fa['initials']); ?>
+                    </div>
+                    <?php endif; ?>
+                    <div>
+                        <p style="font-size:0.6875rem;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.2rem">Fagradgiver</p>
+                        <p style="font-size:0.875rem;font-weight:600;color:#1A1A1A;margin:0">
+                            <?php echo esc_html($fa['navn']); ?>
+                            <?php if ($fa['linkedin']) : ?>
+                            <a href="<?php echo esc_url($fa['linkedin']); ?>" target="_blank" rel="noopener" style="color:#0A66C2;margin-left:4px;vertical-align:middle">
+                                <svg style="width:14px;height:14px;display:inline" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                            </a>
+                            <?php endif; ?>
+                        </p>
+                        <?php if ($fa['tittel']) : ?>
+                        <p style="font-size:0.875rem;color:#5A5A5A;margin:0.15rem 0 0"><?php echo esc_html($fa['tittel']); ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <a href="<?php echo esc_url(home_url('/min-side/')); ?>" style="display:block;background:#1A1A1A;color:#fff;text-align:center;padding:0.75rem 1.5rem;border-radius:8px;font-size:0.875rem;font-weight:600;text-decoration:none;transition:background 0.2s">
+                    Bli med i gruppen &rarr;
+                </a>
+                <p style="font-size:0.75rem;color:#888;margin:0.5rem 0 0">Via din bedriftsprofil i Min Side</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<?php if ($using_mock) : ?>
+<div style="max-width:1280px;margin:0 auto;padding:1rem 1rem 0">
+    <span class="bv-ev-mock">Viser demo-data</span>
 </div>
+<?php endif; ?>
 
 <!-- Visualization -->
 <div class="bv-ev-viz" id="bv-ev-viz">
