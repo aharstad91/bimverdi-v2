@@ -3,6 +3,19 @@
  * Single Demo template
  * Routes to specific demo visualization based on post slug
  */
+
+// Password gate — same as archive-demo.php
+$demo_pass = 'dv30';
+$demo_cookie = 'bv_demo_access';
+if (isset($_POST['demo_password']) && $_POST['demo_password'] === $demo_pass) {
+    setcookie($demo_cookie, hash('sha256', $demo_pass), time() + 30 * DAY_IN_SECONDS, '/');
+    $_COOKIE[$demo_cookie] = hash('sha256', $demo_pass);
+}
+if (!current_user_can('manage_options') && (!isset($_COOKIE[$demo_cookie]) || $_COOKIE[$demo_cookie] !== hash('sha256', $demo_pass))) {
+    wp_redirect(get_post_type_archive_link('demo'));
+    exit;
+}
+
 get_header();
 
 if (have_posts()) : while (have_posts()) : the_post();
