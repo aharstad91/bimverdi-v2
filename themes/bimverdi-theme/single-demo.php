@@ -17,6 +17,11 @@ $demo_templates = [
     'foretak-verktoy-matrise'      => 'parts/demos/matrise',
     'temagruppe-tidslinje'         => 'parts/demos/tidslinje',
     'okosystem-vertikal'           => 'parts/demos/okosystem-vertikal',
+    'veikart-graf'                 => 'parts/demos/veikart-graf',
+    'veikart-matrise'              => 'parts/demos/veikart-matrise',
+    'veikart-kort'                 => 'parts/demos/veikart-kort',
+    'veikart-kolonner'             => 'parts/demos/veikart-kolonner',
+    'veikart-orbital'              => 'parts/demos/veikart-orbital',
 ];
 
 if (isset($demo_templates[$slug])) {
