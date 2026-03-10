@@ -246,7 +246,7 @@ foreach (array_keys($type_ressurs_options) as $value) {
                  data-type="<?php echo esc_attr(implode(',', $item['type_tags'])); ?>">
                 <div>
                     <div class="flex items-start justify-between mb-6">
-                        <div class="w-16 h-16 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div class="w-16 h-16 <?php echo $item['logo_url'] ? 'rounded-lg' : 'rounded-full'; ?> bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
                             <?php if ($item['logo_url']): ?>
                             <img src="<?php echo esc_url($item['logo_url']); ?>" alt="<?php echo esc_attr($item['title']); ?>" class="max-w-[48px] max-h-[48px] object-contain">
                             <?php else: ?>
@@ -315,7 +315,7 @@ foreach (array_keys($type_ressurs_options) as $value) {
                             data-type="<?php echo esc_attr(implode(',', $item['type_tags'])); ?>">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                    <div class="w-10 h-10 <?php echo $item['logo_url'] ? 'rounded-lg' : 'rounded-full'; ?> bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
                                         <?php if ($item['logo_url']): ?>
                                         <img src="<?php echo esc_url($item['logo_url']); ?>" alt="<?php echo esc_attr($item['title']); ?>" class="max-w-[32px] max-h-[32px] object-contain">
                                         <?php else: ?>
