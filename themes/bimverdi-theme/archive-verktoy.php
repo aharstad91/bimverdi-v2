@@ -202,10 +202,21 @@ foreach (array_keys($type_ressurs_options) as $value) {
                 }
             }
 
+            // Get logo URL (check ACF image field first, then URL fallback)
+            $logo = get_field('verktoy_logo', get_the_ID());
+            $logo_url = '';
+            if ($logo) {
+                $logo_url = is_array($logo) ? ($logo['url'] ?? '') : wp_get_attachment_url($logo);
+            }
+            if (!$logo_url) {
+                $logo_url = get_post_meta(get_the_ID(), 'verktoy_logo_url', true);
+            }
+
             $items[] = [
                 'title'        => get_the_title(),
                 'permalink'    => get_the_permalink(),
                 'eier_name'    => $eier ? $eier->post_title : '',
+                'logo_url'     => $logo_url,
                 'formaal_tags' => $formaal_tags,
                 'type_tags'    => $type_tags,
             ];
@@ -236,7 +247,11 @@ foreach (array_keys($type_ressurs_options) as $value) {
                 <div>
                     <div class="flex items-start justify-between mb-6">
                         <div class="w-16 h-16 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <?php if ($item['logo_url']): ?>
+                            <img src="<?php echo esc_url($item['logo_url']); ?>" alt="<?php echo esc_attr($item['title']); ?>" class="max-w-[48px] max-h-[48px] object-contain">
+                            <?php else: ?>
                             <span class="text-base font-bold text-[#111827] tracking-tight"><?php echo esc_html($tool_initials); ?></span>
+                            <?php endif; ?>
                         </div>
 
                         <?php if ($type_badge): ?>
@@ -301,7 +316,11 @@ foreach (array_keys($type_ressurs_options) as $value) {
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        <?php if ($item['logo_url']): ?>
+                                        <img src="<?php echo esc_url($item['logo_url']); ?>" alt="<?php echo esc_attr($item['title']); ?>" class="max-w-[32px] max-h-[32px] object-contain">
+                                        <?php else: ?>
                                         <span class="text-xs font-bold text-[#111827]"><?php echo esc_html($list_initials); ?></span>
+                                        <?php endif; ?>
                                     </div>
                                     <span class="font-medium text-[#111827]"><?php echo esc_html($item['title']); ?></span>
                                 </div>
