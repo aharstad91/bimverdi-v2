@@ -277,6 +277,7 @@ foreach (array_keys($kategori_options) as $slug) {
 
             <div class="kunnskapskilde-card bg-white rounded-xl border border-[#E7E5E4] shadow-sm overflow-hidden hover:shadow-md hover:border-[#D6D3D1] transition-all group"
                data-title="<?php echo esc_attr(strtolower($item['navn'])); ?>"
+               data-utgiver="<?php echo esc_attr(strtolower($item['utgiver'])); ?>"
                data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
                data-kildetype="<?php echo esc_attr($item['kildetype']); ?>"
                data-kategori="<?php echo esc_attr($item['kategori_slugs']); ?>">
@@ -363,6 +364,7 @@ foreach (array_keys($kategori_options) as $slug) {
                         <?php foreach ($items as $item): ?>
                         <tr class="kunnskapskilde-card hover:bg-[#FAFAF9] transition-colors"
                             data-title="<?php echo esc_attr(strtolower($item['navn'])); ?>"
+                            data-utgiver="<?php echo esc_attr(strtolower($item['utgiver'])); ?>"
                             data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
                             data-kildetype="<?php echo esc_attr($item['kildetype']); ?>"
                             data-kategori="<?php echo esc_attr($item['kategori_slugs']); ?>">
@@ -529,7 +531,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var cardKildetype = card.dataset.kildetype || '';
             var cardKategori = card.dataset.kategori || '';
 
-            var matchesSearch = !searchTerm || title.includes(searchTerm);
+            var utgiver = card.dataset.utgiver || '';
+            var matchesSearch = !searchTerm || title.includes(searchTerm) || utgiver.includes(searchTerm);
             var matchesTemagruppe = selectedTemagruppe.length === 0 || selectedTemagruppe.some(function(t) { return cardTemagruppe.includes(t); });
             var matchesKildetype = selectedKildetype.length === 0 || selectedKildetype.includes(cardKildetype);
             var matchesKategori = selectedKategori.length === 0 || selectedKategori.some(function(k) { return cardKategori.includes(k); });

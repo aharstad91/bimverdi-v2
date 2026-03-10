@@ -230,6 +230,7 @@ foreach (array_keys($type_ressurs_options) as $value) {
 
             <div class="verktoy-card bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6 flex flex-col justify-between h-[285px]"
                  data-title="<?php echo esc_attr(strtolower($item['title'])); ?>"
+                 data-eier="<?php echo esc_attr(strtolower($item['eier_name'])); ?>"
                  data-formaal="<?php echo esc_attr(implode(',', $item['formaal_tags'])); ?>"
                  data-type="<?php echo esc_attr(implode(',', $item['type_tags'])); ?>">
                 <div>
@@ -294,6 +295,7 @@ foreach (array_keys($type_ressurs_options) as $value) {
                         ?>
                         <tr class="verktoy-card hover:bg-[#FAFAF9] transition-colors"
                             data-title="<?php echo esc_attr(strtolower($item['title'])); ?>"
+                            data-eier="<?php echo esc_attr(strtolower($item['eier_name'])); ?>"
                             data-formaal="<?php echo esc_attr(implode(',', $item['formaal_tags'])); ?>"
                             data-type="<?php echo esc_attr(implode(',', $item['type_tags'])); ?>">
                             <td class="px-4 py-3">
@@ -451,7 +453,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var cardFormaals = (card.dataset.formaal || '').split(',').filter(Boolean);
             var cardTypes = (card.dataset.type || '').split(',').filter(Boolean);
 
-            var matchesSearch = !searchTerm || title.includes(searchTerm);
+            var eier = card.dataset.eier || '';
+            var matchesSearch = !searchTerm || title.includes(searchTerm) || eier.includes(searchTerm);
             var matchesFormaal = selectedFormaal.length === 0 || selectedFormaal.some(function(f) { return cardFormaals.indexOf(f) !== -1; });
             var matchesType = selectedType.length === 0 || selectedType.some(function(t) { return cardTypes.indexOf(t) !== -1; });
 
