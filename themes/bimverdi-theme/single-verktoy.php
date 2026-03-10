@@ -425,45 +425,6 @@ $tool_updated = get_the_modified_date('d.m.Y');
                     </dl>
                 </section>
 
-                <!-- SNARVEIER Section -->
-                <section class="bg-[#F5F5F4] rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-4">Snarveier</h3>
-
-                    <nav class="space-y-0 divide-y divide-[#E7E5E4]">
-                        <?php if (!empty($nedlastingslenke)): ?>
-                        <a href="<?php echo esc_url($nedlastingslenke); ?>"
-                           target="_blank"
-                           rel="noopener"
-                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Åpne verktøyet
-                        </a>
-                        <?php endif; ?>
-
-                        <?php if (!empty($lenke)): ?>
-                        <a href="<?php echo esc_url($lenke); ?>"
-                           target="_blank"
-                           rel="noopener"
-                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                            Besøk nettside
-                        </a>
-                        <?php endif; ?>
-
-                        <a href="#"
-                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            Rapporter feil
-                        </a>
-
-                        <a href="#"
-                           class="flex items-center gap-2 py-3 text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                            Se endringslogg
-                        </a>
-                    </nav>
-                </section>
-
             </div>
 
         </div>

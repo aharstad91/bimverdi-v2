@@ -344,9 +344,9 @@
             ['#poststed', company.poststed, 'poststed'],
             ['input[id*="input_2_7"]', company.poststed, 'poststed-gf'],
 
-            // Website
-            ['#nettside', company.hjemmeside, 'nettside'],
-            ['input[id*="input_2_8"]', company.hjemmeside, 'nettside-gf'],
+            // Website (auto-prepend https:// for HTML5 URL validation)
+            ['#nettside', company.hjemmeside && !company.hjemmeside.match(/^https?:\/\//) ? 'https://' + company.hjemmeside : company.hjemmeside, 'nettside'],
+            ['input[id*="input_2_8"]', company.hjemmeside && !company.hjemmeside.match(/^https?:\/\//) ? 'https://' + company.hjemmeside : company.hjemmeside, 'nettside-gf'],
         ];
         
         let filledFields = [];
