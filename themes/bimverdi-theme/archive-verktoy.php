@@ -213,31 +213,61 @@ foreach (array_keys($type_ressurs_options) as $value) {
         ?>
 
         <!-- Grid View -->
-        <div id="verktoy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            <?php foreach ($items as $item): ?>
+        <div id="verktoy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <?php foreach ($items as $item):
+                // Get first type tag for badge display
+                $type_badge = '';
+                if (!empty($item['type_tags'])) {
+                    $first_type = $item['type_tags'][0];
+                    $type_badge = isset($type_ressurs_options[$first_type]) ? $type_ressurs_options[$first_type] : $first_type;
+                }
+                // Get initials from tool name
+                $words = explode(' ', $item['title']);
+                $tool_initials = count($words) >= 2
+                    ? strtoupper(mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1))
+                    : strtoupper(mb_substr($item['title'], 0, 2));
+            ?>
 
-            <a href="<?php echo esc_url($item['permalink']); ?>"
-               class="verktoy-card group block bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6"
-               data-title="<?php echo esc_attr(strtolower($item['title'])); ?>"
-               data-formaal="<?php echo esc_attr(implode(',', $item['formaal_tags'])); ?>"
-               data-type="<?php echo esc_attr(implode(',', $item['type_tags'])); ?>">
+            <div class="verktoy-card bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6 flex flex-col justify-between h-[285px]"
+                 data-title="<?php echo esc_attr(strtolower($item['title'])); ?>"
+                 data-formaal="<?php echo esc_attr(implode(',', $item['formaal_tags'])); ?>"
+                 data-type="<?php echo esc_attr(implode(',', $item['type_tags'])); ?>">
+                <div>
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="w-16 h-16 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <span class="text-base font-bold text-[#111827] tracking-tight"><?php echo esc_html($tool_initials); ?></span>
+                        </div>
 
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        <?php if ($type_badge): ?>
+                        <span class="inline-flex items-center text-xs font-medium text-[#57534E] bg-[#F5F5F4] px-2.5 py-0.5 rounded-full"><?php echo esc_html($type_badge); ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <h2 class="text-xl font-bold text-[#111827] mb-2 leading-tight tracking-tight line-clamp-2">
+                        <?php echo esc_html($item['title']); ?>
+                    </h2>
+
+                    <?php if ($item['eier_name']): ?>
+                    <div class="flex items-center gap-1 text-sm text-[#57534E]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+                        <span><?php echo esc_html($item['eier_name']); ?></span>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
-                <h3 class="text-base font-semibold text-[#111827] mb-2 line-clamp-2 group-hover:text-[#1F2937]">
-                    <?php echo esc_html($item['title']); ?>
-                </h3>
+                <div class="flex items-center justify-between pt-4 border-t border-[#E7E5E4]">
+                    <?php if (!empty($item['formaal_tags'])): ?>
+                    <span class="text-xs font-medium text-[#57534E] uppercase tracking-wider"><?php echo esc_html($item['formaal_tags'][0]); ?></span>
+                    <?php else: ?>
+                    <span></span>
+                    <?php endif; ?>
 
-                <div class="flex items-center justify-between pt-4 mt-4 border-t border-[#E7E5E4]">
-                    <span class="text-xs text-[#57534E]"><?php echo esc_html($item['eier_name']); ?></span>
-                    <span class="inline-flex items-center gap-1 text-sm font-medium text-[#111827] group-hover:gap-2 transition-all">
+                    <a href="<?php echo esc_url($item['permalink']); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#111827] hover:opacity-70 transition-opacity">
                         Se detaljer
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-                    </span>
+                    </a>
                 </div>
-            </a>
+            </div>
 
             <?php endforeach; ?>
         </div>
@@ -248,28 +278,40 @@ foreach (array_keys($type_ressurs_options) as $value) {
                 <table class="w-full text-sm text-left">
                     <thead class="bg-[#FAFAF9] border-b border-[#E7E5E4]">
                         <tr>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Navn</th>
+                            <th class="px-4 py-3 font-medium text-[#57534E]">Verktøy</th>
+                            <th class="px-4 py-3 font-medium text-[#57534E]">Leverandør</th>
                             <th class="px-4 py-3 font-medium text-[#57534E]">Type</th>
                             <th class="px-4 py-3 font-medium text-[#57534E]">Tema</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Leverandør</th>
                             <th class="px-4 py-3 font-medium text-[#57534E] w-16">Lenke</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#E7E5E4]">
-                        <?php foreach ($items as $item): ?>
+                        <?php foreach ($items as $item):
+                            $list_words = explode(' ', $item['title']);
+                            $list_initials = count($list_words) >= 2
+                                ? strtoupper(mb_substr($list_words[0], 0, 1) . mb_substr($list_words[1], 0, 1))
+                                : strtoupper(mb_substr($item['title'], 0, 2));
+                        ?>
                         <tr class="verktoy-card hover:bg-[#FAFAF9] transition-colors"
                             data-title="<?php echo esc_attr(strtolower($item['title'])); ?>"
                             data-formaal="<?php echo esc_attr(implode(',', $item['formaal_tags'])); ?>"
                             data-type="<?php echo esc_attr(implode(',', $item['type_tags'])); ?>">
-                            <td class="px-4 py-3 font-medium text-[#111827]"><?php echo esc_html($item['title']); ?></td>
                             <td class="px-4 py-3">
-                                <div class="flex flex-wrap gap-1">
-                                    <?php foreach ($item['type_tags'] as $tag):
-                                        $label = isset($type_ressurs_options[$tag]) ? $type_ressurs_options[$tag] : $tag;
-                                    ?>
-                                    <span class="text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-0.5 rounded"><?php echo esc_html($label); ?></span>
-                                    <?php endforeach; ?>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        <span class="text-xs font-bold text-[#111827]"><?php echo esc_html($list_initials); ?></span>
+                                    </div>
+                                    <span class="font-medium text-[#111827]"><?php echo esc_html($item['title']); ?></span>
                                 </div>
+                            </td>
+                            <td class="px-4 py-3 text-[#57534E]"><?php echo esc_html($item['eier_name']); ?></td>
+                            <td class="px-4 py-3">
+                                <?php if (!empty($item['type_tags'])):
+                                    $first_type = $item['type_tags'][0];
+                                    $type_label = isset($type_ressurs_options[$first_type]) ? $type_ressurs_options[$first_type] : $first_type;
+                                ?>
+                                <span class="text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-0.5 rounded-full"><?php echo esc_html($type_label); ?></span>
+                                <?php endif; ?>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-1">
@@ -278,7 +320,6 @@ foreach (array_keys($type_ressurs_options) as $value) {
                                     <?php endforeach; ?>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-[#57534E]"><?php echo esc_html($item['eier_name']); ?></td>
                             <td class="px-4 py-3">
                                 <a href="<?php echo esc_url($item['permalink']); ?>" class="text-[#111827] hover:text-[#57534E] transition-colors" title="Se detaljer">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
