@@ -120,6 +120,24 @@ require_once get_template_directory() . '/inc/design-system.php';
 require_once get_template_directory() . '/parts/components/button.php';
 
 /**
+ * Load Section Header Component
+ * Provides bimverdi_section_header() function
+ */
+require_once get_template_directory() . '/parts/components/section-header.php';
+
+/**
+ * Load Badge Component
+ * Provides bimverdi_badge() function for status/category badges
+ */
+require_once get_template_directory() . '/parts/components/badge.php';
+
+/**
+ * Load Stat Pill Component
+ * Provides bimverdi_stat_pill() function
+ */
+require_once get_template_directory() . '/parts/components/stat-pill.php';
+
+/**
  * Load Card Components
  */
 require_once get_template_directory() . '/template-parts/cards.php';

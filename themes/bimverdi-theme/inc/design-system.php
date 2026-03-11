@@ -109,6 +109,69 @@ class BIM_Verdi_Design_System {
                 --z-modal: 1050;
                 --z-popover: 1060;
                 --z-tooltip: 1070;
+
+                /* === Semantic Design Tokens (v2) === */
+
+                /* Semantic colors */
+                --color-text-primary: #1A1A1A;
+                --color-text-secondary: #5A5A5A;
+                --color-text-muted: #888888;
+                --color-text-inverse: #FFFFFF;
+                --color-bg-page: #F7F5EF;
+                --color-bg-surface: #FFFFFF;
+                --color-bg-surface-alt: #F5F5F4;
+                --color-bg-muted: #EFE9DE;
+                --color-border: #E7E5E4;
+                --color-border-strong: #D6D1C6;
+                --color-accent: #FF8B5E;
+                --color-accent-hover: #FF7A47;
+                --color-accent-light: #FFF3ED;
+                --color-success: #16A34A;
+                --color-warning: #D97706;
+                --color-error: #DC2626;
+                --color-info: #2563EB;
+
+                /* Temagruppe colors */
+                --color-temagruppe-bimtech: #3B82F6;
+                --color-temagruppe-gronn-bim: #22C55E;
+                --color-temagruppe-digital-samhandling: #A855F7;
+                --color-temagruppe-forvaltning: #14B8A6;
+                --color-temagruppe-baerekraft: #F59E0B;
+                --color-temagruppe-standard: #FF8B5E;
+
+                /* Typography */
+                --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                --heading-weight-light: 300;
+                --heading-weight-regular: 400;
+                --heading-weight-medium: 500;
+                --heading-weight-semibold: 600;
+                --heading-tracking-tight: -0.03em;
+                --heading-tracking: -0.02em;
+                --heading-tracking-normal: -0.01em;
+
+                /* Border radius */
+                --radius-sm: 4px;
+                --radius-md: 8px;
+                --radius-lg: 12px;
+                --radius-xl: 16px;
+                --radius-full: 9999px;
+
+                /* Shadows */
+                --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+                --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+                --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+
+                /* Spacing */
+                --space-1: 4px;
+                --space-2: 8px;
+                --space-3: 12px;
+                --space-4: 16px;
+                --space-6: 24px;
+                --space-8: 32px;
+                --space-12: 48px;
+                --space-16: 64px;
+                --space-20: 80px;
+                --space-24: 96px;
             }
             
             /* ============================================
@@ -510,28 +573,116 @@ class BIM_Verdi_Design_System {
                 margin-bottom: var(--spacing-xs);
             }
             
+            /* Checkbox — shadcn style */
             .checkbox-hjem,
-            input[type="checkbox"],
-            input[type="radio"] {
-                width: 1.25rem;
-                height: 1.25rem;
+            input[type="checkbox"] {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 1rem;
+                height: 1rem;
+                border: 1px solid #D4D4D8;
+                border-radius: 3px;
                 cursor: pointer;
-                accent-color: var(--color-primary);
+                position: relative;
+                flex-shrink: 0;
+                transition: all 0.15s ease;
+                background: white;
             }
-            
+
+            input[type="checkbox"]:hover {
+                border-color: #A1A1AA;
+            }
+
+            input[type="checkbox"]:focus-visible {
+                outline: 2px solid var(--color-primary);
+                outline-offset: 2px;
+            }
+
+            input[type="checkbox"]:checked {
+                background: #18181B;
+                border-color: #18181B;
+            }
+
+            input[type="checkbox"]:checked::after {
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: 45%;
+                width: 4.5px;
+                height: 8px;
+                border: solid white;
+                border-width: 0 2px 2px 0;
+                transform: translate(-50%, -50%) rotate(45deg);
+            }
+
+            input[type="checkbox"]:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            /* Radio — shadcn style */
+            input[type="radio"] {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 1rem;
+                height: 1rem;
+                border: 1px solid #D4D4D8;
+                border-radius: 50%;
+                cursor: pointer;
+                position: relative;
+                flex-shrink: 0;
+                transition: all 0.15s ease;
+                background: white;
+            }
+
+            input[type="radio"]:hover {
+                border-color: #A1A1AA;
+            }
+
+            input[type="radio"]:focus-visible {
+                outline: 2px solid var(--color-primary);
+                outline-offset: 2px;
+            }
+
+            input[type="radio"]:checked {
+                border-color: #18181B;
+            }
+
+            input[type="radio"]:checked::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 8px;
+                height: 8px;
+                background: #18181B;
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            input[type="radio"]:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
             .checkbox-group,
             .radio-group {
                 display: flex;
                 flex-direction: column;
                 gap: var(--spacing-sm);
             }
-            
+
             .checkbox-item,
             .radio-item {
                 display: flex;
-                align-items: center;
-                gap: 0.75rem;
+                align-items: flex-start;
+                gap: 0.5rem;
                 cursor: pointer;
+            }
+
+            .checkbox-item input,
+            .radio-item input {
+                margin-top: 2px;
             }
             
             /* ============================================
@@ -905,34 +1056,31 @@ class BIM_Verdi_Design_System {
             }
 
             /* ============================================
-               SECTION HEADER (title + "Se alle" link)
+               SECTION HEADER COMPONENT
                ============================================ */
 
-            .bv-section-header {
-                display: flex;
-                align-items: baseline;
-                justify-content: space-between;
-                margin-bottom: 2rem;
+            .bv-section-header { margin-bottom: 24px; }
+            .bv-section-header--center { text-align: center; }
+            .bv-section-header__eyebrow {
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                color: #FF8B5E;
+                margin-bottom: 8px;
             }
-
-            .bv-section-header h2 {
+            .bv-section-header__heading {
+                font-weight: 300;
+                letter-spacing: -0.02em;
+                color: #1A1A1A;
                 margin: 0;
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: #111827;
             }
-
-            .bv-section-header a {
-                font-size: 0.875rem;
-                font-weight: 500;
-                color: #57534E;
-                text-decoration: none;
-                transition: color 0.15s;
-            }
-
-            .bv-section-header a:hover {
-                color: #111827;
-                text-decoration: none;
+            .bv-section-header__subtitle {
+                color: #5A5A5A;
+                margin-top: 8px;
+                font-size: 1.0625rem;
+                line-height: 1.5;
             }
 
             /* ============================================
@@ -1051,6 +1199,55 @@ class BIM_Verdi_Design_System {
                 -webkit-line-clamp: 3;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
+            }
+
+            /* ============================================
+               STAT PILL COMPONENT
+               ============================================ */
+
+            .bv-stat-pill { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+            .bv-stat-pill__number { font-size: 2rem; font-weight: 300; letter-spacing: -0.03em; line-height: 1; }
+            .bv-stat-pill__label { font-size: 0.8125rem; color: #5A5A5A; }
+            .bv-stat-pill--orange .bv-stat-pill__number { color: #FF8B5E; }
+            .bv-stat-pill--black .bv-stat-pill__number { color: #1A1A1A; }
+
+            /* ============================================
+               BADGE COMPONENT
+               Inline pill badges for status, categories, etc.
+               ============================================ */
+
+            .bv-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                font-weight: 500;
+                border-radius: 9999px;
+                white-space: nowrap;
+            }
+
+            /* Size variants */
+            .bv-badge--small { padding: 2px 8px; font-size: 12px; line-height: 18px; }
+            .bv-badge--medium { padding: 4px 12px; font-size: 13px; line-height: 20px; }
+
+            /* Color variants */
+            .bv-badge--green { background: #DCFCE7; color: #166534; }
+            .bv-badge--yellow { background: #FEF9C3; color: #854D0E; }
+            .bv-badge--red { background: #FEE2E2; color: #991B1B; }
+            .bv-badge--gray { background: #F3F4F6; color: #4B5563; }
+            .bv-badge--blue { background: #DBEAFE; color: #1E40AF; }
+            .bv-badge--orange { background: #FFF3ED; color: #C2410C; }
+            .bv-badge--purple { background: #F3E8FF; color: #7C3AED; }
+            .bv-badge--teal { background: #CCFBF1; color: #0F766E; }
+            .bv-badge--amber { background: #FEF3C7; color: #92400E; }
+
+            /* Category variant - more subtle with border */
+            .bv-badge--category { background: #F5F5F4; color: #57534E; border: 1px solid #E7E5E4; }
+
+            /* Badge icon styling */
+            .bv-badge__icon {
+                display: inline-flex;
+                align-items: center;
+                flex-shrink: 0;
             }
 
         </style>
