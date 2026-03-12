@@ -139,7 +139,7 @@ if (!function_exists('bimverdi_get_initials')) {
             ],
             [
                 'name'         => 'medlemskap[]',
-                'label'        => 'Medlemskap',
+                'label'        => 'Deltakernivå',
                 'options'      => $medlemskap_options,
                 'selected'     => [],
                 'counts'       => $medlemskap_counts,
@@ -176,23 +176,25 @@ if (!function_exists('bimverdi_get_initials')) {
                  data-poststed="<?php echo esc_attr(mb_strtolower($item['poststed'])); ?>">
                 <div>
                     <div class="flex items-start justify-between mb-6">
-                        <div class="w-16 h-16 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div class="w-20 h-20 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
                             <?php if ($item['logo_url']): ?>
-                                <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="w-14 h-14 object-contain">
+                                <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="w-[4.5rem] h-[4.5rem] object-contain">
                             <?php else: ?>
-                                <span class="text-base font-bold text-[#111827] tracking-tight"><?php echo esc_html($item['initials']); ?></span>
+                                <span class="text-lg font-bold text-[#111827] tracking-tight"><?php echo esc_html($item['initials']); ?></span>
                             <?php endif; ?>
                         </div>
 
                         <?php if ($item['membership_level'] === 'Partner'): ?>
                         <span class="inline-flex items-center text-xs font-medium text-white bg-[#111827] px-2.5 py-0.5 rounded-full">Partner</span>
+                        <?php elseif ($item['membership_level'] === 'Prosjektdeltaker'): ?>
+                        <span class="inline-flex items-center text-xs font-medium text-white bg-[#57534E] px-2.5 py-0.5 rounded-full">Prosjektdeltaker</span>
                         <?php elseif ($item['membership_level'] === 'Deltaker'): ?>
                         <span class="inline-flex items-center text-xs font-medium text-[#111827] border border-[#111827] px-2.5 py-0.5 rounded-full">Deltaker</span>
                         <?php endif; ?>
                     </div>
 
                     <h2 class="text-xl font-bold text-[#111827] mb-2 leading-tight tracking-tight">
-                        <?php echo esc_html($item['title']); ?>
+                        <a href="<?php echo esc_url($item['permalink']); ?>" class="hover:underline"><?php echo esc_html($item['title']); ?></a>
                     </h2>
 
                     <?php if ($item['poststed']): ?>
@@ -230,14 +232,22 @@ if (!function_exists('bimverdi_get_initials')) {
         <!-- List View (hidden by default) -->
         <div id="foretak-list" style="display:none">
             <div class="bg-white rounded-xl border border-[#E7E5E4] overflow-hidden">
-                <table class="w-full text-sm text-left">
+                <table class="w-full text-sm text-left" id="foretak-table">
                     <thead class="bg-[#FAFAF9] border-b border-[#E7E5E4]">
                         <tr>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Foretak</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Sted</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Bransje</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Medlemskap</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E] w-16">Lenke</th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="title">
+                                <span class="inline-flex items-center gap-1">Foretak <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="poststed">
+                                <span class="inline-flex items-center gap-1">Sted <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="bransje">
+                                <span class="inline-flex items-center gap-1">Bransje <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="medlemskap">
+                                <span class="inline-flex items-center gap-1">Deltakernivå <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] w-16"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#E7E5E4]">
@@ -248,22 +258,24 @@ if (!function_exists('bimverdi_get_initials')) {
                             data-medlemskap="<?php echo esc_attr(strtolower($item['membership_level'])); ?>"
                             data-poststed="<?php echo esc_attr(mb_strtolower($item['poststed'])); ?>">
                             <td class="px-4 py-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                <a href="<?php echo esc_url($item['permalink']); ?>" class="flex items-center gap-3 group">
+                                    <div class="w-12 h-12 rounded-full bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
                                         <?php if ($item['logo_url']): ?>
-                                            <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="w-8 h-8 object-contain">
+                                            <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="w-10 h-10 object-contain">
                                         <?php else: ?>
                                             <span class="text-xs font-bold text-[#111827]"><?php echo esc_html($item['initials']); ?></span>
                                         <?php endif; ?>
                                     </div>
-                                    <span class="font-medium text-[#111827]"><?php echo esc_html($item['title']); ?></span>
-                                </div>
+                                    <span class="font-medium text-[#111827] group-hover:underline"><?php echo esc_html($item['title']); ?></span>
+                                </a>
                             </td>
                             <td class="px-4 py-3 text-[#57534E]"><?php echo esc_html($item['poststed']); ?></td>
                             <td class="px-4 py-3 text-[#57534E]"><?php echo esc_html($item['bransje']); ?></td>
                             <td class="px-4 py-3">
                                 <?php if ($item['membership_level'] === 'Partner'): ?>
                                 <span class="text-xs font-medium text-white bg-[#111827] px-2 py-0.5 rounded-full">Partner</span>
+                                <?php elseif ($item['membership_level'] === 'Prosjektdeltaker'): ?>
+                                <span class="text-xs font-medium text-white bg-[#57534E] px-2 py-0.5 rounded-full">Prosjektdeltaker</span>
                                 <?php elseif ($item['membership_level'] === 'Deltaker'): ?>
                                 <span class="text-xs font-medium text-[#111827] border border-[#111827] px-2 py-0.5 rounded-full">Deltaker</span>
                                 <?php endif; ?>
@@ -313,6 +325,111 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var debounceTimer;
 
+    // --- URL State Management ---
+    function getUrlParams() {
+        var params = new URLSearchParams(window.location.search);
+        return {
+            s: params.get('s') || '',
+            bransje: params.getAll('bransje'),
+            medlemskap: params.getAll('medlemskap'),
+            sort: params.get('sort') || '',
+            order: params.get('order') || 'asc',
+        };
+    }
+
+    function updateUrl() {
+        var params = new URLSearchParams();
+        var searchVal = searchInput ? searchInput.value.trim() : '';
+        if (searchVal) params.set('s', searchVal);
+
+        document.querySelectorAll('.filter-bransje:checked').forEach(function(cb) {
+            params.append('bransje', cb.value);
+        });
+        document.querySelectorAll('.filter-medlemskap:checked').forEach(function(cb) {
+            params.append('medlemskap', cb.value);
+        });
+
+        if (currentSort) {
+            params.set('sort', currentSort);
+            params.set('order', currentOrder);
+        }
+
+        var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        history.replaceState(null, '', newUrl);
+    }
+
+    // Restore state from URL on load
+    function restoreFromUrl() {
+        var state = getUrlParams();
+        if (state.s && searchInput) {
+            searchInput.value = state.s;
+        }
+        state.bransje.forEach(function(val) {
+            var cb = document.querySelector('.filter-bransje[value="' + val + '"]');
+            if (cb) cb.checked = true;
+        });
+        state.medlemskap.forEach(function(val) {
+            var cb = document.querySelector('.filter-medlemskap[value="' + val + '"]');
+            if (cb) cb.checked = true;
+        });
+        if (state.sort) {
+            currentSort = state.sort;
+            currentOrder = state.order;
+        }
+    }
+
+    // --- Sorting ---
+    var currentSort = '';
+    var currentOrder = 'asc';
+
+    function sortTable(column) {
+        if (currentSort === column) {
+            currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort = column;
+            currentOrder = 'asc';
+        }
+
+        var table = document.getElementById('foretak-table');
+        if (!table) return;
+
+        var tbody = table.querySelector('tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+
+        var colMap = { title: 0, poststed: 1, bransje: 2, medlemskap: 3 };
+        var colIndex = colMap[column];
+        if (colIndex === undefined) return;
+
+        rows.sort(function(a, b) {
+            var aText = a.cells[colIndex].textContent.trim().toLowerCase();
+            var bText = b.cells[colIndex].textContent.trim().toLowerCase();
+            if (aText < bText) return currentOrder === 'asc' ? -1 : 1;
+            if (aText > bText) return currentOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(function(row) { tbody.appendChild(row); });
+
+        // Update sort indicators
+        table.querySelectorAll('th[data-sort]').forEach(function(th) {
+            var svg = th.querySelector('svg');
+            if (svg) {
+                svg.style.opacity = th.dataset.sort === currentSort ? '1' : '0.4';
+                svg.style.transform = (th.dataset.sort === currentSort && currentOrder === 'desc') ? 'rotate(180deg)' : '';
+            }
+        });
+
+        updateUrl();
+    }
+
+    // Bind sort headers
+    document.querySelectorAll('th[data-sort]').forEach(function(th) {
+        th.addEventListener('click', function() {
+            sortTable(this.dataset.sort);
+        });
+    });
+
+    // --- Filtering ---
     function updateVisibleCount(count) {
         if (visibleCountEl) visibleCountEl.textContent = count;
         if (visibleCountMobile) visibleCountMobile.textContent = count;
@@ -342,6 +459,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var activeContainer = (listEl && listEl.style.display !== 'none') ? listEl : gridEl;
         var visibleCards = activeContainer ? activeContainer.querySelectorAll('.foretak-card:not([style*="display: none"])').length : 0;
         updateVisibleCount(visibleCards);
+
+        updateUrl();
     }
 
     if (searchInput) {
@@ -362,9 +481,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 cb.checked = false;
                 cb.dispatchEvent(new Event('change', { bubbles: true }));
             });
+            currentSort = '';
+            currentOrder = 'asc';
             applyFilters();
         });
     }
+
+    // Initialize: restore URL state, then apply
+    restoreFromUrl();
+    if (currentSort) sortTable(currentSort);
+    applyFilters();
 });
 </script>
 
