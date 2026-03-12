@@ -120,6 +120,18 @@ require_once get_template_directory() . '/inc/design-system.php';
 require_once get_template_directory() . '/parts/components/button.php';
 
 /**
+ * Load Breadcrumb Component
+ * Provides bimverdi_breadcrumb() function
+ */
+require_once get_template_directory() . '/parts/components/breadcrumb.php';
+
+/**
+ * Load Field Component
+ * Provides bimverdi_field(), bimverdi_field_group(), bimverdi_field_group_end()
+ */
+require_once get_template_directory() . '/parts/components/field.php';
+
+/**
  * Load Section Header Component
  * Provides bimverdi_section_header() function
  */

@@ -519,6 +519,56 @@ class BIM_Verdi_Design_System {
             }
             
             /* ============================================
+               Breadcrumb (shadcn-inspired)
+               ============================================ */
+
+            .bv-breadcrumb {
+                margin-bottom: 16px;
+            }
+
+            .bv-breadcrumb__list {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                font-size: 14px;
+                line-height: 20px;
+            }
+
+            .bv-breadcrumb__item {
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .bv-breadcrumb__link {
+                color: #71717A;
+                text-decoration: none;
+                transition: color 0.15s ease;
+            }
+
+            .bv-breadcrumb__link:hover {
+                color: #18181B;
+            }
+
+            .bv-breadcrumb__separator {
+                display: inline-flex;
+                align-items: center;
+                color: #A1A1AA;
+            }
+
+            .bv-breadcrumb__separator svg {
+                flex-shrink: 0;
+            }
+
+            .bv-breadcrumb__page {
+                color: #18181B;
+                font-weight: 500;
+            }
+
+            /* ============================================
                Legacy button styles (for backwards compat)
                ============================================ */
             
@@ -596,9 +646,32 @@ class BIM_Verdi_Design_System {
             }
             
             /* ============================================
-               FORM ELEMENTS
+               FORM ELEMENTS (shadcn-inspired)
                ============================================ */
-            
+
+            /* Field wrapper */
+            .bv-field {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                margin-bottom: 16px;
+            }
+
+            .bv-field__label {
+                display: block;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 20px;
+                color: #18181B;
+            }
+
+            .bv-field__required {
+                color: #DC2626;
+                margin-left: 2px;
+            }
+
+            /* Input / Textarea / Select base */
+            .bv-field__input,
             .input-hjem,
             input[type="text"],
             input[type="email"],
@@ -606,54 +679,129 @@ class BIM_Verdi_Design_System {
             input[type="number"],
             input[type="tel"],
             input[type="date"],
+            input[type="url"],
             textarea,
             select {
                 width: 100%;
-                padding: 0.75rem 1rem;
-                border: 1px solid var(--color-gray-light);
-                border-radius: var(--radius-md);
-                font-family: var(--font-family);
-                font-size: 1rem;
-                transition: all 0.2s ease;
-                background-color: white;
+                height: 32px;
+                padding: 0 12px;
+                border: 1px solid #E4E4E7;
+                border-radius: 6px;
+                font-family: 'Inter', var(--font-family);
+                font-size: 14px;
+                line-height: 20px;
+                color: #18181B;
+                background-color: transparent;
+                transition: border-color 0.15s ease, box-shadow 0.15s ease;
             }
-            
+
+            .bv-field__input::placeholder,
+            input::placeholder,
+            textarea::placeholder {
+                color: #A1A1AA;
+            }
+
+            .bv-field__input:focus,
             input:focus,
             textarea:focus,
             select:focus {
                 outline: none;
-                border-color: var(--color-primary);
-                box-shadow: 0 0 0 3px rgba(255, 139, 94, 0.1);
+                border-color: #18181B;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
             }
-            
-            textarea {
+
+            .bv-field__input:disabled,
+            input:disabled,
+            textarea:disabled,
+            select:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background-color: #F4F4F5;
+            }
+
+            /* Error state */
+            .bv-field__input--error,
+            .bv-field--error .bv-field__input,
+            .bv-field--error input,
+            .bv-field--error textarea,
+            .bv-field--error select {
+                border-color: #DC2626;
+            }
+
+            .bv-field__input--error:focus,
+            .bv-field--error .bv-field__input:focus,
+            .bv-field--error input:focus {
+                border-color: #DC2626;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #DC2626;
+            }
+
+            /* Textarea */
+            textarea,
+            textarea.bv-field__input {
+                height: auto;
+                min-height: 80px;
+                padding: 8px 12px;
                 resize: vertical;
-                min-height: 6rem;
             }
-            
-            label {
-                display: block;
-                margin-bottom: 0.5rem;
-                font-weight: 600;
-                font-size: 0.95rem;
-                color: var(--color-black);
+
+            /* Select */
+            select,
+            select.bv-field__input {
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                padding-right: 32px;
             }
-            
-            .form-group {
-                margin-bottom: var(--spacing-md);
+
+            /* Description text */
+            .bv-field__description {
+                font-size: 13px;
+                line-height: 18px;
+                color: #71717A;
+                margin: 0;
             }
-            
-            .form-group label {
-                margin-bottom: var(--spacing-xs);
+
+            /* Error message */
+            .bv-field__error {
+                font-size: 13px;
+                line-height: 18px;
+                color: #DC2626;
+                margin: 0;
             }
-            
-            /* Checkbox — shadcn style */
+
+            .bv-field--error .bv-field__label {
+                color: #DC2626;
+            }
+
+            /* Checkbox field */
+            .bv-field--checkbox {
+                flex-direction: row;
+                margin-bottom: 16px;
+            }
+
+            .bv-field__checkbox-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .bv-field__checkbox-label {
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 20px;
+                color: #18181B;
+                cursor: pointer;
+            }
+
+            /* Checkbox input — shadcn style */
+            .bv-field__checkbox,
             .checkbox-hjem,
             input[type="checkbox"] {
                 -webkit-appearance: none;
                 appearance: none;
-                width: 1rem;
-                height: 1rem;
+                width: 16px;
+                height: 16px;
                 border: 1px solid #D4D4D8;
                 border-radius: 3px;
                 cursor: pointer;
@@ -661,6 +809,8 @@ class BIM_Verdi_Design_System {
                 flex-shrink: 0;
                 transition: all 0.15s ease;
                 background: white;
+                margin: 0;
+                padding: 0;
             }
 
             input[type="checkbox"]:hover {
@@ -668,8 +818,8 @@ class BIM_Verdi_Design_System {
             }
 
             input[type="checkbox"]:focus-visible {
-                outline: 2px solid var(--color-primary);
-                outline-offset: 2px;
+                outline: none;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
             }
 
             input[type="checkbox"]:checked {
@@ -692,6 +842,56 @@ class BIM_Verdi_Design_System {
             input[type="checkbox"]:disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
+            }
+
+            /* Field Group (horizontal row) */
+            .bv-field-group {
+                border: none;
+                padding: 0;
+                margin: 0 0 24px;
+            }
+
+            .bv-field-group__legend {
+                font-size: 14px;
+                font-weight: 600;
+                line-height: 20px;
+                color: #18181B;
+                margin-bottom: 4px;
+                padding: 0;
+            }
+
+            .bv-field-group__description {
+                font-size: 13px;
+                line-height: 18px;
+                color: #71717A;
+                margin: 0 0 12px;
+            }
+
+            .bv-field-group__fields {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 12px;
+            }
+
+            .bv-field-group__fields .bv-field {
+                margin-bottom: 0;
+            }
+
+            /* Legacy compat */
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+                font-size: 14px;
+                color: #18181B;
+            }
+
+            .form-group {
+                margin-bottom: var(--spacing-md);
+            }
+
+            .form-group label {
+                margin-bottom: var(--spacing-xs);
             }
 
             /* Radio — shadcn style */

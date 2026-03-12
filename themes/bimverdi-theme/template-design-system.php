@@ -125,6 +125,8 @@ get_header();
             'spacing'           => 'Spacing',
             'borders-shadows'   => 'Borders & Shadows',
             'knapper'           => 'Knapper',
+            'breadcrumb'        => 'Breadcrumb',
+            'field'             => 'Field',
             'badges'            => 'Badges',
             'ikoner'            => 'Ikoner',
             'skjema'            => 'Skjema',
@@ -166,6 +168,14 @@ get_header();
 
         <section id="knapper" class="ds-section">
             <?php get_template_part('parts/design-system/components-buttons'); ?>
+        </section>
+
+        <section id="breadcrumb" class="ds-section">
+            <?php get_template_part('parts/design-system/components-breadcrumb'); ?>
+        </section>
+
+        <section id="field" class="ds-section">
+            <?php get_template_part('parts/design-system/components-field'); ?>
         </section>
 
         <section id="badges" class="ds-section">
