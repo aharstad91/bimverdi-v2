@@ -343,7 +343,7 @@ if (!function_exists('bimverdi_login_redirect_minside')) {
             return $redirect_to;
         }
         
-        $member_roles = ['company_owner', 'company_user', 'subscriber'];
+        $member_roles = ['company_owner', 'company_user', 'subscriber', 'medlem', 'tilleggskontakt', 'deltaker', 'prosjektdeltaker', 'partner'];
         
         if (array_intersect($member_roles, $user->roles)) {
             return bimverdi_minside_url();
@@ -540,7 +540,12 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'routes' => ['arrangementer'],
             ],
         ];
-        
+
+        // Filter nav for profil-users (no company)
+        if (!$has_company) {
+            unset($nav['verktoy'], $nav['kunnskapskilder']);
+        }
+
         return $nav;
     }
 }

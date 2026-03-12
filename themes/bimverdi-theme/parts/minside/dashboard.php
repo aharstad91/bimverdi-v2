@@ -520,20 +520,117 @@ if ($company_id) {
 
 <?php else: ?>
 
-    <!-- No company connected -->
-    <div class="py-8">
-        <div class="text-center max-w-md mx-auto">
+    <!-- Welcome dashboard for profil-users (no company) -->
+    <div class="py-8 max-w-2xl mx-auto">
+        <!-- Welcome header -->
+        <div class="text-center mb-8">
             <div class="w-16 h-16 rounded-full bg-[#F5F5F4] flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>
+                <?php echo bimverdi_icon('user', 28, '#888888'); ?>
             </div>
-            <h3 class="text-lg font-semibold text-[#111827] mb-2"><?php _e('Velkommen til Min Side', 'bimverdi'); ?></h3>
-            <p class="text-sm text-[#57534E] mb-6"><?php _e('Du er ikke koblet til et foretak ennå. Registrer foretaket ditt for å få tilgang til alle funksjoner.', 'bimverdi'); ?></p>
+            <h3 class="text-lg font-semibold text-[#111827] mb-2">
+                <?php printf(__('Velkommen til Min Side, %s', 'bimverdi'), esc_html($current_user->display_name)); ?>
+            </h3>
+            <p class="text-sm text-[#57534E]">
+                <?php _e('Du har en personlig BIM Verdi-konto. Her er hva du kan gjøre.', 'bimverdi'); ?>
+            </p>
+        </div>
+
+        <!-- Section A: What you can do now (free) -->
+        <div class="mb-6">
+            <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-4">
+                <?php _e('Tilgjengelig for deg nå', 'bimverdi'); ?>
+            </h4>
+            <div class="space-y-3">
+                <a href="<?php echo esc_url(home_url('/arrangementer/')); ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F7F5EF] transition-colors group">
+                    <span class="flex-shrink-0 text-[#888888] group-hover:text-[#1A1A1A]">
+                        <?php echo bimverdi_icon('calendar', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Arrangementer', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#5A5A5A]"><?php _e('Se og meld deg på kommende arrangementer og workshops', 'bimverdi'); ?></p>
+                    </div>
+                </a>
+                <a href="<?php echo esc_url(home_url('/deltakere/')); ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F7F5EF] transition-colors group">
+                    <span class="flex-shrink-0 text-[#888888] group-hover:text-[#1A1A1A]">
+                        <?php echo bimverdi_icon('search', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Kataloger', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#5A5A5A]"><?php _e('Utforsk verktøy- og kompetansekatalogen', 'bimverdi'); ?></p>
+                    </div>
+                </a>
+                <a href="<?php echo esc_url(home_url('/nyheter/')); ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F7F5EF] transition-colors group">
+                    <span class="flex-shrink-0 text-[#888888] group-hover:text-[#1A1A1A]">
+                        <?php echo bimverdi_icon('newspaper', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Nyheter', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#5A5A5A]"><?php _e('Les siste nytt fra BIM Verdi-nettverket', 'bimverdi'); ?></p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <hr class="border-[#D6D1C6]">
+
+        <!-- Section B: What foretak unlocks -->
+        <div class="my-6">
+            <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-4">
+                <?php _e('Med foretak får du også', 'bimverdi'); ?>
+            </h4>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 p-3">
+                    <span class="flex-shrink-0 text-[#D6D1C6]">
+                        <?php echo bimverdi_icon('wrench', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Verktøyregistrering', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#888888]"><?php _e('Registrer og synliggjør verktøyene dine i BIM-katalogen', 'bimverdi'); ?></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3">
+                    <span class="flex-shrink-0 text-[#D6D1C6]">
+                        <?php echo bimverdi_icon('users', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Temagrupper og lukkede møter', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#888888]"><?php _e('Delta i faglige temagrupper med bransjekollegaer', 'bimverdi'); ?></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3">
+                    <span class="flex-shrink-0 text-[#D6D1C6]">
+                        <?php echo bimverdi_icon('book-open', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Kunnskapskilder', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#888888]"><?php _e('Tilgang til standarder, veiledere og faglige ressurser', 'bimverdi'); ?></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3">
+                    <span class="flex-shrink-0 text-[#D6D1C6]">
+                        <?php echo bimverdi_icon('message-circle', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Rådgivning og prosjekter', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#888888]"><?php _e('Personlig rådgivning og deltakelse i prosjektkonsortier', 'bimverdi'); ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="border-[#D6D1C6]">
+
+        <!-- Section C: CTA -->
+        <div class="mt-6 text-center">
             <?php bimverdi_button([
                 'text'    => __('Registrer foretak', 'bimverdi'),
                 'variant' => 'primary',
-                'href'    => home_url('/min-side/registrer-foretak/'),
+                'href'    => home_url('/min-side/foretak/registrer/'),
                 'icon'    => 'plus',
             ]); ?>
+            <p class="mt-3 text-xs text-[#888888]">
+                <?php _e('Koble foretaket ditt for å få full tilgang til BIM Verdi-portalen', 'bimverdi'); ?>
+            </p>
         </div>
     </div>
 
