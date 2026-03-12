@@ -19,7 +19,7 @@ $nye_bimverdi_url = home_url('/nye-bimverdi/');
 <div id="bv-announcement-bar" class="bv-announcement-bar" style="display:none;">
     <div class="bv-announcement-bar__inner">
         <p class="bv-announcement-bar__text">
-            Velkommen til nye bimverdi.no!
+            Velkommen til nye bimverdi.no! <strong>Sidene er under oppdatering</strong>.
             <a href="<?php echo esc_url($nye_bimverdi_url); ?>" class="bv-announcement-bar__link">
                 Les om hva som er nytt <span aria-hidden="true">&rarr;</span>
             </a>
@@ -99,7 +99,7 @@ $nye_bimverdi_url = home_url('/nye-bimverdi/');
 
 <script>
 (function() {
-    var STORAGE_KEY = 'bv_announcement_dismissed';
+    var STORAGE_KEY = 'bv_announcement_dismissed_v2';
     var bar = document.getElementById('bv-announcement-bar');
     var closeBtn = document.getElementById('bv-announcement-close');
 
