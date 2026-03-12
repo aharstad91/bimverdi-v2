@@ -2677,6 +2677,160 @@ class BIM_Verdi_CLI_Commands {
             'Kompetansesystemer' => 'kompetanse',
         );
     }
+
+    /**
+     * Sync temagruppe taxonomy terms for foretak from CSV data
+     *
+     * Reads the original Formidable Forms CSV and assigns temagruppe taxonomy
+     * terms to foretak posts. Matches foretak by organisasjonsnummer or name.
+     *
+     * ## OPTIONS
+     *
+     * <csv-file>
+     * : Path to the Formidable Forms CSV export file
+     *
+     * [--dry-run]
+     * : Show what would be changed without making changes
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi sync-temagrupper /path/to/foretak.csv --dry-run
+     *     wp bimverdi sync-temagrupper /path/to/foretak.csv
+     */
+    public function sync_temagrupper($args, $assoc_args) {
+        $csv_file = $args[0];
+        $dry_run = isset($assoc_args['dry-run']);
+
+        if (!file_exists($csv_file)) {
+            WP_CLI::error("CSV file not found: {$csv_file}");
+        }
+
+        // Map CSV temagruppe strings to taxonomy slugs
+        $temagruppe_map = [
+            'ByggesaksBIM' => 'byggesaksbim',
+            'ProsjektBIM' => 'prosjektbim',
+            'EiendomsBIM' => 'eiendomsbim',
+            'MiljøBIM' => 'miljobim',
+            'SirkBIM' => 'sirkbim',
+            'BIMtech' => 'bimtech',
+        ];
+
+        // Build lookup: orgnr => foretak post ID, name => foretak post ID
+        $foretak_posts = get_posts([
+            'post_type' => 'foretak',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+        ]);
+
+        $by_orgnr = [];
+        $by_name = [];
+        foreach ($foretak_posts as $fp) {
+            $orgnr = get_field('organisasjonsnummer', $fp->ID);
+            if ($orgnr) {
+                $by_orgnr[trim($orgnr)] = $fp->ID;
+            }
+            $by_name[mb_strtolower(trim($fp->post_title))] = $fp->ID;
+        }
+
+        WP_CLI::log("Found " . count($foretak_posts) . " published foretak");
+        if ($dry_run) {
+            WP_CLI::log("=== DRY RUN ===");
+        }
+
+        // Read CSV
+        $handle = fopen($csv_file, 'r');
+        $headers = fgetcsv($handle);
+
+        $col_name = array_search('Foretaksnavn', $headers);
+        $col_orgnr = array_search('Organisasjonsnummer', $headers);
+        $col_tema = array_search('Angi interesse for prosjekt og/eller temagruppe', $headers);
+
+        if ($col_tema === false) {
+            WP_CLI::error("Could not find temagruppe column in CSV");
+        }
+
+        $stats = ['matched' => 0, 'updated' => 0, 'skipped' => 0, 'not_found' => 0];
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $name = trim($row[$col_name] ?? '');
+            $orgnr = trim(str_replace('.00', '', $row[$col_orgnr] ?? ''));
+            $tema_raw = trim($row[$col_tema] ?? '');
+
+            if (empty($name) || empty($tema_raw)) {
+                continue;
+            }
+
+            // Find matching foretak post
+            $post_id = null;
+            if (!empty($orgnr) && isset($by_orgnr[$orgnr])) {
+                $post_id = $by_orgnr[$orgnr];
+            } elseif (isset($by_name[mb_strtolower($name)])) {
+                $post_id = $by_name[mb_strtolower($name)];
+            }
+
+            if (!$post_id) {
+                WP_CLI::warning("No match for: {$name} (orgnr: {$orgnr})");
+                $stats['not_found']++;
+                continue;
+            }
+
+            $stats['matched']++;
+
+            // Parse temagruppe values from CSV
+            $parts = array_map('trim', explode(',', $tema_raw));
+            $slugs = [];
+
+            foreach ($parts as $part) {
+                foreach ($temagruppe_map as $prefix => $slug) {
+                    if (stripos($part, $prefix) === 0) {
+                        $slugs[] = $slug;
+                        break;
+                    }
+                }
+            }
+
+            $slugs = array_unique($slugs);
+
+            if (empty($slugs)) {
+                $stats['skipped']++;
+                continue;
+            }
+
+            // Get existing terms
+            $existing = wp_get_object_terms($post_id, 'temagruppe', ['fields' => 'slugs']);
+            sort($slugs);
+            sort($existing);
+
+            if ($slugs === $existing) {
+                WP_CLI::log("  ✓ {$name} — already correct: " . implode(', ', $slugs));
+                $stats['skipped']++;
+                continue;
+            }
+
+            if (!$dry_run) {
+                wp_set_object_terms($post_id, $slugs, 'temagruppe');
+            }
+
+            $stats['updated']++;
+            $label = $dry_run ? 'WOULD SET' : 'SET';
+            WP_CLI::log("  → {$label} {$name} (ID {$post_id}): " . implode(', ', $slugs));
+        }
+
+        fclose($handle);
+
+        WP_CLI::log("");
+        WP_CLI::log("=== Results ===");
+        WP_CLI::log("Matched:   {$stats['matched']}");
+        WP_CLI::log("Updated:   {$stats['updated']}");
+        WP_CLI::log("Skipped:   {$stats['skipped']} (already correct or no temagruppe)");
+        WP_CLI::log("Not found: {$stats['not_found']}");
+
+        if ($dry_run) {
+            WP_CLI::success("Dry run complete. Re-run without --dry-run to apply.");
+        } else {
+            WP_CLI::success("Temagruppe sync complete!");
+        }
+    }
 }
 
 // Register WP-CLI command
