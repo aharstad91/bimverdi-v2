@@ -44,7 +44,7 @@ function bimverdi_enqueue_assets() {
     // Google Fonts: Inter (body) + Crimson Text (hero accent)
     wp_enqueue_style(
         'google-fonts',
-        'https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap',
+        'https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@1,600;1,700&family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=Inter:wght@400;500;600;700&display=swap',
         array(),
         null
     );
@@ -144,10 +144,64 @@ require_once get_template_directory() . '/parts/components/section-header.php';
 require_once get_template_directory() . '/parts/components/badge.php';
 
 /**
+ * Load Switch Component
+ * Provides bimverdi_switch() function for toggle controls
+ */
+require_once get_template_directory() . '/parts/components/switch.php';
+
+/**
+ * Load Tabs Component
+ * Provides bimverdi_tabs(), bimverdi_tab_panel(), bimverdi_tab_panel_end(), bimverdi_tabs_end()
+ */
+require_once get_template_directory() . '/parts/components/tabs.php';
+
+/**
  * Load Stat Pill Component
  * Provides bimverdi_stat_pill() function
  */
 require_once get_template_directory() . '/parts/components/stat-pill.php';
+
+/**
+ * Load Empty State Component
+ * Provides bimverdi_empty_state() function
+ */
+require_once get_template_directory() . '/parts/components/empty-state.php';
+
+/**
+ * Load Item Component
+ * Provides bimverdi_item(), bimverdi_item_group(), bimverdi_item_group_end()
+ */
+require_once get_template_directory() . '/parts/components/item.php';
+
+/**
+ * Load Pagination Component
+ * Provides bimverdi_pagination() function
+ */
+require_once get_template_directory() . '/parts/components/pagination.php';
+
+/**
+ * Load Avatar Component
+ * Provides bimverdi_avatar() and bimverdi_avatar_group() functions
+ */
+require_once get_template_directory() . '/parts/components/avatar.php';
+
+/**
+ * Load Accordion Component
+ * Provides bimverdi_accordion() function
+ */
+require_once get_template_directory() . '/parts/components/accordion.php';
+
+/**
+ * Load Card Component
+ * Provides bimverdi_card(), bimverdi_card_start/end(), bimverdi_card_header(), etc.
+ */
+require_once get_template_directory() . '/parts/components/card.php';
+
+/**
+ * Load Alert Component
+ * Provides bimverdi_alert() for callout messages (info, success, warning, error).
+ */
+require_once get_template_directory() . '/parts/components/alert.php';
 
 /**
  * Load Card Components
@@ -255,16 +309,9 @@ function bimverdi_flush_rewrites() {
 add_action('after_switch_theme', 'bimverdi_flush_rewrites');
 
 /**
- * Add custom class to menu items + fix relative URLs for subdirectory installs
+ * Fix relative URLs for subdirectory installs
  */
 function bimverdi_nav_menu_link_attributes($atts, $item, $args, $depth) {
-    // Add custom link class if specified
-    if (isset($args->link_class)) {
-        $atts['class'] = $atts['class'] ?? '';
-        $atts['class'] .= ' ' . $args->link_class;
-    }
-
-    // Fix relative URLs (starting with /) for subdirectory installs
     // Converts /deltakere to /bimverdi-v2/deltakere (or full home_url)
     if (isset($atts['href']) && strpos($atts['href'], '/') === 0 && strpos($atts['href'], '//') !== 0) {
         $atts['href'] = home_url($atts['href']);
@@ -275,89 +322,5 @@ function bimverdi_nav_menu_link_attributes($atts, $item, $args, $depth) {
 add_filter('nav_menu_link_attributes', 'bimverdi_nav_menu_link_attributes', 10, 4);
 
 /**
- * Add custom classes to menu items for dropdown styling
+ * Navigation menu dropdown support is now in inc/design-system.php (.bv-nav classes)
  */
-function bimverdi_nav_menu_css_class($classes, $item, $args, $depth) {
-    if ($depth === 0 && in_array('menu-item-has-children', $classes)) {
-        $classes[] = 'dropdown-parent';
-    }
-    return $classes;
-}
-add_filter('nav_menu_css_class', 'bimverdi_nav_menu_css_class', 10, 4);
-
-/**
- * Enqueue dropdown menu styles
- */
-function bimverdi_enqueue_menu_styles() {
-    ?>
-    <style>
-    /* Dropdown menu styling - Variant B */
-    .menu-item {
-        position: relative;
-    }
-    
-    .menu-item.dropdown-parent > a::after {
-        content: '';
-        display: inline-block;
-        width: 0;
-        height: 0;
-        margin-left: 6px;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 4px solid currentColor;
-        opacity: 0.5;
-        vertical-align: middle;
-    }
-    
-    .sub-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        min-width: 240px;
-        margin-top: 0.5rem;
-        padding: 0.5rem 0;
-        background: white;
-        border: 1px solid #E7E5E4;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-8px);
-        transition: all 0.2s ease;
-        z-index: 100;
-    }
-    
-    .menu-item:hover > .sub-menu,
-    .menu-item:focus-within > .sub-menu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-    
-    .sub-menu .menu-item {
-        display: block;
-    }
-    
-    .sub-menu a {
-        display: block;
-        padding: 0.625rem 1rem;
-        font-size: 0.875rem;
-        color: #57534E !important;
-        text-decoration: none;
-        transition: all 0.15s ease;
-    }
-    
-    .sub-menu a:hover,
-    .sub-menu a:focus {
-        background-color: #F5F5F4;
-        color: #111827 !important;
-    }
-    
-    /* Submenu item styling */
-    .sub-menu .menu-item {
-        padding: 0;
-    }
-    </style>
-    <?php
-}
-add_action('wp_head', 'bimverdi_enqueue_menu_styles');

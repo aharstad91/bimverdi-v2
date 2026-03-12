@@ -278,7 +278,7 @@ $total_entities = $stats['foretak'] + $stats['verktoy'] + $stats['kunnskapskilde
         min-height: 600px;
         background: #FAFAF9;
         overflow: hidden;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-family: 'Familjen Grotesk', system-ui, -apple-system, sans-serif;
     }
 
     .nv-svg {
@@ -634,13 +634,13 @@ $total_entities = $stats['foretak'] + $stats['verktoy'] + $stats['kunnskapskilde
         transition: filter 0.2s;
     }
     .nv-node-label {
-        font-family: 'Inter', system-ui, sans-serif;
+        font-family: 'Familjen Grotesk', system-ui, sans-serif;
         fill: #1A1A1A;
         pointer-events: none;
         font-weight: 500;
     }
     .nv-node-sublabel {
-        font-family: 'Inter', system-ui, sans-serif;
+        font-family: 'Familjen Grotesk', system-ui, sans-serif;
         fill: #A8A29E;
         pointer-events: none;
         font-weight: 400;

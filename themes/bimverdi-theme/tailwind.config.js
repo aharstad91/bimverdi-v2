@@ -60,8 +60,8 @@ module.exports = {
       
       fontFamily: {
         // EXACT: hjem.no uses Moderat font family
-        sans: ['Moderat', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Moderat', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Familjen Grotesk', 'system-ui', 'sans-serif'],
       },
       
       fontSize: {

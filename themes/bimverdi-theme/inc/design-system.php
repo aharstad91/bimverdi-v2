@@ -99,6 +99,7 @@ class BIM_Verdi_Design_System {
                 
                 /* Typography */
                 --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                --font-family-display: 'Familjen Grotesk', system-ui, -apple-system, sans-serif;
                 --font-family-serif: 'Crimson Text', Georgia, serif;
                 --line-height-tight: 1.2;
                 --line-height-normal: 1.5;
@@ -141,13 +142,9 @@ class BIM_Verdi_Design_System {
 
                 /* Typography */
                 --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                --heading-weight-light: 300;
-                --heading-weight-regular: 400;
-                --heading-weight-medium: 500;
                 --heading-weight-semibold: 600;
-                --heading-tracking-tight: -0.03em;
+                --heading-weight-extrabold: 800;
                 --heading-tracking: -0.02em;
-                --heading-tracking-normal: -0.01em;
 
                 /* Border radius */
                 --radius-sm: 4px;
@@ -233,7 +230,7 @@ class BIM_Verdi_Design_System {
             }
             
             h1, h2, h3, h4, h5, h6 {
-                font-family: var(--font-family);
+                font-family: var(--font-family-display);
                 color: var(--color-black);
                 line-height: var(--line-height-tight);
                 margin: var(--spacing-lg) 0 var(--spacing-md) 0;
@@ -287,6 +284,631 @@ class BIM_Verdi_Design_System {
             }
             
             /* ============================================
+               TYPOGRAPHY UTILITIES (shadcn-inspired)
+               ============================================ */
+
+            .bv-h1 {
+                font-family: var(--font-family-display);
+                font-size: 2.25rem;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                line-height: 2.5rem;
+                color: #18181B;
+            }
+
+            .bv-h2 {
+                font-family: var(--font-family-display);
+                font-size: 1.875rem;
+                font-weight: 600;
+                letter-spacing: -0.02em;
+                line-height: 2.25rem;
+                color: #18181B;
+            }
+
+            .bv-h3 {
+                font-family: var(--font-family-display);
+                font-size: 1.5rem;
+                font-weight: 600;
+                letter-spacing: -0.02em;
+                line-height: 2rem;
+                color: #18181B;
+            }
+
+            .bv-h4 {
+                font-family: var(--font-family-display);
+                font-size: 1.25rem;
+                font-weight: 600;
+                letter-spacing: -0.02em;
+                line-height: 1.75rem;
+                color: #18181B;
+            }
+
+            .bv-p {
+                font-size: 1rem;
+                line-height: 1.75rem;
+                color: #18181B;
+            }
+
+            .bv-lead {
+                font-size: 1.25rem;
+                line-height: 1.75rem;
+                color: #71717A;
+            }
+
+            .bv-large {
+                font-size: 1.125rem;
+                font-weight: 600;
+                color: #18181B;
+            }
+
+            .bv-small {
+                font-size: 0.875rem;
+                font-weight: 500;
+                line-height: 1;
+                color: #18181B;
+            }
+
+            .bv-muted {
+                font-size: 0.875rem;
+                color: #71717A;
+            }
+
+            .bv-blockquote {
+                margin-top: 1.5rem;
+                border-left: 2px solid #E4E4E7;
+                padding-left: 1.5rem;
+                font-style: italic;
+                color: #18181B;
+            }
+
+            .bv-code {
+                position: relative;
+                font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+                font-size: 0.875rem;
+                font-weight: 600;
+                background: #F4F4F5;
+                padding: 0.2rem 0.3rem;
+                border-radius: 4px;
+            }
+
+            .bv-list {
+                margin: 1.5rem 0;
+                margin-left: 1.5rem;
+                list-style-type: disc;
+                color: #18181B;
+                line-height: 1.75rem;
+            }
+
+            .bv-list > li {
+                margin-top: 0.5rem;
+            }
+
+            /* ============================================
+               TABLE (shadcn-inspired)
+               ============================================ */
+
+            .bv-table-wrapper {
+                position: relative;
+                width: 100%;
+                overflow: auto;
+            }
+
+            .bv-table {
+                width: 100%;
+                caption-side: bottom;
+                font-size: 14px;
+                border-collapse: collapse;
+            }
+
+            .bv-table caption {
+                margin-top: 16px;
+                font-size: 14px;
+                color: #71717A;
+            }
+
+            .bv-table thead tr {
+                border-bottom: 1px solid #E4E4E7;
+            }
+
+            .bv-table th {
+                height: 40px;
+                padding: 0 8px;
+                text-align: left;
+                vertical-align: middle;
+                font-size: 14px;
+                font-weight: 500;
+                color: #71717A;
+                white-space: nowrap;
+            }
+
+            .bv-table th.text-right,
+            .bv-table td.text-right {
+                text-align: right;
+            }
+
+            .bv-table tbody tr {
+                border-bottom: 1px solid #E4E4E7;
+                transition: background-color 0.15s;
+            }
+
+            .bv-table tbody tr:last-child {
+                border-bottom: 0;
+            }
+
+            .bv-table tbody tr:hover {
+                background: rgba(244, 244, 245, 0.5);
+            }
+
+            .bv-table td {
+                padding: 8px;
+                vertical-align: middle;
+                color: #18181B;
+            }
+
+            .bv-table td.font-medium {
+                font-weight: 500;
+            }
+
+            .bv-table tfoot {
+                border-top: 1px solid #E4E4E7;
+                background: rgba(244, 244, 245, 0.5);
+            }
+
+            .bv-table tfoot tr:last-child {
+                border-bottom: 0;
+            }
+
+            .bv-table tfoot td {
+                padding: 8px;
+                font-weight: 500;
+                color: #18181B;
+            }
+
+            /* ============================================
+               PAGINATION (shadcn-inspired)
+               ============================================ */
+
+            .bv-pagination {
+                display: flex;
+                justify-content: center;
+            }
+
+            .bv-pagination__list {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .bv-pagination__link {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 32px;
+                height: 32px;
+                padding: 0 8px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #18181B;
+                text-decoration: none;
+                border-radius: 6px;
+                border: 1px solid transparent;
+                cursor: pointer;
+                transition: background-color 0.15s, border-color 0.15s;
+            }
+
+            .bv-pagination__link:hover {
+                background: #F4F4F5;
+                text-decoration: none;
+                color: #18181B;
+            }
+
+            .bv-pagination__link--active {
+                border-color: #E4E4E7;
+                background: transparent;
+                cursor: default;
+            }
+
+            .bv-pagination__link--active:hover {
+                background: transparent;
+            }
+
+            .bv-pagination__link--disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+
+            .bv-pagination__prev,
+            .bv-pagination__next {
+                gap: 4px;
+                padding: 0 12px;
+            }
+
+            .bv-pagination__ellipsis {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 32px;
+                height: 32px;
+                font-size: 14px;
+                color: #71717A;
+            }
+
+            .bv-pagination__link:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
+            }
+
+            /* ============================================
+               ITEM (shadcn-inspired)
+               Versatile list item with media, content, actions
+               ============================================ */
+
+            .bv-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                border-radius: 8px;
+                text-decoration: none;
+                color: inherit;
+                transition: background-color 0.15s;
+            }
+
+            .bv-item--outline {
+                border: 1px solid #E4E4E7;
+            }
+
+            .bv-item--muted {
+                background: #F4F4F5;
+            }
+
+            .bv-item--link {
+                cursor: pointer;
+            }
+
+            .bv-item--link:hover {
+                background: rgba(244, 244, 245, 0.5);
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .bv-item--outline.bv-item--link:hover {
+                background: #FAFAFA;
+            }
+
+            /* Small size */
+            .bv-item--sm {
+                gap: 10px;
+                padding: 8px 12px;
+            }
+
+            /* Media — icon */
+            .bv-item__media--icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                background: #F4F4F5;
+                color: #71717A;
+                flex-shrink: 0;
+            }
+
+            .bv-item--sm .bv-item__media--icon {
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+            }
+
+            /* Media — avatar */
+            .bv-item__media--avatar {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 9999px;
+                color: #FFFFFF;
+                font-size: 14px;
+                font-weight: 600;
+                flex-shrink: 0;
+            }
+
+            .bv-item--sm .bv-item__media--avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            /* Content */
+            .bv-item__content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .bv-item__title {
+                font-size: 14px;
+                font-weight: 500;
+                color: #18181B;
+                line-height: 1.4;
+            }
+
+            .bv-item__description {
+                font-size: 14px;
+                color: #71717A;
+                line-height: 1.4;
+                margin-top: 1px;
+            }
+
+            .bv-item--sm .bv-item__title {
+                font-size: 13px;
+            }
+
+            .bv-item--sm .bv-item__description {
+                font-size: 13px;
+            }
+
+            /* Meta text */
+            .bv-item__meta {
+                font-size: 14px;
+                color: #71717A;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+
+            /* Actions */
+            .bv-item__actions {
+                flex-shrink: 0;
+            }
+
+            /* Chevron for link items */
+            .bv-item__chevron {
+                flex-shrink: 0;
+                color: #A1A1AA;
+            }
+
+            /* Item Group — stacked items with separators */
+            .bv-item-group {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .bv-item-group > .bv-item + .bv-item {
+                border-top: 1px solid #E4E4E7;
+            }
+
+            .bv-item-group > .bv-item {
+                border-radius: 0;
+            }
+
+            .bv-item-group > .bv-item:first-child {
+                border-radius: 8px 8px 0 0;
+            }
+
+            .bv-item-group > .bv-item:last-child {
+                border-radius: 0 0 8px 8px;
+            }
+
+            .bv-item-group > .bv-item:only-child {
+                border-radius: 8px;
+            }
+
+            .bv-item-group--outline {
+                border: 1px solid #E4E4E7;
+                border-radius: 8px;
+            }
+
+            .bv-item-group--outline > .bv-item {
+                border: none;
+                border-radius: 0;
+            }
+
+            .bv-item-group--outline > .bv-item + .bv-item {
+                border-top: 1px solid #E4E4E7;
+            }
+
+            /* ============================================
+               EMPTY STATE (shadcn-inspired)
+               ============================================ */
+
+            /* Default: centered vertical stack */
+            .bv-empty {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 48px 16px;
+            }
+
+            .bv-empty__icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 48px;
+                height: 48px;
+                border-radius: 9999px;
+                background: #F4F4F5;
+                color: #A1A1AA;
+                margin-bottom: 16px;
+            }
+
+            .bv-empty__title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #18181B;
+                margin-bottom: 4px;
+            }
+
+            .bv-empty__description {
+                font-size: 14px;
+                color: #71717A;
+                max-width: 320px;
+                margin: 0;
+                line-height: 1.5;
+            }
+
+            .bv-empty__actions {
+                margin-top: 20px;
+            }
+
+            /* Outline variant */
+            .bv-empty--outline {
+                border: 1px dashed #E4E4E7;
+                border-radius: 8px;
+            }
+
+            /* Compact variant: horizontal inline */
+            .bv-empty--compact {
+                flex-direction: row;
+                text-align: left;
+                padding: 24px;
+                gap: 12px;
+                background: #FAFAFA;
+                border-radius: 8px;
+            }
+
+            .bv-empty--compact .bv-empty__icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 0;
+                flex-shrink: 0;
+            }
+
+            .bv-empty--compact .bv-empty__body {
+                min-width: 0;
+            }
+
+            .bv-empty--compact .bv-empty__title {
+                font-size: 14px;
+                margin-bottom: 2px;
+            }
+
+            .bv-empty--compact .bv-empty__description {
+                font-size: 13px;
+            }
+
+            /* ============================================
+               NAVIGATION MENU (shadcn-inspired)
+               Styles WordPress wp_nav_menu output
+               ============================================ */
+
+            .bv-nav {
+                display: flex;
+                align-items: center;
+            }
+
+            .bv-nav__list {
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .bv-nav__list .menu-item {
+                position: relative;
+                list-style: none;
+            }
+
+            .bv-nav__list > .menu-item > a {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 8px 12px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #18181B;
+                text-decoration: none;
+                border-radius: 6px;
+                transition: background-color 0.15s, color 0.15s;
+            }
+
+            .bv-nav__list > .menu-item > a:hover {
+                background: #F4F4F5;
+                color: #18181B;
+                text-decoration: none;
+            }
+
+            .bv-nav__list > .menu-item > a:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
+            }
+
+            /* Chevron on dropdown triggers */
+            .bv-nav__list > .menu-item.menu-item-has-children > a::after {
+                content: '';
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                flex-shrink: 0;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+                background-size: 16px 16px;
+                background-repeat: no-repeat;
+                transition: transform 0.2s;
+            }
+
+            .bv-nav__list > .menu-item.menu-item-has-children:hover > a::after {
+                transform: rotate(180deg);
+            }
+
+            /* Dropdown panel */
+            .bv-nav__list .sub-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                min-width: 220px;
+                margin-top: 4px;
+                padding: 4px;
+                background: #FFFFFF;
+                border: 1px solid #E4E4E7;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-4px);
+                transition: opacity 0.15s, visibility 0.15s, transform 0.15s;
+                z-index: 100;
+                list-style: none;
+            }
+
+            .bv-nav__list .menu-item:hover > .sub-menu,
+            .bv-nav__list .menu-item:focus-within > .sub-menu {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .bv-nav__list .sub-menu .menu-item {
+                display: block;
+                padding: 0;
+            }
+
+            .bv-nav__list .sub-menu a {
+                display: block;
+                padding: 8px 12px;
+                font-size: 14px;
+                font-weight: 400;
+                color: #18181B;
+                text-decoration: none;
+                border-radius: 6px;
+                transition: background-color 0.15s;
+                line-height: 1.4;
+            }
+
+            .bv-nav__list .sub-menu a:hover,
+            .bv-nav__list .sub-menu a:focus {
+                background: #F4F4F5;
+                color: #18181B;
+                text-decoration: none;
+            }
+
+            /* ============================================
                BUTTONS (daisyUI overrides & custom)
                ============================================ */
             
@@ -304,7 +926,7 @@ class BIM_Verdi_Design_System {
                 height: 32px;
                 padding: 0 12px;
                 border-radius: 6px;
-                font-family: 'Inter', var(--font-family);
+                font-family: var(--font-family);
                 font-weight: 500;
                 font-size: 14px;
                 line-height: 20px;
@@ -687,7 +1309,7 @@ class BIM_Verdi_Design_System {
                 padding: 0 12px;
                 border: 1px solid #E4E4E7;
                 border-radius: 6px;
-                font-family: 'Inter', var(--font-family);
+                font-family: var(--font-family);
                 font-size: 14px;
                 line-height: 20px;
                 color: #18181B;
@@ -1345,6 +1967,7 @@ class BIM_Verdi_Design_System {
                 margin-bottom: 8px;
             }
             .bv-section-header__heading {
+                font-family: var(--font-family-display);
                 font-weight: 300;
                 letter-spacing: -0.02em;
                 color: #1A1A1A;
@@ -1494,34 +2117,694 @@ class BIM_Verdi_Design_System {
                 display: inline-flex;
                 align-items: center;
                 gap: 4px;
-                font-weight: 500;
+                font-size: 12px;
+                font-weight: 600;
+                line-height: 1;
+                padding: 2px 10px;
+                height: 22px;
                 border-radius: 9999px;
                 white-space: nowrap;
+                border: 1px solid transparent;
+                transition: color 0.15s, background-color 0.15s;
             }
 
-            /* Size variants */
-            .bv-badge--small { padding: 2px 8px; font-size: 12px; line-height: 18px; }
-            .bv-badge--medium { padding: 4px 12px; font-size: 13px; line-height: 20px; }
+            /* Variant: default — solid dark */
+            .bv-badge--default {
+                background: #18181B;
+                color: #FAFAFA;
+                border-color: #18181B;
+            }
 
-            /* Color variants */
-            .bv-badge--green { background: #DCFCE7; color: #166534; }
-            .bv-badge--yellow { background: #FEF9C3; color: #854D0E; }
-            .bv-badge--red { background: #FEE2E2; color: #991B1B; }
-            .bv-badge--gray { background: #F3F4F6; color: #4B5563; }
-            .bv-badge--blue { background: #DBEAFE; color: #1E40AF; }
-            .bv-badge--orange { background: #FFF3ED; color: #C2410C; }
-            .bv-badge--purple { background: #F3E8FF; color: #7C3AED; }
-            .bv-badge--teal { background: #CCFBF1; color: #0F766E; }
-            .bv-badge--amber { background: #FEF3C7; color: #92400E; }
+            /* Variant: secondary — subtle gray */
+            .bv-badge--secondary {
+                background: #F4F4F5;
+                color: #18181B;
+                border-color: #F4F4F5;
+            }
 
-            /* Category variant - more subtle with border */
-            .bv-badge--category { background: #F5F5F4; color: #57534E; border: 1px solid #E7E5E4; }
+            /* Variant: destructive — red */
+            .bv-badge--destructive {
+                background: #FEF2F2;
+                color: #DC2626;
+                border-color: #FEF2F2;
+            }
 
-            /* Badge icon styling */
+            /* Variant: outline — border only */
+            .bv-badge--outline {
+                background: transparent;
+                color: #18181B;
+                border-color: #E4E4E7;
+            }
+
+            /* Semantic color overrides (work with any variant) */
+            .bv-badge--green  { background: #DCFCE7; color: #166534; border-color: #DCFCE7; }
+            .bv-badge--yellow { background: #FEF9C3; color: #854D0E; border-color: #FEF9C3; }
+            .bv-badge--red    { background: #FEE2E2; color: #991B1B; border-color: #FEE2E2; }
+            .bv-badge--gray   { background: #F4F4F5; color: #18181B; border-color: #F4F4F5; }
+            .bv-badge--blue   { background: #DBEAFE; color: #1E40AF; border-color: #DBEAFE; }
+            .bv-badge--orange { background: #FFF3ED; color: #C2410C; border-color: #FFF3ED; }
+            .bv-badge--purple { background: #F3E8FF; color: #7C3AED; border-color: #F3E8FF; }
+            .bv-badge--teal   { background: #CCFBF1; color: #0F766E; border-color: #CCFBF1; }
+            .bv-badge--amber  { background: #FEF3C7; color: #92400E; border-color: #FEF3C7; }
+
+            /* Badge icon */
             .bv-badge__icon {
                 display: inline-flex;
                 align-items: center;
                 flex-shrink: 0;
+            }
+
+            /* ============================================
+               CARD (shadcn-inspired)
+               Composable card with header, content, footer
+               ============================================ */
+
+            .bv-card2 {
+                border: 1px solid #E4E4E7;
+                border-radius: 12px;
+                background: #FFFFFF;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+                overflow: hidden;
+                color: inherit;
+                text-decoration: none;
+                display: block;
+            }
+
+            a.bv-card2 { cursor: pointer; }
+            a.bv-card2:hover {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                border-color: #D4D4D8;
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .bv-card2__header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 24px 24px 0;
+            }
+
+            .bv-card2--sm .bv-card2__header {
+                padding: 16px 16px 0;
+            }
+
+            .bv-card2__header-text {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .bv-card2__title {
+                font-family: var(--font-family-display);
+                font-size: 18px;
+                font-weight: 600;
+                color: #18181B;
+                line-height: 1.3;
+                letter-spacing: -0.01em;
+            }
+
+            .bv-card2--sm .bv-card2__title {
+                font-size: 16px;
+            }
+
+            .bv-card2__description {
+                font-size: 14px;
+                color: #71717A;
+                line-height: 1.5;
+                margin-top: 4px;
+            }
+
+            .bv-card2__action {
+                flex-shrink: 0;
+            }
+
+            .bv-card2__content {
+                padding: 16px 24px;
+                font-size: 14px;
+                color: #18181B;
+                line-height: 1.6;
+            }
+
+            .bv-card2--sm .bv-card2__content {
+                padding: 12px 16px;
+            }
+
+            .bv-card2__footer {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 0 24px 24px;
+            }
+
+            .bv-card2--sm .bv-card2__footer {
+                padding: 0 16px 16px;
+            }
+
+            .bv-card2__image {
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .bv-card2__image img {
+                width: 100%;
+                height: auto;
+                display: block;
+                object-fit: cover;
+            }
+
+            /* ============================================
+               ACCORDION (shadcn-inspired)
+               Collapsible content sections
+               ============================================ */
+
+            .bv-accordion__item {
+                border-bottom: 1px solid #E4E4E7;
+            }
+
+            .bv-accordion__item:last-child {
+                border-bottom: 0;
+            }
+
+            /* Bordered variant */
+            .bv-accordion--bordered {
+                border: 1px solid #E4E4E7;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .bv-accordion--bordered .bv-accordion__item {
+                border-bottom: 1px solid #E4E4E7;
+            }
+
+            .bv-accordion--bordered .bv-accordion__item:last-child {
+                border-bottom: 0;
+            }
+
+            /* Trigger / summary */
+            .bv-accordion__trigger {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding: 16px 0;
+                font-size: 14px;
+                font-weight: 500;
+                color: #18181B;
+                cursor: pointer;
+                list-style: none;
+                user-select: none;
+                transition: color 0.15s;
+            }
+
+            .bv-accordion--bordered .bv-accordion__trigger {
+                padding: 16px;
+            }
+
+            .bv-accordion__trigger::-webkit-details-marker {
+                display: none;
+            }
+
+            .bv-accordion__trigger::marker {
+                display: none;
+                content: '';
+            }
+
+            .bv-accordion__trigger:hover {
+                text-decoration: underline;
+            }
+
+            .bv-accordion__trigger:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
+                border-radius: 4px;
+            }
+
+            .bv-accordion__trigger-text {
+                flex: 1;
+                text-align: left;
+            }
+
+            /* Chevron rotation */
+            .bv-accordion__chevron {
+                flex-shrink: 0;
+                color: #71717A;
+                transition: transform 0.2s ease;
+            }
+
+            details[open] > .bv-accordion__trigger .bv-accordion__chevron {
+                transform: rotate(180deg);
+            }
+
+            /* Content panel */
+            .bv-accordion__content {
+                overflow: hidden;
+            }
+
+            .bv-accordion__content-inner {
+                padding: 0 0 16px 0;
+                font-size: 14px;
+                color: #71717A;
+                line-height: 1.6;
+            }
+
+            .bv-accordion--bordered .bv-accordion__content-inner {
+                padding: 0 16px 16px 16px;
+            }
+
+            /* Disabled */
+            .bv-accordion__item--disabled {
+                opacity: 0.5;
+                pointer-events: none;
+            }
+
+            /* ============================================
+               ALERT (shadcn-inspired)
+               Callout for important information
+               ============================================ */
+
+            .bv-alert {
+                position: relative;
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                width: 100%;
+                padding: 16px;
+                border-radius: 8px;
+                border: 1px solid #E4E4E7;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            /* Icon — aligned to title line-height */
+            .bv-alert__icon {
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                height: 21px; /* matches title line-height (15px * 1.4) */
+                color: #18181B;
+            }
+
+            /* No title: center icon with single-line description */
+            .bv-alert--no-title {
+                align-items: center;
+            }
+
+            /* Content */
+            .bv-alert__content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .bv-alert__title {
+                font-size: 15px;
+                font-weight: 600;
+                color: #18181B;
+                line-height: 1.4;
+                letter-spacing: -0.01em;
+                margin: 0 0 4px 0;
+                font-family: var(--font-family-display);
+            }
+
+            .bv-alert__title:last-child {
+                margin-bottom: 0;
+            }
+
+            .bv-alert__description {
+                font-size: 13px;
+                color: #71717A;
+                line-height: 1.5;
+            }
+
+            .bv-alert__description p:last-child {
+                margin-bottom: 0;
+            }
+
+            /* Close button */
+            .bv-alert__close {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+                padding: 0;
+                border: none;
+                background: none;
+                color: #A1A1AA;
+                cursor: pointer;
+                border-radius: 4px;
+                transition: color 0.15s, background-color 0.15s;
+            }
+
+            .bv-alert__close:hover {
+                color: #18181B;
+                background-color: #F4F4F5;
+            }
+
+            /* Variant: default */
+            .bv-alert--default {
+                background-color: #FAFAFA;
+                border-color: #E4E4E7;
+            }
+
+            .bv-alert--default .bv-alert__icon {
+                color: #18181B;
+            }
+
+            /* Variant: destructive */
+            .bv-alert--destructive {
+                background-color: #FEF2F2;
+                border-color: #FECACA;
+            }
+
+            .bv-alert--destructive .bv-alert__icon {
+                color: #DC2626;
+            }
+
+            .bv-alert--destructive .bv-alert__title {
+                color: #DC2626;
+            }
+
+            .bv-alert--destructive .bv-alert__description {
+                color: #991B1B;
+            }
+
+            /* Variant: success */
+            .bv-alert--success {
+                background-color: #F0FDF4;
+                border-color: #BBF7D0;
+            }
+
+            .bv-alert--success .bv-alert__icon {
+                color: #16A34A;
+            }
+
+            .bv-alert--success .bv-alert__title {
+                color: #15803D;
+            }
+
+            .bv-alert--success .bv-alert__description {
+                color: #166534;
+            }
+
+            /* Variant: warning */
+            .bv-alert--warning {
+                background-color: #FFFBEB;
+                border-color: #FDE68A;
+            }
+
+            .bv-alert--warning .bv-alert__icon {
+                color: #D97706;
+            }
+
+            .bv-alert--warning .bv-alert__title {
+                color: #92400E;
+            }
+
+            .bv-alert--warning .bv-alert__description {
+                color: #78350F;
+            }
+
+            /* ============================================
+               AVATAR (shadcn-inspired)
+               Circular avatar with image, initials, badge
+               ============================================ */
+
+            .bv-avatar {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 9999px;
+                flex-shrink: 0;
+                vertical-align: middle;
+                overflow: hidden;
+            }
+
+            .bv-avatar--sm { width: 32px; height: 32px; }
+            .bv-avatar--lg { width: 48px; height: 48px; }
+
+            .bv-avatar__image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 9999px;
+            }
+
+            .bv-avatar__fallback {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                border-radius: 9999px;
+                background: #18181B;
+                color: #FAFAFA;
+                font-size: 14px;
+                font-weight: 600;
+                line-height: 1;
+                user-select: none;
+            }
+
+            .bv-avatar--sm .bv-avatar__fallback { font-size: 12px; }
+            .bv-avatar--lg .bv-avatar__fallback { font-size: 16px; }
+
+            /* Overflow count in avatar group */
+            .bv-avatar__fallback--overflow {
+                background: #F4F4F5;
+                color: #71717A;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .bv-avatar--lg .bv-avatar__fallback--overflow { font-size: 14px; }
+
+            /* Status badge dot */
+            .bv-avatar--has-badge { overflow: visible; }
+
+            .bv-avatar__badge {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 10px;
+                height: 10px;
+                border-radius: 9999px;
+                border: 2px solid #FFFFFF;
+                box-sizing: content-box;
+            }
+
+            .bv-avatar--sm .bv-avatar__badge { width: 8px; height: 8px; }
+            .bv-avatar--lg .bv-avatar__badge { width: 12px; height: 12px; }
+
+            .bv-avatar__badge--online  { background: #22C55E; }
+            .bv-avatar__badge--offline { background: #A1A1AA; }
+            .bv-avatar__badge--busy    { background: #EF4444; }
+            .bv-avatar__badge--away    { background: #F59E0B; }
+
+            /* Avatar Group — overlapping */
+            .bv-avatar-group {
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .bv-avatar-group > .bv-avatar {
+                border: 2px solid #FFFFFF;
+                box-sizing: content-box;
+                margin-left: -8px;
+            }
+
+            .bv-avatar-group > .bv-avatar:first-child {
+                margin-left: 0;
+            }
+
+            /* ============================================
+               SWITCH
+               Toggle control — pure CSS, no JS
+               ============================================ */
+
+            .bv-switch__row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .bv-switch__track {
+                position: relative;
+                display: inline-block;
+                width: 44px;
+                height: 24px;
+                flex-shrink: 0;
+                cursor: pointer;
+                border-radius: 9999px;
+                background: #E4E4E7;
+                transition: background-color 0.15s;
+            }
+
+            .bv-switch__input {
+                /* Fully invisible but still functional */
+                position: absolute;
+                width: 44px;
+                height: 24px;
+                top: 0;
+                left: 0;
+                margin: 0;
+                padding: 0;
+                opacity: 0 !important;
+                cursor: pointer;
+                z-index: 1;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                border: none;
+                background: none;
+            }
+
+            .bv-switch__thumb {
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 20px;
+                height: 20px;
+                border-radius: 9999px;
+                background: #FFFFFF;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: transform 0.15s ease;
+                pointer-events: none;
+                transform: translateX(0);
+            }
+
+            /* Checked state */
+            .bv-switch__input:checked ~ .bv-switch__thumb {
+                transform: translateX(20px);
+            }
+
+            .bv-switch__track:has(.bv-switch__input:checked) {
+                background: #18181B;
+            }
+
+            /* Focus ring */
+            .bv-switch__input:focus-visible ~ .bv-switch__thumb {
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
+            }
+
+            /* Disabled */
+            .bv-switch--disabled .bv-switch__track {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .bv-switch--disabled .bv-switch__input {
+                cursor: not-allowed;
+            }
+
+            .bv-switch--disabled .bv-switch__label {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+
+            .bv-switch__label {
+                font-size: 14px;
+                font-weight: 500;
+                color: #18181B;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .bv-switch__description {
+                font-size: 13px;
+                color: #71717A;
+                margin: 4px 0 0 56px;
+            }
+
+            /* ============================================
+               TABS
+               Tabbed interface — default (pill) & line
+               ============================================ */
+
+            /* Default variant — pill container */
+            .bv-tabs__list {
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
+                padding: 4px;
+                background: #F4F4F5;
+                border-radius: 8px;
+                margin-bottom: 16px;
+            }
+
+            .bv-tabs__trigger {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 6px 12px;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                color: #71717A;
+                background: transparent;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: color 0.15s, background-color 0.15s, box-shadow 0.15s;
+            }
+
+            .bv-tabs__trigger:hover {
+                color: #18181B;
+            }
+
+            .bv-tabs__trigger--active {
+                background: #FFFFFF;
+                color: #18181B;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            }
+
+            .bv-tabs__trigger:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
+            }
+
+            /* Line variant */
+            .bv-tabs__list--line {
+                background: transparent;
+                padding: 0;
+                gap: 0;
+                border-radius: 0;
+                border-bottom: 1px solid #E4E4E7;
+            }
+
+            .bv-tabs__list--line .bv-tabs__trigger {
+                border-radius: 0;
+                padding: 8px 16px;
+                margin-bottom: -1px;
+                border-bottom: 2px solid transparent;
+            }
+
+            .bv-tabs__list--line .bv-tabs__trigger--active {
+                background: transparent;
+                color: #18181B;
+                border-bottom-color: #18181B;
+                box-shadow: none;
+            }
+
+            .bv-tabs__list--line .bv-tabs__trigger:focus-visible {
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #18181B;
+                border-radius: 4px 4px 0 0;
+            }
+
+            /* Tab panels */
+            .bv-tabs__panel {
+                display: none;
+                padding: 16px 0;
+            }
+
+            .bv-tabs__panel--active {
+                display: block;
             }
 
         </style>
@@ -1532,7 +2815,88 @@ class BIM_Verdi_Design_System {
      * Enqueue design system JavaScript
      */
     public function enqueue_design_js() {
-        // Placeholder for future JS functionality
+        ?>
+        <script>
+        /* BV Accordion — single mode (close others on open) */
+        (function() {
+            function initAccordions() {
+                document.querySelectorAll('[data-bv-accordion="single"]').forEach(function(acc) {
+                    var items = acc.querySelectorAll('.bv-accordion__item');
+                    items.forEach(function(detail) {
+                        detail.addEventListener('toggle', function() {
+                            if (this.open) {
+                                items.forEach(function(other) {
+                                    if (other !== detail && other.open) {
+                                        other.removeAttribute('open');
+                                    }
+                                });
+                            }
+                        });
+                    });
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initAccordions);
+            } else {
+                initAccordions();
+            }
+        })();
+
+        /* BV Tabs — panel switching */
+        (function() {
+            function initTabs() {
+                document.querySelectorAll('[data-bv-tabs]').forEach(function(wrapper) {
+                    var tabsId = wrapper.getAttribute('data-bv-tabs');
+                    var triggers = wrapper.querySelectorAll('.bv-tabs__trigger[data-bv-tabs-id="' + tabsId + '"]');
+                    var panels = wrapper.querySelectorAll('.bv-tabs__panel[data-bv-tabs-id="' + tabsId + '"]');
+
+                    // Show the default active panel
+                    triggers.forEach(function(t) {
+                        if (t.classList.contains('bv-tabs__trigger--active')) {
+                            var key = t.getAttribute('data-bv-tab');
+                            panels.forEach(function(p) {
+                                p.classList.toggle('bv-tabs__panel--active', p.getAttribute('data-bv-tab-panel') === key);
+                            });
+                        }
+                    });
+
+                    // Click handler
+                    triggers.forEach(function(trigger) {
+                        trigger.addEventListener('click', function() {
+                            var key = this.getAttribute('data-bv-tab');
+                            triggers.forEach(function(t) {
+                                t.classList.toggle('bv-tabs__trigger--active', t.getAttribute('data-bv-tab') === key);
+                                t.setAttribute('aria-selected', t.getAttribute('data-bv-tab') === key ? 'true' : 'false');
+                            });
+                            panels.forEach(function(p) {
+                                p.classList.toggle('bv-tabs__panel--active', p.getAttribute('data-bv-tab-panel') === key);
+                            });
+                        });
+                    });
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initTabs);
+            } else {
+                initTabs();
+            }
+        })();
+
+        /* BV Alert — dismiss */
+        (function() {
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.bv-alert__close');
+                if (!btn) return;
+                var alert = btn.closest('.bv-alert');
+                if (alert) {
+                    alert.style.opacity = '0';
+                    alert.style.transition = 'opacity 0.15s ease';
+                    setTimeout(function() { alert.remove(); }, 150);
+                }
+            });
+        })();
+        </script>
+        <?php
     }
 }
 

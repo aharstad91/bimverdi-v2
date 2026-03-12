@@ -1,41 +1,24 @@
 <?php
 /**
- * BIMVerdi Badge Component
+ * BIMVerdi Badge Component (shadcn-inspired)
  *
- * Renders inline badge/pill elements for status indicators,
- * categories, temagruppe labels, and type tags.
+ * Inline badge/pill for status indicators, categories, and labels.
  *
  * Variants:
- * - status: General status indicator (default)
- * - category: Subtle style with border for taxonomy/category labels
- * - temagruppe: Theme group label
- * - type: Content type indicator
- *
- * Colors:
- * green, yellow, red, gray, blue, orange, purple, teal, amber
+ * - default: Solid dark background (primary action)
+ * - secondary: Subtle gray background
+ * - destructive: Red/error styling
+ * - outline: Border only, no fill
  *
  * Usage:
  *
- * // Simple status badge
- * <?php bimverdi_badge([
- *     'text'    => 'Aktiv',
- *     'color'   => 'green',
- * ]); ?>
+ * <?php bimverdi_badge(['text' => 'Badge']); ?>
+ * <?php bimverdi_badge(['text' => 'Secondary', 'variant' => 'secondary']); ?>
+ * <?php bimverdi_badge(['text' => 'Destructive', 'variant' => 'destructive']); ?>
+ * <?php bimverdi_badge(['text' => 'Outline', 'variant' => 'outline']); ?>
  *
- * // Category badge with icon
- * <?php bimverdi_badge([
- *     'text'    => 'ByggesaksBIM',
- *     'variant' => 'category',
- *     'icon'    => 'building-2',
- * ]); ?>
- *
- * // Medium size badge
- * <?php bimverdi_badge([
- *     'text'    => 'Partner',
- *     'variant' => 'type',
- *     'color'   => 'purple',
- *     'size'    => 'medium',
- * ]); ?>
+ * // With semantic color (works with any variant)
+ * <?php bimverdi_badge(['text' => 'Aktiv', 'color' => 'green']); ?>
  *
  * @package BimVerdi_Theme
  */
@@ -47,9 +30,8 @@ if (!defined('ABSPATH')) exit;
  *
  * @param array $args Badge configuration
  *   - text (string) Badge label text
- *   - variant (string) 'status' | 'category' | 'temagruppe' | 'type' - default 'status'
- *   - color (string) 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'orange' | 'purple' | 'teal' | 'amber' - default 'gray'
- *   - size (string) 'small' | 'medium' - default 'small'
+ *   - variant (string) 'default' | 'secondary' | 'destructive' | 'outline'
+ *   - color (string) Semantic color override: 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'orange' | 'purple' | 'teal' | 'amber'
  *   - icon (string) Lucide icon name (optional)
  *   - class (string) Additional CSS classes
  * @return void
@@ -57,20 +39,36 @@ if (!defined('ABSPATH')) exit;
 function bimverdi_badge($args = []) {
     $defaults = [
         'text'    => '',
-        'variant' => 'status',    // status, category, temagruppe, type
-        'color'   => 'gray',      // green, yellow, red, gray, blue, orange, purple, teal, amber
-        'size'    => 'small',     // small, medium
-        'icon'    => null,         // Optional Lucide icon name
+        'variant' => 'default',
+        'color'   => '',
+        'icon'    => null,
         'class'   => '',
     ];
 
     $args = wp_parse_args($args, $defaults);
 
+    // Legacy variant aliases
+    $variant_map = [
+        'status'     => 'secondary',
+        'category'   => 'outline',
+        'temagruppe' => 'secondary',
+        'type'       => 'secondary',
+    ];
+    if (isset($variant_map[$args['variant']])) {
+        $args['variant'] = $variant_map[$args['variant']];
+    }
+
+    // Legacy size param — ignored (single size now), but don't break calls
+    // Legacy 'small'/'medium' sizes are accepted but not applied
+
     // Build CSS classes
     $classes = ['bv-badge'];
     $classes[] = 'bv-badge--' . $args['variant'];
-    $classes[] = 'bv-badge--' . $args['color'];
-    $classes[] = 'bv-badge--' . $args['size'];
+
+    // Semantic color overrides variant styling
+    if ($args['color']) {
+        $classes[] = 'bv-badge--' . $args['color'];
+    }
 
     if ($args['class']) {
         $classes[] = $args['class'];
@@ -81,11 +79,9 @@ function bimverdi_badge($args = []) {
     // Icon SVG
     $icon_html = '';
     if ($args['icon']) {
-        $icon_size = $args['size'] === 'medium' ? 14 : 12;
-        $icon_html = '<span class="bv-badge__icon">' . bimverdi_get_icon_svg($args['icon'], $icon_size) . '</span>';
+        $icon_html = '<span class="bv-badge__icon">' . bimverdi_get_icon_svg($args['icon'], 12) . '</span>';
     }
 
-    // Render
     echo '<span class="' . esc_attr($class_string) . '">'
         . $icon_html
         . esc_html($args['text'])

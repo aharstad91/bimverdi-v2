@@ -126,7 +126,7 @@ $tabs = [
     margin-bottom: 16px;
 }
 .tg-hero-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Familjen Grotesk', sans-serif;
     font-size: 28px;
     font-weight: 700;
     color: var(--canvas-text);
@@ -181,7 +181,7 @@ $tabs = [
     color: var(--canvas-text-secondary); cursor: pointer;
     border: none; background: none; border-bottom: 2px solid transparent;
     white-space: nowrap; transition: color 0.15s, border-color 0.15s;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Familjen Grotesk', sans-serif;
 }
 .tg-tab:hover { color: var(--canvas-text); }
 .tg-tab.active { color: var(--canvas-accent); border-bottom-color: var(--canvas-accent); font-weight: 600; }
@@ -235,7 +235,7 @@ $tabs = [
 }
 
 .section-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Familjen Grotesk', sans-serif;
     font-size: 18px;
     font-weight: 700;
     color: var(--canvas-text);
@@ -268,7 +268,7 @@ $tabs = [
     flex-wrap: nowrap;
 }
 .filter-chip {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Familjen Grotesk', sans-serif;
     font-size: 12px;
     font-weight: 500;
     padding: 5px 12px;
@@ -292,7 +292,7 @@ $tabs = [
 
 /* Sort button */
 .section-sort {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Familjen Grotesk', sans-serif;
     font-size: 12px;
     font-weight: 500;
     padding: 5px 12px;
@@ -317,7 +317,7 @@ $tabs = [
     align-items: center;
 }
 .section-search input {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Familjen Grotesk', sans-serif;
     font-size: 12px;
     padding: 5px 10px 5px 28px;
     border-radius: 8px;
@@ -432,7 +432,7 @@ $tabs = [
     margin-left: auto;
 }
 .view-toggle-btn {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Familjen Grotesk', sans-serif;
     font-size: 12px;
     font-weight: 500;
     padding: 6px 12px;

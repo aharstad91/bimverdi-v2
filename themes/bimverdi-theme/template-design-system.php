@@ -128,11 +128,20 @@ get_header();
             'breadcrumb'        => 'Breadcrumb',
             'field'             => 'Field',
             'badges'            => 'Badges',
+            'switch'            => 'Switch',
+            'tabs'              => 'Tabs',
+            'navigation-menu'   => 'Navigation Menu',
+            'table'             => 'Table',
+            'pagination'        => 'Pagination',
+            'avatar'            => 'Avatar',
+            'accordion'         => 'Accordion',
+            'card'              => 'Card',
+            'alert'             => 'Alert',
             'ikoner'            => 'Ikoner',
             'skjema'            => 'Skjema',
             'kort'              => 'Kort',
             'section-headers'   => 'Section Headers',
-            'list-items'        => 'List Items',
+            'list-items'        => 'Item',
             'empty-states'      => 'Empty States',
             'layout'            => 'Layout',
         ];
@@ -180,6 +189,42 @@ get_header();
 
         <section id="badges" class="ds-section">
             <?php get_template_part('parts/design-system/components-badges'); ?>
+        </section>
+
+        <section id="switch" class="ds-section">
+            <?php get_template_part('parts/design-system/components-switch'); ?>
+        </section>
+
+        <section id="tabs" class="ds-section">
+            <?php get_template_part('parts/design-system/components-tabs'); ?>
+        </section>
+
+        <section id="navigation-menu" class="ds-section">
+            <?php get_template_part('parts/design-system/components-navigation-menu'); ?>
+        </section>
+
+        <section id="table" class="ds-section">
+            <?php get_template_part('parts/design-system/components-table'); ?>
+        </section>
+
+        <section id="pagination" class="ds-section">
+            <?php get_template_part('parts/design-system/components-pagination'); ?>
+        </section>
+
+        <section id="avatar" class="ds-section">
+            <?php get_template_part('parts/design-system/components-avatar'); ?>
+        </section>
+
+        <section id="accordion" class="ds-section">
+            <?php get_template_part('parts/design-system/components-accordion'); ?>
+        </section>
+
+        <section id="card" class="ds-section">
+            <?php get_template_part('parts/design-system/components-card'); ?>
+        </section>
+
+        <section id="alert" class="ds-section">
+            <?php get_template_part('parts/design-system/components-alert'); ?>
         </section>
 
         <section id="ikoner" class="ds-section">

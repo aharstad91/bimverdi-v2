@@ -29,11 +29,10 @@
             wp_nav_menu(array(
                 'theme_location' => 'primary',
                 'container' => 'nav',
-                'container_class' => 'hidden md:flex items-center gap-8 ml-12',
-                'menu_class' => 'flex items-center gap-8',
+                'container_class' => 'bv-nav hidden md:flex items-center ml-8',
+                'menu_class' => 'bv-nav__list',
                 'fallback_cb' => false,
                 'depth' => 2,
-                'link_class' => 'text-sm font-medium text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors',
             ));
             ?>
             

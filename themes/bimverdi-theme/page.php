@@ -73,7 +73,7 @@ get_header(); ?>
 }
 
 .bv-page__title {
-    font-family: 'Moderat', 'Inter', system-ui, sans-serif;
+    font-family: 'Familjen Grotesk', system-ui, sans-serif;
     font-size: 2.5rem;
     font-weight: 700;
     color: #1A1A1A;
@@ -101,7 +101,7 @@ get_header(); ?>
 
 /* Prose Styling for Content */
 .bv-prose {
-    font-family: 'Moderat', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-size: 1.0625rem;
     line-height: 1.75;
     color: #1A1A1A;
