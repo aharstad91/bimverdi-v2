@@ -35,6 +35,7 @@ $demo_templates = [
     'veikart-kort'                 => 'parts/demos/veikart-kort',
     'veikart-kolonner'             => 'parts/demos/veikart-kolonner',
     'veikart-orbital'              => 'parts/demos/veikart-orbital',
+    'temagruppe-graf'              => 'parts/demos/temagruppe-graf',
 ];
 
 if (isset($demo_templates[$slug])) {
