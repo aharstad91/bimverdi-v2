@@ -229,36 +229,35 @@ $tg_colors_json = wp_json_encode($tg_colors);
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-    /* ═══ Full-screen dark constellation layout ═══ */
+    /* ═══ Full-screen light layout ═══ */
     #content { display: contents; }
-    body footer, .site-header, #wpadminbar { /* hide chrome for immersive mode */ }
 
     .tg-wrap {
         display: flex;
         height: calc(100vh - 64px - 40px);
         font-family: 'DM Sans', system-ui, sans-serif;
-        background: #0D0F12;
+        background: #F7F5EF;
     }
 
     /* ═══ Sidebar — editorial, spacious ═══ */
     .tg-sidebar {
         width: 380px;
-        background: #111318;
-        border-right: 1px solid rgba(255,255,255,0.06);
+        background: #fff;
+        border-right: 1px solid #E8E4DA;
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
-        color: #C8C5BD;
+        color: #5A5A5A;
     }
     .tg-sidebar-inner {
         padding: 32px 28px;
         flex: 1;
         overflow-y: auto;
         scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.1) transparent;
+        scrollbar-color: rgba(0,0,0,0.1) transparent;
     }
     .tg-sidebar-inner::-webkit-scrollbar { width: 4px; }
-    .tg-sidebar-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .tg-sidebar-inner::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
 
     .tg-eyebrow {
         font-family: 'JetBrains Mono', monospace;
@@ -272,7 +271,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
     .tg-sidebar h2 {
         font-size: 22px;
         font-weight: 300;
-        color: #F0EDE6;
+        color: #1A1A1A;
         margin: 0;
         line-height: 1.3;
         letter-spacing: -0.02em;
@@ -282,7 +281,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
     }
     .tg-subtitle {
         font-size: 13px;
-        color: #7A776E;
+        color: #888;
         margin: 8px 0 0 0;
         line-height: 1.6;
         font-weight: 300;
@@ -300,17 +299,17 @@ $tg_colors_json = wp_json_encode($tg_colors);
         align-items: center;
         gap: 6px;
         padding: 6px 12px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: #F7F5EF;
+        border: 1px solid #E8E4DA;
         border-radius: 20px;
         font-size: 12px;
-        color: #8A8780;
+        color: #888;
     }
     .tg-stat-pill strong {
         font-family: 'JetBrains Mono', monospace;
         font-weight: 500;
         font-size: 13px;
-        color: #F0EDE6;
+        color: #1A1A1A;
     }
 
     .tg-section-label {
@@ -319,7 +318,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
         font-weight: 500;
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #5A574F;
+        color: #999;
         margin: 28px 0 10px 0;
     }
 
@@ -341,7 +340,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
         border: 1.5px solid transparent;
         transition: all 0.2s ease;
         user-select: none;
-        background: rgba(255,255,255,0.04);
+        background: #F7F5EF;
     }
     .tg-chip input { display: none; }
     .tg-chip .chip-dot {
@@ -353,11 +352,11 @@ $tg_colors_json = wp_json_encode($tg_colors);
     .tg-chip .chip-dot--rect { border-radius: 2px; }
     .tg-chip--active {
         border-color: currentColor;
-        background: color-mix(in srgb, currentColor 8%, transparent);
+        background: color-mix(in srgb, currentColor 8%, #fff);
     }
     .tg-chip--inactive {
         opacity: 0.3;
-        background: rgba(255,255,255,0.02) !important;
+        background: #F7F5EF !important;
         border-color: transparent !important;
     }
 
@@ -365,15 +364,15 @@ $tg_colors_json = wp_json_encode($tg_colors);
     .tg-search {
         width: 100%;
         padding: 10px 12px 10px 36px;
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 1px solid #E8E4DA;
         border-radius: 10px;
         font-size: 13px;
         font-family: 'DM Sans', system-ui, sans-serif;
-        background: rgba(255,255,255,0.03) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px center no-repeat;
-        color: #F0EDE6;
+        background: #F7F5EF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px center no-repeat;
+        color: #1A1A1A;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .tg-search::placeholder { color: #5A574F; }
+    .tg-search::placeholder { color: #B0ADA5; }
     .tg-search:focus {
         outline: none;
         border-color: #FF8B5E;
@@ -382,32 +381,32 @@ $tg_colors_json = wp_json_encode($tg_colors);
 
     .tg-hint {
         font-size: 11px;
-        color: #3D3B36;
+        color: #B0ADA5;
         line-height: 1.5;
         margin: 10px 0 0 0;
     }
     .tg-hr {
         border: none;
-        border-top: 1px solid rgba(255,255,255,0.05);
+        border-top: 1px solid #E8E4DA;
         margin: 24px 0;
     }
 
     /* Detail card */
     .tg-card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: #F7F5EF;
+        border: 1px solid #E8E4DA;
         border-radius: 14px;
         padding: 20px;
         transition: all 0.3s ease;
     }
     .tg-card--highlight {
-        border-color: rgba(255, 139, 94, 0.3);
-        background: rgba(255, 139, 94, 0.04);
+        border-color: rgba(255, 139, 94, 0.4);
+        background: rgba(255, 139, 94, 0.05);
     }
     .tg-card h3 {
         font-size: 15px;
         font-weight: 600;
-        color: #F0EDE6;
+        color: #1A1A1A;
         margin: 0 0 6px 0;
         line-height: 1.4;
     }
@@ -425,7 +424,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
     }
     .tg-card-desc {
         font-size: 13px;
-        color: #7A776E;
+        color: #888;
         line-height: 1.6;
         margin: 0 0 16px 0;
         font-weight: 300;
@@ -436,10 +435,10 @@ $tg_colors_json = wp_json_encode($tg_colors);
         gap: 6px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 12px;
-        color: #5A574F;
+        color: #999;
         margin-bottom: 16px;
         padding-bottom: 16px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid #E8E4DA;
     }
     .tg-card-meta strong {
         color: #FF8B5E;
@@ -452,14 +451,14 @@ $tg_colors_json = wp_json_encode($tg_colors);
         font-weight: 500;
         transition: color 0.15s;
     }
-    .tg-card a:hover { color: #ffaa85; text-decoration: underline; }
+    .tg-card a:hover { color: #e6764a; text-decoration: underline; }
     .tg-card-link-btn {
         display: inline-flex;
         align-items: center;
         gap: 4px;
         padding: 7px 14px;
         border-radius: 8px;
-        background: rgba(255, 139, 94, 0.1);
+        background: rgba(255, 139, 94, 0.08);
         border: 1px solid rgba(255, 139, 94, 0.2);
         margin-top: 4px;
         font-size: 12px;
@@ -470,10 +469,10 @@ $tg_colors_json = wp_json_encode($tg_colors);
         font-weight: 500;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #5A574F;
+        color: #999;
         margin: 16px 0 8px 0;
         padding-top: 16px;
-        border-top: 1px solid rgba(255,255,255,0.05);
+        border-top: 1px solid #E8E4DA;
     }
     .tg-card-neighbors .tg-neighbor {
         display: inline-block;
@@ -481,23 +480,23 @@ $tg_colors_json = wp_json_encode($tg_colors);
         margin: 2px 3px 2px 0;
         border-radius: 6px;
         font-size: 11px;
-        background: rgba(255,255,255,0.05);
-        color: #8A8780;
+        background: rgba(0,0,0,0.04);
+        color: #5A5A5A;
         cursor: pointer;
         transition: all 0.15s;
         border: 1px solid transparent;
     }
     .tg-card-neighbors .tg-neighbor:hover {
-        background: rgba(255, 139, 94, 0.15);
+        background: rgba(255, 139, 94, 0.1);
         border-color: rgba(255, 139, 94, 0.3);
         color: #FF8B5E;
     }
 
-    /* ═══ Viz area — dark canvas ═══ */
+    /* ═══ Viz area — light canvas ═══ */
     .tg-viz {
         flex: 1;
         position: relative;
-        background: radial-gradient(ellipse at 50% 50%, #151820 0%, #0D0F12 70%);
+        background: radial-gradient(ellipse at 50% 50%, #FDFCF9 0%, #F2EFE8 70%);
         overflow: hidden;
     }
 
@@ -507,19 +506,19 @@ $tg_colors_json = wp_json_encode($tg_colors);
     .tg-node circle, .tg-node rect, .tg-node polygon {
         transition: opacity 0.4s ease, stroke-width 0.25s ease, filter 0.4s ease;
     }
-    .tg-node circle { stroke: rgba(255,255,255,0.15); stroke-width: 1.5px; }
-    .tg-node rect { rx: 3; ry: 3; stroke: rgba(255,255,255,0.12); stroke-width: 1px; }
-    .tg-node polygon { stroke: rgba(255,255,255,0.12); stroke-width: 1px; }
+    .tg-node circle { stroke: rgba(0,0,0,0.08); stroke-width: 1.5px; }
+    .tg-node rect { rx: 3; ry: 3; stroke: rgba(0,0,0,0.06); stroke-width: 1px; }
+    .tg-node polygon { stroke: rgba(0,0,0,0.06); stroke-width: 1px; }
 
     /* Labels — hidden by default, shown for temagrupper */
     .tg-node text {
         font-family: 'DM Sans', system-ui, sans-serif;
-        fill: rgba(240, 237, 230, 0.9);
+        fill: #1A1A1A;
         pointer-events: none;
         transition: opacity 0.4s ease;
     }
-    .tg-node--entity text { opacity: 0; } /* Hidden for entities */
-    .tg-node--entity:hover text { opacity: 1; } /* Show on hover */
+    .tg-node--entity text { opacity: 0; }
+    .tg-node--entity:hover text { opacity: 1; }
 
     .tg-link {
         transition: opacity 0.4s ease, stroke-width 0.3s ease;
@@ -528,21 +527,20 @@ $tg_colors_json = wp_json_encode($tg_colors);
     /* Dimmed state */
     .tg-node--dimmed circle,
     .tg-node--dimmed rect,
-    .tg-node--dimmed polygon { opacity: 0.06; }
+    .tg-node--dimmed polygon { opacity: 0.08; }
     .tg-node--dimmed text { opacity: 0 !important; }
-    .tg-link--dimmed { opacity: 0.02 !important; }
+    .tg-link--dimmed { opacity: 0.03 !important; }
 
     /* Highlighted state — glow but NO bulk labels (hover-only for entities) */
     .tg-link--highlighted { stroke-width: 2.5px !important; opacity: 0.7 !important; }
     .tg-node--highlighted circle,
     .tg-node--highlighted rect,
     .tg-node--highlighted polygon {
-        stroke: rgba(255,255,255,0.5);
+        stroke: rgba(0,0,0,0.2);
         stroke-width: 2px;
-        filter: drop-shadow(0 0 8px currentColor);
+        filter: drop-shadow(0 0 6px currentColor);
         opacity: 1 !important;
     }
-    /* Only temagruppe labels auto-show; entity labels only on hover */
     .tg-node--highlighted.tg-node--tg text { opacity: 1 !important; }
     .tg-node--highlighted.tg-node--entity text { opacity: 0; }
     .tg-node--highlighted.tg-node--entity:hover text { opacity: 1 !important; }
@@ -553,15 +551,15 @@ $tg_colors_json = wp_json_encode($tg_colors);
     .tg-node--selected polygon {
         stroke: #FF8B5E;
         stroke-width: 3px;
-        filter: drop-shadow(0 0 16px rgba(255,139,94,0.5));
+        filter: drop-shadow(0 0 12px rgba(255,139,94,0.4));
     }
     .tg-node--selected text { opacity: 1 !important; }
 
-    /* Temagruppe glow */
+    /* Temagruppe subtle shadow */
     .tg-node--tg circle {
-        filter: drop-shadow(0 0 12px currentColor);
+        filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
         stroke-width: 2px;
-        stroke: rgba(255,255,255,0.2);
+        stroke: rgba(255,255,255,0.6);
     }
 
     .hidden { display: none; }
@@ -570,8 +568,8 @@ $tg_colors_json = wp_json_encode($tg_colors);
     .tg-tooltip {
         position: absolute;
         pointer-events: none;
-        background: rgba(20, 22, 28, 0.95);
-        color: #F0EDE6;
+        background: rgba(255, 255, 255, 0.96);
+        color: #1A1A1A;
         padding: 8px 14px;
         border-radius: 8px;
         font-size: 12px;
@@ -581,9 +579,9 @@ $tg_colors_json = wp_json_encode($tg_colors);
         z-index: 10;
         max-width: 300px;
         white-space: normal;
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 1px solid #E8E4DA;
         backdrop-filter: blur(12px);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         line-height: 1.4;
     }
     .tg-tooltip strong { color: #FF8B5E; font-weight: 600; }
@@ -595,9 +593,9 @@ $tg_colors_json = wp_json_encode($tg_colors);
         bottom: 24px;
         right: 24px;
         padding: 10px 20px;
-        background: rgba(255,255,255,0.08);
-        color: #C8C5BD;
-        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.9);
+        color: #5A5A5A;
+        border: 1px solid #E8E4DA;
         border-radius: 10px;
         font-size: 12px;
         font-family: 'DM Sans', system-ui, sans-serif;
@@ -607,22 +605,24 @@ $tg_colors_json = wp_json_encode($tg_colors);
         transition: all 0.3s ease;
         z-index: 5;
         backdrop-filter: blur(8px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
     .tg-reset--visible { opacity: 1; }
-    .tg-reset:hover { background: rgba(255,255,255,0.12); color: #F0EDE6; }
+    .tg-reset:hover { background: #fff; color: #1A1A1A; }
 
     /* Legend */
     .tg-legend {
         position: absolute;
         top: 20px;
         right: 20px;
-        background: rgba(17, 19, 24, 0.85);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #E8E4DA;
         border-radius: 12px;
         padding: 16px 20px;
         font-size: 11px;
         z-index: 5;
         backdrop-filter: blur(12px);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
     }
     .tg-legend-title {
         font-family: 'JetBrains Mono', monospace;
@@ -630,7 +630,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
         font-size: 9px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #5A574F;
+        color: #999;
         margin-bottom: 10px;
     }
     .tg-legend-item {
@@ -638,7 +638,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
         align-items: center;
         gap: 10px;
         margin: 6px 0;
-        color: #8A8780;
+        color: #5A5A5A;
         font-size: 11px;
     }
     .tg-legend-dot {
@@ -646,11 +646,10 @@ $tg_colors_json = wp_json_encode($tg_colors);
         height: 8px;
         border-radius: 50%;
         flex-shrink: 0;
-        box-shadow: 0 0 6px currentColor;
     }
     .tg-legend-sep {
         border: none;
-        border-top: 1px solid rgba(255,255,255,0.05);
+        border-top: 1px solid #E8E4DA;
         margin: 10px 0;
     }
 
@@ -661,15 +660,15 @@ $tg_colors_json = wp_json_encode($tg_colors);
         left: 24px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
-        color: #3D3B36;
+        color: #B0ADA5;
         z-index: 5;
     }
-    .tg-count-badge span { color: #5A574F; }
+    .tg-count-badge span { color: #999; }
 
     /* Mobile */
     @media (max-width: 768px) {
         .tg-wrap { flex-direction: column; height: auto; }
-        .tg-sidebar { width: 100%; max-height: 300px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .tg-sidebar { width: 100%; max-height: 300px; border-right: none; border-bottom: 1px solid #E8E4DA; }
         .tg-viz { height: 70vh; }
         .tg-legend { display: none; }
     }
@@ -850,7 +849,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
             return sNode ? getNodeColor(sNode) : '#333';
         })
         .attr('stroke-width', 0.8)
-        .attr('stroke-opacity', 0.12);
+        .attr('stroke-opacity', 0.2);
 
     var node = g.selectAll('.tg-node')
         .data(DATA.nodes).enter().append('g')
@@ -908,7 +907,7 @@ $tg_colors_json = wp_json_encode($tg_colors);
         .attr('y', function(d) { return d.type === 'temagruppe' ? 5 : 3; })
         .attr('font-size', function(d) { return d.type === 'temagruppe' ? '13px' : '9px'; })
         .attr('font-weight', function(d) { return d.type === 'temagruppe' ? '600' : '400'; })
-        .attr('fill', function(d) { return d.type === 'temagruppe' ? '#F0EDE6' : 'rgba(240,237,230,0.8)'; });
+        .attr('fill', function(d) { return d.type === 'temagruppe' ? '#1A1A1A' : '#5A5A5A'; });
 
     /* ═══ Tooltip ═══ */
     var tooltipEl = document.getElementById('tg-tooltip');
