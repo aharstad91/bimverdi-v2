@@ -555,9 +555,8 @@ $tg_colors_json = wp_json_encode($tg_colors);
     }
     .tg-node--selected text { opacity: 1 !important; }
 
-    /* Temagruppe subtle shadow */
+    /* Temagruppe node */
     .tg-node--tg circle {
-        filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
         stroke-width: 2px;
         stroke: rgba(255,255,255,0.6);
     }
