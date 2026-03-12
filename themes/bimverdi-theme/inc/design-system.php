@@ -291,117 +291,182 @@ class BIM_Verdi_Design_System {
                ============================================ */
             
             /* ============================================
-               BIMVerdi Button Component (Figma Design)
-               Height: 36px, Border Radius: 8px
-               Font: Inter Medium, 14px/20px, tracking -0.15px
+               BIMVerdi Button Component (shadcn-inspired)
+               Variants: default, secondary, outline, ghost, destructive, link
+               Sizes: sm (28px), default (32px), lg (36px), icon (32x32)
                ============================================ */
-            
+
             .bv-btn {
-                /* Base styles matching Figma spec */
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 gap: 8px;
-                height: 36px;
-                padding: 0 16px;
-                border-radius: 8px;
+                height: 32px;
+                padding: 0 12px;
+                border-radius: 6px;
                 font-family: 'Inter', var(--font-family);
                 font-weight: 500;
                 font-size: 14px;
                 line-height: 20px;
-                letter-spacing: -0.15px;
+                letter-spacing: -0.01em;
                 text-decoration: none;
                 cursor: pointer;
-                transition: all 0.15s ease;
+                transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
                 white-space: nowrap;
                 border: 1px solid transparent;
             }
-            
+
             .bv-btn:focus-visible {
-                outline: 2px solid var(--color-primary, #FF8B5E);
-                outline-offset: 2px;
+                outline: none;
+                box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #1A1A1A;
             }
-            
-            /* Primary variant: Filled black (#1a1a1a) */
+
+            /* Default variant (was: primary) — solid dark fill */
+            .bv-btn--default,
             .bv-btn--primary {
-                background-color: #1A1A1A;
-                color: #FFFFFF;
-                border-color: #1A1A1A;
+                background-color: #18181B;
+                color: #FAFAFA;
+                border-color: #18181B;
             }
-            
+
+            .bv-btn--default:hover,
             .bv-btn--primary:hover {
-                background-color: #333333;
-                border-color: #333333;
+                background-color: #18181BE6; /* 90% opacity */
             }
-            
+
+            .bv-btn--default:active,
             .bv-btn--primary:active {
-                background-color: #000000;
-                border-color: #000000;
+                background-color: #09090B;
             }
-            
-            /* Secondary variant: Outline with black border */
+
+            /* Secondary variant — muted fill */
             .bv-btn--secondary {
-                background-color: #FFFFFF;
-                color: #1A1A1A;
-                border-color: #1A1A1A;
+                background-color: #F4F4F5;
+                color: #18181B;
+                border-color: #F4F4F5;
             }
-            
+
             .bv-btn--secondary:hover {
-                background-color: #F5F5F5;
+                background-color: #E4E4E7;
+                border-color: #E4E4E7;
             }
-            
+
             .bv-btn--secondary:active {
-                background-color: #EBEBEB;
+                background-color: #D4D4D8;
+                border-color: #D4D4D8;
             }
-            
-            /* Tertiary/Ghost variant: No border, subtle hover */
+
+            /* Outline variant — border, transparent bg */
+            .bv-btn--outline {
+                background-color: transparent;
+                color: #18181B;
+                border-color: #E4E4E7;
+            }
+
+            .bv-btn--outline:hover {
+                background-color: #F4F4F5;
+                color: #18181B;
+            }
+
+            .bv-btn--outline:active {
+                background-color: #E4E4E7;
+            }
+
+            /* Ghost variant (was: tertiary) — no border, subtle hover */
+            .bv-btn--ghost,
             .bv-btn--tertiary {
                 background-color: transparent;
-                color: #1A1A1A;
+                color: #18181B;
                 border-color: transparent;
             }
-            
+
+            .bv-btn--ghost:hover,
             .bv-btn--tertiary:hover {
-                background-color: #F5F5F5;
+                background-color: #F4F4F5;
+                color: #18181B;
             }
-            
-            /* Danger variant */
+
+            /* Destructive variant (was: danger) — red fill */
+            .bv-btn--destructive,
             .bv-btn--danger {
                 background-color: #DC2626;
-                color: #FFFFFF;
+                color: #FAFAFA;
                 border-color: #DC2626;
             }
-            
+
+            .bv-btn--destructive:hover,
             .bv-btn--danger:hover {
+                background-color: #DC2626E6; /* 90% opacity */
+            }
+
+            .bv-btn--destructive:active,
+            .bv-btn--danger:active {
                 background-color: #B91C1C;
                 border-color: #B91C1C;
             }
-            
+
+            /* Link variant — text only, underline on hover */
+            .bv-btn--link {
+                background-color: transparent;
+                color: #18181B;
+                border-color: transparent;
+                height: auto;
+                padding: 0;
+                text-underline-offset: 4px;
+            }
+
+            .bv-btn--link:hover {
+                text-decoration: underline;
+            }
+
             /* Size variants */
+            .bv-btn--sm,
             .bv-btn--small {
                 height: 28px;
-                padding: 0 12px;
+                padding: 0 10px;
                 font-size: 13px;
                 gap: 6px;
+                border-radius: 6px;
             }
-            
+
+            .bv-btn--default-size,
             .bv-btn--medium {
+                height: 32px;
+                padding: 0 12px;
+            }
+
+            .bv-btn--lg,
+            .bv-btn--large {
                 height: 36px;
                 padding: 0 16px;
+                gap: 8px;
+                border-radius: 6px;
             }
-            
-            .bv-btn--large {
-                height: 44px;
-                padding: 0 24px;
-                font-size: 15px;
-                gap: 10px;
+
+            /* Icon-only size — square button */
+            .bv-btn--icon {
+                height: 32px;
+                width: 32px;
+                padding: 0;
             }
-            
+
+            .bv-btn--icon-sm {
+                height: 28px;
+                width: 28px;
+                padding: 0;
+            }
+
+            .bv-btn--icon-lg {
+                height: 36px;
+                width: 36px;
+                padding: 0;
+            }
+
             /* Full width */
             .bv-btn--full-width {
                 width: 100%;
             }
-            
+
             /* Disabled state */
             .bv-btn--disabled,
             .bv-btn:disabled {
@@ -409,30 +474,39 @@ class BIM_Verdi_Design_System {
                 cursor: not-allowed;
                 pointer-events: none;
             }
-            
-            /* Icon styling */
+
+            /* Icon styling inside buttons */
             .bv-btn__icon {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 flex-shrink: 0;
             }
-            
-            .bv-btn__icon svg {
+
+            .bv-btn__icon svg,
+            .bv-btn svg {
                 width: 16px;
                 height: 16px;
+                pointer-events: none;
+                flex-shrink: 0;
             }
-            
-            .bv-btn--small .bv-btn__icon svg {
+
+            .bv-btn--sm .bv-btn__icon svg,
+            .bv-btn--small .bv-btn__icon svg,
+            .bv-btn--sm svg,
+            .bv-btn--small svg {
                 width: 14px;
                 height: 14px;
             }
-            
-            .bv-btn--large .bv-btn__icon svg {
+
+            .bv-btn--lg .bv-btn__icon svg,
+            .bv-btn--large .bv-btn__icon svg,
+            .bv-btn--lg svg,
+            .bv-btn--large svg {
                 width: 18px;
                 height: 18px;
             }
-            
+
             .bv-btn__text {
                 display: inline-block;
             }

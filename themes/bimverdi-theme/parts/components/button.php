@@ -1,42 +1,49 @@
 <?php
 /**
- * BIMVerdi Button Component
- * 
- * Implements the Figma button design with two variants:
- * - primary: Filled black (#1a1a1a) background, white text
- * - secondary: Outline with black border, black text, white background
- * 
- * Design specs from Figma:
- * - Height: 36px
- * - Border radius: 8px
- * - Font: Inter Medium, 14px, leading 20px, tracking -0.15px
- * - Icon: 16x16px, positioned left with 12px padding
- * - Padding: 12px horizontal (with icon), centered text
- * 
+ * BIMVerdi Button Component (shadcn-inspired)
+ *
+ * Variants: default, secondary, outline, ghost, destructive, link
+ * Sizes: sm, default, lg, icon
+ *
  * Usage:
- * 
- * // Simple button
+ *
+ * // Default (solid dark)
+ * <?php bimverdi_button(['text' => 'Lagre']); ?>
+ *
+ * // Outline
  * <?php bimverdi_button([
- *     'text'    => 'Lagre',
- *     'variant' => 'primary',
- *     'href'    => '/save/'
+ *     'text'    => 'Avbryt',
+ *     'variant' => 'outline',
  * ]); ?>
- * 
- * // Button with icon
+ *
+ * // Destructive
  * <?php bimverdi_button([
- *     'text'    => 'Rediger',
- *     'variant' => 'secondary',
- *     'icon'    => 'square-pen',
- *     'href'    => '/edit/'
+ *     'text'    => 'Slett',
+ *     'variant' => 'destructive',
+ *     'icon'    => 'trash-2',
  * ]); ?>
- * 
- * // Submit button
+ *
+ * // Ghost
  * <?php bimverdi_button([
- *     'text'    => 'Send inn',
- *     'variant' => 'primary',
- *     'type'    => 'submit'
+ *     'text'    => 'Mer',
+ *     'variant' => 'ghost',
  * ]); ?>
- * 
+ *
+ * // Link
+ * <?php bimverdi_button([
+ *     'text'    => 'Les mer',
+ *     'variant' => 'link',
+ *     'href'    => '/about/',
+ * ]); ?>
+ *
+ * // Icon-only
+ * <?php bimverdi_button([
+ *     'icon'    => 'plus',
+ *     'variant' => 'outline',
+ *     'size'    => 'icon',
+ *     'aria_label' => 'Legg til',
+ * ]); ?>
+ *
  * @package BimVerdi_Theme
  */
 
@@ -44,11 +51,13 @@ if (!defined('ABSPATH')) exit;
 
 /**
  * Render a button component
- * 
+ *
  * @param array $args Button configuration
  *   - text (string) Button label text
- *   - variant (string) 'primary' | 'secondary' - default 'primary'
- *   - size (string) 'small' | 'medium' | 'large' - default 'medium'
+ *   - variant (string) 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'link'
+ *     Legacy aliases: 'primary' → 'default', 'tertiary' → 'ghost', 'danger' → 'destructive'
+ *   - size (string) 'sm' | 'default' | 'lg' | 'icon' | 'icon-sm' | 'icon-lg'
+ *     Legacy aliases: 'small' → 'sm', 'medium' → 'default', 'large' → 'lg'
  *   - icon (string) Lucide icon name (optional)
  *   - icon_position (string) 'left' | 'right' - default 'left'
  *   - href (string) URL for link button (renders as <a>)
@@ -59,14 +68,15 @@ if (!defined('ABSPATH')) exit;
  *   - onclick (string) JavaScript onclick handler
  *   - target (string) Link target (_blank, etc)
  *   - full_width (bool) Make button 100% width
+ *   - aria_label (string) Accessible label (for icon-only buttons)
  * @return void
  */
 function bimverdi_button($args = []) {
     // Defaults
     $defaults = [
         'text'          => '',
-        'variant'       => 'primary',  // primary, secondary
-        'size'          => 'medium',   // small, medium, large
+        'variant'       => 'default',  // default, secondary, outline, ghost, destructive, link
+        'size'          => 'default',  // sm, default, lg, icon, icon-sm, icon-lg
         'icon'          => null,
         'icon_position' => 'left',
         'href'          => null,
@@ -77,14 +87,39 @@ function bimverdi_button($args = []) {
         'onclick'       => '',
         'target'        => '',
         'full_width'    => false,
+        'aria_label'    => '',
     ];
-    
+
     $args = wp_parse_args($args, $defaults);
-    
+
+    // Legacy variant aliases (backward compat)
+    $variant_map = [
+        'primary'  => 'default',
+        'tertiary' => 'ghost',
+        'danger'   => 'destructive',
+    ];
+    if (isset($variant_map[$args['variant']])) {
+        $args['variant'] = $variant_map[$args['variant']];
+    }
+
+    // Legacy size aliases (backward compat)
+    $size_map = [
+        'small'  => 'sm',
+        'medium' => 'default',
+        'large'  => 'lg',
+    ];
+    if (isset($size_map[$args['size']])) {
+        $args['size'] = $size_map[$args['size']];
+    }
+
     // Build CSS classes
     $classes = ['bv-btn'];
     $classes[] = 'bv-btn--' . $args['variant'];
-    $classes[] = 'bv-btn--' . $args['size'];
+
+    // Only add size class if not default (base styles handle default)
+    if ($args['size'] !== 'default') {
+        $classes[] = 'bv-btn--' . $args['size'];
+    }
     
     if ($args['full_width']) {
         $classes[] = 'bv-btn--full-width';
@@ -116,23 +151,44 @@ function bimverdi_button($args = []) {
         $attrs[] = 'disabled';
         $attrs[] = 'aria-disabled="true"';
     }
-    
+
+    if ($args['aria_label']) {
+        $attrs[] = 'aria-label="' . esc_attr($args['aria_label']) . '"';
+    }
+
+    // Icon size based on button size
+    $icon_size = 16;
+    if (in_array($args['size'], ['sm', 'icon-sm'])) {
+        $icon_size = 14;
+    } elseif (in_array($args['size'], ['lg', 'icon-lg'])) {
+        $icon_size = 18;
+    }
+
     // Icon SVG
     $icon_html = '';
     if ($args['icon']) {
-        $icon_html = bimverdi_get_icon_svg($args['icon'], 16);
+        $icon_html = bimverdi_get_icon_svg($args['icon'], $icon_size);
     }
-    
+
+    // Icon-only buttons: no text wrapper needed
+    $is_icon_only = str_starts_with($args['size'], 'icon') || ($args['icon'] && empty($args['text']));
+
     // Build inner content
     $inner = '';
-    if ($icon_html && $args['icon_position'] === 'left') {
+    if ($is_icon_only && $icon_html) {
+        $inner = $icon_html;
+    } elseif ($icon_html && $args['icon_position'] === 'left') {
         $inner .= '<span class="bv-btn__icon">' . $icon_html . '</span>';
     }
     
-    $inner .= '<span class="bv-btn__text">' . esc_html($args['text']) . '</span>';
-    
-    if ($icon_html && $args['icon_position'] === 'right') {
-        $inner .= '<span class="bv-btn__icon">' . $icon_html . '</span>';
+    if (!$is_icon_only) {
+        if ($args['text']) {
+            $inner .= '<span class="bv-btn__text">' . esc_html($args['text']) . '</span>';
+        }
+
+        if ($icon_html && $args['icon_position'] === 'right') {
+            $inner .= '<span class="bv-btn__icon">' . $icon_html . '</span>';
+        }
     }
     
     // Render as link or button
