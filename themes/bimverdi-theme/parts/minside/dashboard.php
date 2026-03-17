@@ -528,17 +528,17 @@ if ($company_id) {
                 <?php echo bimverdi_icon('user', 28, '#888888'); ?>
             </div>
             <h3 class="text-lg font-semibold text-[#111827] mb-2">
-                <?php printf(__('Velkommen til Min Side, %s', 'bimverdi'), esc_html($current_user->display_name)); ?>
+                <?php printf(__('Velkommen til min side, %s', 'bimverdi'), esc_html($current_user->display_name)); ?>
             </h3>
-            <p class="text-sm text-[#57534E]">
-                <?php _e('Du har en personlig BIM Verdi-konto. Her er hva du kan gjøre.', 'bimverdi'); ?>
+            <p class="text-sm text-[#57534E] max-w-md mx-auto">
+                <?php _e('Her kan du bruke og vedlikeholde en gratis, personlig brukerprofil. Velg «Registrer foretak» under hvis du vil sjekke om din arbeidsgiver allerede er deltaker eller om du vil oppgradere til betalende deltaker.', 'bimverdi'); ?>
             </p>
         </div>
 
         <!-- Section A: What you can do now (free) -->
         <div class="mb-6">
             <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-4">
-                <?php _e('Tilgjengelig for deg nå', 'bimverdi'); ?>
+                <?php _e('Tilgjengelig for deg som gratis bruker', 'bimverdi'); ?>
             </h4>
             <div class="space-y-3">
                 <a href="<?php echo esc_url(home_url('/arrangementer/')); ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F7F5EF] transition-colors group">
@@ -555,8 +555,8 @@ if ($company_id) {
                         <?php echo bimverdi_icon('search', 20); ?>
                     </span>
                     <div>
-                        <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Kataloger', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#5A5A5A]"><?php _e('Utforsk verktøy- og kompetansekatalogen', 'bimverdi'); ?></p>
+                        <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Kunnskapskilder', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#5A5A5A]"><?php _e('Registrér kunnskapskilder som du mener er viktige', 'bimverdi'); ?></p>
                     </div>
                 </a>
                 <a href="<?php echo esc_url(home_url('/nyheter/')); ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F7F5EF] transition-colors group">
@@ -575,9 +575,12 @@ if ($company_id) {
 
         <!-- Section B: What foretak unlocks -->
         <div class="my-6">
-            <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-4">
-                <?php _e('Med foretak får du også', 'bimverdi'); ?>
+            <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
+                <?php _e('Bli deltaker', 'bimverdi'); ?>
             </h4>
+            <p class="text-xs text-[#5A5A5A] mb-4">
+                <?php _e('Som betalende deltaker får du også tilgang til tjenestene under. Velg «Registrer foretak» under for å sjekke om din arbeidsgiver allerede er deltaker — eller om du vil oppgradere til betalende deltaker.', 'bimverdi'); ?>
+            </p>
             <div class="space-y-3">
                 <div class="flex items-center gap-3 p-3">
                     <span class="flex-shrink-0 text-[#D6D1C6]">

@@ -20,6 +20,12 @@
     });
     
     function initBrregAutocomplete() {
+        // Hide registration fields until org.nr check confirms company is not yet registered
+        const regFields = document.getElementById('bv-registration-fields');
+        const submitWrap = document.getElementById('bv-submit-section');
+        if (regFields) regFields.style.display = 'none';
+        if (submitWrap) submitWrap.style.display = 'none';
+
         // Find the company name field - primary search field
         // Supports both plain HTML form (id="bedriftsnavn") and GF Form 2 (input_2_2)
         const foretakField = document.querySelector(
@@ -103,37 +109,20 @@
     async function lookupByOrgnr(orgnr, inputField) {
         try {
             if (typeof bimverdiBrreg === 'undefined') return;
-            
+
             const response = await fetch(
                 `${bimverdiBrreg.restUrl}company/${orgnr}`,
-                {
-                    headers: {
-                        'X-WP-Nonce': bimverdiBrreg.nonce
-                    }
-                }
+                { headers: { 'X-WP-Nonce': bimverdiBrreg.nonce } }
             );
-            
             const data = await response.json();
-            
+
             if (data.success && data.company) {
-                // Check if already registered
                 const checkResponse = await fetch(
                     `${bimverdiBrreg.restUrl}check-registered/${orgnr}`,
-                    {
-                        headers: {
-                            'X-WP-Nonce': bimverdiBrreg.nonce
-                        }
-                    }
+                    { headers: { 'X-WP-Nonce': bimverdiBrreg.nonce } }
                 );
                 const checkData = await checkResponse.json();
-                
-                if (checkData.is_registered) {
-                    showWarningMessage(inputField, `Dette foretaket er allerede registrert: ${checkData.foretak_name}`);
-                    return;
-                }
-                
-                fillFormFields(data.company);
-                showSuccessMessage(inputField, data.company.navn);
+                await handleRegistrationCheck(checkData, data.company, inputField, null);
             }
         } catch (error) {
             console.error('BRreg lookup error:', error);
@@ -283,36 +272,20 @@
     }
     
     async function selectCompany(company, inputField, container, orgnrField) {
-        // First check if already registered
         try {
             const checkResponse = await fetch(
                 `${bimverdiBrreg.restUrl}check-registered/${company.orgnr}`,
-                {
-                    headers: {
-                        'X-WP-Nonce': bimverdiBrreg.nonce
-                    }
-                }
+                { headers: { 'X-WP-Nonce': bimverdiBrreg.nonce } }
             );
-            
             const checkData = await checkResponse.json();
-            
-            if (checkData.is_registered) {
-                showWarningMessage(inputField, `Dette foretaket er allerede registrert i BIM Verdi: ${checkData.foretak_name}`);
-                hideResults(container);
-                return;
-            }
+            await handleRegistrationCheck(checkData, company, inputField, container);
         } catch (error) {
             console.error('Check registered error:', error);
+            // Fallback: fill form and continue
+            fillFormFields(company);
+            hideResults(container);
+            showSuccessMessage(inputField, company.navn);
         }
-        
-        // Fill form fields with all available data
-        fillFormFields(company);
-        
-        // Hide autocomplete
-        hideResults(container);
-        
-        // Show success message
-        showSuccessMessage(inputField, company.navn);
     }
     
     function fillFormFields(company) {
@@ -380,6 +353,78 @@
         }, 100);
     }
     
+    /**
+     * Handle the result from check-registered endpoint.
+     * Shows the appropriate status message and shows/hides registration fields.
+     */
+    async function handleRegistrationCheck(checkData, brregCompany, inputField, container) {
+        if (container) hideResults(container);
+        hideStatusMessages();
+
+        if (checkData.is_registered && checkData.is_deltaker) {
+            // Already a paying member — show green box and auto-join
+            showExistsMessage(checkData.foretak_name, checkData.hovedkontakt_name);
+
+            if (typeof bimverdiBrreg !== 'undefined' && bimverdiBrreg.ajaxUrl && checkData.foretak_id) {
+                try {
+                    const body = new FormData();
+                    body.append('action', 'bimverdi_auto_join_foretak');
+                    body.append('nonce', bimverdiBrreg.ajaxNonce);
+                    body.append('foretak_id', checkData.foretak_id);
+                    await fetch(bimverdiBrreg.ajaxUrl, { method: 'POST', body });
+                } catch (e) {
+                    console.error('Auto-join error:', e);
+                }
+            }
+        } else {
+            // Not registered (or not a paying deltaker) — show registration fields
+            const navn = (brregCompany && brregCompany.navn) ? brregCompany.navn : (checkData.foretak_name || '');
+            showNotExistsMessage(navn);
+
+            if (brregCompany) {
+                fillFormFields(brregCompany);
+                showSuccessMessage(inputField, brregCompany.navn);
+            }
+        }
+    }
+
+    function showExistsMessage(foretakName, hovedkontaktName) {
+        const msg = document.getElementById('bv-foretak-exists-msg');
+        const regFields = document.getElementById('bv-registration-fields');
+        const notExistsMsg = document.getElementById('bv-foretak-not-exists-msg');
+        const submitWrap = document.getElementById('bv-submit-section');
+
+        const hkEl = document.getElementById('bv-hovedkontakt-name');
+        if (hkEl) hkEl.textContent = hovedkontaktName || 'Ukjent';
+
+        if (msg) msg.classList.remove('hidden');
+        if (notExistsMsg) notExistsMsg.classList.add('hidden');
+        if (regFields) regFields.style.display = 'none';
+        if (submitWrap) submitWrap.style.display = 'none';
+    }
+
+    function showNotExistsMessage(foretakNavn) {
+        const msg = document.getElementById('bv-foretak-not-exists-msg');
+        const regFields = document.getElementById('bv-registration-fields');
+        const existsMsg = document.getElementById('bv-foretak-exists-msg');
+        const submitWrap = document.getElementById('bv-submit-section');
+
+        const nameEl = document.getElementById('bv-foretak-check-name');
+        if (nameEl) nameEl.textContent = foretakNavn;
+
+        if (msg) msg.classList.remove('hidden');
+        if (existsMsg) existsMsg.classList.add('hidden');
+        if (regFields) regFields.style.display = '';
+        if (submitWrap) submitWrap.style.display = '';
+    }
+
+    function hideStatusMessages() {
+        const existsMsg = document.getElementById('bv-foretak-exists-msg');
+        const notExistsMsg = document.getElementById('bv-foretak-not-exists-msg');
+        if (existsMsg) existsMsg.classList.add('hidden');
+        if (notExistsMsg) notExistsMsg.classList.add('hidden');
+    }
+
     function showSuccessMessage(inputField, companyName) {
         // Remove any existing message
         removeMessages();

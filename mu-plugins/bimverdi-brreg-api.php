@@ -242,13 +242,13 @@ function bimverdi_brreg_get_company($request) {
 
 /**
  * Check if org number is already registered as foretak
- * 
+ *
  * @param WP_REST_Request $request
  * @return WP_REST_Response
  */
 function bimverdi_brreg_check_registered($request) {
     $orgnr = $request->get_param('orgnr');
-    
+
     // Search for existing foretak with this org number
     $existing = get_posts(array(
         'post_type' => 'foretak',
@@ -262,17 +262,96 @@ function bimverdi_brreg_check_registered($request) {
         ),
         'posts_per_page' => 1,
     ));
-    
+
     $is_registered = !empty($existing);
     $foretak_id = $is_registered ? $existing[0]->ID : null;
     $foretak_name = $is_registered ? $existing[0]->post_title : null;
-    
+    $is_deltaker = false;
+    $hovedkontakt_name = '';
+
+    if ($is_registered) {
+        $bv_rolle = function_exists('get_field')
+            ? get_field('bv_rolle', $foretak_id)
+            : get_post_meta($foretak_id, 'bv_rolle', true);
+        $is_deltaker = !empty($bv_rolle) && $bv_rolle !== 'Ikke deltaker';
+
+        $hk_id = function_exists('get_field')
+            ? (int) get_field('hovedkontaktperson', $foretak_id)
+            : (int) get_post_meta($foretak_id, 'hovedkontaktperson', true);
+        if ($hk_id) {
+            $hk_user = get_userdata($hk_id);
+            if ($hk_user) {
+                $hovedkontakt_name = $hk_user->display_name;
+            }
+        }
+    }
+
     return rest_ensure_response(array(
         'success' => true,
         'is_registered' => $is_registered,
+        'is_deltaker' => $is_deltaker,
         'foretak_id' => $foretak_id,
         'foretak_name' => $foretak_name,
+        'hovedkontakt_name' => $hovedkontakt_name,
     ));
+}
+
+/**
+ * AJAX: Auto-join an existing foretak as tilleggskontakt
+ * Called when user selects a company that is already a paying deltaker.
+ */
+add_action('wp_ajax_bimverdi_auto_join_foretak', 'bimverdi_ajax_auto_join_foretak');
+
+function bimverdi_ajax_auto_join_foretak() {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_auto_join')) {
+        wp_send_json_error(['message' => 'Ugyldig forespørsel.'], 403);
+    }
+
+    $user_id = get_current_user_id();
+    if (!$user_id) {
+        wp_send_json_error(['message' => 'Du må være innlogget.'], 401);
+    }
+
+    // Check user does not already have a company
+    $existing_company = get_user_meta($user_id, 'bimverdi_company_id', true);
+    if (!$existing_company) {
+        $existing_company = get_user_meta($user_id, 'bim_verdi_company_id', true);
+    }
+    if ($existing_company) {
+        wp_send_json_error(['message' => 'Du er allerede tilknyttet et foretak.'], 400);
+    }
+
+    $foretak_id = intval($_POST['foretak_id'] ?? 0);
+    if (!$foretak_id || get_post_type($foretak_id) !== 'foretak') {
+        wp_send_json_error(['message' => 'Ugyldig foretak.'], 400);
+    }
+
+    // Verify foretak is a paying deltaker
+    $bv_rolle = function_exists('get_field')
+        ? get_field('bv_rolle', $foretak_id)
+        : get_post_meta($foretak_id, 'bv_rolle', true);
+    if (empty($bv_rolle) || $bv_rolle === 'Ikke deltaker') {
+        wp_send_json_error(['message' => 'Dette foretaket er ikke betalende deltaker i BIM Verdi.'], 400);
+    }
+
+    // Link user to foretak as tilleggskontakt
+    update_user_meta($user_id, 'bimverdi_company_id', $foretak_id);
+    update_user_meta($user_id, 'bim_verdi_company_id', $foretak_id);
+    update_user_meta($user_id, 'bimverdi_account_type', 'foretak');
+
+    $user = new WP_User($user_id);
+    $user->set_role('tilleggskontakt');
+
+    if (function_exists('update_field')) {
+        update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user_id);
+    }
+
+    error_log('BIMVerdi: User ' . $user_id . ' auto-joined foretak ' . $foretak_id . ' as tilleggskontakt');
+
+    wp_send_json_success([
+        'message' => 'Du er nå lagt til som tilleggskontakt.',
+        'foretak_url' => home_url('/min-side/foretak/'),
+    ]);
 }
 
 /**
@@ -680,7 +759,9 @@ add_action('wp_enqueue_scripts', function() {
     );
     
     wp_localize_script('bimverdi-brreg-autocomplete', 'bimverdiBrreg', array(
-        'restUrl' => rest_url('bimverdi/v1/brreg/'),
-        'nonce' => wp_create_nonce('wp_rest'),
+        'restUrl'   => rest_url('bimverdi/v1/brreg/'),
+        'nonce'     => wp_create_nonce('wp_rest'),
+        'ajaxUrl'   => admin_url('admin-ajax.php'),
+        'ajaxNonce' => wp_create_nonce('bimverdi_auto_join'),
     ));
 });
