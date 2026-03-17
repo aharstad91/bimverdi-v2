@@ -1007,14 +1007,14 @@ function bv_tg_build_verktoy_rows($verktoy) {
                 'text' => 'Avbryt',
                 'variant' => 'secondary',
                 'size' => 'sm',
-                'attrs' => ['id' => 'tg-join-cancel'],
+                'id' => 'tg-join-cancel',
             ]);
             bimverdi_button([
                 'text' => 'Bekreft',
                 'variant' => 'primary',
                 'size' => 'sm',
                 'icon' => 'check',
-                'attrs' => ['id' => 'tg-join-confirm'],
+                'id' => 'tg-join-confirm',
             ]);
             ?>
         </div>
