@@ -40,7 +40,7 @@ function bimverdi_ajax_join_temagruppe() {
     }
 
     // Get foretak
-    $foretak_id = bimverdi_get_user_company($user_id);
+    $foretak_id = bimverdi_user_has_foretak($user_id);
     if (!$foretak_id) {
         wp_send_json_error(['message' => 'Fant ikke foretaket ditt.'], 400);
     }
@@ -89,7 +89,7 @@ function bimverdi_ajax_leave_temagruppe() {
         wp_send_json_error(['message' => 'Ugyldig temagruppe.'], 400);
     }
 
-    $foretak_id = bimverdi_get_user_company($user_id);
+    $foretak_id = bimverdi_user_has_foretak($user_id);
     if (!$foretak_id) {
         wp_send_json_error(['message' => 'Fant ikke foretaket ditt.'], 400);
     }
