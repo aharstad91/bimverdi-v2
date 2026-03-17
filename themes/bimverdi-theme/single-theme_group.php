@@ -93,7 +93,7 @@ $months_no = [
 $current_user_id = get_current_user_id();
 $is_logged_in = (bool) $current_user_id;
 $is_hovedkontakt = $is_logged_in && function_exists('bimverdi_is_hovedkontakt') && bimverdi_is_hovedkontakt($current_user_id);
-$user_foretak_id = $is_logged_in && function_exists('bimverdi_get_user_company') ? bimverdi_get_user_company($current_user_id) : null;
+$user_foretak_id = $is_logged_in && function_exists('bimverdi_user_has_foretak') ? bimverdi_user_has_foretak($current_user_id) : null;
 $is_member = false;
 if ($user_foretak_id && $temagruppe_term) {
     $is_member = has_term($temagruppe_term->term_id, 'temagruppe', $user_foretak_id);
