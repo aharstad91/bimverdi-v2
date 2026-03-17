@@ -722,7 +722,7 @@ function bv_tg_build_verktoy_rows($verktoy) {
                 if ($is_hovedkontakt && $temagruppe_term) :
                     if ($is_member) : ?>
                         <span class="tg-member-badge">
-                            <i data-lucide="check-circle" style="width:14px;height:14px;"></i>
+                            <?php echo bimverdi_get_icon_svg('check-circle', 14); ?>
                             <?php echo esc_html($foretak_name); ?> er med
                         </span>
                     <?php else : ?>
@@ -1063,10 +1063,8 @@ function bv_tg_build_verktoy_rows($verktoy) {
                 modal.classList.remove('active');
                 // Replace button with member badge
                 joinBtn.outerHTML = '<span class="tg-member-badge">' +
-                    '<i data-lucide="check-circle" style="width:14px;height:14px;"></i> ' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> ' +
                     data.data.foretak_name + ' er med</span>';
-                // Re-init Lucide icons
-                if (window.lucide) lucide.createIcons();
                 // Reload page after brief delay to update deltakerliste
                 setTimeout(function() { location.reload(); }, 1200);
             } else {
