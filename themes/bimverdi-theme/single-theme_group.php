@@ -89,6 +89,17 @@ $months_no = [
     'juli', 'august', 'september', 'oktober', 'november', 'desember'
 ];
 
+// ── Membership status (for "Bli med" button) ──
+$current_user_id = get_current_user_id();
+$is_logged_in = (bool) $current_user_id;
+$is_hovedkontakt = $is_logged_in && function_exists('bimverdi_is_hovedkontakt') && bimverdi_is_hovedkontakt($current_user_id);
+$user_foretak_id = $is_logged_in && function_exists('bimverdi_get_user_company') ? bimverdi_get_user_company($current_user_id) : null;
+$is_member = false;
+if ($user_foretak_id && $temagruppe_term) {
+    $is_member = has_term($temagruppe_term->term_id, 'temagruppe', $user_foretak_id);
+}
+$foretak_name = $user_foretak_id ? get_the_title($user_foretak_id) : '';
+
 // ══════════════════════════════════════════════════════════════════════
 // DATA QUERIES
 // ══════════════════════════════════════════════════════════════════════
@@ -497,6 +508,61 @@ function bv_tg_build_verktoy_rows($verktoy) {
     margin-left: auto;
     flex-shrink: 0;
 }
+.tg-member-badge {
+    margin-left: auto;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #16A085;
+    background: #E8F8F5;
+    padding: 6px 14px;
+    border-radius: 100px;
+    white-space: nowrap;
+}
+
+/* ── Join Modal ── */
+.tg-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+.tg-modal-overlay.active { display: flex; }
+.tg-modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.tg-modal h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #18181B;
+    margin: 0 0 8px;
+}
+.tg-modal p {
+    font-size: 14px;
+    color: #57534E;
+    line-height: 1.6;
+    margin: 0 0 24px;
+}
+.tg-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+.tg-modal .bv-btn--loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
 
 /* ── Tabs ── */
 .tg-tabs-row {
@@ -652,13 +718,23 @@ function bv_tg_build_verktoy_rows($verktoy) {
                 bimverdi_tabs_end();
 
                 require_once get_template_directory() . '/parts/components/button.php';
-                bimverdi_button([
-                    'text' => 'Bli med i gruppen',
-                    'icon' => 'arrow-right',
-                    'icon_position' => 'right',
-                    'size' => 'sm',
-                    'href' => home_url('/min-side/'),
-                ]);
+
+                if ($is_hovedkontakt && $temagruppe_term) :
+                    if ($is_member) : ?>
+                        <span class="tg-member-badge">
+                            <i data-lucide="check-circle" style="width:14px;height:14px;"></i>
+                            <?php echo esc_html($foretak_name); ?> er med
+                        </span>
+                    <?php else : ?>
+                        <button type="button" class="bv-btn bv-btn--primary bv-btn--sm" id="tg-join-btn"
+                            data-term-id="<?php echo esc_attr($temagruppe_term->term_id); ?>"
+                            data-foretak-name="<?php echo esc_attr($foretak_name); ?>"
+                            data-temagruppe-name="<?php echo esc_attr($temagruppe_navn); ?>">
+                            <span>Registrer foretaket</span>
+                            <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+                        </button>
+                    <?php endif;
+                endif;
                 ?>
             </div>
         </div>
@@ -914,6 +990,100 @@ function bv_tg_build_verktoy_rows($verktoy) {
 
 })();
 </script>
+
+<?php if ($is_hovedkontakt && $temagruppe_term && !$is_member) : ?>
+<!-- ══ Join Temagruppe Modal ══ -->
+<div class="tg-modal-overlay" id="tg-join-modal">
+    <div class="tg-modal">
+        <h3>Registrer foretaket i <?php echo esc_html($temagruppe_navn); ?></h3>
+        <p>
+            Ved å registrere <strong><?php echo esc_html($foretak_name); ?></strong> i denne temagruppen
+            blir foretaket synlig i deltakerlisten og får tilgang til gruppens aktiviteter.
+        </p>
+        <div class="tg-modal-actions">
+            <?php
+            require_once get_template_directory() . '/parts/components/button.php';
+            bimverdi_button([
+                'text' => 'Avbryt',
+                'variant' => 'secondary',
+                'size' => 'sm',
+                'attrs' => ['id' => 'tg-join-cancel'],
+            ]);
+            bimverdi_button([
+                'text' => 'Bekreft',
+                'variant' => 'primary',
+                'size' => 'sm',
+                'icon' => 'check',
+                'attrs' => ['id' => 'tg-join-confirm'],
+            ]);
+            ?>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var joinBtn = document.getElementById('tg-join-btn');
+    var modal = document.getElementById('tg-join-modal');
+    if (!joinBtn || !modal) return;
+
+    var cancelBtn = document.getElementById('tg-join-cancel');
+    var confirmBtn = document.getElementById('tg-join-confirm');
+    var termId = joinBtn.dataset.termId;
+
+    joinBtn.addEventListener('click', function() {
+        modal.classList.add('active');
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        modal.classList.remove('active');
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.classList.remove('active');
+    });
+
+    confirmBtn.addEventListener('click', function() {
+        confirmBtn.classList.add('bv-btn--loading');
+        confirmBtn.textContent = 'Registrerer...';
+
+        var formData = new FormData();
+        formData.append('action', 'bimverdi_join_temagruppe');
+        formData.append('nonce', '<?php echo wp_create_nonce('bimverdi_temagruppe_membership'); ?>');
+        formData.append('term_id', termId);
+
+        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData,
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                modal.classList.remove('active');
+                // Replace button with member badge
+                joinBtn.outerHTML = '<span class="tg-member-badge">' +
+                    '<i data-lucide="check-circle" style="width:14px;height:14px;"></i> ' +
+                    data.data.foretak_name + ' er med</span>';
+                // Re-init Lucide icons
+                if (window.lucide) lucide.createIcons();
+                // Reload page after brief delay to update deltakerliste
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                alert(data.data.message || 'Noe gikk galt.');
+                confirmBtn.classList.remove('bv-btn--loading');
+                confirmBtn.textContent = 'Bekreft';
+            }
+        })
+        .catch(function() {
+            alert('Noe gikk galt. Prøv igjen.');
+            confirmBtn.classList.remove('bv-btn--loading');
+            confirmBtn.textContent = 'Bekreft';
+        });
+    });
+})();
+</script>
+<?php endif; ?>
 
 <?php
 endwhile; endif;
