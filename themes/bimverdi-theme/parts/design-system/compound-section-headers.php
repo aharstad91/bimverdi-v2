@@ -43,12 +43,22 @@ if (!defined('ABSPATH')) exit;
     ]); ?>
 </div>
 
-<div style="padding: 24px 0;">
+<div style="padding: 24px 0; border-bottom: 1px solid #E7E5E4;">
     <h3 style="font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">h4 tag</h3>
     <?php bimverdi_section_header([
         'heading' => 'Mindre seksjon',
         'subtitle' => 'Brukes for underseksjoner inni en side.',
         'tag'      => 'h4',
+    ]); ?>
+</div>
+
+<div style="padding: 24px 0;">
+    <h3 style="font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">Med CTA-knapp</h3>
+    <?php bimverdi_section_header([
+        'heading'  => 'Utforsk arrangementer',
+        'subtitle' => 'Se alle kommende møter, workshops og nettverkssamlinger',
+        'tag'      => 'h2',
+        'action'   => ['text' => 'Se alle arrangementer', 'href' => '#', 'icon' => 'arrow-right'],
     ]); ?>
 </div>
 
@@ -61,5 +71,10 @@ if (!defined('ABSPATH')) exit;
     'subtitle' => 'Finn temagruppen som passer for ditt fagomrade',
     'align'    => 'left',   // 'left' | 'center'
     'tag'      => 'h2',     // 'h1' | 'h2' | 'h3' | 'h4'
+    'action'   => [         // valgfri CTA-knapp til høyre
+        'text' => 'Se alle',
+        'href' => '/arrangementer/',
+        'icon' => 'arrow-right',
+    ],
 ]); ?&gt;</code></pre>
 </div>

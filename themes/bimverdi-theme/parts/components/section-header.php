@@ -20,6 +20,13 @@
  *     'tag'     => 'h3',
  * ]); ?>
  *
+ * // With CTA action button on the right
+ * <?php bimverdi_section_header([
+ *     'heading'  => 'Utforsk arrangementer',
+ *     'subtitle' => 'Se alle kommende møter og workshops',
+ *     'action'   => ['text' => 'Se alle', 'href' => '/arrangementer/', 'icon' => 'arrow-right'],
+ * ]); ?>
+ *
  * @package BimVerdi_Theme
  */
 
@@ -34,6 +41,7 @@ if (!defined('ABSPATH')) exit;
  *   - subtitle (string) Subtitle below heading (optional)
  *   - align    (string) 'left' | 'center' - default 'left'
  *   - tag      (string) 'h1' | 'h2' | 'h3' | 'h4' - default 'h2'
+ *   - action   (array)  CTA button on the right: ['text', 'href', 'variant', 'icon', 'icon_position']
  *   - class    (string) Additional CSS classes
  * @return void
  */
@@ -44,6 +52,7 @@ function bimverdi_section_header($args = []) {
         'subtitle' => '',
         'align'    => 'left',
         'tag'      => 'h2',
+        'action'   => [],
         'class'    => '',
     ];
 
@@ -63,7 +72,14 @@ function bimverdi_section_header($args = []) {
     }
     $class_string = implode(' ', $classes);
 
-    echo '<div class="' . esc_attr($class_string) . '">';
+    $has_action = !empty($args['action']);
+
+    if ($has_action) {
+        echo '<div class="bv-section-header__row ' . esc_attr($args['class']) . '">';
+        echo '<div class="' . esc_attr(implode(' ', array_diff($classes, [$args['class']]))) . '">';
+    } else {
+        echo '<div class="' . esc_attr($class_string) . '">';
+    }
 
     if ($args['eyebrow']) {
         echo '<span class="bv-section-header__eyebrow">' . esc_html($args['eyebrow']) . '</span>';
@@ -78,4 +94,17 @@ function bimverdi_section_header($args = []) {
     }
 
     echo '</div>';
+
+    if ($has_action) {
+        $action = $args['action'];
+        bimverdi_button([
+            'text'          => $action['text'] ?? '',
+            'href'          => $action['href'] ?? '#',
+            'variant'       => $action['variant'] ?? 'primary',
+            'icon'          => $action['icon'] ?? null,
+            'icon_position' => $action['icon_position'] ?? 'right',
+            'size'          => $action['size'] ?? 'medium',
+        ]);
+        echo '</div>';
+    }
 }

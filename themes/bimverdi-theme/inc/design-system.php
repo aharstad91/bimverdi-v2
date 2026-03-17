@@ -464,6 +464,75 @@ class BIM_Verdi_Design_System {
                 color: #18181B;
             }
 
+            /* -- Table column types -- */
+
+            .bv-table-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 6px;
+                background: #F5F5F4;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+            .bv-table-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+            .bv-table-avatar span {
+                font-size: 12px;
+                font-weight: 700;
+                color: #111827;
+                letter-spacing: -0.02em;
+            }
+            .bv-table-avatar .bv-icon {
+                color: #78716C;
+            }
+
+            .bv-table-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 12px;
+                font-weight: 500;
+                color: #57534E;
+                background: #F5F5F4;
+                padding: 2px 8px;
+                border-radius: 100px;
+                white-space: nowrap;
+            }
+            .bv-table-badge-icon {
+                font-size: 13px;
+                line-height: 1;
+            }
+
+            .bv-table-link {
+                color: #18181B;
+                text-decoration: none;
+                font-weight: 500;
+            }
+            .bv-table-link:hover {
+                text-decoration: underline;
+            }
+
+            .bv-table-action {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                border-radius: 6px;
+                color: #71717A;
+                transition: background-color 0.15s, color 0.15s;
+            }
+            .bv-table-action:hover {
+                background: #F5F5F4;
+                color: #18181B;
+            }
+
             /* ============================================
                PAGINATION (shadcn-inspired)
                ============================================ */
@@ -1978,6 +2047,18 @@ class BIM_Verdi_Design_System {
                 margin-top: 8px;
                 font-size: 1.0625rem;
                 line-height: 1.5;
+            }
+
+            .bv-section-header__row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+
+            .bv-section-header__row .bv-section-header {
+                margin-bottom: 0;
             }
 
             /* ============================================
