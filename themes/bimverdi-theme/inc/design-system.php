@@ -978,6 +978,60 @@ class BIM_Verdi_Design_System {
             }
 
             /* ============================================
+               MOBILE NAVIGATION
+               ============================================ */
+
+            .bv-mobile-nav {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .bv-mobile-nav .menu-item > a {
+                display: block;
+                padding: 12px;
+                font-size: 16px;
+                font-weight: 500;
+                color: #1A1A1A;
+                text-decoration: none;
+                border-radius: 8px;
+                transition: background-color 0.15s;
+            }
+
+            .bv-mobile-nav .menu-item > a:hover,
+            .bv-mobile-nav .menu-item > a:focus {
+                background: #F5F5F4;
+            }
+
+            .bv-mobile-nav .menu-item.current-menu-item > a {
+                font-weight: 600;
+                color: #FF8B5E;
+            }
+
+            /* Flatten submenus in mobile */
+            .bv-mobile-nav .sub-menu {
+                list-style: none;
+                margin: 0;
+                padding: 0 0 0 16px;
+            }
+
+            .bv-mobile-nav .sub-menu a {
+                display: block;
+                padding: 10px 12px;
+                font-size: 15px;
+                font-weight: 400;
+                color: #5A5A5A;
+                text-decoration: none;
+                border-radius: 6px;
+                transition: background-color 0.15s;
+            }
+
+            .bv-mobile-nav .sub-menu a:hover {
+                background: #F5F5F4;
+                color: #1A1A1A;
+            }
+
+            /* ============================================
                BUTTONS (daisyUI overrides & custom)
                ============================================ */
             

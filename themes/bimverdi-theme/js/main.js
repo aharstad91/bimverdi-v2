@@ -11,10 +11,39 @@
     // Mobile menu toggle
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
-    
+
     if (mobileMenuButton && mobileMenu) {
-        mobileMenuButton.addEventListener('click', function() {
-            mobileMenu.classList.toggle('hidden');
+        const iconOpen = mobileMenuButton.querySelector('.bv-mobile-icon-open');
+        const iconClose = mobileMenuButton.querySelector('.bv-mobile-icon-close');
+
+        function toggleMobileMenu(show) {
+            const isOpen = typeof show === 'boolean' ? show : mobileMenu.classList.contains('hidden');
+            mobileMenu.classList.toggle('hidden', !isOpen);
+            document.body.classList.toggle('overflow-hidden', isOpen);
+            mobileMenuButton.setAttribute('aria-expanded', isOpen);
+            if (iconOpen) iconOpen.classList.toggle('hidden', isOpen);
+            if (iconClose) iconClose.classList.toggle('hidden', !isOpen);
+        }
+
+        mobileMenuButton.addEventListener('click', function() { toggleMobileMenu(); });
+
+        // Close on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+                toggleMobileMenu(false);
+            }
+        });
+
+        // Close on link click inside menu
+        mobileMenu.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() { toggleMobileMenu(false); });
+        });
+
+        // Auto-close on resize above md (768px)
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768 && !mobileMenu.classList.contains('hidden')) {
+                toggleMobileMenu(false);
+            }
         });
     }
     

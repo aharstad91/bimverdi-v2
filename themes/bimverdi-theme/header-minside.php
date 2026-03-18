@@ -46,23 +46,82 @@ $primary_route = bimverdi_get_primary_route();
                 </a>
             </div>
             
-            <!-- Right side: Back link + Logout -->
+            <!-- Right side: Back link + Logout (desktop) + Hamburger (mobile) -->
             <div class="flex items-center gap-6">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="flex items-center gap-2 text-sm font-medium text-[#57534E] hover:text-[#111827] transition-colors">
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="hidden md:flex items-center gap-2 text-sm font-medium text-[#57534E] hover:text-[#111827] transition-colors">
                     <?php echo bimverdi_icon('arrow-left', 16); ?>
                     Til forsiden
                 </a>
-                <a href="<?php echo wp_logout_url(home_url()); ?>" class="flex items-center gap-2 text-sm font-medium text-[#111827] hover:text-[#57534E] transition-colors">
+                <a href="<?php echo wp_logout_url(home_url()); ?>" class="hidden md:flex items-center gap-2 text-sm font-medium text-[#111827] hover:text-[#57534E] transition-colors">
                     Logg ut
                     <?php echo bimverdi_icon('log-out', 16); ?>
                 </a>
+
+                <!-- Mobile menu button -->
+                <button type="button" class="md:hidden text-[#1A1A1A] hover:text-[#5A5A5A] focus:outline-none p-1" id="mobile-menu-button" aria-expanded="false" aria-label="Meny">
+                    <svg class="bv-mobile-icon-open h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg class="bv-mobile-icon-close h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 </header>
 
-<!-- Secondary Navigation: Min Side menu with icons -->
-<nav class="bg-white border-b border-[#E7E5E4]">
+<!-- Mobile Menu (fullscreen dropdown, hidden by default) -->
+<div id="mobile-menu" class="hidden md:hidden fixed inset-0 top-16 z-40 bg-white overflow-y-auto">
+    <div class="px-6 py-6 space-y-1">
+        <?php foreach ($nav_items as $key => $item):
+            $is_active = bimverdi_is_minside_route($item['routes']);
+        ?>
+        <a href="<?php echo esc_url($item['url']); ?>"
+           class="flex items-center gap-3 px-3 py-3 text-base rounded-lg transition-colors <?php echo $is_active ? 'font-semibold text-[#1A1A1A] bg-[#F5F5F4]' : 'font-medium text-[#57534E] hover:bg-[#F5F5F4] hover:text-[#1A1A1A]'; ?>">
+            <?php echo bimverdi_icon($item['icon'], 20); ?>
+            <?php echo esc_html($item['label']); ?>
+            <?php if (!empty($item['badge'])): ?>
+                <span class="ml-auto inline-flex items-center justify-center px-2 h-5 text-[10px] font-bold text-[#111827] bg-[#F5F5F4] border border-[#E7E5E4] rounded-full">
+                    <?php echo (int) $item['badge']; ?>
+                </span>
+            <?php endif; ?>
+        </a>
+        <?php endforeach; ?>
+
+        <hr class="border-[#E7E5E4] my-4">
+
+        <!-- Account section -->
+        <?php foreach ($account_sections as $section_key => $section): ?>
+            <p class="px-3 pt-2 pb-1 text-[10px] font-semibold text-[#5A5A5A] uppercase tracking-wider"><?php echo esc_html($section['label']); ?></p>
+            <?php foreach ($section['items'] as $item):
+                $is_item_active = ($item['route'] === $current_route);
+            ?>
+            <a href="<?php echo esc_url(bimverdi_minside_url($item['route'])); ?>"
+               class="flex items-center gap-3 px-3 py-3 text-base rounded-lg transition-colors <?php echo $is_item_active ? 'font-semibold text-[#1A1A1A] bg-[#F5F5F4]' : 'font-medium text-[#5A5A5A] hover:bg-[#F5F5F4] hover:text-[#1A1A1A]'; ?>">
+                <?php echo bimverdi_icon($item['icon'], 18); ?>
+                <?php echo esc_html($item['label']); ?>
+            </a>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+
+        <hr class="border-[#E7E5E4] my-4">
+
+        <a href="<?php echo esc_url(home_url('/')); ?>"
+           class="flex items-center gap-3 px-3 py-3 text-base font-medium text-[#57534E] rounded-lg hover:bg-[#F5F5F4] transition-colors">
+            <?php echo bimverdi_icon('arrow-left', 18); ?>
+            Til forsiden
+        </a>
+        <a href="<?php echo wp_logout_url(home_url()); ?>"
+           class="flex items-center gap-3 px-3 py-3 text-base font-medium text-[#57534E] rounded-lg hover:bg-[#F5F5F4] transition-colors">
+            <?php echo bimverdi_icon('log-out', 18); ?>
+            Logg ut
+        </a>
+    </div>
+</div>
+
+<!-- Secondary Navigation: Min Side menu with icons (hidden on mobile) -->
+<nav class="hidden md:block bg-white border-b border-[#E7E5E4]">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between h-12">
             
