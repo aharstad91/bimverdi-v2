@@ -67,8 +67,8 @@
 </header>
 
 <!-- Mobile Menu (fullscreen dropdown, hidden by default) -->
-<div id="mobile-menu" class="hidden md:hidden absolute left-0 right-0 z-40 bg-white border-b border-[#E7E5E4] shadow-lg overflow-y-auto max-h-[calc(100vh-4rem)]">
-    <div class="px-6 py-6">
+<div id="mobile-menu" class="hidden md:hidden absolute left-0 right-0 z-40 bg-white border-b border-[#E7E5E4] shadow-lg overflow-y-auto max-h-[80vh]">
+    <div class="px-6 py-6 pb-12">
         <?php
         wp_nav_menu(array(
             'theme_location' => 'primary',
