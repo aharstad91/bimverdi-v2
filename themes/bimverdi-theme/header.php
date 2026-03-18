@@ -67,7 +67,7 @@
 </header>
 
 <!-- Mobile Menu (fullscreen dropdown, hidden by default) -->
-<div id="mobile-menu" class="hidden md:hidden absolute left-0 right-0 z-40 bg-white border-b border-[#E7E5E4] shadow-lg overflow-y-auto max-h-[80vh]">
+<div id="mobile-menu" class="hidden md:hidden fixed left-0 right-0 bottom-0 z-40 bg-white overflow-y-auto" style="top: 4rem;">
     <div class="px-6 py-6 pb-12">
         <?php
         wp_nav_menu(array(
