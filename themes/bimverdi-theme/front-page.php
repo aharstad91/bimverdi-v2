@@ -1230,7 +1230,7 @@ $theme_groups = [
                 $ne_tg_terms = get_the_terms($next_event->ID, 'temagruppe');
                 $ne_tg_name = ($ne_tg_terms && !is_wp_error($ne_tg_terms)) ? $ne_tg_terms[0]->name : '';
                 $ne_tg_color = isset($tg_colors[$ne_tg_name]) ? $tg_colors[$ne_tg_name] : 'var(--bv3-orange)';
-                $ne_format = get_field('arrangement_format', $next_event->ID) ?: '';
+                $ne_format = get_field('arrangement_type', $next_event->ID) ?: '';
                 ?>
                 <a href="<?php echo esc_url(get_permalink($next_event)); ?>" class="bv3-fcard bv3-fcard--event">
                     <div class="bv3-fcard__visual">

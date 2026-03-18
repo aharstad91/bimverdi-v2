@@ -83,10 +83,10 @@ function bimverdi_generate_ics($arrangement_id) {
     $dato = get_field('arrangement_dato', $arrangement_id);
     $tid_start = get_field('tidspunkt_start', $arrangement_id);
     $tid_slutt = get_field('tidspunkt_slutt', $arrangement_id);
-    $format = get_field('arrangement_format', $arrangement_id);
-    $beskrivelse = get_field('arrangement_beskrivelse', $arrangement_id);
-    $fysisk_adresse = get_field('fysisk_adresse', $arrangement_id);
-    $motelenke = get_field('motelenke', $arrangement_id);
+    $format = get_field('arrangement_type', $arrangement_id);
+    $beskrivelse = get_post_field('post_content', $arrangement_id);
+    $fysisk_adresse = get_field('sted_adresse', $arrangement_id);
+    $motelenke = get_field('online_lenke', $arrangement_id);
     
     if (!$dato || !$tid_start) {
         return new WP_Error('missing_data', 'Mangler dato eller tidspunkt');
@@ -283,17 +283,14 @@ add_action('bimverdi_pamelding_created', function($pamelding_id, $arrangement_id
     // Get event details for email
     $dato = get_field('arrangement_dato', $arrangement_id);
     $tid_start = get_field('tidspunkt_start', $arrangement_id);
-    $format = get_field('arrangement_format', $arrangement_id);
-    $fysisk_adresse = get_field('fysisk_adresse', $arrangement_id);
-    $motelenke = get_field('motelenke', $arrangement_id);
-    
-    // Format date nicely
+    $format = get_field('arrangement_type', $arrangement_id);
+    $fysisk_adresse = get_field('sted_adresse', $arrangement_id);
+    $motelenke = get_field('online_lenke', $arrangement_id);
+
+    // Format date nicely (ACF returns Y-m-d)
     $dato_formatted = '';
     if ($dato) {
-        $dato_obj = DateTime::createFromFormat('Ymd', $dato);
-        if ($dato_obj) {
-            $dato_formatted = $dato_obj->format('j. F Y');
-        }
+        $dato_formatted = wp_date('j. F Y', strtotime($dato));
     }
     
     // Build email
@@ -357,8 +354,8 @@ function bimverdi_get_calendar_links($arrangement_id) {
     $dato = get_field('arrangement_dato', $arrangement_id);
     $tid_start = get_field('tidspunkt_start', $arrangement_id);
     $tid_slutt = get_field('tidspunkt_slutt', $arrangement_id);
-    $fysisk_adresse = get_field('fysisk_adresse', $arrangement_id);
-    $beskrivelse = wp_strip_all_tags(get_field('arrangement_beskrivelse', $arrangement_id) ?: '');
+    $fysisk_adresse = get_field('sted_adresse', $arrangement_id);
+    $beskrivelse = wp_strip_all_tags(get_post_field('post_content', $arrangement_id) ?: '');
     
     if (!$dato || !$tid_start) {
         return array();

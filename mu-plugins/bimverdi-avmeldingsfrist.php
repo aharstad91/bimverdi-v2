@@ -30,7 +30,7 @@ function bimverdi_get_avmeldingsfrist($arrangement_id) {
     // Get event details
     $dato = get_field('arrangement_dato', $arrangement_id);
     $tid_start = get_field('tidspunkt_start', $arrangement_id);
-    $format = get_field('arrangement_format', $arrangement_id);
+    $format = get_field('arrangement_type', $arrangement_id);
     $manual_frist = get_field('pamelding_frist', $arrangement_id);
     
     // Default result
