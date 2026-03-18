@@ -13,7 +13,7 @@
 <?php get_template_part('parts/components/announcement-bar'); ?>
 
 <!-- Public Header: Logo + Main Nav + Login button -->
-<header class="bg-white border-b border-[#E7E5E4]">
+<header class="bg-white border-b border-[#E7E5E4] relative z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             
@@ -67,7 +67,7 @@
 </header>
 
 <!-- Mobile Menu (fullscreen dropdown, hidden by default) -->
-<div id="mobile-menu" class="hidden md:hidden fixed inset-0 top-16 z-40 bg-white overflow-y-auto">
+<div id="mobile-menu" class="hidden md:hidden absolute left-0 right-0 z-40 bg-white border-b border-[#E7E5E4] shadow-lg overflow-y-auto max-h-[calc(100vh-4rem)]">
     <div class="px-6 py-6">
         <?php
         wp_nav_menu(array(
