@@ -8,7 +8,7 @@
 get_header();
 ?>
 
-<main class="min-h-[60vh] flex items-center justify-center px-6 py-24">
+<main class="min-h-[80vh] flex items-center justify-center px-6 py-24">
     <div class="text-center max-w-md">
         <p class="text-6xl font-bold text-[#FF8B5E] mb-4">404</p>
         <h1 class="text-2xl font-semibold text-[#1A1A1A] mb-3">Siden finnes ikke</h1>
