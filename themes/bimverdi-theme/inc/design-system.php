@@ -984,6 +984,24 @@ class BIM_Verdi_Design_System {
             }
 
             /* ============================================
+               MOBILE MENU PANEL
+               ============================================ */
+
+            .bv-mobile-menu {
+                top: 4rem; /* h-16 header */
+            }
+
+            .admin-bar .bv-mobile-menu {
+                top: calc(4rem + 32px); /* header + mobile admin bar */
+            }
+
+            @media (min-width: 783px) {
+                .admin-bar .bv-mobile-menu {
+                    top: calc(4rem + 46px); /* header + desktop admin bar */
+                }
+            }
+
+            /* ============================================
                MOBILE NAVIGATION
                ============================================ */
 

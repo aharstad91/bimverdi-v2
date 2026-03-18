@@ -72,7 +72,7 @@ $primary_route = bimverdi_get_primary_route();
 </header>
 
 <!-- Mobile Menu (fullscreen dropdown, hidden by default) -->
-<div id="mobile-menu" class="hidden md:hidden fixed left-0 right-0 bottom-0 z-40 bg-white overflow-y-auto" style="top: 4rem;">
+<div id="mobile-menu" class="hidden md:hidden fixed left-0 right-0 bottom-0 z-40 bg-white overflow-y-auto bv-mobile-menu">
     <div class="px-6 py-6 space-y-1">
         <?php foreach ($nav_items as $key => $item):
             $is_active = bimverdi_is_minside_route($item['routes']);
