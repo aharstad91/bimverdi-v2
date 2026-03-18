@@ -754,7 +754,7 @@ add_action('wp_enqueue_scripts', function() {
         'bimverdi-brreg-autocomplete',
         get_template_directory_uri() . '/assets/js/brreg-autocomplete.js',
         array(),
-        '1.1.0', // Bumped version
+        '1.2.0', // Bumped version - fix cache issue
         true
     );
     

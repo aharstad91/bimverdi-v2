@@ -185,10 +185,69 @@ get_template_part('parts/components/page-header', null, [
                     <p class="text-sm text-blue-700 mt-1">Hvis du ønsker, kan du velge blant deltakernivåene under og vi registrerer deg som hovedkontakt. Da vil du fritt kunne registrere inntil 10 kollegaer som tilleggskontakter. Velg «Avslutt foretaksregistrering» hvis du ikke vil delta på innsiden av nettverket.</p>
                 </div>
             </div>
+            <div class="mt-3 ml-8">
+                <a href="<?php echo esc_url(home_url('/min-side/')); ?>"
+                   class="inline-flex items-center gap-2 text-sm font-medium text-[#57534E] hover:text-[#1A1A1A] transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Avslutt foretaksregistrering
+                </a>
+            </div>
         </div>
 
         <!-- Del 2: Registration fields (hidden until org check) -->
         <div id="bv-registration-fields" class="space-y-6">
+
+        <!-- Deltakertype / Deltakernivå (moved to top per Bård's feedback) -->
+        <fieldset>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
+                Velg deltakernivå <span class="text-red-600">*</span>
+            </legend>
+            <p class="text-xs text-[#888888] mb-3">Velg det nivået som passer foretaket ditt</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <?php
+                $deltakertyper = [
+                    'deltaker' => [
+                        'label' => 'Deltaker',
+                        'features' => ['Temagrupper og lukkede møter', 'Verktøyregistrering', 'Rabatt på konferanser'],
+                        'personer' => 3,
+                        'pris' => '8 000',
+                    ],
+                    'prosjektdeltaker' => [
+                        'label' => 'Prosjektdeltaker',
+                        'features' => ['Alt i Deltaker', '1-2 timer rådgivning/mnd', 'Prosjektkonsortier'],
+                        'personer' => 4,
+                        'pris' => '24 000',
+                    ],
+                    'partner' => [
+                        'label' => 'Partner',
+                        'features' => ['Alt i Prosjektdeltaker', 'Utvidet rådgivning', 'Styringsgruppe og piloter'],
+                        'personer' => 5,
+                        'pris' => '48 000',
+                    ],
+                ];
+                foreach ($deltakertyper as $value => $type): ?>
+                <label class="relative p-4 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5] flex flex-col">
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="radio" name="deltakertype" value="<?php echo esc_attr($value); ?>" required
+                               class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E] flex-shrink-0">
+                        <span class="text-sm font-semibold text-[#1A1A1A]"><?php echo esc_html($type['label']); ?></span>
+                    </div>
+                    <ul class="space-y-1 flex-1">
+                        <?php foreach ($type['features'] as $feature): ?>
+                        <li class="text-xs text-[#5A5A5A] flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+                            <?php echo esc_html($feature); ?>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <p class="mt-3 pt-3 border-t border-[#E5E0D5] text-xs text-[#888888]">
+                        <?php echo (int) $type['personer']; ?> personer · <?php echo esc_html($type['pris']); ?> kr/år
+                    </p>
+                </label>
+                <?php endforeach; ?>
+            </div>
+            <p class="mt-2 text-xs text-[#888888]">Fakturering avtales etter registrering</p>
+        </fieldset>
 
         <!-- Divider -->
         <hr class="border-[#E5E0D5]">
@@ -300,61 +359,6 @@ get_template_part('parts/components/page-header', null, [
                 <?php endforeach; ?>
             </div>
         </fieldset>
-
-        <!-- Deltakertype / Deltakernivå -->
-        <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
-                Velg deltakernivå <span class="text-red-600">*</span>
-            </legend>
-            <p class="text-xs text-[#888888] mb-3">Velg det nivået som passer foretaket ditt</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <?php
-                $deltakertyper = [
-                    'deltaker' => [
-                        'label' => 'Deltaker',
-                        'features' => ['Temagrupper og lukkede møter', 'Verktøyregistrering', 'Rabatt på konferanser'],
-                        'personer' => 3,
-                        'pris' => '8 000',
-                    ],
-                    'prosjektdeltaker' => [
-                        'label' => 'Prosjektdeltaker',
-                        'features' => ['Alt i Deltaker', '1-2 timer rådgivning/mnd', 'Prosjektkonsortier'],
-                        'personer' => 4,
-                        'pris' => '24 000',
-                    ],
-                    'partner' => [
-                        'label' => 'Partner',
-                        'features' => ['Alt i Prosjektdeltaker', 'Utvidet rådgivning', 'Styringsgruppe og piloter'],
-                        'personer' => 5,
-                        'pris' => '48 000',
-                    ],
-                ];
-                foreach ($deltakertyper as $value => $type): ?>
-                <label class="relative p-4 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5] flex flex-col">
-                    <div class="flex items-center gap-2 mb-2">
-                        <input type="radio" name="deltakertype" value="<?php echo esc_attr($value); ?>" required
-                               class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E] flex-shrink-0">
-                        <span class="text-sm font-semibold text-[#1A1A1A]"><?php echo esc_html($type['label']); ?></span>
-                    </div>
-                    <ul class="space-y-1 flex-1">
-                        <?php foreach ($type['features'] as $feature): ?>
-                        <li class="text-xs text-[#5A5A5A] flex items-center gap-1.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
-                            <?php echo esc_html($feature); ?>
-                        </li>
-                        <?php endforeach; ?>
-                    </ul>
-                    <p class="mt-3 pt-3 border-t border-[#E5E0D5] text-xs text-[#888888]">
-                        <?php echo (int) $type['personer']; ?> personer · <?php echo esc_html($type['pris']); ?> kr/år
-                    </p>
-                </label>
-                <?php endforeach; ?>
-            </div>
-            <p class="mt-2 text-xs text-[#888888]">Fakturering avtales etter registrering</p>
-        </fieldset>
-
-        <!-- Divider -->
-        <hr class="border-[#E5E0D5]">
 
         <!-- Fakturainformasjon -->
         <div>

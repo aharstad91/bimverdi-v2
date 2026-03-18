@@ -273,7 +273,8 @@ if ($company_id) {
         </div>
         <?php endif; ?>
 
-        <!-- 3. Mine verktøy -->
+        <!-- 3. Mine verktøy (only for active/paying companies) -->
+        <?php if ($is_active): ?>
         <div class="py-8 border-b border-[#E7E5E4]">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
@@ -336,6 +337,7 @@ if ($company_id) {
                 ]); ?>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
 
         <!-- 4. Mine kunnskapskilder -->
         <div class="py-8 border-b border-[#E7E5E4]">
