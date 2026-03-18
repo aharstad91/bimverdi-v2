@@ -867,8 +867,14 @@ class BIM_Verdi_Design_System {
                ============================================ */
 
             .bv-nav {
-                display: flex;
+                display: none;
                 align-items: center;
+            }
+
+            @media (min-width: 768px) {
+                .bv-nav {
+                    display: flex;
+                }
             }
 
             .bv-nav__list {
