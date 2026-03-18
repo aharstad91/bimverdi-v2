@@ -307,7 +307,7 @@ get_template_part('parts/components/page-header', null, [
                 Velg deltakernivå <span class="text-red-600">*</span>
             </legend>
             <p class="text-xs text-[#888888] mb-3">Velg det nivået som passer foretaket ditt</p>
-            <div class="grid grid-cols-1 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <?php
                 $deltakertyper = [
                     'deltaker' => [
@@ -330,23 +330,23 @@ get_template_part('parts/components/page-header', null, [
                     ],
                 ];
                 foreach ($deltakertyper as $value => $type): ?>
-                <label class="relative p-4 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
-                    <input type="radio" name="deltakertype" value="<?php echo esc_attr($value); ?>" required
-                           class="absolute top-4 right-4 w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
-                    <div class="pr-8">
+                <label class="relative p-4 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5] flex flex-col">
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="radio" name="deltakertype" value="<?php echo esc_attr($value); ?>" required
+                               class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E] flex-shrink-0">
                         <span class="text-sm font-semibold text-[#1A1A1A]"><?php echo esc_html($type['label']); ?></span>
-                        <ul class="mt-2 space-y-1">
-                            <?php foreach ($type['features'] as $feature): ?>
-                            <li class="text-xs text-[#5A5A5A] flex items-center gap-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                <?php echo esc_html($feature); ?>
-                            </li>
-                            <?php endforeach; ?>
-                        </ul>
-                        <p class="mt-2 text-xs text-[#888888]">
-                            <?php echo (int) $type['personer']; ?> personer inkludert · <?php echo esc_html($type['pris']); ?> kr + mva/år
-                        </p>
                     </div>
+                    <ul class="space-y-1 flex-1">
+                        <?php foreach ($type['features'] as $feature): ?>
+                        <li class="text-xs text-[#5A5A5A] flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
+                            <?php echo esc_html($feature); ?>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <p class="mt-3 pt-3 border-t border-[#E5E0D5] text-xs text-[#888888]">
+                        <?php echo (int) $type['personer']; ?> personer · <?php echo esc_html($type['pris']); ?> kr/år
+                    </p>
                 </label>
                 <?php endforeach; ?>
             </div>
