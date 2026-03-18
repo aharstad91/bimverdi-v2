@@ -188,7 +188,7 @@ get_template_part('parts/components/page-header', null, [
         </div>
 
         <!-- Del 2: Registration fields (hidden until org check) -->
-        <div id="bv-registration-fields">
+        <div id="bv-registration-fields" class="space-y-6">
 
         <!-- Divider -->
         <hr class="border-[#E5E0D5]">
