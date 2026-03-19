@@ -82,6 +82,14 @@ function bimverdi_enqueue_assets() {
         '1.1.0',
         true
     );
+    // Add missing Tailwind responsive utilities not in compiled CSS
+    wp_add_inline_style('bimverdi-styles', '
+        @media (min-width: 768px) {
+            .md\:inline-flex { display: inline-flex !important; }
+            .md\:hidden { display: none !important; }
+            .md\:flex { display: flex !important; }
+        }
+    ');
 }
 add_action('wp_enqueue_scripts', 'bimverdi_enqueue_assets');
 

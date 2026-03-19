@@ -542,8 +542,9 @@ if (!function_exists('bimverdi_get_minside_nav')) {
         ];
 
         // Filter nav for profil-users (no company)
+        // Verktøy requires company, but kunnskapskilder is open for all users
         if (!$has_company) {
-            unset($nav['verktoy'], $nav['kunnskapskilder']);
+            unset($nav['verktoy']);
         }
 
         return $nav;
