@@ -324,3 +324,50 @@ add_filter('nav_menu_link_attributes', 'bimverdi_nav_menu_link_attributes', 10, 
 /**
  * Navigation menu dropdown support is now in inc/design-system.php (.bv-nav classes)
  */
+
+/**
+ * Format date in Norwegian (e.g. "1. mars 2026")
+ *
+ * @param int|null $post_id Post ID (defaults to current post)
+ * @return string Formatted date string
+ */
+function bimverdi_format_date($post_id = null) {
+    $months_no = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
+    $date = get_the_date('Y-m-d', $post_id);
+    $dt = new DateTime($date);
+    return $dt->format('j') . '. ' . $months_no[(int)$dt->format('n') - 1] . ' ' . $dt->format('Y');
+}
+
+/**
+ * Estimate reading time for a post
+ *
+ * @param int|null $post_id Post ID (defaults to current post)
+ * @return string e.g. "3 min lesetid"
+ */
+function bimverdi_reading_time($post_id = null) {
+    $content = get_post_field('post_content', $post_id ?: get_the_ID());
+    $word_count = str_word_count(strip_tags($content));
+    $minutes = max(1, ceil($word_count / 200));
+    return $minutes . ' min lesetid';
+}
+
+/**
+ * Get temagruppe brand color by name
+ *
+ * Centralizes the color map so it can be reused across templates
+ * instead of hardcoding in each file.
+ *
+ * @param string $name Temagruppe name (e.g. 'SirkBIM')
+ * @return string Hex color code, defaults to stone-600
+ */
+function bimverdi_get_temagruppe_color($name) {
+    $colors = [
+        'SirkBIM'      => '#FF8B5E',
+        'ByggesaksBIM' => '#005898',
+        'ProsjektBIM'  => '#6B9B37',
+        'EiendomsBIM'  => '#5E36FE',
+        'MiljøBIM'     => '#0D9488',
+        'BIMtech'      => '#D97706',
+    ];
+    return $colors[$name] ?? '#57534E';
+}

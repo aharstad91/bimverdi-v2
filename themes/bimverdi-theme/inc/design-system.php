@@ -2966,6 +2966,68 @@ class BIM_Verdi_Design_System {
                 display: block;
             }
 
+            /* ============================================
+               PROSE STYLES — Article content typography
+               ============================================ */
+            .prose h2 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin-top: 2rem;
+                margin-bottom: 1rem;
+                color: #1A1A1A;
+            }
+
+            .prose h3 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-top: 1.5rem;
+                margin-bottom: 0.75rem;
+                color: #1A1A1A;
+            }
+
+            .prose p {
+                margin-bottom: 1.25rem;
+                line-height: 1.75;
+            }
+
+            .prose ul, .prose ol {
+                margin-bottom: 1.25rem;
+                padding-left: 1.5rem;
+            }
+
+            .prose li {
+                margin-bottom: 0.5rem;
+            }
+
+            .prose a {
+                color: #FF8B5E;
+                text-decoration: underline;
+            }
+
+            .prose a:hover {
+                color: #E5743F;
+            }
+
+            .prose blockquote {
+                border-left: 4px solid #FF8B5E;
+                padding-left: 1rem;
+                margin: 1.5rem 0;
+                font-style: italic;
+                color: #5A5A5A;
+            }
+
+            .prose img {
+                border-radius: 0.5rem;
+                margin: 1.5rem 0;
+            }
+
+            .prose code {
+                background: #F5F5F4;
+                padding: 0.125rem 0.25rem;
+                border-radius: 0.25rem;
+                font-size: 0.875em;
+            }
+
         </style>
         <?php
     }
