@@ -46,12 +46,6 @@ if ($temagruppe_term) {
 if (empty($artikler)) {
     return;
 }
-
-// Norwegian months for date formatting
-$months_no = [
-    'januar', 'februar', 'mars', 'april', 'mai', 'juni',
-    'juli', 'august', 'september', 'oktober', 'november', 'desember'
-];
 ?>
 
 <section>
@@ -77,11 +71,7 @@ $months_no = [
             $category = !empty($categories) ? $categories[0] : '';
 
             // Format date
-            $date_obj = new DateTime($artikkel->post_date);
-            $day = $date_obj->format('j');
-            $month_idx = (int)$date_obj->format('n') - 1;
-            $year = $date_obj->format('Y');
-            $formatted_date = $day . '. ' . $months_no[$month_idx] . ' ' . $year;
+            $formatted_date = bimverdi_format_date($artikkel_id);
 
             // Get author or company
             $author_name = get_the_author_meta('display_name', $artikkel->post_author);

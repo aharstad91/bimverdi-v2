@@ -22,16 +22,6 @@ $kategori_filter = isset($_GET['kategori']) && is_array($_GET['kategori'])
     ? array_map('sanitize_text_field', $_GET['kategori'])
     : array();
 
-// Temagruppe color map
-$tg_colors = [
-    'SirkBIM'      => '#FF8B5E',
-    'ByggesaksBIM' => '#005898',
-    'ProsjektBIM'  => '#6B9B37',
-    'EiendomsBIM'  => '#5E36FE',
-    'MiljøBIM'     => '#0D9488',
-    'BIMtech'      => '#D97706',
-];
-
 // Get temagrupper and artikkelkategorier for filters
 $temagruppe_terms = get_terms(['taxonomy' => 'temagruppe', 'hide_empty' => false]);
 $temagruppe_options = [];
@@ -106,7 +96,7 @@ while ($articles->have_posts()): $articles->the_post();
         'id'               => get_the_ID(),
         'title'            => get_the_title(),
         'permalink'        => get_the_permalink(),
-        'date'             => get_the_date('j. M Y'),
+        'date'             => bimverdi_format_date(get_the_ID()),
         'date_raw'         => get_the_date('Y-m-d'),
         'thumbnail_url'    => has_post_thumbnail() ? get_the_post_thumbnail_url(get_the_ID(), 'large') : '',
         'ingress'          => $ingress ?: (has_excerpt() ? get_the_excerpt() : wp_trim_words(get_the_content(), 30, '...')),
@@ -199,10 +189,8 @@ $rest_items = array_slice($items, 1);
                                  alt="<?php echo esc_attr($featured['title']); ?>"
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             <?php else: ?>
-                            <div class="w-full h-full min-h-[280px] flex items-center justify-center">
-                                <svg class="w-16 h-16 text-[#E7E5E4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-                                </svg>
+                            <div class="w-full h-full min-h-[280px] flex items-center justify-center bg-gradient-to-br from-[#FAFAF9] to-[#F5F5F4]">
+                                <?php echo bimverdi_icon('file-text', 32, 'text-[#C4BFB3]'); ?>
                             </div>
                             <?php endif; ?>
                         </div>
@@ -210,7 +198,7 @@ $rest_items = array_slice($items, 1);
                         <div class="p-8 flex flex-col justify-center">
                             <div class="flex flex-wrap items-center gap-2 mb-4">
                                 <?php foreach ($featured['temagruppe_terms'] as $tg):
-                                    $color = isset($tg_colors[$tg->name]) ? $tg_colors[$tg->name] : '#57534E';
+                                    $color = bimverdi_get_temagruppe_color($tg->name);
                                 ?>
                                 <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background: <?php echo esc_attr($color); ?>15; color: <?php echo esc_attr($color); ?>">
                                     <?php echo esc_html($tg->name); ?>
@@ -265,12 +253,11 @@ $rest_items = array_slice($items, 1);
                     <?php if ($item['thumbnail_url']): ?>
                     <img src="<?php echo esc_url($item['thumbnail_url']); ?>"
                          alt="<?php echo esc_attr($item['title']); ?>"
+                         loading="lazy"
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     <?php else: ?>
-                    <div class="w-full h-full flex items-center justify-center">
-                        <svg class="w-12 h-12 text-[#E7E5E4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-                        </svg>
+                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#FAFAF9] to-[#F5F5F4]">
+                        <?php echo bimverdi_icon('file-text', 32, 'text-[#C4BFB3]'); ?>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -280,7 +267,7 @@ $rest_items = array_slice($items, 1);
                     <!-- Badges & Date -->
                     <div class="flex flex-wrap items-center gap-1.5 mb-3">
                         <?php foreach ($item['temagruppe_terms'] as $tg):
-                            $color = isset($tg_colors[$tg->name]) ? $tg_colors[$tg->name] : '#57534E';
+                            $color = bimverdi_get_temagruppe_color($tg->name);
                         ?>
                         <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background: <?php echo esc_attr($color); ?>15; color: <?php echo esc_attr($color); ?>">
                             <?php echo esc_html($tg->name); ?>
@@ -352,7 +339,7 @@ $rest_items = array_slice($items, 1);
                             <td class="px-4 py-3 hidden md:table-cell">
                                 <div class="flex flex-wrap gap-1">
                                     <?php foreach ($item['temagruppe_terms'] as $tg):
-                                        $color = isset($tg_colors[$tg->name]) ? $tg_colors[$tg->name] : '#57534E';
+                                        $color = bimverdi_get_temagruppe_color($tg->name);
                                     ?>
                                     <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style="background: <?php echo esc_attr($color); ?>15; color: <?php echo esc_attr($color); ?>">
                                         <?php echo esc_html($tg->name); ?>
@@ -362,7 +349,7 @@ $rest_items = array_slice($items, 1);
                             </td>
                             <td class="px-4 py-3 text-[#57534E] hidden md:table-cell">
                                 <div class="flex items-center gap-2">
-                                    <img src="<?php echo esc_url($item['author_avatar']); ?>" alt="" class="w-5 h-5 rounded-full bg-[#F5F5F4]">
+                                    <img src="<?php echo esc_url($item['author_avatar']); ?>" alt="" loading="lazy" class="w-5 h-5 rounded-full bg-[#F5F5F4]">
                                     <span class="truncate"><?php echo esc_html($item['author_name']); ?></span>
                                 </div>
                             </td>

@@ -238,22 +238,19 @@ if (!empty($verktoy_ids)) {
     wp_reset_postdata();
 }
 
-// ── Artikler ──
-$artikler = [];
+// ── Artikler (count only — artikler-grid.php handles its own query) ──
 $artikler_count = 0;
 if ($temagruppe_term) {
     $art_query = new WP_Query([
         'post_type'      => 'artikkel',
-        'posts_per_page' => -1,
-        'orderby'        => 'date',
-        'order'          => 'DESC',
+        'posts_per_page' => 1,
+        'fields'         => 'ids',
         'tax_query'      => [[
             'taxonomy' => 'temagruppe',
             'field'    => 'term_id',
             'terms'    => $temagruppe_term->term_id,
         ]],
     ]);
-    $artikler = $art_query->posts;
     $artikler_count = $art_query->found_posts;
     wp_reset_postdata();
 }
@@ -314,31 +311,6 @@ function bv_tg_build_event_rows($events, $months_no) {
             'type' => $event_type ? ['label' => $event_type] : '',
             'dato' => $formatted_date ?: '—',
             'sted' => $location_text ?: '—',
-        ];
-    }
-    return $rows;
-}
-
-/**
- * Build table rows for artikler
- */
-function bv_tg_build_article_rows($artikler, $months_no) {
-    $rows = [];
-    foreach ($artikler as $artikkel) {
-        $artikkel_id = $artikkel->ID;
-        $permalink = get_permalink($artikkel_id);
-        $author_name = get_the_author_meta('display_name', $artikkel->post_author);
-        $tilknyttet_foretak = get_field('tilknyttet_foretak', $artikkel_id);
-        $company_name = $tilknyttet_foretak ? get_the_title($tilknyttet_foretak) : '';
-        $author_display = $company_name ?: $author_name;
-
-        $date_obj = new DateTime($artikkel->post_date);
-        $formatted_date = $date_obj->format('j') . '. ' . $months_no[(int)$date_obj->format('n') - 1] . ' ' . $date_obj->format('Y');
-
-        $rows[] = [
-            'tittel' => ['label' => $artikkel->post_title, 'href' => $permalink],
-            'forfatter' => $author_display,
-            'dato' => $formatted_date,
         ];
     }
     return $rows;
@@ -810,17 +782,8 @@ function bv_tg_build_verktoy_rows($verktoy) {
             <?php if ($artikler_count > 0) : ?>
             <!-- ═══ OVERSIKT: Artikler ═══ -->
             <div class="canvas-section" data-tab="all" data-section="artikler">
-                <div class="section-title-row">
-                    <h3 class="section-title">Artikler</h3>
-                    <span class="section-count"><?php echo $artikler_count; ?></span>
-                </div>
-                <?php get_template_part('parts/components/data-table', null, [
-                    'columns' => [
-                        ['key' => 'tittel', 'label' => 'Artikkel', 'type' => 'link'],
-                        ['key' => 'forfatter', 'label' => 'Forfatter'],
-                        ['key' => 'dato', 'label' => 'Publisert'],
-                    ],
-                    'rows' => bv_tg_build_article_rows($artikler, $months_no),
+                <?php get_template_part('template-parts/temagruppe/artikler-grid', null, [
+                    'temagruppe_term' => $temagruppe_term,
                 ]); ?>
             </div>
             <?php endif; ?>
@@ -911,17 +874,8 @@ function bv_tg_build_verktoy_rows($verktoy) {
             <?php if ($artikler_count > 0) : ?>
             <!-- ═══ TAB: Artikler ═══ -->
             <div class="canvas-section" data-tab="artikler" data-section="artikler-tab">
-                <div class="section-title-row">
-                    <h3 class="section-title">Artikler</h3>
-                    <span class="section-count"><?php echo $artikler_count; ?></span>
-                </div>
-                <?php get_template_part('parts/components/data-table', null, [
-                    'columns' => [
-                        ['key' => 'tittel', 'label' => 'Artikkel', 'type' => 'link'],
-                        ['key' => 'forfatter', 'label' => 'Forfatter'],
-                        ['key' => 'dato', 'label' => 'Publisert'],
-                    ],
-                    'rows' => bv_tg_build_article_rows($artikler, $months_no),
+                <?php get_template_part('template-parts/temagruppe/artikler-grid', null, [
+                    'temagruppe_term' => $temagruppe_term,
                 ]); ?>
             </div>
             <?php endif; ?>
