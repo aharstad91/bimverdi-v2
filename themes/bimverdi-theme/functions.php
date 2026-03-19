@@ -82,13 +82,21 @@ function bimverdi_enqueue_assets() {
         '1.1.0',
         true
     );
-    // Add missing Tailwind responsive utilities not in compiled CSS
+    // Add missing Tailwind utilities not in compiled CSS
     wp_add_inline_style('bimverdi-styles', '
         @media (min-width: 768px) {
             .md\:inline-flex { display: inline-flex !important; }
             .md\:hidden { display: none !important; }
             .md\:flex { display: flex !important; }
         }
+        .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border-width: 0 !important; }
+        .peer:checked ~ div { /* handled by peer-checked below */ }
+        .peer-checked\:border-\[\#4a7c29\] { border-color: #4a7c29 !important; }
+        .peer-checked\:bg-green-50 { background-color: rgb(240 253 244) !important; }
+        .peer-checked\:border-\[\#c53030\] { border-color: #c53030 !important; }
+        .peer-checked\:bg-red-50 { background-color: rgb(254 242 242) !important; }
+        .peer-checked\:border-\[\#FF8B5E\] { border-color: #FF8B5E !important; }
+        .peer-checked\:bg-orange-50 { background-color: rgb(255 247 237) !important; }
     ');
 }
 add_action('wp_enqueue_scripts', 'bimverdi_enqueue_assets');

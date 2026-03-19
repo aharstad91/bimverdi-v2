@@ -57,6 +57,12 @@
                     <li><a href="<?php echo esc_url(home_url('/deltakere/')); ?>" class="text-[#57534E] hover:text-[#111827] transition-colors">Deltakere</a></li>
                     <li><a href="<?php echo esc_url(home_url('/styringsgruppe/')); ?>" class="text-[#57534E] hover:text-[#111827] transition-colors">Styringsgruppe</a></li>
                     <li><a href="<?php echo esc_url(home_url('/vedtekter/')); ?>" class="text-[#57534E] hover:text-[#111827] transition-colors">Vedtekter</a></li>
+                    <li class="pt-2">
+                        <a href="<?php echo esc_url(home_url('/tilbakemelding/')); ?>" class="inline-flex items-center gap-1.5 text-[#FF8B5E] hover:text-[#e87a4f] font-medium transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            Gi oss tilbakemelding
+                        </a>
+                    </li>
                 </ul>
             </div>
 
@@ -75,7 +81,11 @@
 
         <!-- Bottom Bar -->
         <div class="border-t border-[#E7E5E4] mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-sm text-[#57534E]">&copy; <?php echo date('Y'); ?> BIM Verdi. Alle rettigheter reservert.</p>
+            <p class="text-sm text-[#57534E]">
+                &copy; <?php echo date('Y'); ?> BIM Verdi. Alle rettigheter reservert.
+                <span class="mx-1 text-[#D6D1C6]">|</span>
+                <a href="<?php echo esc_url(home_url('/tilbakemelding/')); ?>" class="text-[#57534E] hover:text-[#111827] transition-colors">Gi tilbakemelding</a>
+            </p>
 
             <!-- Social Icons -->
             <div class="flex items-center gap-4">
