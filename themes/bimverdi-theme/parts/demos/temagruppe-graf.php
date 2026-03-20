@@ -666,10 +666,18 @@ $tg_colors_json = wp_json_encode($tg_colors);
 
     /* Mobile */
     @media (max-width: 768px) {
-        .tg-wrap { flex-direction: column; height: auto; }
-        .tg-sidebar { width: 100%; max-height: 300px; border-right: none; border-bottom: 1px solid #E8E4DA; }
-        .tg-viz { height: 70vh; }
+        .tg-wrap { flex-direction: column; height: auto; min-height: 100vh; }
+        .tg-sidebar { width: 100%; max-height: none; border-right: none; border-bottom: 1px solid #E8E4DA; overflow: visible; }
+        .tg-sidebar-inner { padding: 20px 16px; overflow: visible; }
+        .tg-sidebar h2 { font-size: 22px; }
+        .tg-subtitle { font-size: 13px; }
+        .tg-stats { gap: 6px; }
+        .tg-stat-pill { font-size: 12px; padding: 6px 10px; }
+        .tg-section-label { margin: 16px 0 8px 0; }
+        .tg-search-wrap, .tg-hr, #tg-details { display: none; }
+        .tg-viz { height: 60vh; min-height: 400px; }
         .tg-legend { display: none; }
+        .tg-chip { padding: 4px 10px; font-size: 11px; }
     }
 </style>
 
@@ -692,9 +700,11 @@ $tg_colors_json = wp_json_encode($tg_colors);
             <div class="tg-section-label">Entitytyper</div>
             <div class="tg-filters" id="tg-filters-type"></div>
 
-            <div class="tg-section-label">Sok</div>
-            <input type="search" class="tg-search" id="tg-search" placeholder="Foretak, verktoy, artikkel...">
-            <p class="tg-hint">Klikk node = vis koblinger &middot; Rull = zoom &middot; Dra = flytt</p>
+            <div class="tg-search-wrap">
+                <div class="tg-section-label">Sok</div>
+                <input type="search" class="tg-search" id="tg-search" placeholder="Foretak, verktoy, artikkel...">
+                <p class="tg-hint">Klikk node = vis koblinger &middot; Rull = zoom &middot; Dra = flytt</p>
+            </div>
 
             <hr class="tg-hr">
 
