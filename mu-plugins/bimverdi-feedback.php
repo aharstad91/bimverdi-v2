@@ -95,14 +95,15 @@ add_action('init', function () {
 
     $body .= "<hr><p style='color:#999;font-size:12px;'>Sendt fra tilbakemeldingsskjemaet på " . home_url() . "</p>";
 
-    $admin_email = get_option('admin_email');
+    $to = 'baard@verdinettverk.no';
     $headers = ['Content-Type: text/html; charset=UTF-8'];
+    $headers[] = 'Bcc: ' . get_option('admin_email');
 
     if ($email) {
         $headers[] = 'Reply-To: ' . ($name ? "$name <$email>" : $email);
     }
 
-    $sent = wp_mail($admin_email, $subject, $body, $headers);
+    $sent = wp_mail($to, $subject, $body, $headers);
 
     if ($sent) {
         wp_safe_redirect(home_url('/tilbakemelding/?status=success'));
