@@ -4,16 +4,22 @@
  * Routes to specific demo visualization based on post slug
  */
 
-// Password gate — same as archive-demo.php
-$demo_pass = 'dv30';
-$demo_cookie = 'bv_demo_access';
-if (isset($_POST['demo_password']) && $_POST['demo_password'] === $demo_pass) {
-    setcookie($demo_cookie, hash('sha256', $demo_pass), time() + 30 * DAY_IN_SECONDS, '/');
-    $_COOKIE[$demo_cookie] = hash('sha256', $demo_pass);
-}
-if (!current_user_can('manage_options') && (!isset($_COOKIE[$demo_cookie]) || $_COOKIE[$demo_cookie] !== hash('sha256', $demo_pass))) {
-    wp_redirect(get_post_type_archive_link('demo'));
-    exit;
+// Public demos that bypass password gate
+$public_demos = ['temagruppe-graf'];
+$current_slug = get_post_field('post_name', get_queried_object_id());
+
+// Password gate — same as archive-demo.php (skip for public demos)
+if (!in_array($current_slug, $public_demos)) {
+    $demo_pass = 'dv30';
+    $demo_cookie = 'bv_demo_access';
+    if (isset($_POST['demo_password']) && $_POST['demo_password'] === $demo_pass) {
+        setcookie($demo_cookie, hash('sha256', $demo_pass), time() + 30 * DAY_IN_SECONDS, '/');
+        $_COOKIE[$demo_cookie] = hash('sha256', $demo_pass);
+    }
+    if (!current_user_can('manage_options') && (!isset($_COOKIE[$demo_cookie]) || $_COOKIE[$demo_cookie] !== hash('sha256', $demo_pass))) {
+        wp_redirect(get_post_type_archive_link('demo'));
+        exit;
+    }
 }
 
 get_header();
