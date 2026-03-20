@@ -1083,8 +1083,8 @@ $theme_groups = [
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#0D9488;"></span><strong><?php echo esc_html($total_events); ?></strong> arrangementer</span>
                 </div>
                 <div class="bv3-hero__actions">
-                    <a href="<?php echo esc_url(home_url('/koblinger/')); ?>" class="bv3-btn bv3-btn--dark">Utforsk koblingene <span aria-hidden="true">&rarr;</span></a>
-                    <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="bv3-btn bv3-btn--outline">Bli deltaker</a>
+                    <a href="<?php echo esc_url(home_url('/demo/temagruppe-graf/')); ?>" class="bv3-btn bv3-btn--dark">Utforsk koblingene <span aria-hidden="true">&rarr;</span></a>
+                    <a href="<?php echo esc_url(home_url('/delta/')); ?>" class="bv3-btn bv3-btn--outline">Bli deltaker</a>
                 </div>
             </div>
 
@@ -1557,8 +1557,8 @@ $support = [
         <p class="bv3-subtitle">Bli deltaker i BIM Verdi og få tilgang til verktøykatalogen, kunnskapsbiblioteket, temagrupper og et nettverk av over <?php echo esc_html($total_companies); ?> foretak.</p>
 
         <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
-            <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="bv3-btn bv3-btn--white">Bli deltaker <span aria-hidden="true">&rarr;</span></a>
-            <a href="<?php echo esc_url(home_url('/om-oss/')); ?>" class="bv3-btn bv3-btn--ghost-white">Les mer om deltakelse</a>
+            <a href="<?php echo esc_url(home_url('/delta/')); ?>" class="bv3-btn bv3-btn--white">Bli deltaker <span aria-hidden="true">&rarr;</span></a>
+            <a href="<?php echo esc_url(home_url('/delta/')); ?>" class="bv3-btn bv3-btn--ghost-white">Les mer om deltakelse</a>
         </div>
 
         <div class="bv3-cta__stats">
