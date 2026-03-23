@@ -296,7 +296,7 @@ class BIMVerdi_Company_Invitations {
      * @param string $role Default role for invited user
      * @return array|WP_Error
      */
-    public function send_invitation($email, $company_id, $invited_by, $role = 'tilleggskontakt') {
+    public function send_invitation($email, $company_id, $invited_by, $role = 'tilleggskontakt', $message = '') {
         global $wpdb;
         
         $email = sanitize_email($email);
@@ -370,7 +370,7 @@ class BIMVerdi_Company_Invitations {
         $invitation_id = $wpdb->insert_id;
         
         // Send invitation email
-        $email_sent = $this->send_invitation_email($email, $token, $company_id, $invited_by);
+        $email_sent = $this->send_invitation_email($email, $token, $company_id, $invited_by, $message);
         
         if (!$email_sent) {
             // Log error but don't fail - invitation is created
@@ -398,25 +398,30 @@ class BIMVerdi_Company_Invitations {
      * @param int $invited_by
      * @return bool
      */
-    private function send_invitation_email($email, $token, $company_id, $invited_by) {
+    private function send_invitation_email($email, $token, $company_id, $invited_by, $personal_message = '') {
         $company = get_post($company_id);
         $inviter = get_userdata($invited_by);
-        
+
         if (!$company || !$inviter) {
             return false;
         }
-        
+
         $invitation_url = add_query_arg(
             array('invitation_token' => $token),
             home_url('/aksepter-invitasjon/')
         );
-        
+
         $subject = sprintf('Invitasjon til %s i BIM Verdi', $company->post_title);
-        
+
+        $personal_section = '';
+        if (!empty(trim($personal_message))) {
+            $personal_section = sprintf("\n\nMelding fra %s:\n«%s»\n", $inviter->display_name, $personal_message);
+        }
+
         $message = sprintf(
             'Hei!
 
-%s har invitert deg til å bli koblet til %s i BIM Verdi-portalen.
+%s har invitert deg til å bli koblet til %s i BIM Verdi-portalen.%s
 
 Klikk på lenken under for å akseptere invitasjonen:
 
@@ -430,6 +435,7 @@ Med vennlig hilsen,
 BIM Verdi',
             $inviter->display_name,
             $company->post_title,
+            $personal_section,
             $invitation_url
         );
         
@@ -882,12 +888,13 @@ BIM Verdi',
         
         $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
         $company_id = isset($_POST['company_id']) ? intval($_POST['company_id']) : 0;
-        
+        $message = isset($_POST['message']) ? sanitize_textarea_field($_POST['message']) : '';
+
         if (empty($email) || empty($company_id)) {
             wp_send_json_error(array('message' => 'Mangler påkrevde felt'));
         }
-        
-        $result = $this->send_invitation($email, $company_id, get_current_user_id());
+
+        $result = $this->send_invitation($email, $company_id, get_current_user_id(), 'tilleggskontakt', $message);
         
         if (is_wp_error($result)) {
             wp_send_json_error(array('message' => $result->get_error_message()));

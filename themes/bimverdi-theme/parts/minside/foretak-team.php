@@ -282,6 +282,20 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
                         ]); ?>
                     </div>
 
+                    <div class="mt-3">
+                        <label for="invite-message" class="block text-sm font-medium text-[#111827] mb-1">
+                            <?php _e('Personlig melding (valgfritt)', 'bimverdi'); ?>
+                        </label>
+                        <textarea
+                            id="invite-message"
+                            name="message"
+                            rows="3"
+                            maxlength="500"
+                            placeholder="<?php esc_attr_e('F.eks. «Hei! Kan du registrere verktøyene våre i BIM Verdi?»', 'bimverdi'); ?>"
+                            class="w-full px-4 py-2.5 border border-[#D6D3D1] rounded-lg focus:ring-2 focus:ring-[#111827] focus:border-[#111827] bg-white text-[#111827] text-sm resize-none"
+                        ></textarea>
+                    </div>
+
                     <p class="text-sm text-[#57534E] mt-3">
                         <?php _e('Invitasjonen er gyldig i 7 dager. Kollegaen vil motta en e-post med lenke for å registrere seg.', 'bimverdi'); ?>
                     </p>
