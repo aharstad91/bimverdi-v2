@@ -368,11 +368,25 @@ $theme_groups = [
     /* Arrangement feature card */
     .bv3-fcard--event .bv3-fcard__visual {
         background: var(--bv3-dark);
+        background-size: cover;
+        background-position: center;
         flex-direction: column;
         gap: 0.75rem;
         padding: 1.5rem 1.75rem;
         align-items: flex-start;
         justify-content: flex-end;
+        position: relative;
+    }
+    .bv3-fcard--event .bv3-fcard__visual::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.1) 100%);
+        z-index: 0;
+    }
+    .bv3-fcard--event .bv3-fcard__visual > * {
+        position: relative;
+        z-index: 1;
     }
     .bv3-fcard--event__date-block {
         display: flex;
@@ -1232,8 +1246,9 @@ $theme_groups = [
                 $ne_tg_color = isset($tg_colors[$ne_tg_name]) ? $tg_colors[$ne_tg_name] : 'var(--bv3-orange)';
                 $ne_format = get_field('arrangement_type', $next_event->ID) ?: '';
                 ?>
+                <?php $ne_featured_img = get_the_post_thumbnail_url($next_event->ID, 'large'); ?>
                 <a href="<?php echo esc_url(get_permalink($next_event)); ?>" class="bv3-fcard bv3-fcard--event">
-                    <div class="bv3-fcard__visual">
+                    <div class="bv3-fcard__visual"<?php if ($ne_featured_img): ?> style="background-image:url('<?php echo esc_url($ne_featured_img); ?>')"<?php endif; ?>>
                         <span class="bv3-fcard__badge" style="background:var(--bv3-orange);">Kommende</span>
                         <div class="bv3-fcard--event__date-block">
                             <span class="bv3-fcard--event__day"><?php echo esc_html($ne_day); ?></span>

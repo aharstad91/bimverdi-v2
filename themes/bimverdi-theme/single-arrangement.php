@@ -256,8 +256,14 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 </section>
                 <?php endif; ?>
 
-                <!-- Digital Meeting Link (Digitalt/Hybrid) -->
+                <!-- Digital Meeting Link (Digitalt/Hybrid) - kun for påmeldte -->
                 <?php if (($arrangement_type === 'digitalt' || $arrangement_type === 'hybrid') && $online_lenke && !$is_past): ?>
+                <?php
+                $current_user_id_meeting = get_current_user_id();
+                $is_registered_for_event = $current_user_id_meeting && function_exists('bimverdi_get_user_registration')
+                    ? bimverdi_get_user_registration($current_user_id_meeting, $arrangement_id)
+                    : false;
+                ?>
                 <section>
                     <div class="border-t border-[#E7E5E4] pt-8">
                         <h2 class="text-xl font-bold text-[#111827] mb-4 flex items-center gap-2">
@@ -265,12 +271,16 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                             Digital deltakelse
                         </h2>
 
-                        <?php bimverdi_button([
-                            'text'    => 'Åpne møtelenke',
-                            'variant' => 'primary',
-                            'href'    => $online_lenke,
-                            'target'  => '_blank',
-                        ]); ?>
+                        <?php if ($is_registered_for_event): ?>
+                            <?php bimverdi_button([
+                                'text'    => 'Åpne møtelenke',
+                                'variant' => 'primary',
+                                'href'    => $online_lenke,
+                                'target'  => '_blank',
+                            ]); ?>
+                        <?php else: ?>
+                            <p class="text-sm text-[#5A5A5A]">Møtelenken blir tilgjengelig etter påmelding.</p>
+                        <?php endif; ?>
                     </div>
                 </section>
                 <?php endif; ?>

@@ -413,15 +413,17 @@ class BIMVerdi_Company_Invitations {
 
         $subject = sprintf('Invitasjon til %s i BIM Verdi', $company->post_title);
 
+        $begrunnelse_hint = '';
         $personal_section = '';
         if (!empty(trim($personal_message))) {
+            $begrunnelse_hint = ' Se eventuell begrunnelse for dette under.';
             $personal_section = sprintf("\n\nMelding fra %s:\n«%s»\n", $inviter->display_name, $personal_message);
         }
 
         $message = sprintf(
             'Hei!
 
-%s har invitert deg til å bli koblet til %s i BIM Verdi-portalen.%s
+%s har invitert deg som tilleggskontakt i BIM Verdi.%s%s
 
 Klikk på lenken under for å akseptere invitasjonen:
 
@@ -434,7 +436,7 @@ Hvis du ikke kjenner til denne invitasjonen, kan du ignorere denne e-posten.
 Med vennlig hilsen,
 BIM Verdi',
             $inviter->display_name,
-            $company->post_title,
+            $begrunnelse_hint,
             $personal_section,
             $invitation_url
         );
