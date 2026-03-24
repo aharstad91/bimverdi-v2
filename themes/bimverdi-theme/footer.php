@@ -85,6 +85,10 @@
                 &copy; <?php echo date('Y'); ?> BIM Verdi. Alle rettigheter reservert.
                 <span class="mx-1 text-[#D6D1C6]">|</span>
                 <a href="<?php echo esc_url(home_url('/tilbakemelding/')); ?>" class="text-[#57534E] hover:text-[#111827] transition-colors">Gi tilbakemelding</a>
+                <span class="mx-1 text-[#D6D1C6]">|</span>
+                <a href="<?php echo esc_url(home_url('/personvernerklaering/')); ?>" class="text-[#57534E] hover:text-[#111827] transition-colors">Personvern</a>
+                <span class="mx-1 text-[#D6D1C6]">|</span>
+                <a href="#" onclick="localStorage.removeItem('bv_cookie_consent');document.getElementById('bv-cookie-consent').style.display='block';return false;" class="text-[#57534E] hover:text-[#111827] transition-colors">Informasjonskapsler</a>
             </p>
 
             <!-- Social Icons -->
@@ -112,6 +116,7 @@
     </div>
 </footer>
 
+<?php get_template_part('parts/components/cookie-consent'); ?>
 <?php wp_footer(); ?>
 
 
