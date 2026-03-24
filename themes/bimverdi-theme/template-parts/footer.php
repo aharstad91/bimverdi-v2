@@ -54,7 +54,7 @@ $footer_email = get_option('admin_email');
         <!-- Legal -->
         <div>
             <span class="footer-title text-lg font-bold mb-4">Legal</span>
-            <a href="<?php echo esc_url($site_url); ?>/personvernerklaering/" class="link link-hover">Personvern</a>
+            <a href="<?php echo esc_url($site_url); ?>/personvern/" class="link link-hover">Personvern</a>
             <a href="<?php echo esc_url($site_url); ?>/vilkar/" class="link link-hover">Vilkår</a>
             <a href="<?php echo esc_url($site_url); ?>/kontakt/" class="link link-hover">Kontakt</a>
         </div>

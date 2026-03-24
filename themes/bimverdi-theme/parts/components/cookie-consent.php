@@ -98,7 +98,7 @@ if (!defined('ABSPATH')) exit;
     <div class="bv-cc-inner">
         <div class="bv-cc-text">
             Vi bruker informasjonskapsler for å analysere trafikk og forbedre opplevelsen.
-            <a href="<?php echo esc_url(home_url('/personvernerklaering/')); ?>">Les mer</a>
+            <a href="<?php echo esc_url(home_url('/personvern/')); ?>">Les mer</a>
         </div>
         <div class="bv-cc-buttons">
             <button class="bv-cc-btn bv-cc-reject" onclick="bvCookieConsent('rejected')">Avvis</button>
