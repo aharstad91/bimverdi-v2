@@ -218,11 +218,22 @@ function bimverdi_pamelding_export_button($post_type) {
         return;
     }
 
-    $export_url = add_query_arg([
-        'action'             => 'bimverdi_export_pamelding_csv',
-        'filter_arrangement' => isset($_GET['filter_arrangement']) ? intval($_GET['filter_arrangement']) : '',
-        '_wpnonce'           => wp_create_nonce('export_pamelding_csv'),
-    ], admin_url('admin-ajax.php'));
+    // Pass all current filters to the export URL
+    $export_params = [
+        'action'   => 'bimverdi_export_pamelding_csv',
+        '_wpnonce' => wp_create_nonce('export_pamelding_csv'),
+    ];
+    if (!empty($_GET['filter_arrangement'])) {
+        $export_params['filter_arrangement'] = intval($_GET['filter_arrangement']);
+    }
+    if (!empty($_GET['s'])) {
+        $export_params['s'] = sanitize_text_field($_GET['s']);
+    }
+    if (!empty($_GET['m'])) {
+        $export_params['m'] = intval($_GET['m']);
+    }
+
+    $export_url = add_query_arg($export_params, admin_url('admin-ajax.php'));
 
     printf(
         '<a href="%s" class="button" style="margin-left:8px;">⬇ Last ned CSV</a>',
@@ -242,6 +253,8 @@ function bimverdi_export_pamelding_csv() {
     }
 
     $filter = intval($_GET['filter_arrangement'] ?? 0);
+    $search = sanitize_text_field($_GET['s'] ?? '');
+    $month  = intval($_GET['m'] ?? 0);
 
     $args = [
         'post_type'      => 'pamelding',
@@ -257,6 +270,14 @@ function bimverdi_export_pamelding_csv() {
             ['key' => 'arrangement', 'value' => $filter],
             ['key' => 'pamelding_arrangement', 'value' => $filter],
         ];
+    }
+
+    if ($search) {
+        $args['s'] = $search;
+    }
+
+    if ($month > 0) {
+        $args['m'] = $month;
     }
 
     $registrations = get_posts($args);
