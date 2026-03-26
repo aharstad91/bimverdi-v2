@@ -448,7 +448,14 @@ function bimverdi_pamelding_admin_styles() {
 
             /* Hide default title column */
             .column-title { display: none !important; }
-            #the-list .column-title { display: none !important; }
+
+            /* Compact row actions: collapse height, show on hover */
+            #the-list .row-actions {
+                position: absolute;
+                margin: 0;
+                padding: 0;
+            }
+            #the-list tr:not(:hover) .row-actions { display: none; }
         </style>';
     }
 
