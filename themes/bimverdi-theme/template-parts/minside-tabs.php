@@ -30,7 +30,7 @@ $tabs = array(
     'foretak' => array(
         'label' => 'Foretak',
         'icon' => 'building',
-        'url' => home_url('/koble-foretak/'),
+        'url' => home_url('/min-side/foretak/'),
         'description' => 'Se eller endre foretak-tilknytning',
     ),
     'verktoy' => array(

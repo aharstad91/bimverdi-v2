@@ -168,6 +168,41 @@ if ($company_id) {
     </div>
 <?php endif; ?>
 
+<?php
+// BV20: Foretak-kobling widget for new users
+$bruker_foretak = function_exists('bimverdi_get_bruker_foretak') ? bimverdi_get_bruker_foretak($user_id) : false;
+if (isset($_GET['welcome']) && $_GET['welcome'] == '1' && !$company_id && !$bruker_foretak) :
+    get_template_part('parts/minside/welcome-foretak-kobling', null, ['context' => 'welcome']);
+endif;
+?>
+
+<?php
+// BV20: Success banner after foretak kobling
+if (isset($_GET['foretak_koblet']) && in_array($_GET['foretak_koblet'], ['deltaker', 'bruker'], true)) :
+    $is_deltaker_kobling = ($_GET['foretak_koblet'] === 'deltaker');
+    // Cross-check against actual state
+    if ($company_id || $bruker_foretak) :
+?>
+    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <p class="text-sm text-green-800">
+            <?php if ($is_deltaker_kobling) : ?>
+                <strong><?php _e('Foretak koblet!', 'bimverdi'); ?></strong>
+                <?php _e('Du er nå lagt til som tilleggskontakt. Dashboardet ditt er oppdatert.', 'bimverdi'); ?>
+            <?php else : ?>
+                <strong><?php _e('Arbeidsgiver registrert!', 'bimverdi'); ?></strong>
+                <?php _e('Foretaket er lagret på profilen din.', 'bimverdi'); ?>
+            <?php endif; ?>
+        </p>
+    </div>
+<?php
+    endif;
+endif;
+?>
+
 <?php if (isset($_GET['invitation_accepted']) && $_GET['invitation_accepted'] == '1'): ?>
     <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
@@ -183,6 +218,16 @@ if ($company_id) {
             <?php endif; ?>
         </p>
     </div>
+<?php endif; ?>
+
+<?php
+// BV20: Show BRUKER-FORETAK info for users with lightweight company link
+if (!$company && $bruker_foretak) : ?>
+<div class="py-6 border-b border-[#E7E5E4] mb-6">
+    <p class="text-sm text-[#5A5A5A]"><?php _e('Din arbeidsgiver', 'bimverdi'); ?></p>
+    <p class="text-base font-medium text-[#1A1A1A]"><?php echo esc_html($bruker_foretak['navn']); ?></p>
+    <p class="text-xs text-[#888888]"><?php printf(__('Org.nr: %s · Ikke deltaker i BIM Verdi', 'bimverdi'), esc_html($bruker_foretak['orgnr'])); ?></p>
+</div>
 <?php endif; ?>
 
 <?php if ($company): ?>

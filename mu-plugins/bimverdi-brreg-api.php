@@ -252,7 +252,7 @@ function bimverdi_brreg_check_registered($request) {
     // Search for existing foretak with this org number
     $existing = get_posts(array(
         'post_type' => 'foretak',
-        'post_status' => array('publish', 'pending', 'draft'),
+        'post_status' => array('publish', 'pending'),
         'meta_query' => array(
             array(
                 'key' => 'organisasjonsnummer',
@@ -322,7 +322,8 @@ function bimverdi_ajax_auto_join_foretak() {
     }
 
     $foretak_id = intval($_POST['foretak_id'] ?? 0);
-    if (!$foretak_id || get_post_type($foretak_id) !== 'foretak') {
+    $foretak = $foretak_id ? get_post($foretak_id) : null;
+    if (!$foretak || $foretak->post_type !== 'foretak' || $foretak->post_status !== 'publish') {
         wp_send_json_error(['message' => 'Ugyldig foretak.'], 400);
     }
 
@@ -339,18 +340,104 @@ function bimverdi_ajax_auto_join_foretak() {
     update_user_meta($user_id, 'bim_verdi_company_id', $foretak_id);
     update_user_meta($user_id, 'bimverdi_account_type', 'foretak');
 
+    // Set role — guard against destroying admin/editor roles
     $user = new WP_User($user_id);
-    $user->set_role('tilleggskontakt');
+    $basic_roles = ['subscriber', 'medlem', 'tilleggskontakt'];
+    if (!empty(array_intersect($basic_roles, $user->roles))) {
+        $user->set_role('tilleggskontakt');
+    } else {
+        $user->add_role('tilleggskontakt');
+    }
 
     if (function_exists('update_field')) {
         update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user_id);
     }
+
+    // Clean up BRUKER-FORETAK meta if present (user upgrading from US2 to US1)
+    delete_user_meta($user_id, 'bimverdi_bruker_foretak_orgnr');
+    delete_user_meta($user_id, 'bimverdi_bruker_foretak_navn');
+    delete_user_meta($user_id, 'bimverdi_bruker_foretak_source');
 
     error_log('BIMVerdi: User ' . $user_id . ' auto-joined foretak ' . $foretak_id . ' as tilleggskontakt');
 
     wp_send_json_success([
         'message' => 'Du er nå lagt til som tilleggskontakt.',
         'foretak_url' => home_url('/min-side/foretak/'),
+    ]);
+}
+
+/**
+ * BV20: Get BRUKER-FORETAK (lightweight company link stored in user_meta)
+ *
+ * @param int|null $user_id
+ * @return array|false Array with orgnr, navn, source or false if not set
+ */
+function bimverdi_get_bruker_foretak($user_id = null) {
+    if (!$user_id) {
+        $user_id = get_current_user_id();
+    }
+    $orgnr = get_user_meta($user_id, 'bimverdi_bruker_foretak_orgnr', true);
+    if (!$orgnr) {
+        return false;
+    }
+    return [
+        'orgnr'  => $orgnr,
+        'navn'   => get_user_meta($user_id, 'bimverdi_bruker_foretak_navn', true),
+        'source' => get_user_meta($user_id, 'bimverdi_bruker_foretak_source', true),
+    ];
+}
+
+/**
+ * BV20: Set BRUKER-FORETAK for a user
+ *
+ * @param int $user_id
+ * @param string $orgnr
+ * @param string $navn
+ */
+function bimverdi_set_bruker_foretak($user_id, $orgnr, $navn) {
+    update_user_meta($user_id, 'bimverdi_bruker_foretak_orgnr', sanitize_text_field($orgnr));
+    update_user_meta($user_id, 'bimverdi_bruker_foretak_navn', sanitize_text_field($navn));
+    update_user_meta($user_id, 'bimverdi_bruker_foretak_source', 'brreg');
+}
+
+/**
+ * BV20: AJAX handler — Save BRUKER-FORETAK (non-member company link)
+ */
+add_action('wp_ajax_bimverdi_save_bruker_foretak', 'bimverdi_ajax_save_bruker_foretak');
+
+function bimverdi_ajax_save_bruker_foretak() {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_foretak_kobling')) {
+        wp_send_json_error(['message' => 'Ugyldig forespørsel.'], 403);
+    }
+
+    $user_id = get_current_user_id();
+    if (!$user_id) {
+        wp_send_json_error(['message' => 'Du må være innlogget.'], 401);
+    }
+
+    $orgnr = sanitize_text_field($_POST['orgnr'] ?? '');
+    $navn  = sanitize_text_field($_POST['navn'] ?? '');
+
+    if (!bimverdi_is_valid_norwegian_orgnr($orgnr) || empty($navn)) {
+        wp_send_json_error(['message' => 'Ugyldig organisasjonsnummer eller navn.']);
+    }
+
+    // User with real company cannot save BRUKER-FORETAK
+    $existing_company = get_user_meta($user_id, 'bimverdi_company_id', true);
+    if (!$existing_company) {
+        $existing_company = get_user_meta($user_id, 'bim_verdi_company_id', true);
+    }
+    if ($existing_company) {
+        wp_send_json_error(['message' => 'Du er allerede koblet til et foretak.']);
+    }
+
+    bimverdi_set_bruker_foretak($user_id, $orgnr, $navn);
+
+    error_log('BIMVerdi: User ' . $user_id . ' saved BRUKER-FORETAK: ' . $orgnr . ' (' . $navn . ')');
+
+    wp_send_json_success([
+        'message'  => 'Foretak lagret.',
+        'redirect' => home_url('/min-side/?foretak_koblet=bruker'),
     ]);
 }
 
@@ -764,4 +851,13 @@ add_action('wp_enqueue_scripts', function() {
         'ajaxUrl'   => admin_url('admin-ajax.php'),
         'ajaxNonce' => wp_create_nonce('bimverdi_auto_join'),
     ));
+
+    // BV20: Foretak-kobling widget JS (self-initializing — only activates if #foretak-kobling-widget exists)
+    wp_enqueue_script(
+        'bimverdi-foretak-kobling',
+        get_template_directory_uri() . '/assets/js/foretak-kobling.js',
+        array(),
+        '1.0.0',
+        true
+    );
 });

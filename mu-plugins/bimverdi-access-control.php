@@ -384,7 +384,7 @@ class BIMVerdi_Access_Control {
                 </div>
                 <div class="locked-text">
                     <p class="locked-message"><?php echo esc_html($message); ?></p>
-                    <wa-button variant="brand" size="small" href="<?php echo esc_url(home_url('/min-side/koble-foretak/')); ?>">
+                    <wa-button variant="brand" size="small" href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>">
                         <wa-icon slot="prefix" name="building" library="fa"></wa-icon>
                         Koble til foretak
                     </wa-button>
@@ -549,7 +549,7 @@ function bimverdi_locked_card($title, $description, $icon = 'lock', $feature = '
                 </wa-badge>
             </div>
             <p class="text-gray-500 text-sm mb-4"><?php echo esc_html($description); ?></p>
-            <wa-button variant="neutral" outline size="small" href="<?php echo esc_url(home_url('/min-side/koble-foretak/')); ?>">
+            <wa-button variant="neutral" outline size="small" href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>">
                 <wa-icon slot="prefix" name="building" library="fa"></wa-icon>
                 Koble til foretak for å låse opp
             </wa-button>
@@ -583,7 +583,7 @@ function bimverdi_connect_company_cta() {
                 </p>
             </div>
             <div class="flex-shrink-0">
-                <wa-button variant="brand" href="<?php echo esc_url(home_url('/min-side/koble-foretak/')); ?>">
+                <wa-button variant="brand" href="<?php echo esc_url(home_url('/min-side/foretak/')); ?>">
                     <wa-icon slot="prefix" name="link" library="fa"></wa-icon>
                     Koble til foretak
                 </wa-button>

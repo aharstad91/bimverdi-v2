@@ -58,14 +58,37 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
 ]); ?>
 
 <?php if (!$company): ?>
-    <!-- No Company Connected -->
-    <?php get_template_part('parts/components/empty-state', null, [
-        'icon' => 'building-2',
-        'title' => __('Ikke koblet til et foretak', 'bimverdi'),
-        'description' => __('Du må være tilknyttet et foretak for å se informasjon her. Registrer et nytt foretak eller be om invitasjon fra et eksisterende.', 'bimverdi'),
-        'cta_text' => __('Registrer foretak', 'bimverdi'),
-        'cta_url' => '/min-side/registrer-foretak/',
-    ]); ?>
+    <?php
+    // BV20: Check for BRUKER-FORETAK
+    $bruker_foretak = function_exists('bimverdi_get_bruker_foretak') ? bimverdi_get_bruker_foretak($user_id) : false;
+
+    if ($bruker_foretak) : ?>
+    <!-- BRUKER-FORETAK info -->
+    <div class="space-y-6">
+        <div class="py-6 border-b border-[#E7E5E4]">
+            <p class="text-sm text-[#5A5A5A]"><?php _e('Din arbeidsgiver (ikke deltaker)', 'bimverdi'); ?></p>
+            <p class="text-lg font-medium text-[#1A1A1A]"><?php echo esc_html($bruker_foretak['navn']); ?></p>
+            <p class="text-sm text-[#888888]"><?php printf(__('Org.nr: %s', 'bimverdi'), esc_html($bruker_foretak['orgnr'])); ?></p>
+        </div>
+        <p class="text-sm text-[#5A5A5A]">
+            <?php _e('Foretaket ditt er ikke deltaker i BIM Verdi.', 'bimverdi'); ?>
+            <a href="<?php echo esc_url(home_url('/delta/')); ?>" class="text-[#FF8B5E] hover:underline"><?php _e('Les mer om deltakelse', 'bimverdi'); ?></a>
+        </p>
+    </div>
+    <?php else : ?>
+    <!-- BV20: Foretak-kobling widget -->
+    <?php get_template_part('parts/minside/welcome-foretak-kobling', null, ['context' => 'foretak']); ?>
+
+    <div class="mt-6 pt-6 border-t border-[#E7E5E4] text-center">
+        <p class="text-sm text-[#5A5A5A] mb-2"><?php _e('Vil du registrere et nytt foretak i stedet?', 'bimverdi'); ?></p>
+        <?php bimverdi_button([
+            'text'    => __('Registrer foretak', 'bimverdi'),
+            'href'    => bimverdi_minside_url('foretak/registrer'),
+            'variant' => 'tertiary',
+            'icon'    => 'plus',
+        ]); ?>
+    </div>
+    <?php endif; ?>
 
 <?php else: ?>
 
