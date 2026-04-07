@@ -33,7 +33,7 @@ $first_name = $user->first_name ?: $user->display_name;
             <?php _e('Koble til ditt foretak', 'bimverdi'); ?>
         </h2>
         <p class="text-sm text-[#5A5A5A] mb-4">
-            <?php _e('Søk etter din arbeidsgiver for å koble profilen din til et foretak.', 'bimverdi'); ?>
+            <?php _e('Søk etter din arbeidsgiver for å koble profilen din til et foretak. Dette er nødvendig for registrering til arrangement, sjekk om din arbeidsgiver er registrert som deltaker etc.', 'bimverdi'); ?>
         </p>
 
         <div class="relative">
@@ -61,16 +61,4 @@ $first_name = $user->first_name ?: $user->display_name;
     <div data-detail class="mt-4" aria-live="polite">
     </div>
 
-    <?php if ($show_welcome_banner) : ?>
-    <!-- Hopp over -->
-    <div class="mt-6 pt-6 border-t border-[#E7E5E4]">
-        <a href="<?php echo esc_url(home_url('/min-side/')); ?>"
-           class="text-sm text-[#5A5A5A] hover:text-[#1A1A1A] transition-colors inline-flex items-center gap-1">
-            <?php _e('Hopp over — jeg gjør dette senere', 'bimverdi'); ?>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"/>
-            </svg>
-        </a>
-    </div>
-    <?php endif; ?>
 </div>
