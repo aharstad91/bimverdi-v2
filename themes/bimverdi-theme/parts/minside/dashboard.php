@@ -285,8 +285,9 @@ if (!$company && $bruker_foretak) : ?>
                             <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                             <span class="text-xs text-[#57534E]"><?php _e('Aktiv deltaker', 'bimverdi'); ?></span>
                         <?php else: ?>
-                            <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
-                            <span class="text-xs text-[#57534E]"><?php _e('Inaktiv deltaker', 'bimverdi'); ?></span>
+                            <?php $bv_rolle_dash = function_exists('get_field') ? get_field('bv_rolle', $company_id) : ''; ?>
+                            <span class="w-2 h-2 rounded-full bg-<?php echo ($bv_rolle_dash === 'Ikke deltaker') ? 'gray' : 'amber'; ?>-400 flex-shrink-0"></span>
+                            <span class="text-xs text-[#57534E]"><?php echo ($bv_rolle_dash === 'Ikke deltaker') ? esc_html__('Gratis brukerforetak', 'bimverdi') : esc_html__('Inaktiv deltaker', 'bimverdi'); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -578,7 +579,7 @@ if (!$company && $bruker_foretak) : ?>
                 <?php printf(__('Velkommen til min side, %s', 'bimverdi'), esc_html($current_user->display_name)); ?>
             </h3>
             <p class="text-sm text-[#57534E] max-w-md mx-auto">
-                <?php _e('Her kan du bruke og vedlikeholde en gratis, personlig brukerprofil. Velg «Registrer foretak» under hvis du vil sjekke om din arbeidsgiver allerede er deltaker eller om du vil oppgradere til betalende deltaker.', 'bimverdi'); ?>
+                <?php _e('Her kan du bruke og vedlikeholde en gratis, personlig brukerprofil dersom du kobler deg til et offentlig registrert foretak. Velg «Registrer foretak» under for å gjøre dette.', 'bimverdi'); ?>
             </p>
         </div>
 

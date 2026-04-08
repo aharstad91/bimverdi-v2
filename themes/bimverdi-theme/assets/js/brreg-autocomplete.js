@@ -416,6 +416,9 @@
         if (existsMsg) existsMsg.classList.add('hidden');
         if (regFields) regFields.style.display = '';
         if (submitWrap) submitWrap.style.display = '';
+
+        // Notify tier-toggle JS to reconcile field visibility
+        document.dispatchEvent(new CustomEvent('bv:registration-fields-shown'));
     }
 
     function hideStatusMessages() {

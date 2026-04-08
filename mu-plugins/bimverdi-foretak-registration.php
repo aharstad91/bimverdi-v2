@@ -86,6 +86,64 @@ add_action('init', function () {
         exit;
     }
 
+    // Check deltakertype EARLY (needed before description validation for gratis path)
+    $deltakertype = sanitize_text_field($_POST['deltakertype'] ?? '');
+    $valid_types = ['gratis', 'deltaker', 'prosjektdeltaker', 'partner'];
+    if (!in_array($deltakertype, $valid_types, true)) {
+        wp_redirect(add_query_arg('bv_error', 'invalid_type', $redirect_error));
+        exit;
+    }
+
+    // Check if org number is already registered (needed for both gratis and paid)
+    $existing_foretak = get_posts([
+        'post_type'   => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
+        'post_status' => 'publish',
+        'meta_key'    => 'organisasjonsnummer',
+        'meta_value'  => $organisasjonsnummer,
+        'numberposts' => 1,
+    ]);
+    if (!empty($existing_foretak)) {
+        wp_redirect(add_query_arg('bv_error', 'orgnr_exists', $redirect_error));
+        exit;
+    }
+
+    // --- GRATIS PATH: minimal foretak-opprettelse, early return ---
+    if ($deltakertype === 'gratis') {
+        $foretak_id = wp_insert_post([
+            'post_type'   => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
+            'post_title'  => $bedriftsnavn,
+            'post_status' => 'publish',
+            'post_author' => $user_id,
+        ]);
+
+        if (is_wp_error($foretak_id)) {
+            wp_redirect(add_query_arg('bv_error', 'create_failed', $redirect_error));
+            exit;
+        }
+
+        if (function_exists('update_field')) {
+            update_field('organisasjonsnummer', $organisasjonsnummer, $foretak_id);
+            update_field('hovedkontaktperson', $user_id, $foretak_id);
+            update_field('bv_rolle', 'Ikke deltaker', $foretak_id);
+        }
+
+        update_user_meta($user_id, 'bimverdi_company_id', $foretak_id);
+        update_user_meta($user_id, 'bim_verdi_company_id', $foretak_id);
+        update_user_meta($user_id, 'bimverdi_account_type', 'foretak');
+        if (function_exists('update_field')) {
+            update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user_id);
+        }
+
+        delete_user_meta($user_id, 'bimverdi_bruker_foretak_orgnr');
+        delete_user_meta($user_id, 'bimverdi_bruker_foretak_navn');
+        delete_user_meta($user_id, 'bimverdi_bruker_foretak_source');
+
+        wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
+        exit;
+    }
+
+    // --- PAID PATH: existing validation continues below ---
+
     if (empty($beskrivelse)) {
         wp_redirect(add_query_arg('bv_error', 'missing_description', $redirect_error));
         exit;
@@ -118,27 +176,7 @@ add_action('init', function () {
     ];
     $kundetyper = array_intersect($kundetyper, $allowed_kundetyper);
 
-    $deltakertype = sanitize_text_field($_POST['deltakertype'] ?? '');
-    $valid_types = ['deltaker', 'prosjektdeltaker', 'partner'];
-    if (!in_array($deltakertype, $valid_types, true)) {
-        wp_redirect(add_query_arg('bv_error', 'invalid_type', $redirect_error));
-        exit;
-    }
-
-    // Check if org number is already registered
-    $existing_foretak = get_posts([
-        'post_type'   => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
-        'post_status' => 'publish',
-        'meta_key'    => 'organisasjonsnummer',
-        'meta_value'  => $organisasjonsnummer,
-        'numberposts' => 1,
-    ]);
-    if (!empty($existing_foretak)) {
-        wp_redirect(add_query_arg('bv_error', 'orgnr_exists', $redirect_error));
-        exit;
-    }
-
-    // --- Handle logo upload ---
+    // --- Handle logo upload (PAID PATH only — gratis already exited above) ---
     $logo_attachment_id = 0;
     if (!empty($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
         // Validate file type

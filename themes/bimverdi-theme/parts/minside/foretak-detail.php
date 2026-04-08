@@ -154,8 +154,9 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
                             <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                             <span class="text-xs text-[#57534E]"><?php _e('Aktiv deltaker', 'bimverdi'); ?></span>
                         <?php else: ?>
-                            <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
-                            <span class="text-xs text-[#57534E]"><?php _e('Inaktiv deltaker', 'bimverdi'); ?></span>
+                            <?php $bv_rolle_label = function_exists('get_field') ? get_field('bv_rolle', $company_id) : ''; ?>
+                            <span class="w-2 h-2 rounded-full bg-<?php echo ($bv_rolle_label === 'Ikke deltaker') ? 'gray' : 'amber'; ?>-400 flex-shrink-0"></span>
+                            <span class="text-xs text-[#57534E]"><?php echo ($bv_rolle_label === 'Ikke deltaker') ? esc_html__('Gratis brukerforetak', 'bimverdi') : esc_html__('Inaktiv deltaker', 'bimverdi'); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>

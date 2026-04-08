@@ -23,13 +23,19 @@ if (!defined('ABSPATH')) {
 class BIMVerdi_Access_Control {
     
     /**
-     * Features that require company connection
+     * Features that require any company connection (including free/gratis)
      */
     const COMPANY_REQUIRED_FEATURES = array(
+        'company_profile',    // Redigere foretaksprofil
+    );
+
+    /**
+     * Features that require an ACTIVE (paying) company — bv_rolle != 'Ikke deltaker'
+     */
+    const ACTIVE_COMPANY_FEATURES = array(
         'register_tool',      // Registrere verktøy
         'edit_tool',          // Redigere verktøy
         'join_temagruppe',    // Velge temagrupper
-        'company_profile',    // Redigere foretaksprofil
         'view_members_full',  // Se fullt medlemsinnhold
     );
     
@@ -94,11 +100,16 @@ class BIMVerdi_Access_Control {
             return true;
         }
         
-        // Company-required features
+        // Company-required features (any foretak, including free)
         if (in_array($feature, self::COMPANY_REQUIRED_FEATURES)) {
             return self::user_has_company($user_id);
         }
-        
+
+        // Active company features (paying foretak only)
+        if (in_array($feature, self::ACTIVE_COMPANY_FEATURES)) {
+            return self::user_has_active_company($user_id);
+        }
+
         // Unknown feature - deny by default
         return false;
     }
@@ -139,8 +150,31 @@ class BIMVerdi_Access_Control {
     }
     
     /**
+     * Check if user has an ACTIVE (paying) company — bv_rolle != 'Ikke deltaker'
+     *
+     * @param int|null $user_id
+     * @return bool
+     */
+    public static function user_has_active_company($user_id = null) {
+        if (!self::user_has_company($user_id)) {
+            return false;
+        }
+
+        $company = self::get_user_company($user_id);
+        if (!$company || empty($company['id'])) {
+            return false;
+        }
+
+        if (function_exists('bimverdi_is_company_active')) {
+            return bimverdi_is_company_active($company['id']);
+        }
+
+        return false;
+    }
+
+    /**
      * Get user's company data
-     * 
+     *
      * @param int|null $user_id
      * @return array|false
      */
@@ -316,7 +350,8 @@ class BIMVerdi_Access_Control {
             'feature' => $feature,
             'has_access' => self::can_access($feature),
             'account_type' => self::get_account_type(),
-            'requires_company' => in_array($feature, self::COMPANY_REQUIRED_FEATURES),
+            'requires_company' => in_array($feature, self::COMPANY_REQUIRED_FEATURES) || in_array($feature, self::ACTIVE_COMPANY_FEATURES),
+            'requires_active_company' => in_array($feature, self::ACTIVE_COMPANY_FEATURES),
         );
     }
     
@@ -332,7 +367,10 @@ class BIMVerdi_Access_Control {
             'has_company' => self::user_has_company($user_id),
             'company' => self::get_user_company($user_id),
             'available_features' => self::OPEN_FEATURES,
-            'locked_features' => self::user_has_company($user_id) ? array() : self::COMPANY_REQUIRED_FEATURES,
+            'locked_features' => array_merge(
+                self::user_has_company($user_id) ? array() : self::COMPANY_REQUIRED_FEATURES,
+                self::user_has_active_company($user_id) ? array() : self::ACTIVE_COMPANY_FEATURES
+            ),
         );
     }
     

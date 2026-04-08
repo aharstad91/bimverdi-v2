@@ -182,7 +182,7 @@ get_template_part('parts/components/page-header', null, [
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E86DE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                 <div>
                     <p class="text-sm text-blue-800"><strong id="bv-foretak-check-name"></strong> er ikke registrert som deltaker i BIM Verdi.</p>
-                    <p class="text-sm text-blue-700 mt-1">Hvis du ønsker, kan du velge blant deltakernivåene under og vi registrerer deg som hovedkontakt. Da vil du fritt kunne registrere inntil 10 kollegaer som tilleggskontakter. Velg «Avslutt foretaksregistrering» hvis du ikke vil delta på innsiden av nettverket.</p>
+                    <p class="text-sm text-blue-700 mt-1"><strong>Du kan velge «Gratis brukerforetak» under dersom du ønsker å melde deg på et åpent arrangement, registrere kunnskap etc. Eller du kan velge blant deltakernivåene under og vi registrerer deg som hovedkontakt. Da vil du fritt kunne registrere kollegaer som tilleggskontakter. Velg «Avslutt foretaksregistrering» hvis du ikke ønsker å gå videre.</strong></p>
                 </div>
             </div>
             <div class="mt-3 ml-8">
@@ -203,9 +203,15 @@ get_template_part('parts/components/page-header', null, [
                 Velg deltakernivå <span class="text-red-600">*</span>
             </legend>
             <p class="text-xs text-[#888888] mb-3">Velg det nivået som passer foretaket ditt</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <?php
                 $deltakertyper = [
+                    'gratis' => [
+                        'label' => 'Gratis brukerforetak',
+                        'features' => ['Påmelding til åpne arrangementer', 'Registrer kunnskap og verktøy'],
+                        'personer' => 1,
+                        'pris' => '0',
+                    ],
                     'deltaker' => [
                         'label' => 'Deltaker',
                         'features' => ['Temagrupper og lukkede møter', 'Verktøyregistrering', 'Rabatt på konferanser'],
@@ -241,7 +247,11 @@ get_template_part('parts/components/page-header', null, [
                         <?php endforeach; ?>
                     </ul>
                     <p class="mt-3 pt-3 border-t border-[#E5E0D5] text-xs text-[#888888]">
-                        <?php echo (int) $type['personer']; ?> personer · <?php echo esc_html($type['pris']); ?> kr/år
+                        <?php if ($type['pris'] === '0'): ?>
+                            Gratis
+                        <?php else: ?>
+                            <?php echo (int) $type['personer']; ?> personer · <?php echo esc_html($type['pris']); ?> kr/år
+                        <?php endif; ?>
                     </p>
                 </label>
                 <?php endforeach; ?>
@@ -249,6 +259,8 @@ get_template_part('parts/components/page-header', null, [
             <p class="mt-2 text-xs text-[#888888]">Fakturering avtales etter registrering</p>
         </fieldset>
 
+        <!-- Seksjoner som skjules for gratis brukerforetak -->
+        <div id="bv-section-beskrivelse">
         <!-- Divider -->
         <hr class="border-[#E5E0D5]">
 
@@ -264,7 +276,9 @@ get_template_part('parts/components/page-header', null, [
                       placeholder="Kort beskrivelse av foretaket..."
                       class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E] resize-y"></textarea>
         </div>
+        </div>
 
+        <div id="bv-section-logo">
         <!-- Logo -->
         <div>
             <label for="logo" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
@@ -273,11 +287,13 @@ get_template_part('parts/components/page-header', null, [
             <input type="file"
                    id="logo"
                    name="logo"
-                   accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                   accept="image/jpeg,image/png,image/gif,image/webp"
                    class="w-full text-sm text-[#5A5A5A] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-[#E5E0D5] file:text-sm file:font-medium file:bg-gray-100 file:text-[#1A1A1A] hover:file:bg-gray-200 file:cursor-pointer file:transition-colors">
-            <p class="mt-1 text-xs text-[#888888]">JPG, PNG, GIF, WebP eller SVG. Maks 2 MB.</p>
+            <p class="mt-1 text-xs text-[#888888]">JPG, PNG, GIF eller WebP. Maks 2 MB.</p>
+        </div>
         </div>
 
+        <div id="bv-section-adresse">
         <!-- Divider -->
         <hr class="border-[#E5E0D5]">
 
@@ -337,7 +353,9 @@ get_template_part('parts/components/page-header', null, [
                    autocomplete="url"
                    class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
         </div>
+        </div>
 
+        <div id="bv-section-bransje">
         <!-- Divider -->
         <hr class="border-[#E5E0D5]">
 
@@ -359,7 +377,9 @@ get_template_part('parts/components/page-header', null, [
                 <?php endforeach; ?>
             </div>
         </fieldset>
+        </div>
 
+        <div id="bv-section-faktura">
         <!-- Fakturainformasjon -->
         <div>
             <h3 class="text-base font-semibold text-[#1A1A1A] mb-4">Fakturainformasjon</h3>
@@ -393,7 +413,9 @@ get_template_part('parts/components/page-header', null, [
                 </div>
             </div>
         </div>
+        </div>
 
+        <div id="bv-section-betingelser">
         <!-- Divider -->
         <hr class="border-[#E5E0D5]">
 
@@ -406,6 +428,7 @@ get_template_part('parts/components/page-header', null, [
                     Jeg aksepterer <a href="<?php echo esc_url(home_url('/betingelser/')); ?>" target="_blank" class="text-[#FF8B5E] hover:underline">betingelsene</a> for deltakelse i BIM Verdi <span class="text-red-600">*</span>
                 </span>
             </label>
+        </div>
         </div>
 
         </div><!-- /bv-registration-fields -->
@@ -434,3 +457,75 @@ get_template_part('parts/components/page-header', null, [
     </div>
 
 </div>
+
+<script>
+(function() {
+  'use strict';
+  document.addEventListener('DOMContentLoaded', function() {
+    var form = document.querySelector('form[enctype]');
+    if (!form) return;
+
+    var gratisHiddenSectionIds = [
+      'bv-section-beskrivelse', 'bv-section-logo', 'bv-section-adresse',
+      'bv-section-bransje', 'bv-section-faktura', 'bv-section-betingelser'
+    ];
+
+    var conditionallyRequiredFields = form.querySelectorAll(
+      '#beskrivelse, input[name="bransje_rolle[]"], input[name="aksept_betingelser"]'
+    );
+    var submitButton = form.querySelector('button[type="submit"]');
+    var originalButtonText = submitButton ? submitButton.textContent : '';
+    var currentTier = null;
+
+    function setTier(tier) {
+      if (tier === currentTier) return;
+      currentTier = tier;
+      var isGratis = tier === 'gratis';
+
+      conditionallyRequiredFields.forEach(function(f) {
+        if (isGratis) {
+          f.removeAttribute('required');
+        } else {
+          f.setAttribute('required', '');
+        }
+      });
+
+      gratisHiddenSectionIds.forEach(function(id) {
+        var s = document.getElementById(id);
+        if (s) s.style.display = isGratis ? 'none' : '';
+      });
+
+      if (submitButton) {
+        submitButton.textContent = isGratis ? 'Registrer gratis foretak' : originalButtonText;
+      }
+    }
+
+    form.addEventListener('change', function(e) {
+      if (e.target.name !== 'deltakertype') return;
+      setTier(e.target.value === 'gratis' ? 'gratis' : 'paid');
+    });
+
+    window.addEventListener('pageshow', function(e) {
+      if (e.persisted) {
+        var checked = form.querySelector('input[name="deltakertype"]:checked');
+        if (checked) setTier(checked.value === 'gratis' ? 'gratis' : 'paid');
+      }
+    });
+
+    document.addEventListener('bv:registration-fields-shown', function() {
+      if (currentTier) {
+        var prev = currentTier;
+        currentTier = null;
+        setTier(prev);
+      }
+    });
+
+    form.addEventListener('submit', function() {
+      var checked = form.querySelector('input[name="deltakertype"]:checked');
+      if (checked && checked.value === 'gratis') {
+        conditionallyRequiredFields.forEach(function(f) { f.removeAttribute('required'); });
+      }
+    });
+  });
+})();
+</script>
