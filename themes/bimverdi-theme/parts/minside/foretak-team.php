@@ -77,29 +77,29 @@ usort($company_users, function($a, $b) {
 // Get invitations data
 $invitations = null;
 $pending_invitations = [];
-$max_tilleggskontakter = 10;  // Default from DEFAULT_MAX_INVITATIONS constant
-$remaining_invitations = 0;
+$is_unlimited = true;
+$remaining_invitations = PHP_INT_MAX;
 
 if (function_exists('bimverdi_get_invitations')) {
     $invitations = bimverdi_get_invitations();
     $pending_invitations = $invitations->get_pending_invitations($company_id);
 
-    // Calculate remaining invitations
-    $acf_max = get_field('antall_invitasjoner_tillatt', $company_id);
-    if ($acf_max && $acf_max > 0) {
-        $max_tilleggskontakter = (int) $acf_max;
-    }
+    // Check if there's a per-company limit set via ACF (0 or empty = unlimited)
+    $acf_max = (int) get_field('antall_invitasjoner_tillatt', $company_id);
+    $is_unlimited = ($acf_max <= 0);
 
-    $tilleggskontakter_count = 0;
-    foreach ($company_users as $u) {
-        if (!$u->is_hovedkontakt) {
-            $tilleggskontakter_count++;
+    if (!$is_unlimited) {
+        $tilleggskontakter_count = 0;
+        foreach ($company_users as $u) {
+            if (!$u->is_hovedkontakt) {
+                $tilleggskontakter_count++;
+            }
         }
-    }
 
-    $pending_count = count($pending_invitations);
-    $total_used = $tilleggskontakter_count + $pending_count;
-    $remaining_invitations = max(0, $max_tilleggskontakter - $total_used);
+        $pending_count = count($pending_invitations);
+        $total_used = $tilleggskontakter_count + $pending_count;
+        $remaining_invitations = max(0, $acf_max - $total_used);
+    }
 }
 
 // Handle POST actions (form submissions)
@@ -254,11 +254,7 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
             <section class="mb-10 pb-10 border-b border-[#E7E5E4]">
                 <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Inviter ny kollega', 'bimverdi'); ?></h2>
                 <p class="text-sm text-[#57534E] mb-5">
-                    <?php printf(
-                        __('Du kan invitere %d tilleggskontakt%s til.', 'bimverdi'),
-                        $remaining_invitations,
-                        $remaining_invitations === 1 ? '' : 'er'
-                    ); ?>
+                    <?php _e('Inviter kolleger til foretaket.', 'bimverdi'); ?>
                 </p>
 
                 <form id="send-invitation-form" class="max-w-xl">
@@ -304,9 +300,9 @@ if (isset($_POST['action']) && wp_verify_nonce($_POST['nonce'] ?? '', 'bimverdi_
                 <div id="invite-result" class="mt-4 hidden max-w-xl"></div>
             </section>
 
-        <?php elseif ($invitations && $remaining_invitations <= 0): ?>
+        <?php elseif ($invitations && !$is_unlimited && $remaining_invitations <= 0): ?>
 
-            <!-- Max invitations reached -->
+            <!-- Max invitations reached (only when per-company limit is set) -->
             <div class="mb-10 p-4 bg-[#F5F5F4] border-l-4 border-[#D6D3D1]">
                 <p class="text-sm text-[#57534E]">
                     <strong class="text-[#111827]"><?php _e('Maksimalt antall tilleggskontakter nådd', 'bimverdi'); ?></strong><br>

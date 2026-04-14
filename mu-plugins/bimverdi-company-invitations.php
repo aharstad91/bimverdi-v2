@@ -27,8 +27,8 @@ class BIMVerdi_Company_Invitations {
     /** @var int Token expiry in seconds (7 days) */
     const TOKEN_EXPIRY = 604800;
     
-    /** @var int Maximum invitations per company (default) */
-    const DEFAULT_MAX_INVITATIONS = 10;
+    /** @var int Maximum invitations per company (default, 0 = unlimited) */
+    const DEFAULT_MAX_INVITATIONS = 0;
     
     /**
      * Constructor - initialize hooks
@@ -190,9 +190,14 @@ class BIMVerdi_Company_Invitations {
         if ($max_allowed <= 0) {
             $max_allowed = self::DEFAULT_MAX_INVITATIONS;
         }
-        
+
+        // 0 means unlimited
+        if ($max_allowed <= 0) {
+            return PHP_INT_MAX;
+        }
+
         $used = $this->count_used_invitations($company_id);
-        
+
         return max(0, $max_allowed - $used);
     }
     
@@ -311,8 +316,9 @@ class BIMVerdi_Company_Invitations {
             return new WP_Error('not_authorized', 'Du har ikke tillatelse til å sende invitasjoner for dette foretaket');
         }
         
-        // Check remaining invitations
-        if ($this->get_remaining_invitations($company_id) <= 0) {
+        // Check remaining invitations (skipped when unlimited)
+        $remaining = $this->get_remaining_invitations($company_id);
+        if ($remaining <= 0) {
             $max_allowed = (int) get_field('antall_invitasjoner_tillatt', $company_id);
             if ($max_allowed <= 0) {
                 $max_allowed = self::DEFAULT_MAX_INVITATIONS;

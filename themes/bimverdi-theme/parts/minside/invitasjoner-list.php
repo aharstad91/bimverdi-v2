@@ -60,12 +60,9 @@ $pending_invitations = $invitations->get_pending_invitations($company_id);
 $all_invitations = $invitations->get_company_invitations($company_id);
 $company_users = $invitations->get_company_users($company_id);
 
-// Calculate remaining invitations based on actual users (excluding hovedkontakt)
-$max_tilleggskontakter = 10; // Default max
-$acf_max = get_field('antall_invitasjoner_tillatt', $company_id);
-if ($acf_max && $acf_max > 0) {
-    $max_tilleggskontakter = (int) $acf_max;
-}
+// Check if there's a per-company limit set via ACF (0 or empty = unlimited)
+$acf_max = (int) get_field('antall_invitasjoner_tillatt', $company_id);
+$is_unlimited = ($acf_max <= 0);
 
 // Count tilleggskontakter (users minus hovedkontakt)
 $tilleggskontakter_count = 0;
@@ -75,10 +72,9 @@ foreach ($company_users as $u) {
     }
 }
 
-// Add pending invitations to used count
 $pending_count = count($pending_invitations);
 $total_used = $tilleggskontakter_count + $pending_count;
-$remaining_invitations = max(0, $max_tilleggskontakter - $total_used);
+$remaining_invitations = $is_unlimited ? PHP_INT_MAX : max(0, $acf_max - $total_used);
 
 // Get company name safely
 $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
@@ -104,11 +100,7 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
     <section class="mb-10">
         <h2 class="text-lg font-semibold text-[#111827] mb-1"><?php _e('Send invitasjon', 'bimverdi'); ?></h2>
         <p class="text-sm text-[#57534E] mb-4">
-            <?php printf(
-                __('Du kan invitere %d tilleggskontakt%s til.', 'bimverdi'),
-                $remaining_invitations,
-                $remaining_invitations === 1 ? '' : 'er'
-            ); ?>
+            <?php _e('Inviter kolleger til foretaket.', 'bimverdi'); ?>
         </p>
 
         <form id="send-invitation-form">
@@ -251,8 +243,8 @@ $company_name = $company->post_title ?: __('Ditt foretak', 'bimverdi');
     </section>
     <?php endif; ?>
 
-    <!-- Info about limits (only show if no remaining invitations) -->
-    <?php if ($remaining_invitations <= 0): ?>
+    <!-- Info about limits (only show if a per-company limit is set and reached) -->
+    <?php if (!$is_unlimited && $remaining_invitations <= 0): ?>
     <div class="p-4 bg-[#F5F5F4] border-l-4 border-[#D6D3D1] text-[#57534E]">
         <strong class="text-[#111827]">Maksimalt antall tilleggskontakter nådd</strong><br>
         Du har <?php echo $tilleggskontakter_count; ?> tilleggskontakt<?php echo $tilleggskontakter_count !== 1 ? 'er' : ''; ?><?php if ($pending_count > 0): ?> og <?php echo $pending_count; ?> ventende invitasjon<?php echo $pending_count !== 1 ? 'er' : ''; ?><?php endif; ?>.
