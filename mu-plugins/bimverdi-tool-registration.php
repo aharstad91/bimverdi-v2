@@ -266,3 +266,78 @@ add_action('init', function () {
     wp_redirect(add_query_arg($param, '1', home_url('/min-side/verktoy/')));
     exit;
 });
+
+/**
+ * Handle tool deletion
+ *
+ * Triggered from verktoy-rediger.php "Slett verktøy"-knapp.
+ * URL-mønster: /min-side/verktoy/?action=delete_tool&tool_id=XX&_wpnonce=YY
+ *
+ * Pattern: GET-Redirect-GET
+ * - Suksess: /min-side/verktoy/?deleted=1
+ * - Feil:    /min-side/verktoy/?bv_error=<kode>
+ */
+add_action('init', function () {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        return;
+    }
+
+    if (($_GET['action'] ?? '') !== 'delete_tool') {
+        return;
+    }
+
+    $redirect_list = home_url('/min-side/verktoy/');
+
+    // Must be logged in
+    if (!is_user_logged_in()) {
+        wp_redirect(home_url('/logg-inn/?redirect_to=' . urlencode($redirect_list)));
+        exit;
+    }
+
+    $tool_id = intval($_GET['tool_id'] ?? 0);
+    if (!$tool_id) {
+        wp_redirect(add_query_arg('bv_error', 'not_found', $redirect_list));
+        exit;
+    }
+
+    // Verify nonce (tied to this specific tool)
+    if (!wp_verify_nonce($_GET['_wpnonce'] ?? '', 'delete_tool_' . $tool_id)) {
+        wp_redirect(add_query_arg('bv_error', 'nonce', $redirect_list));
+        exit;
+    }
+
+    // Verify tool exists and is a verktoy
+    $tool = get_post($tool_id);
+    if (!$tool || $tool->post_type !== 'verktoy') {
+        wp_redirect(add_query_arg('bv_error', 'not_found', $redirect_list));
+        exit;
+    }
+
+    // Verify ownership: author, same foretak, or admin
+    $user_id = get_current_user_id();
+    $company_id = get_user_meta($user_id, 'bimverdi_company_id', true)
+               ?: get_user_meta($user_id, 'bim_verdi_company_id', true);
+    $tool_company = get_field('eier_leverandor', $tool_id);
+
+    $can_delete = ((int) $tool->post_author === (int) $user_id)
+               || ($company_id && $tool_company && (int) $tool_company === (int) $company_id)
+               || current_user_can('manage_options');
+
+    if (!$can_delete) {
+        wp_redirect(add_query_arg('bv_error', 'not_owner', $redirect_list));
+        exit;
+    }
+
+    // Trash the tool (recoverable by admin via wp-admin)
+    $result = wp_trash_post($tool_id);
+
+    if (!$result) {
+        error_log("BIMVerdi: Tool deletion failed for tool {$tool_id} by user {$user_id}");
+        wp_redirect(add_query_arg('bv_error', 'system', $redirect_list));
+        exit;
+    }
+
+    error_log("BIMVerdi: Tool deleted (trashed): {$tool_id} ({$tool->post_title}) by user {$user_id}");
+    wp_redirect(add_query_arg('deleted', '1', $redirect_list));
+    exit;
+});

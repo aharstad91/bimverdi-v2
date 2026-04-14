@@ -67,6 +67,39 @@ if ($company_id) {
 </div>
 <?php endif; ?>
 
+<!-- Success message after deletion -->
+<?php if (isset($_GET['deleted']) && $_GET['deleted'] === '1'): ?>
+<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    <p class="text-green-800 text-sm"><?php _e('Verktøyet er slettet.', 'bimverdi'); ?></p>
+</div>
+<?php endif; ?>
+
+<!-- Error message (from delete or other failed actions) -->
+<?php if (!empty($_GET['bv_error'])):
+    $error_code = sanitize_text_field($_GET['bv_error']);
+    $error_messages = [
+        'nonce'     => __('Lenken har utløpt. Prøv å slette på nytt fra verktøysiden.', 'bimverdi'),
+        'not_owner' => __('Du har ikke tilgang til å slette dette verktøyet.', 'bimverdi'),
+        'not_found' => __('Verktøyet ble ikke funnet.', 'bimverdi'),
+        'system'    => __('En teknisk feil oppstod. Prøv igjen.', 'bimverdi'),
+    ];
+    $error_text = $error_messages[$error_code] ?? '';
+    if ($error_text):
+?>
+<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p class="text-red-800 text-sm"><?php echo esc_html($error_text); ?></p>
+</div>
+<?php endif; endif; ?>
+
 <?php if (!empty($user_tools)): ?>
 <!-- Tools Table -->
 <div class="overflow-x-auto">
