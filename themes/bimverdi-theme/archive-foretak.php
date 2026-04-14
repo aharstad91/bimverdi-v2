@@ -18,6 +18,13 @@ $args = array(
     'post_type' => 'foretak',
     'posts_per_page' => -1, // All posts
     'orderby' => 'rand',
+    'meta_query' => array(
+        array(
+            'key'     => 'bv_rolle',
+            'value'   => array('Deltaker', 'Prosjektdeltaker', 'Partner'),
+            'compare' => 'IN',
+        ),
+    ),
 );
 
 $members_query = new WP_Query($args);

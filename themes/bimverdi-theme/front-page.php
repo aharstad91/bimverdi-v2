@@ -11,7 +11,19 @@ if (!defined('ABSPATH')) exit;
 get_header();
 
 // === DATA ===
-$total_companies = wp_count_posts('foretak')->publish;
+$total_companies = (new WP_Query([
+    'post_type'      => 'foretak',
+    'post_status'    => 'publish',
+    'posts_per_page' => 1,
+    'fields'         => 'ids',
+    'meta_query'     => [
+        [
+            'key'     => 'bv_rolle',
+            'value'   => ['Deltaker', 'Prosjektdeltaker', 'Partner'],
+            'compare' => 'IN',
+        ],
+    ],
+]))->found_posts;
 $total_tools     = wp_count_posts('verktoy')->publish;
 $total_events    = wp_count_posts('arrangement')->publish;
 $total_sources   = wp_count_posts('kunnskapskilde')->publish;
@@ -24,6 +36,13 @@ $logo_companies = get_posts([
     'post_status'    => 'publish',
     'orderby'        => 'date',
     'order'          => 'DESC',
+    'meta_query'     => [
+        [
+            'key'     => 'bv_rolle',
+            'value'   => ['Deltaker', 'Prosjektdeltaker', 'Partner'],
+            'compare' => 'IN',
+        ],
+    ],
 ]);
 
 // Upcoming events
