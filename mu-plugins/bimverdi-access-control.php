@@ -38,6 +38,14 @@ class BIMVerdi_Access_Control {
         'join_temagruppe',    // Velge temagrupper
         'view_members_full',  // Se fullt medlemsinnhold
     );
+
+    /**
+     * Features that require a PREMIUM company — bv_rolle = 'Prosjektdeltaker' or 'Partner'
+     */
+    const PREMIUM_ROLES = array('Prosjektdeltaker', 'Partner');
+    const PREMIUM_FEATURES = array(
+        'write_article',      // Skrive artikler fra Min Side
+    );
     
     /**
      * Features available to all registered users
@@ -110,6 +118,11 @@ class BIMVerdi_Access_Control {
             return self::user_has_active_company($user_id);
         }
 
+        // Premium features (prosjektdeltaker/partner only)
+        if (in_array($feature, self::PREMIUM_FEATURES)) {
+            return self::user_has_premium_company($user_id);
+        }
+
         // Unknown feature - deny by default
         return false;
     }
@@ -170,6 +183,26 @@ class BIMVerdi_Access_Control {
         }
 
         return false;
+    }
+
+    /**
+     * Check if user has a PREMIUM company — bv_rolle in ('Prosjektdeltaker', 'Partner')
+     *
+     * @param int|null $user_id
+     * @return bool
+     */
+    public static function user_has_premium_company($user_id = null) {
+        if (!self::user_has_company($user_id)) {
+            return false;
+        }
+
+        $company = self::get_user_company($user_id);
+        if (!$company || empty($company['id'])) {
+            return false;
+        }
+
+        $bv_rolle = get_field('bv_rolle', $company['id']);
+        return in_array($bv_rolle, self::PREMIUM_ROLES, true);
     }
 
     /**
@@ -350,8 +383,9 @@ class BIMVerdi_Access_Control {
             'feature' => $feature,
             'has_access' => self::can_access($feature),
             'account_type' => self::get_account_type(),
-            'requires_company' => in_array($feature, self::COMPANY_REQUIRED_FEATURES) || in_array($feature, self::ACTIVE_COMPANY_FEATURES),
+            'requires_company' => in_array($feature, self::COMPANY_REQUIRED_FEATURES) || in_array($feature, self::ACTIVE_COMPANY_FEATURES) || in_array($feature, self::PREMIUM_FEATURES),
             'requires_active_company' => in_array($feature, self::ACTIVE_COMPANY_FEATURES),
+            'requires_premium_company' => in_array($feature, self::PREMIUM_FEATURES),
         );
     }
     
@@ -408,6 +442,7 @@ class BIMVerdi_Access_Control {
             'join_temagruppe' => 'Velge temagrupper',
             'company_profile' => 'Redigere foretaksprofil',
             'view_members_full' => 'Se fullt medlemsinnhold',
+            'write_article' => 'Skrive artikler',
         );
         
         $feature_name = isset($feature_names[$feature]) ? $feature_names[$feature] : $feature;
@@ -482,6 +517,8 @@ class BIMVerdi_Access_Control {
             'min-side/temagrupper' => 'join_temagruppe',
             'min-side/foretak/rediger' => 'company_profile',
             'min-side/foretak/kolleger' => 'company_profile',
+            'min-side/artikler/skriv' => 'write_article',
+            'min-side/artikler/rediger' => 'write_article',
         );
         
         $current_path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');

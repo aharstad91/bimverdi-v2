@@ -436,6 +436,11 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'verktoy/registrer'   => 'verktoy-registrer',
             'verktoy/rediger'     => 'verktoy-rediger',
 
+            // Articles (Artikler)
+            'artikler'           => 'artikler-list',
+            'artikler/skriv'     => 'artikler-skriv',
+            'artikler/rediger'   => 'artikler-rediger',
+
             // Knowledge Sources (Kunnskapskilder)
             'kunnskapskilder'           => 'kunnskapskilder-list',
             'kunnskapskilder/registrer' => 'kunnskapskilder-registrer',
@@ -533,6 +538,12 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'icon' => 'book-open',
                 'routes' => ['kunnskapskilder', 'kunnskapskilder/registrer', 'kunnskapskilder/rediger'],
             ],
+            'artikler' => [
+                'label' => 'Mine artikler',
+                'url' => bimverdi_minside_url('artikler'),
+                'icon' => 'newspaper',
+                'routes' => ['artikler', 'artikler/skriv', 'artikler/rediger'],
+            ],
             'arrangementer' => [
                 'label' => 'Mine arrangementer',
                 'url' => bimverdi_minside_url('arrangementer'),
@@ -545,6 +556,11 @@ if (!function_exists('bimverdi_get_minside_nav')) {
         // Verktøy requires company, but kunnskapskilder is open for all users
         if (!$has_company) {
             unset($nav['verktoy']);
+        }
+
+        // Artikler requires premium company (prosjektdeltaker/partner)
+        if (!bimverdi_can_access('write_article')) {
+            unset($nav['artikler']);
         }
 
         return $nav;

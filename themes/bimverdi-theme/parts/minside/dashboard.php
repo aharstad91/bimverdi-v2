@@ -38,6 +38,8 @@ $my_tools = [];
 $my_tools_count = 0;
 $my_kilder = [];
 $my_kilder_count = 0;
+$my_articles = [];
+$my_articles_count = 0;
 $my_events = [];
 $my_events_count = 0;
 
@@ -95,6 +97,26 @@ if ($company_id) {
             'author' => $user_id,
         ]);
         $my_kilder_count = $kilder_fallback_query->found_posts;
+    }
+
+    // Artikler query (user's own, premium only)
+    if (function_exists('bimverdi_can_access') && bimverdi_can_access('write_article')) {
+        $my_articles = get_posts([
+            'post_type'      => 'artikkel',
+            'posts_per_page' => 3,
+            'post_status'    => ['publish', 'pending'],
+            'author'         => $user_id,
+            'orderby'        => 'modified',
+            'order'          => 'DESC',
+        ]);
+        $articles_count_query = new WP_Query([
+            'post_type'      => 'artikkel',
+            'posts_per_page' => 1,
+            'post_status'    => ['publish', 'pending'],
+            'author'         => $user_id,
+            'fields'         => 'ids',
+        ]);
+        $my_articles_count = $articles_count_query->found_posts;
     }
 
     // Events via registrations
@@ -438,6 +460,61 @@ if (!$company && $bruker_foretak) : ?>
                 ]); ?>
             <?php endif; ?>
         </div>
+
+        <!-- 4b. Mine artikler (premium only) -->
+        <?php if (function_exists('bimverdi_can_access') && bimverdi_can_access('write_article')): ?>
+        <div class="py-8 border-b border-[#E7E5E4]">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <h3 class="text-lg font-semibold text-[#111827]"><?php _e('Mine artikler', 'bimverdi'); ?></h3>
+                    <?php if ($my_articles_count > 0): ?>
+                        <span class="inline-flex items-center justify-center text-xs font-medium bg-[#F5F5F4] text-[#57534E] rounded-full w-6 h-6"><?php echo esc_html($my_articles_count); ?></span>
+                    <?php endif; ?>
+                </div>
+                <?php if ($my_articles_count > 0): ?>
+                    <a href="<?php echo esc_url(bimverdi_minside_url('artikler')); ?>" class="text-sm text-[#57534E] hover:text-[#FF8B5E] transition-colors">
+                        <?php _e('Se alle', 'bimverdi'); ?> &rarr;
+                    </a>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($my_articles)): ?>
+                <div class="divide-y divide-[#E7E5E4]">
+                    <?php foreach ($my_articles as $article):
+                        $article_status = $article->post_status;
+                        $article_temagrupper = get_the_terms($article->ID, 'temagruppe');
+                        $article_tema_name = ($article_temagrupper && !is_wp_error($article_temagrupper)) ? $article_temagrupper[0]->name : '';
+                    ?>
+                        <div class="flex items-center gap-3 py-3">
+                            <div class="w-8 h-8 rounded bg-[#FFF7ED] flex items-center justify-center flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-[#111827] truncate"><?php echo esc_html($article->post_title); ?></p>
+                                <?php if ($article_tema_name): ?>
+                                    <p class="text-xs text-[#78716C]"><?php echo esc_html($article_tema_name); ?></p>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($article_status === 'pending'): ?>
+                                <span class="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded"><?php _e('Venter', 'bimverdi'); ?></span>
+                            <?php elseif ($article_status === 'publish'): ?>
+                                <span class="text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded"><?php _e('Publisert', 'bimverdi'); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="text-sm text-[#78716C] mb-3"><?php _e('Du har ikke skrevet noen artikler ennå.', 'bimverdi'); ?></p>
+                <?php bimverdi_button([
+                    'text'    => __('Skriv artikkel', 'bimverdi'),
+                    'variant' => 'secondary',
+                    'size'    => 'small',
+                    'href'    => bimverdi_minside_url('artikler/skriv'),
+                    'icon'    => 'pencil',
+                ]); ?>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
 
         <!-- 5. Mine arrangementer -->
         <div class="py-8 border-b border-[#E7E5E4]">
