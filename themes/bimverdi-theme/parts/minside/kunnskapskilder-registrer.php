@@ -152,12 +152,22 @@ if (is_wp_error($kategorier)) $kategorier = [];
                       class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent resize-y"></textarea>
         </div>
 
-        <!-- Detaljert beskrivelse -->
+        <!-- Detaljert beskrivelse (wp_editor for WYSIWYG) -->
         <div>
-            <label for="detaljert_beskrivelse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Detaljert beskrivelse</label>
-            <textarea id="detaljert_beskrivelse" name="detaljert_beskrivelse" rows="5"
-                      placeholder="Utfyllende beskrivelse (valgfritt)"
-                      class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent resize-y"></textarea>
+            <label class="block text-sm font-semibold text-[#1A1A1A] mb-2">Detaljert beskrivelse</label>
+            <?php
+            wp_editor('', 'detaljert_beskrivelse', [
+                'textarea_name' => 'detaljert_beskrivelse',
+                'media_buttons' => false,
+                'textarea_rows'  => 8,
+                'teeny'          => false,
+                'quicktags'      => true,
+                'tinymce'        => [
+                    'toolbar1' => 'bold,italic,bullist,numlist,link,unlink,undo,redo',
+                    'toolbar2' => '',
+                ],
+            ]);
+            ?>
         </div>
 
         <!-- Ekstern lenke -->
@@ -188,7 +198,7 @@ if (is_wp_error($kategorier)) $kategorier = [];
             </select>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+        <div class="grid lg:grid-cols-2 gap-4">
             <!-- Tilgang -->
             <div>
                 <label for="tilgang" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Tilgang</label>
@@ -214,7 +224,7 @@ if (is_wp_error($kategorier)) $kategorier = [];
             </div>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+        <div class="grid lg:grid-cols-2 gap-4">
             <!-- Geografisk gyldighet -->
             <div>
                 <label for="geografisk_gyldighet" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Geografisk gyldighet</label>
@@ -362,6 +372,19 @@ if (is_wp_error($kategorier)) $kategorier = [];
             </button>
         </div>
     </form>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.querySelector('form.space-y-6');
+        if (!form) return;
+
+        form.addEventListener('submit', function() {
+            if (typeof tinyMCE !== 'undefined') {
+                tinyMCE.triggerSave();
+            }
+        });
+    });
+    </script>
 
     <div class="border-t border-[#E7E5E4] mt-8 mb-6"></div>
 
