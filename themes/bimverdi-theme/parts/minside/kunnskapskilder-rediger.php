@@ -53,7 +53,7 @@ if (!$can_edit) {
 // Get kunnskapskilde data from ACF fields
 $kilde_navn            = get_field('kunnskapskilde_navn', $kunnskapskilde_id) ?: $kunnskapskilde->post_title;
 $kort_beskrivelse      = get_field('kort_beskrivelse', $kunnskapskilde_id);
-$detaljert_beskrivelse = get_field('detaljert_beskrivelse', $kunnskapskilde_id);
+$detaljert_beskrivelse = get_field('detaljert_beskrivelse', $kunnskapskilde_id, false);
 $ekstern_lenke         = get_field('ekstern_lenke', $kunnskapskilde_id);
 $utgiver               = get_field('utgiver', $kunnskapskilde_id);
 $current_spraak        = get_field('spraak', $kunnskapskilde_id);
@@ -253,12 +253,22 @@ if (is_wp_error($current_kategorier)) $current_kategorier = [];
                       class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent resize-y"><?php echo esc_textarea($kort_beskrivelse); ?></textarea>
         </div>
 
-        <!-- Detaljert beskrivelse -->
+        <!-- Detaljert beskrivelse (wp_editor for WYSIWYG) -->
         <div>
-            <label for="detaljert_beskrivelse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Detaljert beskrivelse</label>
-            <textarea id="detaljert_beskrivelse" name="detaljert_beskrivelse" rows="5"
-                      placeholder="Utfyllende beskrivelse (valgfritt)"
-                      class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent resize-y"><?php echo esc_textarea($detaljert_beskrivelse); ?></textarea>
+            <label class="block text-sm font-semibold text-[#1A1A1A] mb-2">Detaljert beskrivelse</label>
+            <?php
+            wp_editor($detaljert_beskrivelse ?: '', 'detaljert_beskrivelse', [
+                'textarea_name' => 'detaljert_beskrivelse',
+                'media_buttons' => false,
+                'textarea_rows'  => 8,
+                'teeny'          => false,
+                'quicktags'      => true,
+                'tinymce'        => [
+                    'toolbar1' => 'bold,italic,bullist,numlist,link,unlink,undo,redo',
+                    'toolbar2' => '',
+                ],
+            ]);
+            ?>
         </div>
 
         <!-- Ekstern lenke -->
@@ -289,7 +299,7 @@ if (is_wp_error($current_kategorier)) $current_kategorier = [];
             </select>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+        <div class="grid lg:grid-cols-2 gap-4">
             <!-- Tilgang -->
             <div>
                 <label for="tilgang" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Tilgang</label>
@@ -315,7 +325,7 @@ if (is_wp_error($current_kategorier)) $current_kategorier = [];
             </div>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+        <div class="grid lg:grid-cols-2 gap-4">
             <!-- Geografisk gyldighet -->
             <div>
                 <label for="geografisk_gyldighet" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Geografisk gyldighet</label>
@@ -460,6 +470,19 @@ if (is_wp_error($current_kategorier)) $current_kategorier = [];
             </button>
         </div>
     </form>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.querySelector('form.space-y-6');
+        if (!form) return;
+
+        form.addEventListener('submit', function() {
+            if (typeof tinyMCE !== 'undefined') {
+                tinyMCE.triggerSave();
+            }
+        });
+    });
+    </script>
 
     <!-- Info Section - No Delete for Kunnskapskilder -->
     <div class="mt-12 pt-8 border-t border-[#E7E5E4]">

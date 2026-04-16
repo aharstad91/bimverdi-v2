@@ -1114,10 +1114,15 @@ $theme_groups = [
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#005898;"></span><strong><?php echo esc_html($total_companies); ?></strong> foretak</span>
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#6B9B37;"></span><strong><?php echo esc_html($total_sources); ?></strong> kilder</span>
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#0D9488;"></span><strong><?php echo esc_html($total_events); ?></strong> arrangementer</span>
+                    <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#EC4899;"></span><strong><?php echo esc_html($total_articles); ?></strong> artikler</span>
                 </div>
                 <div class="bv3-hero__actions">
-                    <a href="<?php echo esc_url(home_url('/demo/temagruppe-graf/')); ?>" class="bv3-btn bv3-btn--dark">Utforsk koblingene <span aria-hidden="true">&rarr;</span></a>
-                    <a href="<?php echo esc_url(home_url('/delta/')); ?>" class="bv3-btn bv3-btn--outline">Bli deltaker</a>
+                    <?php if (is_user_logged_in()): ?>
+                        <a href="<?php echo esc_url(home_url('/koblinger/')); ?>" class="bv3-btn bv3-btn--dark">Utforsk koblingene <span aria-hidden="true">&rarr;</span></a>
+                    <?php else: ?>
+                        <a href="<?php echo esc_url(home_url('/logg-inn/?redirect_to=' . urlencode(home_url('/koblinger/')))); ?>" class="bv3-btn bv3-btn--dark">Logg inn for å utforske <span aria-hidden="true">&rarr;</span></a>
+                    <?php endif; ?>
+                    <a href="<?php echo esc_url(home_url('/registrer/')); ?>" class="bv3-btn bv3-btn--outline">Bli deltaker</a>
                 </div>
             </div>
 
@@ -1135,6 +1140,7 @@ $theme_groups = [
                     <line x1="240" y1="200" x2="395" y2="310" stroke="#0D9488" stroke-width="1.5" class="dash-line" opacity="0.3"/>
                     <line x1="240" y1="200" x2="340" y2="50" stroke="#D97706" stroke-width="1.5" class="dash-line" opacity="0.3"/>
                     <line x1="240" y1="200" x2="155" y2="365" stroke="#5E36FE" stroke-width="1.5" class="dash-line" opacity="0.3"/>
+                    <line x1="240" y1="200" x2="440" y2="195" stroke="#EC4899" stroke-width="1.5" class="dash-line" opacity="0.3"/>
 
                     <!-- Cross-connections (ecosystem links) -->
                     <line x1="105" y1="80" x2="340" y2="50" stroke="#E7E5E4" stroke-width="0.75" class="dash-line" opacity="0.2"/>
@@ -1189,6 +1195,11 @@ $theme_groups = [
                     <circle cx="155" cy="365" r="14" fill="#5E36FE" opacity="0.12"/>
                     <circle cx="155" cy="365" r="8" fill="#5E36FE"/>
                     <text x="155" y="390" text-anchor="middle" fill="#A8A29E" font-size="9" font-weight="500">Standarder</text>
+
+                    <!-- Small node: Artikler (right) -->
+                    <circle cx="440" cy="195" r="14" fill="#EC4899" opacity="0.12"/>
+                    <circle cx="440" cy="195" r="8" fill="#EC4899"/>
+                    <text x="440" y="180" text-anchor="middle" fill="#A8A29E" font-size="9" font-weight="500">Artikler</text>
 
                     <!-- Central BIM Verdi node -->
                     <circle cx="240" cy="200" r="36" fill="#FF8B5E" opacity="0.08" class="node-pulse"/>
@@ -1591,8 +1602,12 @@ $support = [
         <p class="bv3-subtitle">Bli deltaker i BIM Verdi og få tilgang til verktøykatalogen, kunnskapsbiblioteket, temagrupper og et nettverk av over <?php echo esc_html($total_companies); ?> foretak.</p>
 
         <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
-            <a href="<?php echo esc_url(home_url('/delta/')); ?>" class="bv3-btn bv3-btn--white">Bli deltaker <span aria-hidden="true">&rarr;</span></a>
-            <a href="<?php echo esc_url(home_url('/delta/')); ?>" class="bv3-btn bv3-btn--ghost-white">Les mer om deltakelse</a>
+            <?php if (is_user_logged_in()): ?>
+                <a href="<?php echo esc_url(home_url('/koblinger/')); ?>" class="bv3-btn bv3-btn--white">Utforsk koblingene <span aria-hidden="true">&rarr;</span></a>
+            <?php else: ?>
+                <a href="<?php echo esc_url(home_url('/registrer/')); ?>" class="bv3-btn bv3-btn--white">Bli deltaker <span aria-hidden="true">&rarr;</span></a>
+            <?php endif; ?>
+            <a href="<?php echo esc_url(home_url('/registrer/')); ?>" class="bv3-btn bv3-btn--ghost-white">Les mer om deltakelse</a>
         </div>
 
         <div class="bv3-cta__stats">
