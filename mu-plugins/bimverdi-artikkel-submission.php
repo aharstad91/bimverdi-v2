@@ -126,19 +126,11 @@ add_action('init', function () {
     $verktoykategorier = array_filter($verktoykategorier, function($id) {
         return term_exists($id, 'verktoykategori');
     });
-    if (empty($verktoykategorier)) {
-        wp_redirect(add_query_arg('bv_error', 'missing_verktoykategori', $redirect_error));
-        exit;
-    }
 
     // Validate kunnskapskilde IDs (must be published kunnskapskilde posts)
     $kunnskapskilder = array_filter($kunnskapskilder, function($id) {
         return get_post_type($id) === 'kunnskapskilde' && get_post_status($id) === 'publish';
     });
-    if (empty($kunnskapskilder)) {
-        wp_redirect(add_query_arg('bv_error', 'missing_kunnskapskilde', $redirect_error));
-        exit;
-    }
 
     // Build externe lenker array (max 5, filter empty)
     $eksterne_lenker = [];

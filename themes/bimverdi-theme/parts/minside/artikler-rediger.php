@@ -224,7 +224,7 @@ $kunnskapskilder = get_posts([
     <div class="mb-6">
         <fieldset>
             <legend class="block text-sm font-medium text-[#1A1A1A] mb-3">
-                <?php _e('Verktøykategori(er)', 'bimverdi'); ?> <span class="text-red-600">*</span>
+                <?php _e('Verktøykategori(er)', 'bimverdi'); ?>
             </legend>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <?php foreach ($verktoykategorier as $term): ?>
@@ -242,7 +242,7 @@ $kunnskapskilder = get_posts([
     <!-- Kunnskapskilde(r) -->
     <div class="mb-6">
         <label class="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-            <?php _e('Kunnskapskilde(r)', 'bimverdi'); ?> <span class="text-red-600">*</span>
+            <?php _e('Kunnskapskilde(r)', 'bimverdi'); ?>
         </label>
         <input
             type="text"
@@ -406,15 +406,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!form.querySelector('input[name="temagrupper[]"]:checked')) {
             errors.push('Du må velge minst én temagruppe.');
-        }
-
-        if (!form.querySelector('input[name="verktoykategorier[]"]:checked')) {
-            errors.push('Du må velge minst én verktøykategori.');
-        }
-
-        var ksSelect = document.getElementById('bv-kunnskapskilde-select');
-        if (!ksSelect || ksSelect.selectedOptions.length === 0) {
-            errors.push('Du må velge minst én kunnskapskilde.');
         }
 
         // 3. Show errors or proceed
