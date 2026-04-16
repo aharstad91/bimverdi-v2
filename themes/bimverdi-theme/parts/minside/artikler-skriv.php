@@ -307,16 +307,101 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Disable submit button after first click
+    // Form validation + submit handler
     var form = document.querySelector('form[enctype]');
-    if (form) {
-        form.addEventListener('submit', function() {
-            var btn = form.querySelector('button[type="submit"]');
-            if (btn) {
-                btn.disabled = true;
-                btn.style.opacity = '0.6';
-            }
-        });
+    if (!form) return;
+
+    // Add novalidate via JS so native HTML5 validation works as fallback without JS
+    form.setAttribute('novalidate', '');
+
+    form.addEventListener('submit', function(e) {
+        // 1. Sync TinyMCE (FIRST — eliminates timing race)
+        if (typeof tinyMCE !== 'undefined') tinyMCE.triggerSave();
+
+        // 2. Validate
+        var errors = [];
+
+        var title = document.getElementById('artikkel_title');
+        if (!title || !title.value.trim()) {
+            errors.push('Tittel er påkrevd.');
+        }
+
+        var content = getEditorContent('artikkel_content');
+        if (getPlainTextLength(content) < 100) {
+            errors.push('Brødteksten må være minst 100 tegn.');
+        }
+
+        if (!form.querySelector('input[name="temagrupper[]"]:checked')) {
+            errors.push('Du må velge minst én temagruppe.');
+        }
+
+        if (!form.querySelector('input[name="verktoykategorier[]"]:checked')) {
+            errors.push('Du må velge minst én verktøykategori.');
+        }
+
+        var ksSelect = document.getElementById('bv-kunnskapskilde-select');
+        if (!ksSelect || ksSelect.selectedOptions.length === 0) {
+            errors.push('Du må velge minst én kunnskapskilde.');
+        }
+
+        // 3. Show errors or proceed
+        if (errors.length > 0) {
+            e.preventDefault();
+            showValidationErrors(errors);
+            return;
+        }
+
+        // 4. Disable button (only after valid form)
+        var btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            setTimeout(function() { btn.disabled = false; btn.style.opacity = '1'; }, 10000);
+        }
+    });
+
+    function getEditorContent(editorId) {
+        if (typeof tinyMCE !== 'undefined') {
+            var editor = tinyMCE.get(editorId);
+            if (editor) return editor.getContent();
+        }
+        var textarea = document.getElementById(editorId);
+        return textarea ? textarea.value : '';
+    }
+
+    function getPlainTextLength(html) {
+        if (!html) return 0;
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var text = doc.body.textContent || '';
+        return text.replace(/[\s\u00A0]+/g, ' ').trim().length;
+    }
+
+    function showValidationErrors(errors) {
+        var existing = document.getElementById('bv-validation-error');
+        if (existing) existing.remove();
+
+        var banner = document.createElement('div');
+        banner.id = 'bv-validation-error';
+        banner.setAttribute('role', 'alert');
+        banner.className = 'mb-6 p-4 bg-red-50 border border-red-200 rounded-lg';
+
+        var icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+        if (errors.length === 1) {
+            banner.className += ' flex items-start gap-3';
+            banner.innerHTML = icon + '<p class="text-red-800 text-sm">' + errors[0] + '</p>';
+        } else {
+            banner.innerHTML = '<div class="flex items-start gap-3 mb-2">'
+                + icon
+                + '<p class="text-red-800 text-sm font-medium">Rett følgende før du kan sende inn:</p>'
+                + '</div>'
+                + '<ul class="list-disc list-inside text-red-800 text-sm ml-8">'
+                + errors.map(function(e) { return '<li>' + e + '</li>'; }).join('')
+                + '</ul>';
+        }
+
+        form.parentNode.insertBefore(banner, form);
+        banner.scrollIntoView({ behavior: 'smooth' });
     }
 });
 </script>
