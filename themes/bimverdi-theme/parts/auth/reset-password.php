@@ -19,7 +19,7 @@ get_header();
 // Get parameters
 $key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
 $login = isset($_GET['login']) ? sanitize_user($_GET['login']) : '';
-$error = isset($_GET['error']) ? sanitize_text_field($_GET['error']) : '';
+$error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
 
 // Error messages
 $error_messages = [

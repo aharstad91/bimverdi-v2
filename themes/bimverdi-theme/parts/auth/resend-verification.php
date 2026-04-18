@@ -17,7 +17,7 @@ if (is_user_logged_in()) {
 get_header();
 
 // Get messages from URL params
-$error = isset($_GET['error']) ? sanitize_text_field($_GET['error']) : '';
+$error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
 $success = isset($_GET['success']);
 $email = isset($_GET['email']) ? sanitize_email($_GET['email']) : '';
 

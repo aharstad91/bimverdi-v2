@@ -330,14 +330,14 @@ class BIMVerdi_Auth_Routes {
 
         // Verify nonce
         if (!wp_verify_nonce($_POST['_wpnonce'] ?? '', 'bimverdi_forgot_password')) {
-            wp_redirect(add_query_arg('error', 'nonce', home_url('/glemt-passord/')));
+            wp_redirect(add_query_arg('bv_error', 'nonce', home_url('/glemt-passord/')));
             exit;
         }
 
         $email = sanitize_email($_POST['email'] ?? '');
 
         if (empty($email) || !is_email($email)) {
-            wp_redirect(add_query_arg('error', 'invalid_email', home_url('/glemt-passord/')));
+            wp_redirect(add_query_arg('bv_error', 'invalid_email', home_url('/glemt-passord/')));
             exit;
         }
 
@@ -348,7 +348,7 @@ class BIMVerdi_Auth_Routes {
         // so members know they need to register. Trade-off vs. email enumeration is
         // accepted for this closed professional membership site.
         if (!$user) {
-            wp_redirect(add_query_arg('error', 'user_not_found', home_url('/glemt-passord/')));
+            wp_redirect(add_query_arg('bv_error', 'user_not_found', home_url('/glemt-passord/')));
             exit;
         }
 
@@ -488,7 +488,7 @@ class BIMVerdi_Auth_Routes {
 
         // Verify nonce
         if (!wp_verify_nonce($_POST['_wpnonce'] ?? '', 'bimverdi_reset_password')) {
-            wp_redirect(add_query_arg('error', 'nonce', home_url('/tilbakestill-passord/')));
+            wp_redirect(add_query_arg('bv_error', 'nonce', home_url('/tilbakestill-passord/')));
             exit;
         }
 
@@ -500,18 +500,18 @@ class BIMVerdi_Auth_Routes {
         // Validate
         if (empty($password) || strlen($password) < 8) {
             wp_redirect(add_query_arg([
-                'error' => 'weak_password',
-                'key'   => $key,
-                'login' => $login,
+                'bv_error' => 'weak_password',
+                'key'      => $key,
+                'login'    => $login,
             ], home_url('/tilbakestill-passord/')));
             exit;
         }
 
         if ($password !== $password_confirm) {
             wp_redirect(add_query_arg([
-                'error' => 'mismatch',
-                'key'   => $key,
-                'login' => $login,
+                'bv_error' => 'mismatch',
+                'key'      => $key,
+                'login'    => $login,
             ], home_url('/tilbakestill-passord/')));
             exit;
         }
@@ -520,7 +520,7 @@ class BIMVerdi_Auth_Routes {
         $user = check_password_reset_key($key, $login);
 
         if (is_wp_error($user)) {
-            wp_redirect(add_query_arg('error', 'invalid_key', home_url('/tilbakestill-passord/')));
+            wp_redirect(add_query_arg('bv_error', 'invalid_key', home_url('/tilbakestill-passord/')));
             exit;
         }
 
@@ -542,14 +542,14 @@ class BIMVerdi_Auth_Routes {
 
         // Verify nonce
         if (!wp_verify_nonce($_POST['_wpnonce'] ?? '', 'bimverdi_resend_verification')) {
-            wp_redirect(add_query_arg('error', 'nonce', home_url('/send-verifisering/')));
+            wp_redirect(add_query_arg('bv_error', 'nonce', home_url('/send-verifisering/')));
             exit;
         }
 
         $email = sanitize_email($_POST['email'] ?? '');
 
         if (empty($email) || !is_email($email)) {
-            wp_redirect(add_query_arg('error', 'invalid_email', home_url('/send-verifisering/')));
+            wp_redirect(add_query_arg('bv_error', 'invalid_email', home_url('/send-verifisering/')));
             exit;
         }
 
