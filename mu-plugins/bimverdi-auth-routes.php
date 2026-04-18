@@ -344,18 +344,21 @@ class BIMVerdi_Auth_Routes {
         // Get user by email
         $user = get_user_by('email', $email);
 
-        // Always show success to prevent email enumeration
-        // But only send email if user exists
-        if ($user) {
-            // Generate reset key
-            $key = get_password_reset_key($user);
-
-            if (!is_wp_error($key)) {
-                $this->send_password_reset_email($user, $key);
-            }
+        // Product decision (2026-04-18, Bård): show explicit "user not found" message
+        // so members know they need to register. Trade-off vs. email enumeration is
+        // accepted for this closed professional membership site.
+        if (!$user) {
+            wp_redirect(add_query_arg('error', 'user_not_found', home_url('/glemt-passord/')));
+            exit;
         }
 
-        // Always redirect to success (security: don't reveal if email exists)
+        // Generate reset key and send email
+        $key = get_password_reset_key($user);
+
+        if (!is_wp_error($key)) {
+            $this->send_password_reset_email($user, $key);
+        }
+
         wp_redirect(add_query_arg('success', '1', home_url('/glemt-passord/')));
         exit;
     }

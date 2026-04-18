@@ -22,8 +22,9 @@ $success = isset($_GET['success']);
 
 // Error messages
 $error_messages = [
-    'invalid_email' => 'Vennligst oppgi en gyldig e-postadresse.',
-    'nonce'         => 'Noe gikk galt. Vennligst prøv igjen.',
+    'invalid_email'  => 'Vennligst oppgi en gyldig e-postadresse.',
+    'nonce'          => 'Noe gikk galt. Vennligst prøv igjen.',
+    'user_not_found' => 'Vi finner ikke en registrert bruker med din e-post. <a href="' . esc_url(home_url('/registrer/')) . '">Registrer deg her</a>.',
 ];
 
 $error_message = $error_messages[$error] ?? '';
@@ -310,6 +311,14 @@ $error_message = $error_messages[$error] ?? '';
             color: #991B1B;
         }
 
+        .alert-error a {
+            color: #991B1B;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .alert-error a:hover { text-decoration: none; }
+
         .alert-icon {
             width: 20px;
             height: 20px;
@@ -418,7 +427,7 @@ $error_message = $error_messages[$error] ?? '';
                             <line x1="12" y1="8" x2="12" y2="12"/>
                             <line x1="12" y1="16" x2="12.01" y2="16"/>
                         </svg>
-                        <span><?php echo esc_html($error_message); ?></span>
+                        <span><?php echo wp_kses($error_message, ['a' => ['href' => [], 'class' => []]]); ?></span>
                     </div>
                     <?php endif; ?>
 
