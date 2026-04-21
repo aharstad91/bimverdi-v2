@@ -38,7 +38,7 @@
             "label": "Startdato",
             "name": "arrangement_dato",
             "type": "date_picker",
-            "instructions": "Dato arrangementet finner sted",
+            "instructions": "Dato arrangementet finner sted.\n\n📅 Kalenderfil (ICS) genereres automatisk fra dato, tid, type og sted — deltakere får den som vedlegg i påmeldingsbekreftelsen. Ingen fil å laste opp.",
             "required": 1,
             "display_format": "d.m.Y",
             "return_format": "Y-m-d",
@@ -100,7 +100,7 @@
             "label": "Møtelenke (Teams/Zoom)",
             "name": "online_lenke",
             "type": "url",
-            "instructions": "Lenke til digitalt møte",
+            "instructions": "Lenke til digitalt møte. Dette er IKKE en ICS-fil — ICS-kalenderfilen genereres automatisk, se Startdato-feltet.",
             "required": 0,
             "placeholder": "https://teams.microsoft.com/...",
             "conditional_logic": [
