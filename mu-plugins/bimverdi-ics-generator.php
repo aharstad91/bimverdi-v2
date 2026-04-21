@@ -288,30 +288,44 @@ add_action('bimverdi_pamelding_created', function($pamelding_id, $arrangement_id
 
     $dato_formatted = $dato ? wp_date('j. F Y', strtotime($dato)) : '';
 
-    // Build email
-    $subject = 'Påmelding bekreftet: ' . $arrangement->post_title;
+    $subject  = 'Påmelding bekreftet: ' . $arrangement->post_title;
+    $ics_url  = rest_url('bimverdi/v1/ics/arrangement/' . $arrangement_id);
+    $minside  = home_url('/min-side/arrangementer/');
+    $title_e  = esc_html($arrangement->post_title);
+    $name_e   = esc_html($user->display_name);
 
-    $message  = "Hei {$user->display_name}!\n\n";
-    $message .= "Din påmelding til {$arrangement->post_title} er bekreftet.\n\n";
-    $message .= "📅 Dato: {$dato_formatted}\n";
-    $message .= "🕐 Tid: {$tid_start}\n";
-
+    // Location line
+    $sted = '';
     if ($format === 'fysisk' && $fysisk_adresse) {
-        $message .= "📍 Sted: {$fysisk_adresse}\n";
+        $sted = '<p>📍 <strong>Sted:</strong> ' . esc_html($fysisk_adresse) . '</p>';
     } elseif ($format === 'digitalt' && $motelenke) {
-        $message .= "💻 Møtelenke: {$motelenke}\n";
+        $sted = '<p>💻 <strong>Møtelenke:</strong> <a href="' . esc_url($motelenke) . '">' . esc_html($motelenke) . '</a></p>';
     } elseif ($format === 'hybrid') {
-        if ($fysisk_adresse) $message .= "📍 Sted: {$fysisk_adresse}\n";
-        if ($motelenke)      $message .= "💻 Møtelenke: {$motelenke}\n";
+        if ($fysisk_adresse) $sted .= '<p>📍 <strong>Sted:</strong> ' . esc_html($fysisk_adresse) . '</p>';
+        if ($motelenke)      $sted .= '<p>💻 <strong>Møtelenke:</strong> <a href="' . esc_url($motelenke) . '">' . esc_html($motelenke) . '</a></p>';
     }
 
-    $ics_url = rest_url('bimverdi/v1/ics/arrangement/' . $arrangement_id);
-    $message .= "\n📅 Legg til i kalender:\n" . $ics_url . "\n\n";
-    $message .= "Du finner mer informasjon og kan administrere dine påmeldinger på Min Side:\n";
-    $message .= home_url('/min-side/arrangementer/') . "\n\n";
-    $message .= "Med vennlig hilsen,\nBIM Verdi";
+    $message = '
+<html><body style="font-family:sans-serif;color:#1A1A1A;max-width:560px;margin:0 auto;padding:24px">
+<p>Hei ' . $name_e . '!</p>
+<p>Din påmelding til <strong>' . $title_e . '</strong> er bekreftet.</p>
+<p>📅 <strong>Dato:</strong> ' . esc_html($dato_formatted) . '</p>
+<p>🕐 <strong>Tid:</strong> ' . esc_html($tid_start) . '</p>
+' . $sted . '
+<p style="margin-top:20px">
+  <a href="' . esc_url($ics_url) . '" style="display:inline-block;background:#FF8B5E;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+    📅 Last ned ICS-fil for ' . $title_e . '
+  </a>
+</p>
+<p style="font-size:13px;color:#888">
+  Klikk lenken over for å legge arrangementet til i din kalender (Outlook, Google Calendar, Apple Calendar).
+</p>
+<hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+<p><a href="' . esc_url($minside) . '">Administrer dine påmeldinger på Min Side</a></p>
+<p>Med vennlig hilsen,<br><strong>BIM Verdi</strong></p>
+</body></html>';
 
-    wp_mail($user->user_email, $subject, $message, ['Content-Type: text/plain; charset=UTF-8']);
+    wp_mail($user->user_email, $subject, $message, ['Content-Type: text/html; charset=UTF-8']);
 
 }, 10, 3);
 
