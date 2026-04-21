@@ -250,13 +250,13 @@ $company_kunnskapskilder = get_posts(array(
 
                     <?php if ($kort_beskrivelse): ?>
                         <p class="text-base font-medium text-[#1A1A1A] mb-4 leading-relaxed">
-                            <?php echo esc_html($kort_beskrivelse); ?>
+                            <?php echo wp_kses_post($kort_beskrivelse); ?>
                         </p>
                     <?php endif; ?>
 
                     <?php if ($beskrivelse): ?>
                         <div class="bv-prose text-[#57534E] mb-6">
-                            <?php echo wpautop(esc_html($beskrivelse)); ?>
+                            <?php echo wp_kses_post(wpautop($beskrivelse)); ?>
                         </div>
                     <?php elseif (!$kort_beskrivelse && has_excerpt()): ?>
                         <div class="bv-prose text-[#57534E] mb-6">
