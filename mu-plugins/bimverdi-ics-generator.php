@@ -266,67 +266,61 @@ function bimverdi_generate_ics_file($arrangement_id) {
  * Hook into påmelding creation to send ICS attachment
  */
 add_action('bimverdi_pamelding_created', function($pamelding_id, $arrangement_id, $user_id) {
-    // Generate ICS file
-    $ics_file = bimverdi_generate_ics_file($arrangement_id);
-    
-    if (!$ics_file) {
+    $ics_content = bimverdi_generate_ics($arrangement_id);
+
+    if (is_wp_error($ics_content)) {
         return;
     }
-    
+
     $user = get_user_by('ID', $user_id);
     $arrangement = get_post($arrangement_id);
-    
+
     if (!$user || !$arrangement) {
         return;
     }
-    
-    // Get event details for email
-    $dato = get_field('arrangement_dato', $arrangement_id);
-    $tid_start = get_field('tidspunkt_start', $arrangement_id);
-    $format = get_field('arrangement_type', $arrangement_id);
-    $fysisk_adresse = get_field('sted_adresse', $arrangement_id);
-    $motelenke = get_field('online_lenke', $arrangement_id);
 
-    // Format date nicely (ACF returns Y-m-d)
-    $dato_formatted = '';
-    if ($dato) {
-        $dato_formatted = wp_date('j. F Y', strtotime($dato));
-    }
-    
+    // Get event details for email
+    $dato          = get_field('arrangement_dato', $arrangement_id);
+    $tid_start     = get_field('tidspunkt_start', $arrangement_id);
+    $format        = get_field('arrangement_type', $arrangement_id);
+    $fysisk_adresse = get_field('sted_adresse', $arrangement_id);
+    $motelenke     = get_field('online_lenke', $arrangement_id);
+
+    $dato_formatted = $dato ? wp_date('j. F Y', strtotime($dato)) : '';
+
     // Build email
     $subject = 'Påmelding bekreftet: ' . $arrangement->post_title;
-    
-    $message = "Hei {$user->display_name}!\n\n";
+
+    $message  = "Hei {$user->display_name}!\n\n";
     $message .= "Din påmelding til {$arrangement->post_title} er bekreftet.\n\n";
     $message .= "📅 Dato: {$dato_formatted}\n";
     $message .= "🕐 Tid: {$tid_start}\n";
-    
+
     if ($format === 'fysisk' && $fysisk_adresse) {
         $message .= "📍 Sted: {$fysisk_adresse}\n";
     } elseif ($format === 'digitalt' && $motelenke) {
         $message .= "💻 Møtelenke: {$motelenke}\n";
     } elseif ($format === 'hybrid') {
-        if ($fysisk_adresse) {
-            $message .= "📍 Sted: {$fysisk_adresse}\n";
-        }
-        if ($motelenke) {
-            $message .= "💻 Møtelenke: {$motelenke}\n";
-        }
+        if ($fysisk_adresse) $message .= "📍 Sted: {$fysisk_adresse}\n";
+        if ($motelenke)      $message .= "💻 Møtelenke: {$motelenke}\n";
     }
-    
+
     $message .= "\n📎 Vi har lagt ved en kalenderfil (.ics) som du kan importere i din kalender.\n\n";
     $message .= "Du finner mer informasjon og kan administrere dine påmeldinger på Min Side:\n";
     $message .= home_url('/min-side/arrangementer/') . "\n\n";
     $message .= "Med vennlig hilsen,\nBIM Verdi";
-    
-    $headers = array('Content-Type: text/plain; charset=UTF-8');
-    $attachments = array($ics_file);
-    
-    wp_mail($user->user_email, $subject, $message, $headers, $attachments);
-    
-    // Clean up temp file after 1 hour
-    wp_schedule_single_event(time() + 3600, 'bimverdi_cleanup_ics_file', array($ics_file));
-    
+
+    // Attach ICS directly as string via phpmailer_init — bypasses Servebolt file-attachment restrictions.
+    $ics_filename = sanitize_file_name($arrangement->post_title) . '.ics';
+    $ics_handler  = function ($phpmailer) use ($ics_content, $ics_filename) {
+        $phpmailer->addStringAttachment($ics_content, $ics_filename, 'base64', 'text/calendar; method=PUBLISH');
+    };
+    add_action('phpmailer_init', $ics_handler);
+
+    wp_mail($user->user_email, $subject, $message, ['Content-Type: text/plain; charset=UTF-8']);
+
+    remove_action('phpmailer_init', $ics_handler);
+
 }, 10, 3);
 
 /**
