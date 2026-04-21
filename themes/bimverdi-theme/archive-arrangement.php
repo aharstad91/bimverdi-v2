@@ -103,85 +103,12 @@ function bimverdi_get_type_label($type) {
             </div>
 
             <?php if ($upcoming_events->have_posts()): ?>
+            <?php update_post_thumbnail_cache($upcoming_events); // Avoid N+1 on has_post_thumbnail() inside the loop ?>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <?php while ($upcoming_events->have_posts()): $upcoming_events->the_post();
-                    $event_id = get_the_ID();
-                    $dato = get_field('arrangement_dato');
-                    $tid_start = get_field('tidspunkt_start');
-                    $tid_slutt = get_field('tidspunkt_slutt');
-                    $arrangement_type = get_field('arrangement_type') ?: 'digitalt';
-                    $sted_by = get_field('sted_by');
-                    $featured_image = get_the_post_thumbnail_url($event_id, 'medium');
-
-                    // Get temagrupper
-                    $temagrupper = wp_get_post_terms($event_id, 'temagruppe', array('fields' => 'all'));
-                    $first_temagruppe = !empty($temagrupper) ? $temagrupper[0]->name : '';
-
-                    // Format time
-                    $time_str = $tid_start;
-                    if ($tid_slutt) $time_str .= ' – ' . $tid_slutt;
-                ?>
-
-                <!-- Card - matching deltakere design -->
-                <div class="bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6 flex flex-col justify-between h-[285px]">
-
-                    <!-- Top Section -->
-                    <div>
-                        <!-- Header: Date Badge + Type Badge -->
-                        <div class="flex items-start justify-between mb-6">
-                            <!-- Date Badge -->
-                            <div class="w-12 h-12 rounded-lg bg-[#F5F5F4] flex flex-col items-center justify-center flex-shrink-0">
-                                <span class="text-lg font-bold text-[#FF8B5E] leading-none"><?php echo date('d', strtotime($dato)); ?></span>
-                                <span class="text-[10px] uppercase text-[#57534E] leading-none mt-0.5"><?php echo wp_date('M', strtotime($dato)); ?></span>
-                            </div>
-
-                            <!-- Type Badge -->
-                            <span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#111827] border border-[#111827] px-2.5 py-0.5 rounded">
-                                <?php echo bimverdi_get_type_icon($arrangement_type); ?>
-                                <?php echo bimverdi_get_type_label($arrangement_type); ?>
-                            </span>
-                        </div>
-
-                        <!-- Title -->
-                        <h3 class="text-xl font-bold text-[#111827] mb-2 leading-tight tracking-tight line-clamp-2">
-                            <?php the_title(); ?>
-                            <?php echo bimverdi_admin_id_badge(); ?>
-                        </h3>
-
-                        <!-- Time and Location -->
-                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#57534E]">
-                            <div class="flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <span><?php echo esc_html($time_str); ?></span>
-                            </div>
-                            <?php if ($sted_by): ?>
-                            <div class="flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                <span><?php echo esc_html($sted_by); ?></span>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <!-- Footer Section -->
-                    <div class="flex items-center justify-between pt-4 border-t border-[#E7E5E4]">
-                        <!-- Temagruppe Label -->
-                        <?php if ($first_temagruppe): ?>
-                        <span class="text-xs font-medium text-[#57534E] uppercase tracking-wider truncate max-w-[150px]">
-                            <?php echo esc_html($first_temagruppe); ?>
-                        </span>
-                        <?php else: ?>
-                        <span></span>
-                        <?php endif; ?>
-
-                        <!-- Link -->
-                        <a href="<?php the_permalink(); ?>" class="inline-flex items-center gap-1 text-sm font-bold text-[#111827] hover:opacity-70 transition-opacity">
-                            Se arrangement
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-                        </a>
-                    </div>
-                </div>
-
+                <?php while ($upcoming_events->have_posts()): $upcoming_events->the_post(); ?>
+                    <?php get_template_part('parts/components/arrangement-card', null, [
+                        'post' => get_post(),
+                    ]); ?>
                 <?php endwhile; wp_reset_postdata(); ?>
             </div>
 

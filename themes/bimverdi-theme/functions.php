@@ -28,7 +28,10 @@ function bimverdi_theme_setup() {
     ));
     add_theme_support('custom-logo');
     add_theme_support('customize-selective-refresh-widgets');
-    
+
+    // Custom image sizes
+    add_image_size('arrangement_card', 800, 450, true);
+
     // Register navigation menus
     register_nav_menus(array(
         'primary' => __('Primary Menu', 'bimverdi'),
