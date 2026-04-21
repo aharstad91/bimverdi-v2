@@ -2990,10 +2990,16 @@ class BIM_Verdi_Design_System {
                 line-height: 1.75;
             }
 
-            .prose ul, .prose ol {
+            .prose ul, .prose ol,
+            .bv-prose ul, .bv-prose ol {
                 margin-bottom: 1.25rem;
                 padding-left: 1.5rem;
             }
+
+            .prose ul, .bv-prose ul { list-style: disc; }
+            .prose ol, .bv-prose ol { list-style: decimal; }
+            .prose ul ul, .bv-prose ul ul { list-style: circle; }
+            .prose ul ul ul, .bv-prose ul ul ul { list-style: square; }
 
             .prose li {
                 margin-bottom: 0.5rem;

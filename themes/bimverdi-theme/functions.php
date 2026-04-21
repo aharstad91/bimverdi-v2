@@ -54,7 +54,7 @@ function bimverdi_enqueue_assets() {
         'bimverdi-styles',
         get_template_directory_uri() . '/dist/style.css',
         array('google-fonts'),
-        '2.0.0'
+        '2.0.1'
     );
     
     // Web Awesome CSS (default theme)
