@@ -19,7 +19,7 @@ add_action('rest_api_init', function() {
     register_rest_route('bimverdi/v1', '/ics/arrangement/(?P<id>\d+)', array(
         'methods' => 'GET',
         'callback' => 'bimverdi_ics_download',
-        'permission_callback' => 'is_user_logged_in',
+        'permission_callback' => '__return_true',
         'args' => array(
             'id' => array(
                 'required' => true,
@@ -305,21 +305,13 @@ add_action('bimverdi_pamelding_created', function($pamelding_id, $arrangement_id
         if ($motelenke)      $message .= "💻 Møtelenke: {$motelenke}\n";
     }
 
-    $message .= "\n📎 Vi har lagt ved en kalenderfil (.ics) som du kan importere i din kalender.\n\n";
+    $ics_url = rest_url('bimverdi/v1/ics/arrangement/' . $arrangement_id);
+    $message .= "\n📅 Legg til i kalender:\n" . $ics_url . "\n\n";
     $message .= "Du finner mer informasjon og kan administrere dine påmeldinger på Min Side:\n";
     $message .= home_url('/min-side/arrangementer/') . "\n\n";
     $message .= "Med vennlig hilsen,\nBIM Verdi";
 
-    // Attach ICS directly as string via phpmailer_init — bypasses Servebolt file-attachment restrictions.
-    $ics_filename = sanitize_file_name($arrangement->post_title) . '.ics';
-    $ics_handler  = function ($phpmailer) use ($ics_content, $ics_filename) {
-        $phpmailer->addStringAttachment($ics_content, $ics_filename, 'base64', 'text/calendar; method=PUBLISH');
-    };
-    add_action('phpmailer_init', $ics_handler);
-
     wp_mail($user->user_email, $subject, $message, ['Content-Type: text/plain; charset=UTF-8']);
-
-    remove_action('phpmailer_init', $ics_handler);
 
 }, 10, 3);
 
