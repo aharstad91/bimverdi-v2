@@ -248,19 +248,21 @@ $company_kunnskapskilder = get_posts(array(
                 <section>
                     <h2 class="text-lg font-bold text-[#111827] mb-4">Om foretaket</h2>
 
-                    <?php
-                    // Prefer kort_beskrivelse (imported from FF), fall back to beskrivelse (legacy ACF field)
-                    $display_beskrivelse = !empty($kort_beskrivelse) ? $kort_beskrivelse : $beskrivelse;
-                    ?>
-                    <?php if ($display_beskrivelse): ?>
-                        <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
-                            <?php echo wpautop(esc_html($display_beskrivelse)); ?>
+                    <?php if ($kort_beskrivelse): ?>
+                        <p class="text-base font-medium text-[#1A1A1A] mb-4 leading-relaxed">
+                            <?php echo esc_html($kort_beskrivelse); ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php if ($beskrivelse): ?>
+                        <div class="bv-prose text-[#57534E] mb-6">
+                            <?php echo wpautop(esc_html($beskrivelse)); ?>
                         </div>
-                    <?php elseif (has_excerpt()): ?>
-                        <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
+                    <?php elseif (!$kort_beskrivelse && has_excerpt()): ?>
+                        <div class="bv-prose text-[#57534E] mb-6">
                             <p><?php echo get_the_excerpt(); ?></p>
                         </div>
-                    <?php else: ?>
+                    <?php elseif (!$kort_beskrivelse): ?>
                         <p class="text-[#57534E] italic mb-6">Ingen beskrivelse tilgjengelig.</p>
                     <?php endif; ?>
 

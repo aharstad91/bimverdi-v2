@@ -384,9 +384,9 @@ class BIM_Verdi_CLI_Commands {
             return null;
         }
 
-        // Truncate to 300 chars if needed
-        if (mb_strlen($value) > 300) {
-            $value = mb_substr($value, 0, 297) . '...';
+        // Truncate to 500 chars if needed (matches ACF maxlength on kort_beskrivelse)
+        if (mb_strlen($value) > 500) {
+            $value = mb_substr($value, 0, 497) . '...';
         }
 
         return $value;

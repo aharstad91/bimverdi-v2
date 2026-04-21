@@ -28,7 +28,10 @@ function bimverdi_theme_setup() {
     ));
     add_theme_support('custom-logo');
     add_theme_support('customize-selective-refresh-widgets');
-    
+
+    // Custom image sizes
+    add_image_size('arrangement_card', 800, 450, true);
+
     // Register navigation menus
     register_nav_menus(array(
         'primary' => __('Primary Menu', 'bimverdi'),
@@ -54,7 +57,7 @@ function bimverdi_enqueue_assets() {
         'bimverdi-styles',
         get_template_directory_uri() . '/dist/style.css',
         array('google-fonts'),
-        '2.0.0'
+        '2.0.1'
     );
     
     // Web Awesome CSS (default theme)

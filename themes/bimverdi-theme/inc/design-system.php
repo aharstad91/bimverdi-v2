@@ -2990,10 +2990,24 @@ class BIM_Verdi_Design_System {
                 line-height: 1.75;
             }
 
-            .prose ul, .prose ol {
+            /* Form field invalid state (for char-counter grandfather + over-max) */
+            .bv-char-input.is-invalid,
+            textarea.is-invalid,
+            input.is-invalid {
+                border-color: #772015 !important;
+                box-shadow: 0 0 0 3px rgba(119, 32, 21, 0.12) !important;
+            }
+
+            .prose ul, .prose ol,
+            .bv-prose ul, .bv-prose ol {
                 margin-bottom: 1.25rem;
                 padding-left: 1.5rem;
             }
+
+            .prose ul, .bv-prose ul { list-style: disc; }
+            .prose ol, .bv-prose ol { list-style: decimal; }
+            .prose ul ul, .bv-prose ul ul { list-style: circle; }
+            .prose ul ul ul, .bv-prose ul ul ul { list-style: square; }
 
             .prose li {
                 margin-bottom: 0.5rem;
