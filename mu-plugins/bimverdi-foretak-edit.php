@@ -74,10 +74,23 @@ add_action('template_redirect', function () {
     set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
 
     // --- Sanitize editable inputs ---
+    $kort_beskrivelse = sanitize_textarea_field($_POST['kort_beskrivelse'] ?? '');
     $beskrivelse = sanitize_textarea_field($_POST['beskrivelse'] ?? '');
     $telefon     = sanitize_text_field($_POST['telefon'] ?? '');
     $epost       = sanitize_email($_POST['epost'] ?? '');
     $nettside    = esc_url_raw($_POST['nettside'] ?? '');
+
+    // --- Validate kort_beskrivelse length (grandfather: allow existing long values, block growth) ---
+    $kort_len = mb_strlen($kort_beskrivelse, 'UTF-8');
+    if ($kort_len > 500) {
+        $existing_kort = (string) get_field('kort_beskrivelse', $company_id);
+        $existing_len  = mb_strlen($existing_kort, 'UTF-8');
+        // Block save only if user INCREASED length beyond 500 (grandfather protects existing >500 data)
+        if ($kort_len > max($existing_len, 500)) {
+            wp_redirect(add_query_arg('bv_error', 'kort_beskrivelse_too_long', $redirect_error));
+            exit;
+        }
+    }
 
     // Sanitize taxonomy selections
     $bransje_rolle = array_map('sanitize_text_field', (array) ($_POST['bransje_rolle'] ?? []));
@@ -142,6 +155,7 @@ add_action('template_redirect', function () {
 
     // --- Update ACF fields ---
     if (function_exists('update_field')) {
+        update_field('kort_beskrivelse', $kort_beskrivelse, $company_id);
         update_field('beskrivelse', $beskrivelse, $company_id);
         update_field('telefon', $telefon, $company_id);
         update_field('epost', $epost, $company_id);
@@ -152,6 +166,7 @@ add_action('template_redirect', function () {
             update_field('logo', $logo_attachment_id, $company_id);
         }
     } else {
+        update_post_meta($company_id, 'kort_beskrivelse', $kort_beskrivelse);
         update_post_meta($company_id, 'beskrivelse', $beskrivelse);
         update_post_meta($company_id, 'telefon', $telefon);
         update_post_meta($company_id, 'epost', $epost);
@@ -185,6 +200,20 @@ add_action('template_redirect', function () {
     delete_transient($rate_key);
 
     error_log('BIMVerdi: Foretak updated: ' . $company_id . ' by user ' . $user_id);
+
+    // --- Deferred Servebolt cache-purge (shutdown hook — doesn't block redirect) ---
+    // TODO: extract to bimverdi-cache-invalidation.php when 2nd CPT needs purging (rule of three-minus-one)
+    add_action('shutdown', function () use ($company_id) {
+        static $purged = false;
+        if ($purged) return;
+        $purged = true;
+        if (function_exists('sb_purge_cache_post')) {
+            sb_purge_cache_post($company_id);
+        }
+        if (function_exists('sb_purge_cache_url')) {
+            sb_purge_cache_url(home_url('/deltakere/'));
+        }
+    });
 
     // Redirect to foretak page with success
     wp_redirect(add_query_arg('updated', '1', home_url('/min-side/foretak/')));

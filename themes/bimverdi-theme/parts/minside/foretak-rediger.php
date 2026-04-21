@@ -43,6 +43,9 @@ $org_nummer  = get_field('organisasjonsnummer', $company_id) ?: '';
 $bedriftsnavn = $company->post_title;
 $beskrivelse_raw = get_field('beskrivelse', $company_id) ?: $company->post_content;
 $beskrivelse = wp_strip_all_tags($beskrivelse_raw);
+$kort_beskrivelse = get_field('kort_beskrivelse', $company_id) ?: '';
+$kort_beskrivelse_initial_length = mb_strlen($kort_beskrivelse, 'UTF-8');
+$kort_beskrivelse_max = 500;
 $telefon     = get_field('telefon', $company_id) ?: '';
 $epost       = get_field('epost', $company_id) ?: '';
 $nettside    = get_field('hjemmeside', $company_id) ?: get_field('nettside', $company_id) ?: '';
@@ -108,6 +111,7 @@ $error_messages = [
     'invalid_file_type'=> 'Ugyldig filtype. Tillatte formater: jpg, jpeg, png, gif, svg.',
     'file_too_large'   => 'Filen er for stor. Maks størrelse er 5 MB.',
     'upload_failed'    => 'Kunne ikke laste opp logo. Vennligst prøv igjen.',
+    'kort_beskrivelse_too_long' => 'Kort beskrivelse er for lang (maks 500 tegn). Kort den ned før lagring.',
     'system'           => 'En teknisk feil oppstod. Vennligst prøv igjen.',
 ];
 $error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
@@ -184,14 +188,48 @@ $error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
             </div>
 
             <!-- Editable fields -->
+            <?php
+            $kort_over = $kort_beskrivelse_initial_length > $kort_beskrivelse_max;
+            ?>
+            <div>
+                <div class="flex items-baseline justify-between mb-2">
+                    <label for="kort_beskrivelse" class="block text-sm font-semibold text-[#1A1A1A]">
+                        <?php _e('Kort beskrivelse', 'bimverdi'); ?>
+                    </label>
+                    <span id="kort_beskrivelse_counter"
+                          class="text-xs tabular-nums text-[#888888]<?php echo $kort_over ? ' is-invalid text-[#772015] font-semibold' : ''; ?>"
+                          aria-live="polite">
+                        <span class="bv-char-count__current"><?php echo esc_html($kort_beskrivelse_initial_length); ?></span>/<?php echo esc_html($kort_beskrivelse_max); ?>
+                    </span>
+                </div>
+                <textarea id="kort_beskrivelse" name="kort_beskrivelse" rows="3"
+                          data-char-count
+                          data-char-count-max="<?php echo esc_attr($kort_beskrivelse_max); ?>"
+                          data-char-count-initial="<?php echo esc_attr($kort_beskrivelse_initial_length); ?>"
+                          data-char-count-counter="kort_beskrivelse_counter"
+                          autocapitalize="sentences"
+                          aria-describedby="kort_beskrivelse_hint kort_beskrivelse_counter"
+                          aria-invalid="<?php echo $kort_over ? 'true' : 'false'; ?>"
+                          placeholder="<?php esc_attr_e('Kort beskrivelse av foretaket — vises på kort/lister.', 'bimverdi'); ?>"
+                          class="bv-char-input w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent resize-y<?php echo $kort_over ? ' is-invalid' : ''; ?>"
+                ><?php echo esc_textarea($kort_beskrivelse); ?></textarea>
+                <p id="kort_beskrivelse_hint" class="mt-1 text-xs text-[#888888]">
+                    <?php _e('Maks 500 tegn. Vises i kort- og liste-visninger av foretaket.', 'bimverdi'); ?>
+                </p>
+            </div>
+
             <div>
                 <label for="beskrivelse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                    <?php _e('Bedriftsbeskrivelse', 'bimverdi'); ?>
+                    <?php _e('Beskrivelse', 'bimverdi'); ?>
                 </label>
-                <textarea id="beskrivelse" name="beskrivelse" rows="4"
-                          placeholder="<?php esc_attr_e('Kort beskrivelse av foretaket...', 'bimverdi'); ?>"
+                <textarea id="beskrivelse" name="beskrivelse" rows="6"
+                          autocapitalize="sentences"
+                          placeholder="<?php esc_attr_e('Utdypende beskrivelse av foretaket...', 'bimverdi'); ?>"
                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent resize-y"
                 ><?php echo esc_textarea($beskrivelse); ?></textarea>
+                <p class="mt-1 text-xs text-[#888888]">
+                    <?php _e('Maks 800 tegn. Vises på offentlig foretaksside.', 'bimverdi'); ?>
+                </p>
             </div>
 
             <!-- Logo -->
@@ -388,5 +426,86 @@ $error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
         </div>
 
     </div>
+
+<script>
+(function () {
+    'use strict';
+
+    var textareas = document.querySelectorAll('[data-char-count]');
+    if (!textareas.length) return;
+
+    textareas.forEach(function (el) {
+        var max = parseInt(el.dataset.charCountMax, 10);
+        var initial = parseInt(el.dataset.charCountInitial, 10) || 0;
+        var counter = document.getElementById(el.dataset.charCountCounter);
+        if (!counter) return;
+        var currentSpan = counter.querySelector('.bv-char-count__current');
+        var composing = false;
+        var debounceTimer = null;
+        var lastAnnouncedState = null;
+
+        function measure() {
+            return Array.from(el.value).length;
+        }
+
+        function render(len, announce) {
+            if (currentSpan) currentSpan.textContent = len;
+            var over = len > max;
+            counter.classList.toggle('is-invalid', over);
+            counter.classList.toggle('text-[#772015]', over);
+            counter.classList.toggle('font-semibold', over);
+            counter.classList.toggle('text-[#888888]', !over);
+            el.classList.toggle('is-invalid', over);
+            el.setAttribute('aria-invalid', over ? 'true' : 'false');
+
+            // Only announce state flip (crossed max boundary) to avoid aria-live spam
+            if (announce) {
+                var state = over ? 'over' : 'under';
+                if (state !== lastAnnouncedState) {
+                    lastAnnouncedState = state;
+                }
+            }
+        }
+
+        function update() {
+            if (composing) return;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                render(measure(), true);
+            }, 150);
+        }
+
+        el.addEventListener('compositionstart', function () { composing = true; });
+        el.addEventListener('compositionend', function () {
+            composing = false;
+            render(measure(), true);
+        });
+        el.addEventListener('input', update);
+
+        // Initial render (respects server-rendered state, but ensures consistency)
+        render(measure(), false);
+
+        // Submit guard: block if over max, UNLESS grandfather allows (never increased)
+        var form = el.closest('form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                var len = measure();
+                if (len > max && len > initial) {
+                    e.preventDefault();
+                    el.focus();
+                    render(len, true);
+                    // Inline alert via the hint element — no blocking alert()
+                    var hint = document.getElementById('kort_beskrivelse_hint');
+                    if (hint) {
+                        hint.setAttribute('role', 'alert');
+                        hint.textContent = 'Kort beskrivelse har ' + len + ' tegn, maks er ' + max + '. Kort den ned før lagring.';
+                        hint.classList.add('text-[#772015]', 'font-semibold');
+                    }
+                }
+            });
+        }
+    });
+})();
+</script>
 
 <?php get_template_part('parts/components/account-layout-end'); ?>

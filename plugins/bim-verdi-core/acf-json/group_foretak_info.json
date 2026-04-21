@@ -18,9 +18,9 @@
             "label": "Kort beskrivelse",
             "name": "kort_beskrivelse",
             "type": "textarea",
-            "instructions": "Kort beskrivelse for kort/liste-visning (maks 300 tegn)",
+            "instructions": "Kort beskrivelse for kort/liste-visning (maks 500 tegn)",
             "required": 0,
-            "maxlength": 300,
+            "maxlength": 500,
             "rows": 3,
             "new_lines": ""
         },
