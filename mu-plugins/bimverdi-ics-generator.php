@@ -313,12 +313,10 @@ add_action('bimverdi_pamelding_created', function($pamelding_id, $arrangement_id
 <p>🕐 <strong>Tid:</strong> ' . esc_html($tid_start) . '</p>
 ' . $sted . '
 <p style="margin-top:20px">
-  <a href="' . esc_url($ics_url) . '" style="display:inline-block;background:#FF8B5E;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
-    📅 Last ned ICS-fil for ' . $title_e . '
-  </a>
+  📅 <a href="' . esc_url($ics_url) . '" style="color:#FF8B5E;font-weight:600">Last ned kalender-invitasjon (.ics)</a>
 </p>
 <p style="font-size:13px;color:#888">
-  Klikk lenken over for å legge arrangementet til i din kalender (Outlook, Google Calendar, Apple Calendar).
+  Fungerer med Outlook, Google Calendar og Apple Calendar.
 </p>
 <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
 <p><a href="' . esc_url($minside) . '">Administrer dine påmeldinger på Min Side</a></p>
