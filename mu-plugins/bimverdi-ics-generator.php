@@ -314,7 +314,7 @@ add_action('bimverdi_pamelding_created', function($pamelding_id, $arrangement_id
   📅 <a href="' . esc_url($ics_url) . '" style="color:#FF8B5E;font-weight:600">Last ned kalender-invitasjon (.ics)</a>
 </p>
 <p style="font-size:13px;color:#888">
-  Fungerer med Outlook, Google Calendar og Apple Calendar.
+  Du må åpne .ics-filen med din kalender-applikasjon for å legge arrangementet inn i kalenderen din.
 </p>
 <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
 <p><a href="' . esc_url($minside) . '">Administrer dine påmeldinger på Min Side</a></p>
