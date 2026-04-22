@@ -149,15 +149,13 @@ function bimverdi_generate_ics($arrangement_id) {
         $location = implode(' | ', $parts);
     }
     
-    // Build description — kort sammendrag (maks ~40 ord). Full tekst ligger bak "Les mer"-lenken.
+    // Build description — bevisst minimal: ingen tekst fra post_content, kun metadata og permalink.
+    // Bård 2026-04-21: "IKKE LEGGE INNHOLD FRA LINKEN TIL ARRANGEMENTET I DESCRIPTION".
     $description_parts = array();
-    if ($beskrivelse) {
-        $description_parts[] = wp_trim_words(wp_strip_all_tags($beskrivelse), 40, '…');
-    }
     if ($motelenke && $format !== 'fysisk') {
-        $description_parts[] = "\n\nMøtelenke: " . $motelenke;
+        $description_parts[] = 'Møtelenke: ' . $motelenke . "\n\n";
     }
-    $description_parts[] = "\n\nArrangert av BIM Verdi";
+    $description_parts[] = 'Arrangert av BIM Verdi';
     $description_parts[] = "\nLes mer: " . get_permalink($arrangement_id);
     
     $description = implode('', $description_parts);
