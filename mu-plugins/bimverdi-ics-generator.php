@@ -149,16 +149,16 @@ function bimverdi_generate_ics($arrangement_id) {
         $location = implode(' | ', $parts);
     }
     
-    // Build description
+    // Build description — kort sammendrag (maks ~40 ord). Full tekst ligger bak "Les mer"-lenken.
     $description_parts = array();
     if ($beskrivelse) {
-        $description_parts[] = wp_strip_all_tags($beskrivelse);
+        $description_parts[] = wp_trim_words(wp_strip_all_tags($beskrivelse), 40, '…');
     }
     if ($motelenke && $format !== 'fysisk') {
         $description_parts[] = "\n\nMøtelenke: " . $motelenke;
     }
     $description_parts[] = "\n\nArrangert av BIM Verdi";
-    $description_parts[] = "Les mer: " . get_permalink($arrangement_id);
+    $description_parts[] = "\nLes mer: " . get_permalink($arrangement_id);
     
     $description = implode('', $description_parts);
     
