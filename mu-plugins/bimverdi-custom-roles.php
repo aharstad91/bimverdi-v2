@@ -316,3 +316,28 @@ function bimverdi_min_side_access_control() {
         exit;
     }
 }
+
+/**
+ * Blokker wp-admin for ikke-administratorer.
+ * Medlemmer/deltakere skal aldri se WordPress-backend — alt skjer via Min Side.
+ * AJAX (admin-ajax.php) og cron tillates fordi frontend bruker disse.
+ */
+add_action('admin_init', 'bimverdi_block_wp_admin_for_non_admins');
+function bimverdi_block_wp_admin_for_non_admins() {
+    if (wp_doing_ajax() || wp_doing_cron()) {
+        return;
+    }
+    if (current_user_can('manage_options')) {
+        return;
+    }
+    wp_safe_redirect(home_url('/min-side/'));
+    exit;
+}
+
+/**
+ * Skjul admin-bar (oransje WP-toolbar) for alle ikke-administratorer.
+ */
+add_filter('show_admin_bar', 'bimverdi_hide_admin_bar_for_non_admins');
+function bimverdi_hide_admin_bar_for_non_admins($show) {
+    return current_user_can('manage_options') ? $show : false;
+}
