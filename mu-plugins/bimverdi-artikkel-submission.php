@@ -263,6 +263,45 @@ add_action('init', function () {
     $action = $is_edit ? 'updated' : 'submitted';
     error_log("BIMVerdi: Artikkel {$action}: {$post_id} ({$title}) by user {$user_id}");
 
+    // Send admin-kopi til post@bimverdi.no — kun ved NY innsending, ikke edits
+    // (Bårds krav 2026-04-28; ingen aksept-checkbox/bruker-bekreftelse for innholds-bidrag)
+    if (!$is_edit && function_exists('bimverdi_send_admin_notification_email')) {
+        $current_user = wp_get_current_user();
+        $company_post = get_post($company_id);
+        $company_name = $company_post ? $company_post->post_title : 'Ukjent foretak';
+        $admin_url = admin_url('post.php?post=' . $post_id . '&action=edit');
+        $ingress_preview = !empty($ingress)
+            ? mb_substr($ingress, 0, 200)
+            : mb_substr(wp_strip_all_tags($content), 0, 200);
+        $admin_subject = sprintf('Ny artikkel venter godkjenning: %s', $title);
+        $admin_body = sprintf(
+            '<p>En ny artikkel er sendt inn og venter på godkjenning før publisering:</p>
+            <table style="border-collapse:collapse;font-size:14px;">
+                <tr><td style="padding:4px 12px 4px 0;color:#666;vertical-align:top;">Tittel</td><td><strong>%s</strong></td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;vertical-align:top;">Foretak</td><td>%s</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;vertical-align:top;">Forfatter</td><td>%s &lt;%s&gt;</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;vertical-align:top;">Tidspunkt</td><td>%s</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;vertical-align:top;">Status</td><td><strong>Venter godkjenning (pending)</strong></td></tr>
+            </table>
+            <p style="margin-top:16px;color:#1A1A1A;font-size:14px;line-height:1.5;"><em>%s</em>%s</p>
+            <p style="margin-top:24px;">
+                <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                    Åpne artikkelen i wp-admin
+                </a>
+            </p>%s',
+            esc_html($title),
+            esc_html($company_name),
+            esc_html($current_user->display_name),
+            esc_html($current_user->user_email),
+            esc_html(date_i18n('j. F Y \k\l. H:i')),
+            esc_html($ingress_preview),
+            mb_strlen($ingress_preview) >= 200 ? '…' : '',
+            esc_url($admin_url),
+            bimverdi_render_terms_footer_html()
+        );
+        bimverdi_send_admin_notification_email($admin_subject, $admin_body);
+    }
+
     $param = $is_edit ? 'updated' : 'submitted';
     wp_redirect(add_query_arg($param, '1', home_url('/min-side/artikler/')));
     exit;
