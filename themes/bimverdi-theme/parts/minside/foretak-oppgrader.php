@@ -167,7 +167,7 @@ $nivaaer = [
                        class="w-4 h-4 mt-0.5 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E] flex-shrink-0">
                 <span class="text-sm text-[#1A1A1A]">
                     Jeg aksepterer
-                    <a href="<?php echo esc_url(BV_OPPGRADERING_TERMS_URL); ?>" target="_blank" rel="noopener" class="text-[#FF8B5E] underline underline-offset-2 hover:text-[#E5764A]">
+                    <a href="<?php echo esc_url(defined('BV_TERMS_URL') ? BV_TERMS_URL : 'https://www.bimverdi.no/betingelser'); ?>" target="_blank" rel="noopener" class="text-[#FF8B5E] underline underline-offset-2 hover:text-[#E5764A]">
                         betingelsene for medlemskap i BIM Verdi
                     </a>
                     <span class="text-red-600">*</span>

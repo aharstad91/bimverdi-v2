@@ -32,11 +32,9 @@ const BV_OPPGRADERING_META_HISTORY = '_bv_oppgradering_history';
 /** Gyldige bv_rolle-verdier som kan velges som oppgraderingsmål. */
 const BV_OPPGRADERING_VALID_LEVELS = ['Deltaker', 'Prosjektdeltaker', 'Partner'];
 
-/** E-post-adresse for SuperOffice-dokumentasjon (kopi av alle hendelser). */
-const BV_OPPGRADERING_NOTIFY_EMAIL = 'post@bimverdi.no';
-
-/** Lenke til betingelser (skal med i alle e-poster). */
-const BV_OPPGRADERING_TERMS_URL = 'https://www.bimverdi.no/betingelser';
+// NOTE: BV_NOTIFY_EMAIL og BV_TERMS_URL defineres i bimverdi-shared-helpers.php
+// (mu-plugin lastet alfabetisk etter denne filen). Refs i denne filen brukes
+// kun runtime (init/admin-post hooks), så konstantene er tilgjengelige da.
 
 // =============================================================================
 // HELPER-FUNKSJONER: PENDING-FORESPØRSEL
@@ -341,7 +339,7 @@ function bimverdi_send_oppgradering_request_emails($foretak_id, $level, $user_id
         esc_html($foretak_navn),
         esc_html($level),
         esc_url(home_url('/min-side/foretak/')),
-        esc_url(BV_OPPGRADERING_TERMS_URL)
+        esc_url(BV_TERMS_URL)
     );
     $sent_user = wp_mail($user->user_email, $bruker_subject, $bruker_body, $headers);
     if (!$sent_user) {
@@ -376,11 +374,11 @@ function bimverdi_send_oppgradering_request_emails($foretak_id, $level, $user_id
         esc_html($user->user_email),
         esc_html(date_i18n('j. F Y \k\l. H:i')),
         esc_url($admin_url_foretak),
-        esc_url(BV_OPPGRADERING_TERMS_URL)
+        esc_url(BV_TERMS_URL)
     );
-    $sent_admin = wp_mail(BV_OPPGRADERING_NOTIFY_EMAIL, $admin_subject, $admin_body, $headers);
+    $sent_admin = wp_mail(BV_NOTIFY_EMAIL, $admin_subject, $admin_body, $headers);
     if (!$sent_admin) {
-        error_log('BIMVerdi oppgradering: admin-kopi-e-post feilet til ' . BV_OPPGRADERING_NOTIFY_EMAIL);
+        error_log('BIMVerdi oppgradering: admin-kopi-e-post feilet til ' . BV_NOTIFY_EMAIL);
     }
 }
 
@@ -401,7 +399,7 @@ function bimverdi_show_oppgradering_admin_notice($post) {
     // Suksess-melding etter handling
     $action = isset($_GET['bv_oppgradering']) ? sanitize_key($_GET['bv_oppgradering']) : '';
     if ($action === 'approved') {
-        echo '<div class="notice notice-success inline" style="margin: 15px 0;"><p><strong>✅ Oppgradering godkjent.</strong> Bekreftelses-e-post er sendt til hovedkontakt og kopi til ' . esc_html(BV_OPPGRADERING_NOTIFY_EMAIL) . '.</p></div>';
+        echo '<div class="notice notice-success inline" style="margin: 15px 0;"><p><strong>✅ Oppgradering godkjent.</strong> Bekreftelses-e-post er sendt til hovedkontakt og kopi til ' . esc_html(BV_NOTIFY_EMAIL) . '.</p></div>';
     } elseif ($action === 'rejected') {
         echo '<div class="notice notice-warning inline" style="margin: 15px 0;"><p><strong>Oppgradering avvist.</strong> Avvisnings-e-post sendt til hovedkontakt med din begrunnelse.</p></div>';
     } elseif ($action === 'error') {
@@ -613,7 +611,7 @@ function bimverdi_send_oppgradering_approved_emails($foretak_id, $level, $user_i
             esc_html($foretak_navn),
             esc_html($level),
             esc_url(home_url('/min-side/')),
-            esc_url(BV_OPPGRADERING_TERMS_URL)
+            esc_url(BV_TERMS_URL)
         );
         $sent = wp_mail($user->user_email, $bruker_subject, $bruker_body, $headers);
         if (!$sent) {
@@ -638,7 +636,7 @@ function bimverdi_send_oppgradering_approved_emails($foretak_id, $level, $user_i
         esc_html(get_userdata($admin_id)->display_name ?? 'Ukjent'),
         esc_html(date_i18n('j. F Y \k\l. H:i'))
     );
-    $sent_admin = wp_mail(BV_OPPGRADERING_NOTIFY_EMAIL, $admin_subject, $admin_body, $headers);
+    $sent_admin = wp_mail(BV_NOTIFY_EMAIL, $admin_subject, $admin_body, $headers);
     if (!$sent_admin) {
         error_log('BIMVerdi oppgradering approved-admin-mail feilet');
     }
@@ -669,9 +667,9 @@ function bimverdi_send_oppgradering_rejected_emails($foretak_id, $level, $user_i
             esc_html($foretak_navn),
             esc_html($level),
             nl2br(esc_html($reason)),
-            esc_attr(BV_OPPGRADERING_NOTIFY_EMAIL),
-            esc_html(BV_OPPGRADERING_NOTIFY_EMAIL),
-            esc_url(BV_OPPGRADERING_TERMS_URL)
+            esc_attr(BV_NOTIFY_EMAIL),
+            esc_html(BV_NOTIFY_EMAIL),
+            esc_url(BV_TERMS_URL)
         );
         $sent = wp_mail($user->user_email, $bruker_subject, $bruker_body, $headers);
         if (!$sent) {
@@ -697,7 +695,7 @@ function bimverdi_send_oppgradering_rejected_emails($foretak_id, $level, $user_i
         esc_html(date_i18n('j. F Y \k\l. H:i')),
         nl2br(esc_html($reason))
     );
-    $sent_admin = wp_mail(BV_OPPGRADERING_NOTIFY_EMAIL, $admin_subject, $admin_body, $headers);
+    $sent_admin = wp_mail(BV_NOTIFY_EMAIL, $admin_subject, $admin_body, $headers);
     if (!$sent_admin) {
         error_log('BIMVerdi oppgradering rejected-admin-mail feilet');
     }
