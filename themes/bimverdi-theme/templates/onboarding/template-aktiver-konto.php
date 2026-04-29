@@ -68,6 +68,7 @@ if (is_user_logged_in()) {
 $form_error_messages = array(
     'weak_password' => 'Passord må være minst 8 tegn.',
     'missing_name'  => 'Vennligst oppgi navnet ditt.',
+    'missing_terms' => 'Du må akseptere betingelsene for å aktivere kontoen.',
     'user_exists'   => 'Denne e-postadressen er allerede registrert. <a href="' . esc_url(home_url('/logg-inn/')) . '" style="color: inherit; font-weight: 600;">Logg inn her</a>',
     'nonce'         => 'Noe gikk galt. Vennligst prøv igjen.',
     'system'        => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
@@ -563,6 +564,20 @@ $prefill_name = '';
                                    class="form-input<?php echo $form_error === 'weak_password' ? ' has-error' : ''; ?>"
                                    autocomplete="new-password" minlength="8">
                             <p class="form-hint">Minimum 8 tegn. Velg noe du husker!</p>
+                        </div>
+
+                        <div class="form-group bv-terms-acceptance<?php echo $form_error === 'missing_terms' ? ' has-error' : ''; ?>">
+                            <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; line-height: 1.4;">
+                                <input type="checkbox" name="aksept_betingelser" value="1" required
+                                       style="margin-top: 4px; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--bv-accent);">
+                                <span style="font-size: var(--bv-text-sm); color: var(--bv-text-primary);">
+                                    Jeg aksepterer
+                                    <a href="<?php echo esc_url(defined('BV_TERMS_URL') ? BV_TERMS_URL : 'https://www.bimverdi.no/betingelser'); ?>"
+                                       target="_blank" rel="noopener"
+                                       style="color: var(--bv-accent); text-decoration: underline;">betingelsene for medlemskap i BIM Verdi</a>
+                                    <span class="required">*</span>
+                                </span>
+                            </label>
                         </div>
 
                         <button type="submit" name="bimverdi_verify_account" value="1" class="btn btn-primary">
