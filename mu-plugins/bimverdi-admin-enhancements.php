@@ -535,6 +535,19 @@ function bimverdi_foretak_show_deltakernivaa_column($column, $post_id) {
     } else {
         echo '<span style="color: #999;">—</span>';
     }
+
+    // Pending oppgradering-indikator
+    if (function_exists('bimverdi_get_pending_oppgradering')) {
+        $pending = bimverdi_get_pending_oppgradering($post_id);
+        if ($pending) {
+            $edit_url = get_edit_post_link($post_id);
+            printf(
+                ' <a href="%s" title="%s" style="text-decoration:none;">⏳</a>',
+                esc_url($edit_url),
+                esc_attr(sprintf('Pending oppgradering: %s', $pending['level']))
+            );
+        }
+    }
 }
 
 function bimverdi_foretak_deltakernivaa_sortable($columns) {
@@ -554,4 +567,68 @@ function bimverdi_foretak_deltakernivaa_orderby($query) {
     }
     $query->set('meta_key', 'bv_rolle');
     $query->set('orderby', 'meta_value');
+}
+
+/**
+ * Filter-link "Pending oppgradering (N)" øverst i foretak-listen.
+ */
+add_filter('views_edit-foretak', 'bimverdi_foretak_pending_oppgradering_filter_link');
+
+function bimverdi_foretak_pending_oppgradering_filter_link($views) {
+    $count = (int) (new WP_Query([
+        'post_type'      => 'foretak',
+        'post_status'    => 'any',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'meta_query'     => [
+            [
+                'key'     => '_bv_oppgradering_pending',
+                'compare' => 'EXISTS',
+            ],
+        ],
+    ]))->found_posts;
+
+    if ($count === 0) {
+        return $views;
+    }
+
+    $url = add_query_arg([
+        'post_type'              => 'foretak',
+        'bv_pending_oppgradering' => '1',
+    ], admin_url('edit.php'));
+
+    $is_active = !empty($_GET['bv_pending_oppgradering']);
+    $class = $is_active ? ' class="current"' : '';
+
+    $views['bv_pending_oppgradering'] = sprintf(
+        '<a href="%s"%s>⏳ Pending oppgradering <span class="count">(%d)</span></a>',
+        esc_url($url),
+        $class,
+        $count
+    );
+    return $views;
+}
+
+/**
+ * Filter foretak-listen til kun pending når ?bv_pending_oppgradering=1.
+ */
+add_action('pre_get_posts', 'bimverdi_foretak_pending_oppgradering_filter_query');
+
+function bimverdi_foretak_pending_oppgradering_filter_query($query) {
+    if (!is_admin() || !$query->is_main_query()) {
+        return;
+    }
+    if ($query->get('post_type') !== 'foretak') {
+        return;
+    }
+    if (empty($_GET['bv_pending_oppgradering'])) {
+        return;
+    }
+
+    $meta_query = (array) $query->get('meta_query');
+    $meta_query[] = [
+        'key'     => '_bv_oppgradering_pending',
+        'compare' => 'EXISTS',
+    ];
+    $query->set('meta_query', $meta_query);
 }

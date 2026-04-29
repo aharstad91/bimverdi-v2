@@ -48,6 +48,36 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
 </div>
 <?php endif; ?>
 
+<!-- Success message after sending oppgraderings-forespørsel -->
+<?php if (isset($_GET['oppgradering_sendt']) && $_GET['oppgradering_sendt'] === '1'): ?>
+<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    <div>
+        <p class="text-green-800 text-sm font-medium">Oppgraderingsforespørsel sendt!</p>
+        <p class="text-green-800 text-sm mt-1">Du får e-post når Bård har behandlet forespørselen og sendt faktura.</p>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Error messages from oppgradering-redirect -->
+<?php
+$oppgradering_errors = [
+    'no_company'      => 'Du må være tilknyttet et foretak for å oppgradere.',
+    'not_hovedkontakt' => 'Kun hovedkontaktpersonen kan sende oppgraderingsforespørsel for foretaket.',
+    'already_paying'  => 'Foretaket er allerede betalende deltaker.',
+];
+$bv_error = isset($_GET['bv_error']) ? sanitize_key($_GET['bv_error']) : '';
+if ($bv_error && isset($oppgradering_errors[$bv_error])):
+?>
+<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <p class="text-red-800 text-sm"><?php echo esc_html($oppgradering_errors[$bv_error]); ?></p>
+</div>
+<?php endif; ?>
+
 <!-- Account Layout with Sidenav -->
 <?php get_template_part('parts/components/account-layout', null, [
     'title' => __('Mitt foretak', 'bimverdi'),
@@ -162,6 +192,59 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
                 </div>
             </div>
         </div>
+
+        <!-- Oppgraderings-CTA / pending-status (kun for hovedkontakt for gratisforetak) -->
+        <?php
+        $bv_rolle_for_cta = function_exists('get_field') ? get_field('bv_rolle', $company_id) : '';
+        $can_upgrade = $is_hovedkontakt && $bv_rolle_for_cta === 'Ikke deltaker';
+        $pending_oppgr = $can_upgrade && function_exists('bimverdi_get_pending_oppgradering')
+            ? bimverdi_get_pending_oppgradering($company_id)
+            : null;
+        ?>
+        <?php if ($can_upgrade): ?>
+            <?php if ($pending_oppgr): ?>
+                <div class="pb-8 border-b border-[#E7E5E4]">
+                    <div class="border border-[#FF8B5E]/40 rounded-lg p-5 bg-[#FFF8F5]">
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-[#1A1A1A]">Oppgraderingsforespørsel sendt</p>
+                                <p class="text-sm text-[#5A5A5A] mt-1">
+                                    Forespørsel for <strong><?php echo esc_html($pending_oppgr['level']); ?></strong> ble sendt
+                                    <?php echo esc_html(date_i18n('j. F Y', strtotime($pending_oppgr['requested_at']))); ?>.
+                                    Bård vurderer manuelt og sender bekreftelse + faktura når den er godkjent.
+                                </p>
+                                <a href="<?php echo esc_url(bimverdi_minside_url('foretak/oppgrader')); ?>" class="inline-block text-sm text-[#FF8B5E] hover:underline mt-3">
+                                    Endre forespørselen
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="pb-8 border-b border-[#E7E5E4]">
+                    <div class="border border-[#E7E5E4] rounded-lg p-5 bg-[#FAFAF8]">
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-[#1A1A1A]">Bli betalende deltaker</p>
+                                <p class="text-sm text-[#5A5A5A] mt-1">
+                                    Få tilgang til temagrupper, lukkede arrangementer, verktøyregistrering og rådgivning.
+                                </p>
+                                <div class="mt-4">
+                                    <?php bimverdi_button([
+                                        'text' => 'Oppgrader til betalende deltaker',
+                                        'href' => bimverdi_minside_url('foretak/oppgrader'),
+                                        'variant' => 'primary',
+                                        'size' => 'small',
+                                    ]); ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
 
         <!-- Description Section (if exists) -->
         <?php $beskrivelse = get_field('beskrivelse', $company_id); ?>

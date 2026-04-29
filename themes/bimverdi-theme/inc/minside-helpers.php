@@ -374,6 +374,7 @@ if (!function_exists('bimverdi_is_account_route')) {
             'profil/passord',
             'foretak',
             'foretak/rediger',
+            'foretak/oppgrader',
             'foretak/kolleger',
         ];
 
@@ -398,6 +399,7 @@ if (!function_exists('bimverdi_get_account_routes')) {
             'profil/passord',
             'foretak',
             'foretak/rediger',
+            'foretak/oppgrader',
             'foretak/kolleger',
         ];
     }
@@ -430,6 +432,7 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'foretak'             => 'foretak-detail',
             'foretak/rediger'     => 'foretak-rediger',
             'foretak/registrer'   => 'foretak-registrer',
+            'foretak/oppgrader'   => 'foretak-oppgrader',
             
             // Tools (Verktøy)
             'verktoy'             => 'verktoy-list',
