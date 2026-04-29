@@ -121,6 +121,28 @@ class BIMVerdi_Email_Verification {
 
         error_log('BIMVerdi: Verification email sent to ' . $email);
 
+        // Send admin-kopi til post@bimverdi.no (SuperOffice-dokumentasjon)
+        if (function_exists('bimverdi_send_admin_notification_email')) {
+            $admin_subject = sprintf('Ny bruker-registrering startet: %s', $email);
+            $admin_body = sprintf(
+                '<p>En ny bruker har bedt om å registrere seg på BIM Verdi:</p>
+                <table style="border-collapse:collapse;font-size:14px;">
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">E-post</td><td><strong>%s</strong></td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">IP-adresse</td><td>%s</td></tr>
+                </table>
+                <p style="margin-top:16px;font-size:13px;color:#666;">
+                    Verifiserings-e-post er sendt. Brukeren må klikke lenken og velge passord
+                    før kontoen aktiveres. Du får en ny e-post når aktivering er fullført.
+                </p>%s',
+                esc_html($email),
+                esc_html(date_i18n('j. F Y \k\l. H:i')),
+                esc_html($this->get_user_ip()),
+                bimverdi_render_terms_footer_html()
+            );
+            bimverdi_send_admin_notification_email($admin_subject, $admin_body);
+        }
+
         // Redirect to success
         wp_redirect(add_query_arg(array('success' => '1', 'email' => urlencode($email)), $redirect_base));
         exit;
@@ -163,6 +185,12 @@ class BIMVerdi_Email_Verification {
         // Validate password
         if (strlen($password) < 8) {
             wp_redirect(add_query_arg('bv_error', 'weak_password', $error_redirect));
+            exit;
+        }
+
+        // Validate terms acceptance (Bårds krav 2026-04-28)
+        if (function_exists('bimverdi_validate_terms_acceptance') && !bimverdi_validate_terms_acceptance($_POST)) {
+            wp_redirect(add_query_arg('bv_error', 'missing_terms', $error_redirect));
             exit;
         }
 
@@ -231,6 +259,34 @@ class BIMVerdi_Email_Verification {
         do_action('wp_login', $email, $user);
 
         error_log('BIMVerdi: User created and logged in: ' . $user_id . ' (' . $email . ')');
+
+        // Send admin-kopi til post@bimverdi.no (SuperOffice-dokumentasjon)
+        if (function_exists('bimverdi_send_admin_notification_email')) {
+            $account_type_label = !empty($user_company) ? 'Foretak-bruker' : 'Profil-bruker (uten foretak)';
+            $edit_url = admin_url('user-edit.php?user_id=' . $user_id);
+            $admin_subject = sprintf('Bruker-registrering fullført: %s', $email);
+            $admin_body = sprintf(
+                '<p>En ny bruker har fullført registreringen og akseptert betingelsene:</p>
+                <table style="border-collapse:collapse;font-size:14px;">
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Navn</td><td><strong>%s</strong></td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">E-post</td><td>%s</td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Konto-type</td><td>%s</td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
+                </table>
+                <p style="margin-top:24px;">
+                    <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                        Åpne brukeren i wp-admin
+                    </a>
+                </p>%s',
+                esc_html($full_name),
+                esc_html($email),
+                esc_html($account_type_label),
+                esc_html(date_i18n('j. F Y \k\l. H:i')),
+                esc_url($edit_url),
+                bimverdi_render_terms_footer_html()
+            );
+            bimverdi_send_admin_notification_email($admin_subject, $admin_body);
+        }
 
         // Redirect to dashboard with welcome flag
         wp_redirect(add_query_arg('welcome', '1', home_url('/min-side/')));
@@ -598,6 +654,12 @@ class BIMVerdi_Email_Verification {
                                             <li>Registrere BIM-verktøy (når koblet til foretak)</li>
                                             <li>Skrive og dele artikler</li>
                                         </ul>
+
+                                        <hr style="border: none; border-top: 1px solid #E8E8E8; margin: 24px 0 16px 0;">
+                                        <p style="margin: 0; color: #9B9B9B; font-size: 12px; line-height: 1.5;">
+                                            Ved å aktivere kontoen godtar du våre
+                                            <a href="<?php echo esc_url(defined('BV_TERMS_URL') ? BV_TERMS_URL : 'https://www.bimverdi.no/betingelser'); ?>" style="color: #6B6B6B;">betingelser for medlemskap</a>.
+                                        </p>
 
                                     </td>
                                 </tr>
