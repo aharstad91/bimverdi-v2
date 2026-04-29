@@ -185,7 +185,13 @@ function bimverdi_user_can_request_oppgradering($user_id = null) {
         return false;
     }
 
-    $foretak_id = bimverdi_user_has_company($user_id);
+    // bimverdi_user_has_company returnerer bool — hent faktisk ID via _get_user_company
+    if (!bimverdi_user_has_company($user_id)) {
+        return false;
+    }
+
+    $company = bimverdi_get_user_company($user_id);
+    $foretak_id = is_array($company) ? (int) ($company['id'] ?? 0) : (int) $company;
     if (!$foretak_id) {
         return false;
     }
@@ -198,7 +204,7 @@ function bimverdi_user_can_request_oppgradering($user_id = null) {
         return false;
     }
 
-    return (int) $foretak_id;
+    return $foretak_id;
 }
 
 // =============================================================================
