@@ -94,6 +94,12 @@ add_action('init', function () {
         exit;
     }
 
+    // Validate terms acceptance for ALL paths (Bårds krav 2026-04-28, gjelder også gratis)
+    if (function_exists('bimverdi_validate_terms_acceptance') && !bimverdi_validate_terms_acceptance($_POST)) {
+        wp_redirect(add_query_arg('bv_error', 'missing_terms', $redirect_error));
+        exit;
+    }
+
     // Check if org number is already registered (needed for both gratis and paid)
     $existing_foretak = get_posts([
         'post_type'   => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
@@ -137,6 +143,35 @@ add_action('init', function () {
         delete_user_meta($user_id, 'bimverdi_bruker_foretak_orgnr');
         delete_user_meta($user_id, 'bimverdi_bruker_foretak_navn');
         delete_user_meta($user_id, 'bimverdi_bruker_foretak_source');
+
+        // Send admin-kopi til post@bimverdi.no (SuperOffice-dokumentasjon, også for gratis)
+        if (function_exists('bimverdi_send_admin_notification_email')) {
+            $current_user = wp_get_current_user();
+            $admin_url_foretak = admin_url('post.php?post=' . $foretak_id . '&action=edit');
+            $admin_subject = sprintf('Nytt gratisforetak registrert: %s', $bedriftsnavn);
+            $admin_body = sprintf(
+                '<p>Et nytt gratisforetak (Ikke deltaker) er registrert:</p>
+                <table style="border-collapse:collapse;font-size:14px;">
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Org.nr</td><td>%s</td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Hovedkontakt</td><td>%s &lt;%s&gt;</td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
+                </table>
+                <p style="margin-top:24px;">
+                    <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                        Åpne foretaket i wp-admin
+                    </a>
+                </p>%s',
+                esc_html($bedriftsnavn),
+                esc_html($organisasjonsnummer),
+                esc_html($current_user->display_name),
+                esc_html($current_user->user_email),
+                esc_html(date_i18n('j. F Y \k\l. H:i')),
+                esc_url($admin_url_foretak),
+                bimverdi_render_terms_footer_html()
+            );
+            bimverdi_send_admin_notification_email($admin_subject, $admin_body);
+        }
 
         wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
         exit;
@@ -315,6 +350,42 @@ add_action('init', function () {
         error_log('BIMVerdi: Failed to send foretak registration email to ' . $current_user->user_email);
     }
 
+    // Send admin-kopi til post@bimverdi.no (SuperOffice-fakturaunderlag)
+    if (function_exists('bimverdi_send_admin_notification_email')) {
+        $admin_url_foretak = admin_url('post.php?post=' . $foretak_id . '&action=edit');
+        $admin_subject = sprintf('Nytt foretak registrert (%s): %s', $bv_rolle_map[$deltakertype], $bedriftsnavn);
+        $admin_body = sprintf(
+            '<p>Nytt foretak registrert som <strong>%s</strong>:</p>
+            <table style="border-collapse:collapse;font-size:14px;">
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Org.nr</td><td>%s</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Deltakernivå</td><td><strong>%s</strong></td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Inkluderte personer</td><td>%d</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Hovedkontakt</td><td>%s &lt;%s&gt;</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
+            </table>
+            <p style="margin-top:24px;">
+                <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                    Åpne foretaket i wp-admin
+                </a>
+            </p>
+            <p style="font-size:13px;color:#666;margin-top:16px;">
+                Bruker har akseptert betingelsene. Lagre dette i SuperOffice som fakturaunderlag.
+            </p>%s',
+            esc_html($bv_rolle_map[$deltakertype]),
+            esc_html($bedriftsnavn),
+            esc_html($organisasjonsnummer),
+            esc_html($bv_rolle_map[$deltakertype]),
+            $inkluderte_personer,
+            esc_html($current_user->display_name),
+            esc_html($current_user->user_email),
+            esc_html(date_i18n('j. F Y \k\l. H:i')),
+            esc_url($admin_url_foretak),
+            bimverdi_render_terms_footer_html()
+        );
+        bimverdi_send_admin_notification_email($admin_subject, $admin_body);
+    }
+
     // Redirect to foretak page with success
     wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
     exit;
@@ -415,8 +486,16 @@ function bimverdi_get_foretak_registered_email_html($bedriftsnavn, $organisasjon
                                         <hr style="border: none; border-top: 1px solid #E8E8E8; margin: 24px 0;">
 
                                         <!-- Billing note -->
-                                        <p style="margin: 0; color: #6B6B6B; font-size: 14px; line-height: 1.6;">
+                                        <p style="margin: 0 0 16px 0; color: #6B6B6B; font-size: 14px; line-height: 1.6;">
                                             Fakturering avtales separat — vi tar kontakt med deg.
+                                        </p>
+
+                                        <!-- Terms link -->
+                                        <hr style="border: none; border-top: 1px solid #E8E8E8; margin: 24px 0 16px 0;">
+                                        <p style="margin: 0; color: #9B9B9B; font-size: 12px; line-height: 1.5;">
+                                            Du har akseptert våre
+                                            <a href="<?php echo esc_url(defined('BV_TERMS_URL') ? BV_TERMS_URL : 'https://www.bimverdi.no/betingelser'); ?>" style="color: #6B6B6B;">betingelser for medlemskap</a>
+                                            ved registrering.
                                         </p>
 
                                     </td>

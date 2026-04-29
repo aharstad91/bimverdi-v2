@@ -421,13 +421,20 @@ get_template_part('parts/components/page-header', null, [
 
         <!-- Aksept av betingelser -->
         <div>
-            <label class="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" name="aksept_betingelser" value="1" required
-                       class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
-                <span class="text-sm text-[#1A1A1A]">
-                    Jeg aksepterer <a href="<?php echo esc_url(home_url('/betingelser/')); ?>" target="_blank" class="text-[#FF8B5E] hover:underline">betingelsene</a> for deltakelse i BIM Verdi <span class="text-red-600">*</span>
-                </span>
-            </label>
+            <?php if (function_exists('bimverdi_render_terms_acceptance_field')) {
+                echo bimverdi_render_terms_acceptance_field('aksept_betingelser');
+            } else {
+                // Fallback hvis shared-helpers ikke lastet (skal ikke skje)
+                ?>
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" name="aksept_betingelser" value="1" required
+                           class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
+                    <span class="text-sm text-[#1A1A1A]">
+                        Jeg aksepterer <a href="https://www.bimverdi.no/betingelser" target="_blank" class="text-[#FF8B5E] hover:underline">betingelsene</a> for deltakelse i BIM Verdi <span class="text-red-600">*</span>
+                    </span>
+                </label>
+                <?php
+            } ?>
         </div>
         </div>
 
@@ -467,11 +474,13 @@ get_template_part('parts/components/page-header', null, [
 
     var gratisHiddenSectionIds = [
       'bv-section-beskrivelse', 'bv-section-logo', 'bv-section-adresse',
-      'bv-section-bransje', 'bv-section-faktura', 'bv-section-betingelser'
+      'bv-section-bransje', 'bv-section-faktura'
+      // bv-section-betingelser holdes synlig for ALLE (Bårds krav 2026-04-28)
     ];
 
     var conditionallyRequiredFields = form.querySelectorAll(
-      '#beskrivelse, input[name="bransje_rolle[]"], input[name="aksept_betingelser"]'
+      '#beskrivelse, input[name="bransje_rolle[]"]'
+      // aksept_betingelser holdes required for ALLE (gratis + paid)
     );
     var submitButton = form.querySelector('button[type="submit"]');
     var originalButtonText = submitButton ? submitButton.textContent : '';
