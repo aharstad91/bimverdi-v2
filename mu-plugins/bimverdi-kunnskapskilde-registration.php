@@ -58,14 +58,16 @@ add_action('init', function () {
         exit;
     }
 
-    // Rate limiting
+    // Rate limiting (bypass for administrators så testing ikke blokkeres)
     $rate_key = 'bv_kilde_reg_' . $user_id;
-    $attempts = (int) get_transient($rate_key);
-    if ($attempts >= 5) {
-        wp_redirect(add_query_arg('bv_error', 'rate_limit', $redirect_error));
-        exit;
+    if (!current_user_can('manage_options')) {
+        $attempts = (int) get_transient($rate_key);
+        if ($attempts >= 5) {
+            wp_redirect(add_query_arg('bv_error', 'rate_limit', $redirect_error));
+            exit;
+        }
+        set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
     }
-    set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
 
     // Get company (optional for kunnskapskilder)
     $company_id = get_user_meta($user_id, 'bimverdi_company_id', true)

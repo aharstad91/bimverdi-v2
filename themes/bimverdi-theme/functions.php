@@ -390,3 +390,18 @@ function bimverdi_get_temagruppe_color($name) {
     ];
     return $colors[$name] ?? '#57534E';
 }
+
+/**
+ * Favicon — BIM Verdi-knuten på frontend, admin og login.
+ * Filer ligger i assets/img/favicon/ (16/32/48/180/192/512 + .ico).
+ */
+function bimverdi_favicon_links() {
+    $base = get_template_directory_uri() . '/assets/img/favicon';
+    echo '<link rel="icon" type="image/png" sizes="32x32" href="' . esc_url($base) . '/favicon-32x32.png">' . "\n";
+    echo '<link rel="icon" type="image/png" sizes="16x16" href="' . esc_url($base) . '/favicon-16x16.png">' . "\n";
+    echo '<link rel="apple-touch-icon" sizes="180x180" href="' . esc_url($base) . '/apple-touch-icon.png">' . "\n";
+    echo '<link rel="shortcut icon" href="' . esc_url($base) . '/favicon.ico">' . "\n";
+}
+add_action('wp_head', 'bimverdi_favicon_links');
+add_action('admin_head', 'bimverdi_favicon_links');
+add_action('login_head', 'bimverdi_favicon_links');

@@ -480,3 +480,78 @@ function bimverdi_locked_fields_admin_css() {
     </style>
     <?php
 }
+
+/**
+ * =============================================================================
+ * 3. DELTAKERNIVÅ-KOLONNE FOR FORETAK
+ * =============================================================================
+ * Viser foretakets bv_rolle (Gratisforetak / Deltaker / Prosjektdeltaker / Partner)
+ * i foretak-oversikten, med farge-kodet badge. Sorterbar via meta_value.
+ */
+
+add_filter('manage_foretak_posts_columns', 'bimverdi_foretak_add_deltakernivaa_column');
+add_action('manage_foretak_posts_custom_column', 'bimverdi_foretak_show_deltakernivaa_column', 10, 2);
+add_filter('manage_edit-foretak_sortable_columns', 'bimverdi_foretak_deltakernivaa_sortable');
+add_action('pre_get_posts', 'bimverdi_foretak_deltakernivaa_orderby');
+
+function bimverdi_foretak_add_deltakernivaa_column($columns) {
+    $new_columns = array();
+    foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        if ($key === 'title') {
+            $new_columns['deltakernivaa'] = __('Deltakernivå', 'bimverdi');
+        }
+    }
+    if (!isset($new_columns['deltakernivaa'])) {
+        $new_columns['deltakernivaa'] = __('Deltakernivå', 'bimverdi');
+    }
+    return $new_columns;
+}
+
+function bimverdi_foretak_show_deltakernivaa_column($column, $post_id) {
+    if ($column !== 'deltakernivaa') {
+        return;
+    }
+
+    $rolle = function_exists('get_field')
+        ? get_field('bv_rolle', $post_id)
+        : get_post_meta($post_id, 'bv_rolle', true);
+
+    $config = array(
+        'Partner'           => array('label' => 'Partner',          'icon' => '★', 'color' => '#7C3AED'),
+        'Prosjektdeltaker'  => array('label' => 'Prosjektdeltaker', 'icon' => '◆', 'color' => '#F97316'),
+        'Deltaker'          => array('label' => 'Deltaker',         'icon' => '●', 'color' => '#10B981'),
+        'Ikke deltaker'     => array('label' => 'Gratisforetak',    'icon' => '○', 'color' => '#9CA3AF'),
+    );
+
+    if ($rolle && isset($config[$rolle])) {
+        $c = $config[$rolle];
+        printf(
+            '<span style="color: %s; font-weight: 500;">%s %s</span>',
+            esc_attr($c['color']),
+            esc_html($c['icon']),
+            esc_html($c['label'])
+        );
+    } else {
+        echo '<span style="color: #999;">—</span>';
+    }
+}
+
+function bimverdi_foretak_deltakernivaa_sortable($columns) {
+    $columns['deltakernivaa'] = 'deltakernivaa';
+    return $columns;
+}
+
+function bimverdi_foretak_deltakernivaa_orderby($query) {
+    if (!is_admin() || !$query->is_main_query()) {
+        return;
+    }
+    if ($query->get('post_type') !== 'foretak') {
+        return;
+    }
+    if ($query->get('orderby') !== 'deltakernivaa') {
+        return;
+    }
+    $query->set('meta_key', 'bv_rolle');
+    $query->set('orderby', 'meta_value');
+}
