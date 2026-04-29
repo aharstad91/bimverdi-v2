@@ -65,6 +65,7 @@ class BIMVerdi_Company_Invitations {
         
         // Admin notification for new invitations
         add_action('bimverdi_invitation_sent', array($this, 'notify_admin_invitation_sent'), 10, 3);
+        add_action('bimverdi_invitation_accepted', array($this, 'notify_admin_invitation_accepted'), 10, 3);
     }
     
     /**
@@ -426,6 +427,8 @@ class BIMVerdi_Company_Invitations {
             $personal_section = sprintf("\n\nMelding fra %s:\n«%s»\n", $inviter->display_name, $personal_message);
         }
 
+        $terms_url = defined('BV_TERMS_URL') ? BV_TERMS_URL : 'https://www.bimverdi.no/betingelser';
+
         $message = sprintf(
             'Hei!
 
@@ -439,12 +442,17 @@ Denne lenken er gyldig i 7 dager.
 
 Hvis du ikke kjenner til denne invitasjonen, kan du ignorere denne e-posten.
 
+---
+Ved å akseptere invitasjonen godtar du våre betingelser for medlemskap:
+%s
+
 Med vennlig hilsen,
 BIM Verdi',
             $inviter->display_name,
             $begrunnelse_hint,
             $personal_section,
-            $invitation_url
+            $invitation_url,
+            $terms_url
         );
         
         $headers = array(
@@ -978,20 +986,94 @@ BIM Verdi',
     }
     
     /**
-     * Notify admin when invitation is sent
+     * Notify admin (post@bimverdi.no) when invitation is sent.
+     *
+     * Sender HTML-formattert kopi til BV_NOTIFY_EMAIL (SuperOffice/CRM).
+     * Bruker bimverdi_send_admin_notification_email() fra shared-helpers.
      */
     public function notify_admin_invitation_sent($invitation_id, $email, $company_id) {
+        if (!function_exists('bimverdi_send_admin_notification_email')) {
+            return;
+        }
+
         $company = get_post($company_id);
-        $admin_email = get_option('admin_email');
-        
-        $subject = 'Ny invitasjon sendt i BIM Verdi';
-        $message = sprintf(
-            "En ny invitasjon er sendt:\n\nE-post: %s\nForetak: %s\n\nLogg inn i WordPress for å se detaljer.",
-            $email,
-            $company ? $company->post_title : 'Ukjent'
+        $company_name = $company ? $company->post_title : 'Ukjent';
+        $admin_url = $company ? admin_url('post.php?post=' . $company->ID . '&action=edit') : admin_url();
+
+        $subject = sprintf('Ny invitasjon sendt: %s', $email);
+        $body = sprintf(
+            '<p>En ny invitasjon til tilleggskontakt er sendt:</p>
+            <table style="border-collapse:collapse;font-size:14px;">
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Invitert e-post</td><td>%s</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
+            </table>
+            <p style="margin-top:24px;">
+                <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                    Åpne foretaket i wp-admin
+                </a>
+            </p>
+            <p style="font-size:13px;color:#666;margin-top:16px;">
+                Du får en ny e-post når invitasjonen aksepteres.
+            </p>%s',
+            esc_html($company_name),
+            esc_html($email),
+            esc_html(date_i18n('j. F Y \k\l. H:i')),
+            esc_url($admin_url),
+            bimverdi_render_terms_footer_html()
         );
-        
-        wp_mail($admin_email, $subject, $message);
+
+        bimverdi_send_admin_notification_email($subject, $body);
+    }
+
+    /**
+     * Notify admin (post@bimverdi.no) when invitation is accepted.
+     *
+     * Hooks på 'bimverdi_invitation_accepted' (linje 548 i denne filen).
+     */
+    public function notify_admin_invitation_accepted($invitation_id, $user_id, $company_id) {
+        if (!function_exists('bimverdi_send_admin_notification_email')) {
+            return;
+        }
+
+        $user = get_userdata($user_id);
+        $company = get_post($company_id);
+        if (!$user || !$company) {
+            return;
+        }
+
+        $edit_user_url = admin_url('user-edit.php?user_id=' . $user_id);
+        $edit_company_url = admin_url('post.php?post=' . $company_id . '&action=edit');
+
+        $subject = sprintf('Invitasjon akseptert: %s → %s', $user->user_email, $company->post_title);
+        $body = sprintf(
+            '<p>En invitasjon er akseptert. Ny tilleggskontakt er aktivert og koblet til foretaket:</p>
+            <table style="border-collapse:collapse;font-size:14px;">
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Bruker</td><td><strong>%s</strong> &lt;%s&gt;</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
+            </table>
+            <p style="margin-top:24px;">
+                <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;margin-right:8px;">
+                    Åpne brukeren
+                </a>
+                <a href="%s" style="background:#1A1A1A;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                    Åpne foretaket
+                </a>
+            </p>
+            <p style="font-size:13px;color:#666;margin-top:16px;">
+                Bruker har akseptert betingelsene ved aktivering.
+            </p>%s',
+            esc_html($user->display_name),
+            esc_html($user->user_email),
+            esc_html($company->post_title),
+            esc_html(date_i18n('j. F Y \k\l. H:i')),
+            esc_url($edit_user_url),
+            esc_url($edit_company_url),
+            bimverdi_render_terms_footer_html()
+        );
+
+        bimverdi_send_admin_notification_email($subject, $body);
     }
 }
 

@@ -260,9 +260,12 @@ class BIMVerdi_Email_Verification {
 
         error_log('BIMVerdi: User created and logged in: ' . $user_id . ' (' . $email . ')');
 
-        // Send admin-kopi til post@bimverdi.no (SuperOffice-dokumentasjon)
-        if (function_exists('bimverdi_send_admin_notification_email')) {
-            $account_type_label = !empty($user_company) ? 'Foretak-bruker' : 'Profil-bruker (uten foretak)';
+        // Send admin-kopi til post@bimverdi.no (SuperOffice-dokumentasjon).
+        // Skip hvis bruker kom via invitasjon — bimverdi-company-invitations.php
+        // sender egen, mer spesifikk admin-kopi via 'bimverdi_invitation_accepted' hook.
+        $is_invitee = !empty($user_company);
+        if (!$is_invitee && function_exists('bimverdi_send_admin_notification_email')) {
+            $account_type_label = 'Profil-bruker (uten foretak)';
             $edit_url = admin_url('user-edit.php?user_id=' . $user_id);
             $admin_subject = sprintf('Bruker-registrering fullført: %s', $email);
             $admin_body = sprintf(
