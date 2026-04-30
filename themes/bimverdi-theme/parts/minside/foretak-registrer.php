@@ -34,6 +34,10 @@ $error_messages = [
     'file_too_large'    => 'Filen er for stor. Maks 2 MB.',
     'upload_failed'     => 'Opplasting av logo feilet. Prøv igjen.',
     'invalid_type'      => 'Ugyldig deltakertype. Vennligst velg et abonnement.',
+    'missing_terms'     => 'Du må akseptere betingelsene for å registrere foretaket.',
+    'missing_invoice_email' => 'Faktura-e-post er påkrevd når EHF-faktura ikke brukes.',
+    'missing_invoice_ref'   => 'Faktura-referanse er påkrevd.',
+    'invalid_invoice_email' => 'Faktura-e-postadressen er ikke gyldig.',
     'system'            => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
 ];
 $error_message = $error_messages[$bv_error] ?? '';
@@ -386,7 +390,7 @@ get_template_part('parts/components/page-header', null, [
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                        Bruker foretaket EHF-faktura?
+                        Bruker foretaket EHF-faktura? <span class="text-red-600">*</span>
                     </label>
                     <div class="flex items-center gap-6">
                         <label class="flex items-center gap-2 cursor-pointer">
@@ -401,15 +405,28 @@ get_template_part('parts/components/page-header', null, [
                         </label>
                     </div>
                 </div>
+                <div id="bv-faktura-epost-wrapper">
+                    <label for="faktura_epost" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                        Faktura-e-post <span class="text-red-600">*</span>
+                    </label>
+                    <input type="email"
+                           id="faktura_epost"
+                           name="faktura_epost"
+                           placeholder="faktura@firma.no"
+                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
+                    <p class="mt-1 text-xs text-[#888888]">E-postadresse som faktura sendes til. Påkrevd når EHF ikke brukes.</p>
+                </div>
                 <div>
                     <label for="faktura_referanse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                        Faktura-referanse / prosjektnummer
+                        Faktura-referanse / prosjektnummer <span class="text-red-600">*</span>
                     </label>
                     <input type="text"
                            id="faktura_referanse"
                            name="faktura_referanse"
+                           maxlength="100"
                            placeholder=""
                            class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
+                    <p class="mt-1 text-xs text-[#888888]">Brukes for fakturaadressering. Kan være prosjektnummer eller intern referanse.</p>
                 </div>
             </div>
         </div>
@@ -479,12 +496,37 @@ get_template_part('parts/components/page-header', null, [
     ];
 
     var conditionallyRequiredFields = form.querySelectorAll(
-      '#beskrivelse, input[name="bransje_rolle[]"]'
+      '#beskrivelse, input[name="bransje_rolle[]"], #faktura_referanse'
       // aksept_betingelser holdes required for ALLE (gratis + paid)
+      // faktura_epost håndteres separat (conditional på EHF-state)
     );
     var submitButton = form.querySelector('button[type="submit"]');
     var originalButtonText = submitButton ? submitButton.textContent : '';
     var currentTier = null;
+
+    // Faktura-epost wrapper + input (conditional på EHF=Nei)
+    var fakturaEpostWrapper = document.getElementById('bv-faktura-epost-wrapper');
+    var fakturaEpostInput = document.getElementById('faktura_epost');
+
+    function syncFakturaEpostRequired() {
+      if (!fakturaEpostInput || !fakturaEpostWrapper) return;
+      var ehfChecked = form.querySelector('input[name="ehf_faktura"]:checked');
+      var ehfNei = ehfChecked && ehfChecked.value === 'nei';
+      var isGratis = currentTier === 'gratis';
+      // Gratis-flyten skjuler hele faktura-seksjonen, så ingenting skal være required
+      if (isGratis) {
+        fakturaEpostInput.removeAttribute('required');
+        fakturaEpostWrapper.style.display = '';
+        return;
+      }
+      // Paid: vis kun når EHF=Nei
+      fakturaEpostWrapper.style.display = ehfNei ? '' : 'none';
+      if (ehfNei) {
+        fakturaEpostInput.setAttribute('required', '');
+      } else {
+        fakturaEpostInput.removeAttribute('required');
+      }
+    }
 
     function setTier(tier) {
       if (tier === currentTier) return;
@@ -507,11 +549,17 @@ get_template_part('parts/components/page-header', null, [
       if (submitButton) {
         submitButton.textContent = isGratis ? 'Registrer gratis foretak' : originalButtonText;
       }
+
+      // Re-evaluate faktura_epost-required etter tier-bytte
+      syncFakturaEpostRequired();
     }
 
     form.addEventListener('change', function(e) {
-      if (e.target.name !== 'deltakertype') return;
-      setTier(e.target.value === 'gratis' ? 'gratis' : 'paid');
+      if (e.target.name === 'deltakertype') {
+        setTier(e.target.value === 'gratis' ? 'gratis' : 'paid');
+      } else if (e.target.name === 'ehf_faktura') {
+        syncFakturaEpostRequired();
+      }
     });
 
     window.addEventListener('pageshow', function(e) {

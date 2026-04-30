@@ -74,6 +74,12 @@ add_action('init', function () {
     $nettside         = esc_url_raw($_POST['nettside'] ?? '');
     $bransje_rolle    = array_map('sanitize_text_field', (array) ($_POST['bransje_rolle'] ?? []));
     $kundetyper       = array_map('sanitize_text_field', (array) ($_POST['kundetyper'] ?? []));
+    $ehf_faktura       = sanitize_text_field($_POST['ehf_faktura'] ?? 'nei');
+    $faktura_epost     = sanitize_email($_POST['faktura_epost'] ?? '');
+    $faktura_referanse = sanitize_text_field($_POST['faktura_referanse'] ?? '');
+    if (!in_array($ehf_faktura, ['ja', 'nei'], true)) {
+        $ehf_faktura = 'nei';
+    }
 
     // --- Validate required fields ---
     if (empty($bedriftsnavn)) {
@@ -189,6 +195,22 @@ add_action('init', function () {
         exit;
     }
 
+    // Validate fakturafelter (paid-only — gratis er allerede returnert tidligere)
+    if (empty($faktura_referanse)) {
+        wp_redirect(add_query_arg('bv_error', 'missing_invoice_ref', $redirect_error));
+        exit;
+    }
+    if ($ehf_faktura === 'nei') {
+        if (empty($faktura_epost)) {
+            wp_redirect(add_query_arg('bv_error', 'missing_invoice_email', $redirect_error));
+            exit;
+        }
+        if (!is_email($faktura_epost)) {
+            wp_redirect(add_query_arg('bv_error', 'invalid_invoice_email', $redirect_error));
+            exit;
+        }
+    }
+
     // Validate bransje_rolle values against allowed list
     $allowed_bransje = [
         'bestiller_byggherre', 'arkitekt_radgiver', 'entreprenor_byggmester',
@@ -292,6 +314,11 @@ add_action('init', function () {
             'partner' => 'Partner',
         ];
         update_field('bv_rolle', $bv_rolle_map[$deltakertype], $foretak_id);
+
+        // Fakturafelter (paid-flyten)
+        update_field('ehf_faktura', $ehf_faktura, $foretak_id);
+        update_field('faktura_epost', $faktura_epost, $foretak_id);
+        update_field('faktura_referanse', $faktura_referanse, $foretak_id);
 
         if ($logo_attachment_id) {
             update_field('logo', $logo_attachment_id, $foretak_id);
