@@ -261,6 +261,7 @@ get_template_part('parts/components/page-header', null, [
                 <?php endforeach; ?>
             </div>
             <p class="mt-2 text-xs text-[#888888]">Fakturering avtales etter registrering</p>
+            <p class="mt-1 text-xs text-[#888888]">Påmelding i 2. kvartal gir 25 % rabatt på årsavgift. Etter 1. juli: 50 % rabatt.</p>
         </fieldset>
 
         <!-- Seksjoner som skjules for gratis brukerforetak -->
