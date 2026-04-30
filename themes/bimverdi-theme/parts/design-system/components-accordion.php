@@ -10,12 +10,12 @@
         'items' => [
             [
                 'title'   => 'Hva koster medlemskap?',
-                'content' => 'Vi tilbyr ulike medlemsnivåer: Deltaker, Prosjektdeltaker og Partner. Kontakt oss for en uforpliktende samtale om hva som passer best for din bedrift.',
+                'content' => 'Vi tilbyr ulike deltakernivåer: Deltaker, Prosjektdeltaker og Partner. Kontakt oss for en uforpliktende samtale om hva som passer best for din bedrift.',
                 'open'    => true,
             ],
             [
                 'title'   => 'Hvordan melder jeg inn bedriften?',
-                'content' => 'Opprett en gratis profil, koble til bedriften din via organisasjonsnummer, og velg ønsket medlemsnivå. Du kan også bli invitert av en eksisterende hovedkontakt.',
+                'content' => 'Opprett en gratis profil, koble til bedriften din via organisasjonsnummer, og velg ønsket deltakernivå. Du kan også bli invitert av en eksisterende hovedkontakt.',
             ],
             [
                 'title'   => 'Kan jeg delta på arrangementer uten medlemskap?',

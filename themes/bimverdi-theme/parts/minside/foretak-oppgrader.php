@@ -96,7 +96,7 @@ $nivaaer = [
         <h1 class="text-3xl font-light text-[#1A1A1A] tracking-tight mb-2">Oppgrader til betalende deltaker</h1>
         <p class="text-base text-[#5A5A5A]">
             <?php echo esc_html($foretak_navn); ?> er i dag registrert som gratis brukerforetak.
-            Velg ønsket medlemsnivå nedenfor for å sende forespørsel til BIM Verdi.
+            Velg ønsket deltakernivå nedenfor for å sende forespørsel til BIM Verdi.
             Du blir kontaktet manuelt for bekreftelse og fakturering.
         </p>
     </header>
@@ -141,7 +141,7 @@ $nivaaer = [
         <!-- Nivå-velger -->
         <fieldset>
             <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
-                Velg medlemsnivå <span class="text-red-600">*</span>
+                Velg deltakernivå <span class="text-red-600">*</span>
             </legend>
             <p class="text-xs text-[#888888] mb-3">Du kan oppgradere senere hvis behovet endres</p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
