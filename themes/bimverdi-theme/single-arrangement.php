@@ -493,6 +493,20 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                             </div>
                         </div>
                         <?php endif; ?>
+
+                        <!-- Opptak (kun når arrangementet er gjennomført og URL er satt) -->
+                        <?php if ($is_past && $opptak_url): ?>
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" class="flex-shrink-0 mt-0.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            <div>
+                                <div class="text-[#57534E]">Opptak</div>
+                                <a href="<?php echo esc_url($opptak_url); ?>" target="_blank" rel="noopener" class="text-[#111827] font-medium underline underline-offset-2 hover:text-[#FF8B5E]">
+                                    Opptak for deltakere i BIM Verdi
+                                </a>
+                                <div class="text-xs text-[#5A5A5A] mt-0.5">Krever innlogging i Teams-gruppen BIM Verdi Deltakerforum</div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
