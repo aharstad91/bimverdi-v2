@@ -276,6 +276,35 @@ function bimverdi_handle_oppgradering_submission() {
         exit;
     }
 
+    // Validering: fakturafelter
+    $ehf_faktura       = sanitize_text_field($_POST['ehf_faktura'] ?? 'nei');
+    $faktura_epost     = sanitize_email($_POST['faktura_epost'] ?? '');
+    $faktura_referanse = sanitize_text_field($_POST['faktura_referanse'] ?? '');
+    if (!in_array($ehf_faktura, ['ja', 'nei'], true)) {
+        $ehf_faktura = 'nei';
+    }
+    if (empty($faktura_referanse)) {
+        wp_safe_redirect(add_query_arg('bv_error', 'missing_invoice_ref', $redirect_back));
+        exit;
+    }
+    if ($ehf_faktura === 'nei') {
+        if (empty($faktura_epost)) {
+            wp_safe_redirect(add_query_arg('bv_error', 'missing_invoice_email', $redirect_back));
+            exit;
+        }
+        if (!is_email($faktura_epost)) {
+            wp_safe_redirect(add_query_arg('bv_error', 'invalid_invoice_email', $redirect_back));
+            exit;
+        }
+    }
+
+    // Lagre fakturafelter på foretak-CPT (før pending — så data overlever ev. feil senere)
+    if (function_exists('update_field')) {
+        update_field('ehf_faktura', $ehf_faktura, $foretak_id);
+        update_field('faktura_epost', $faktura_epost, $foretak_id);
+        update_field('faktura_referanse', $faktura_referanse, $foretak_id);
+    }
+
     // Lagre pending + history
     $set_ok = bimverdi_set_pending_oppgradering($foretak_id, $level, $user_id);
     if (!$set_ok) {
@@ -320,6 +349,11 @@ function bimverdi_send_oppgradering_request_emails($foretak_id, $level, $user_id
     $org_nr        = function_exists('get_field') ? get_field('organisasjonsnummer', $foretak_id) : '';
     $admin_url_foretak = admin_url('post.php?post=' . $foretak_id . '&action=edit');
 
+    // Fakturafelter (lagret rett før denne funksjonen kalles)
+    $ehf_faktura       = function_exists('get_field') ? get_field('ehf_faktura', $foretak_id) : '';
+    $faktura_epost     = function_exists('get_field') ? get_field('faktura_epost', $foretak_id) : '';
+    $faktura_referanse = function_exists('get_field') ? get_field('faktura_referanse', $foretak_id) : '';
+
     $headers = ['Content-Type: text/html; charset=UTF-8'];
 
     // 1. Bekreftelse til bruker
@@ -357,6 +391,12 @@ function bimverdi_send_oppgradering_request_emails($foretak_id, $level, $user_id
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Sendt av</td><td>%s &lt;%s&gt;</td></tr>
             <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
         </table>
+        <h3 style="font-size:14px;margin-top:24px;margin-bottom:8px;color:#1A1A1A;">Fakturainformasjon</h3>
+        <table style="border-collapse:collapse;font-size:14px;">
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">EHF-faktura</td><td><strong>%s</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Faktura-e-post</td><td>%s</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Faktura-referanse</td><td>%s</td></tr>
+        </table>
         <p style="margin-top:24px;">
             <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
                 Åpne foretaket i wp-admin for å godkjenne
@@ -373,6 +413,9 @@ function bimverdi_send_oppgradering_request_emails($foretak_id, $level, $user_id
         esc_html($user->display_name),
         esc_html($user->user_email),
         esc_html(date_i18n('j. F Y \k\l. H:i')),
+        esc_html($ehf_faktura ? ucfirst($ehf_faktura) : '—'),
+        esc_html($faktura_epost ?: '—'),
+        esc_html($faktura_referanse ?: '—'),
         esc_url($admin_url_foretak),
         esc_url(BV_TERMS_URL)
     );

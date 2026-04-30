@@ -42,13 +42,24 @@ $pending       = bimverdi_get_pending_oppgradering($foretak_id);
 $bv_error      = isset($_GET['bv_error']) ? sanitize_key($_GET['bv_error']) : '';
 
 $error_messages = [
-    'missing_level'  => 'Du må velge et nivå før du kan sende forespørselen.',
-    'missing_terms'  => 'Du må akseptere betingelsene for å sende forespørselen.',
-    'rate_limit'     => 'For mange forsøk. Prøv igjen senere.',
-    'nonce'          => 'Sikkerhetstoken utløpt. Last siden på nytt og prøv igjen.',
-    'invalid_level'  => 'Ugyldig nivå valgt. Prøv igjen.',
-    'generic'        => 'Forespørselen kunne ikke sendes. Prøv igjen senere.',
+    'missing_level'         => 'Du må velge et nivå før du kan sende forespørselen.',
+    'missing_terms'         => 'Du må akseptere betingelsene for å sende forespørselen.',
+    'missing_invoice_email' => 'Faktura-e-post er påkrevd når EHF-faktura ikke brukes.',
+    'missing_invoice_ref'   => 'Faktura-referanse er påkrevd.',
+    'invalid_invoice_email' => 'Faktura-e-postadressen er ikke gyldig.',
+    'rate_limit'            => 'For mange forsøk. Prøv igjen senere.',
+    'nonce'                 => 'Sikkerhetstoken utløpt. Last siden på nytt og prøv igjen.',
+    'invalid_level'         => 'Ugyldig nivå valgt. Prøv igjen.',
+    'generic'               => 'Forespørselen kunne ikke sendes. Prøv igjen senere.',
 ];
+
+// Pre-populer fakturafelter fra foretak-meta hvis allerede satt
+$existing_ehf       = function_exists('get_field') ? get_field('ehf_faktura', $foretak_id) : '';
+$existing_epost     = function_exists('get_field') ? get_field('faktura_epost', $foretak_id) : '';
+$existing_referanse = function_exists('get_field') ? get_field('faktura_referanse', $foretak_id) : '';
+if (empty($existing_ehf)) {
+    $existing_ehf = 'nei';
+}
 
 $nivaaer = [
     'Deltaker' => [
@@ -160,6 +171,61 @@ $nivaaer = [
 
         <hr class="border-[#E5E0D5]">
 
+        <!-- Fakturainformasjon -->
+        <fieldset>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">Fakturainformasjon</legend>
+            <p class="text-xs text-[#888888] mb-3">Brukes når BIM Verdi sender faktura etter godkjenning. Forhåndsutfylt fra foretaket hvis allerede satt — endre om nødvendig.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                        Bruker foretaket EHF-faktura? <span class="text-red-600">*</span>
+                    </label>
+                    <div class="flex items-center gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="ehf_faktura" value="ja"<?php checked($existing_ehf, 'ja'); ?>
+                                   class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
+                            <span class="text-sm text-[#1A1A1A]">Ja</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="ehf_faktura" value="nei"<?php checked($existing_ehf, 'nei'); ?>
+                                   class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
+                            <span class="text-sm text-[#1A1A1A]">Nei</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="bv-faktura-epost-wrapper">
+                    <label for="faktura_epost" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                        Faktura-e-post <span class="text-red-600">*</span>
+                    </label>
+                    <input type="email"
+                           id="faktura_epost"
+                           name="faktura_epost"
+                           value="<?php echo esc_attr($existing_epost); ?>"
+                           placeholder="faktura@firma.no"
+                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
+                    <p class="mt-1 text-xs text-[#888888]">E-postadresse som faktura sendes til. Påkrevd når EHF ikke brukes.</p>
+                </div>
+
+                <div>
+                    <label for="faktura_referanse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                        Faktura-referanse / prosjektnummer <span class="text-red-600">*</span>
+                    </label>
+                    <input type="text"
+                           id="faktura_referanse"
+                           name="faktura_referanse"
+                           value="<?php echo esc_attr($existing_referanse); ?>"
+                           maxlength="100"
+                           required
+                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A] placeholder:text-[#A8A29E]">
+                    <p class="mt-1 text-xs text-[#888888]">Brukes for fakturaadressering. Kan være prosjektnummer eller intern referanse.</p>
+                </div>
+            </div>
+        </fieldset>
+
+        <hr class="border-[#E5E0D5]">
+
         <!-- Betingelser -->
         <fieldset>
             <label class="flex items-start gap-3 cursor-pointer">
@@ -193,3 +259,35 @@ $nivaaer = [
     </form>
 
 </div>
+
+<script>
+(function() {
+  'use strict';
+  document.addEventListener('DOMContentLoaded', function() {
+    var form = document.querySelector('form[action*="oppgrader"]');
+    if (!form) return;
+
+    var wrapper = document.getElementById('bv-faktura-epost-wrapper');
+    var epostInput = document.getElementById('faktura_epost');
+    if (!wrapper || !epostInput) return;
+
+    function syncEpostRequired() {
+      var ehf = form.querySelector('input[name="ehf_faktura"]:checked');
+      var ehfNei = ehf && ehf.value === 'nei';
+      wrapper.style.display = ehfNei ? '' : 'none';
+      if (ehfNei) {
+        epostInput.setAttribute('required', '');
+      } else {
+        epostInput.removeAttribute('required');
+      }
+    }
+
+    form.addEventListener('change', function(e) {
+      if (e.target.name === 'ehf_faktura') syncEpostRequired();
+    });
+
+    // Initial state
+    syncEpostRequired();
+  });
+})();
+</script>
