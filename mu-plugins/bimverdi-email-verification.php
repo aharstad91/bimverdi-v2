@@ -137,7 +137,7 @@ class BIMVerdi_Email_Verification {
                 </p>%s',
                 esc_html($email),
                 esc_html(date_i18n('j. F Y \k\l. H:i')),
-                esc_html($this->get_user_ip()),
+                esc_html($this->get_client_ip()),
                 bimverdi_render_terms_footer_html()
             );
             bimverdi_send_admin_notification_email($admin_subject, $admin_body);
