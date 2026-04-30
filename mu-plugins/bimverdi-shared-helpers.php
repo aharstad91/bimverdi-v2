@@ -135,3 +135,92 @@ function bimverdi_send_admin_notification_email($subject, $body, $headers = null
 
     return $sent;
 }
+
+// =============================================================================
+// ACF-FELTER: FAKTURAINFORMASJON PÅ FORETAK-CPT
+// =============================================================================
+
+/**
+ * Registrer ACF-felter for fakturainformasjon på foretak-CPT.
+ *
+ * Plan: docs/plans/2026-04-30-001-feat-fakturafelter-rabatt-disclaimer-deltakerniva-rename-plan.md
+ *
+ * Felter:
+ *  - ehf_faktura: radio (ja/nei), default 'nei'
+ *  - faktura_epost: email, conditional på ehf_faktura == nei
+ *  - faktura_referanse: text (prosjektnummer eller intern referanse)
+ *
+ * Programmatisk registrering (acf_add_local_field_group) gir IDEMPOTENT
+ * felt-definisjon uten DB-migrering. Felter vises automatisk i wp-admin
+ * foretak-edit og er tilgjengelige via get_field()/update_field().
+ */
+add_action('acf/init', 'bimverdi_register_fakturainformasjon_fields');
+
+function bimverdi_register_fakturainformasjon_fields() {
+    if (!function_exists('acf_add_local_field_group')) {
+        return;
+    }
+
+    acf_add_local_field_group([
+        'key'      => 'group_bv_fakturainformasjon',
+        'title'    => 'Fakturainformasjon',
+        'fields'   => [
+            [
+                'key'           => 'field_bv_ehf_faktura',
+                'label'         => 'Bruker foretaket EHF-faktura?',
+                'name'          => 'ehf_faktura',
+                'type'          => 'radio',
+                'instructions'  => 'EHF (Elektronisk handelsformat) er standard for offentlige og store private aktører.',
+                'required'      => 0,
+                'choices'       => [
+                    'ja'  => 'Ja',
+                    'nei' => 'Nei',
+                ],
+                'default_value' => 'nei',
+                'layout'        => 'horizontal',
+                'return_format' => 'value',
+            ],
+            [
+                'key'           => 'field_bv_faktura_epost',
+                'label'         => 'Faktura-e-post',
+                'name'          => 'faktura_epost',
+                'type'          => 'email',
+                'instructions'  => 'E-postadresse som faktura sendes til. Påkrevd hvis EHF ikke brukes.',
+                'required'      => 0,
+                'conditional_logic' => [
+                    [
+                        [
+                            'field'    => 'field_bv_ehf_faktura',
+                            'operator' => '==',
+                            'value'    => 'nei',
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'key'           => 'field_bv_faktura_referanse',
+                'label'         => 'Faktura-referanse / prosjektnummer',
+                'name'          => 'faktura_referanse',
+                'type'          => 'text',
+                'instructions'  => 'Brukes for fakturaadressering. Kan være prosjektnummer eller intern referanse. Uten dette risikerer fakturaen å bli returnert.',
+                'required'      => 0,
+                'maxlength'     => 100,
+            ],
+        ],
+        'location' => [
+            [
+                [
+                    'param'    => 'post_type',
+                    'operator' => '==',
+                    'value'    => 'foretak',
+                ],
+            ],
+        ],
+        'menu_order'      => 5,
+        'position'        => 'normal',
+        'style'           => 'default',
+        'label_placement' => 'top',
+        'active'          => true,
+        'description'     => 'Fakturadata for manuell fakturering ved oppgradering. Pre-populeres når brukere registrerer/oppgraderer.',
+    ]);
+}
