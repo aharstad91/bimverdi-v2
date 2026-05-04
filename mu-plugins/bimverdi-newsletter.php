@@ -102,14 +102,17 @@ add_action('init', function () {
         exit;
     }
 
-    // Send admin notification
-    $admin_email = get_option('admin_email');
-    wp_mail(
-        $admin_email,
-        'Ny nyhetsbrev-påmelding - BIM Verdi',
-        sprintf("Ny påmelding til nyhetsbrevet:\n\nE-post: %s\nDato: %s", $email, current_time('d.m.Y H:i')),
-        ['Content-Type: text/plain; charset=UTF-8']
-    );
+    // Send admin notification til post@bimverdi.no (BV_NOTIFY_EMAIL via shared-helpers)
+    $subject = 'Ny nyhetsbrev-påmelding - BIM Verdi';
+    $body    = sprintf("Ny påmelding til nyhetsbrevet:\n\nE-post: %s\nDato: %s", $email, current_time('d.m.Y H:i'));
+    $headers = ['Content-Type: text/plain; charset=UTF-8'];
+
+    if (function_exists('bimverdi_send_admin_notification_email')) {
+        bimverdi_send_admin_notification_email($subject, $body, $headers);
+    } else {
+        // Fallback hvis shared-helpers ikke lastet (skal ikke skje)
+        wp_mail(get_option('admin_email'), $subject, $body, $headers);
+    }
 
     // Clear rate limit on success
     delete_transient($rate_key);
