@@ -192,7 +192,7 @@ add_action('manage_users_custom_column', 'bimverdi_show_membership_column', 10, 
 function bimverdi_show_membership_column($value, $column_name, $user_id) {
     if ($column_name === 'bimverdi_membership') {
         $level = bimverdi_get_membership_level($user_id);
-        
+
         $labels = array(
             'partner' => '<span style="color: #7C3AED; font-weight: bold;">★ Partner</span>',
             'prosjektdeltaker' => '<span style="color: #F97316; font-weight: bold;">◆ Prosjektdeltaker</span>',
@@ -200,11 +200,35 @@ function bimverdi_show_membership_column($value, $column_name, $user_id) {
             'tilleggskontakt' => '<span style="color: #6B7280;">+ Tilleggskontakt</span>',
             'medlem' => '<span style="color: #9CA3AF;">○ Medlem</span>',
         );
-        
+
         return $labels[$level] ?? '-';
     }
-    
+
+    if ($column_name === 'bimverdi_registered') {
+        $user = get_userdata($user_id);
+        if (!$user || empty($user->user_registered)) {
+            return '—';
+        }
+        $timestamp = strtotime($user->user_registered);
+        return $timestamp ? date_i18n('j. M Y', $timestamp) : '—';
+    }
+
     return $value;
+}
+
+/**
+ * Vis registreringsdato i admin user list (sorterbar)
+ */
+add_filter('manage_users_columns', 'bimverdi_add_registered_column');
+function bimverdi_add_registered_column($columns) {
+    $columns['bimverdi_registered'] = __('Registrert', 'bimverdi');
+    return $columns;
+}
+
+add_filter('manage_users_sortable_columns', 'bimverdi_make_registered_column_sortable');
+function bimverdi_make_registered_column_sortable($columns) {
+    $columns['bimverdi_registered'] = 'user_registered';
+    return $columns;
 }
 
 /**
