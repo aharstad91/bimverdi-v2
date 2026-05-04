@@ -672,7 +672,7 @@ if (!$company && $bruker_foretak) : ?>
                     </span>
                     <div>
                         <span class="text-sm font-medium text-[#1A1A1A]"><?php _e('Arrangementer', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#5A5A5A]"><?php _e('Se og meld deg på kommende arrangementer og workshops', 'bimverdi'); ?></p>
+                        <p class="text-xs text-[#5A5A5A]"><?php _e('Se og meld deg på åpne arrangement og workshops', 'bimverdi'); ?></p>
                     </div>
                 </a>
                 <a href="<?php echo esc_url(home_url('/deltakere/')); ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F7F5EF] transition-colors group">
@@ -701,7 +701,7 @@ if (!$company && $bruker_foretak) : ?>
         <!-- Section B: What foretak unlocks -->
         <div class="my-6">
             <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
-                <?php _e('Bli deltaker', 'bimverdi'); ?>
+                <?php _e('Tilgjengelig for ansatte i foretak som er betalende deltakere, prosjektdeltakere og partnere', 'bimverdi'); ?>
             </h4>
             <p class="text-xs text-[#5A5A5A] mb-4">
                 <?php _e('Som betalende deltaker får du også tilgang til tjenestene under. Velg «Registrer foretak» under for å sjekke om din arbeidsgiver allerede er deltaker — eller om du vil oppgradere til betalende deltaker.', 'bimverdi'); ?>
@@ -727,11 +727,20 @@ if (!$company && $bruker_foretak) : ?>
                 </div>
                 <div class="flex items-center gap-3 p-3">
                     <span class="flex-shrink-0 text-[#D6D1C6]">
+                        <?php echo bimverdi_icon('calendar', 20); ?>
+                    </span>
+                    <div>
+                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Lukkede arrangement og opptak', 'bimverdi'); ?></span>
+                        <p class="text-xs text-[#888888]"><?php _e('Tilgang til lukkede arrangement og opptak av tidligere arrangement', 'bimverdi'); ?></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3">
+                    <span class="flex-shrink-0 text-[#D6D1C6]">
                         <?php echo bimverdi_icon('book-open', 20); ?>
                     </span>
                     <div>
                         <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Kunnskapskilder', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#888888]"><?php _e('Tilgang til standarder, veiledere og faglige ressurser', 'bimverdi'); ?></p>
+                        <p class="text-xs text-[#888888]"><?php _e('Tilgang til søk i kunnskapsbasen med åpne kilder over krav, forskrifter, standarder, veiledere, verktøy, artikler, arrangement', 'bimverdi'); ?></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 p-3">
@@ -748,18 +757,28 @@ if (!$company && $bruker_foretak) : ?>
 
         <hr class="border-[#D6D1C6]">
 
-        <!-- Section C: CTA -->
-        <div class="mt-6 text-center">
-            <?php bimverdi_button([
-                'text'    => __('Registrer foretak', 'bimverdi'),
-                'variant' => 'primary',
-                'href'    => home_url('/min-side/foretak/registrer/'),
-                'icon'    => 'plus',
-            ]); ?>
-            <p class="mt-3 text-xs text-[#888888]">
-                <?php _e('Koble foretaket ditt for å få full tilgang til BIM Verdi-portalen', 'bimverdi'); ?>
-            </p>
-        </div>
+        <!-- Section C: Inline foretak-registrering -->
+        <?php if ($bruker_foretak && !empty($bruker_foretak['orgnr']) && !empty($bruker_foretak['navn'])): ?>
+            <div class="mt-6">
+                <h4 class="text-base font-semibold text-[#1A1A1A] mb-1"><?php _e('Registrer foretaket', 'bimverdi'); ?></h4>
+                <p class="text-xs text-[#5A5A5A] mb-4"><?php _e('Velg deltakernivå og fullfør registreringen for å få full tilgang til BIM Verdi-portalen.', 'bimverdi'); ?></p>
+                <?php get_template_part('parts/minside/foretak-registrer-form', null, [
+                    'preselected' => $bruker_foretak,
+                ]); ?>
+            </div>
+        <?php else: ?>
+            <div class="mt-6 text-center">
+                <?php bimverdi_button([
+                    'text'    => __('Registrer foretak', 'bimverdi'),
+                    'variant' => 'primary',
+                    'href'    => home_url('/min-side/foretak/registrer/'),
+                    'icon'    => 'plus',
+                ]); ?>
+                <p class="mt-3 text-xs text-[#888888]">
+                    <?php _e('Koble foretaket ditt for å få full tilgang til BIM Verdi-portalen', 'bimverdi'); ?>
+                </p>
+            </div>
+        <?php endif; ?>
     </div>
 
 <?php endif; ?>

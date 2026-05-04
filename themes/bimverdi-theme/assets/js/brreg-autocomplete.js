@@ -20,35 +20,38 @@
     });
     
     function initBrregAutocomplete() {
+        // Find the company name field - primary search field
+        // Supports both plain HTML form (id="bedriftsnavn") and GF Form 2 (input_2_2)
+        // Filter out hidden inputs (preselected-mode bruker hidden inputs med samme name)
+        const foretakField = Array.from(document.querySelectorAll(
+            '#bedriftsnavn, ' +
+            'input[id*="input_2_2"], ' +
+            'input[name*="foretak" i], ' +
+            'input[name*="bedriftsnavn" i]'
+        )).find(el => el.type !== 'hidden');
+
+        // Also get the org number field for filling
+        const orgnrField = Array.from(document.querySelectorAll(
+            '#organisasjonsnummer, ' +
+            'input[id*="input_2_1"], ' +
+            'input[name*="organisasjonsnummer" i]'
+        )).find(el => el.type !== 'hidden');
+
+        // Use foretak field as primary search, fall back to orgnr if not found
+        const searchField = foretakField || orgnrField;
+
+        if (!searchField) {
+            // Preselected-mode (foretak allerede valgt via Brreg-søk i forrige steg):
+            // ingen søkefelt finnes, og bv-registration-fields skal være synlig fra start.
+            console.log('BRreg: Search field not found (preselected mode)');
+            return;
+        }
+
         // Hide registration fields until org.nr check confirms company is not yet registered
         const regFields = document.getElementById('bv-registration-fields');
         const submitWrap = document.getElementById('bv-submit-section');
         if (regFields) regFields.style.display = 'none';
         if (submitWrap) submitWrap.style.display = 'none';
-
-        // Find the company name field - primary search field
-        // Supports both plain HTML form (id="bedriftsnavn") and GF Form 2 (input_2_2)
-        const foretakField = document.querySelector(
-            '#bedriftsnavn, ' +
-            'input[id*="input_2_2"], ' +
-            'input[name*="foretak" i], ' +
-            'input[name*="bedriftsnavn" i]'
-        );
-
-        // Also get the org number field for filling
-        const orgnrField = document.querySelector(
-            '#organisasjonsnummer, ' +
-            'input[id*="input_2_1"], ' +
-            'input[name*="organisasjonsnummer" i]'
-        );
-        
-        // Use foretak field as primary search, fall back to orgnr if not found
-        const searchField = foretakField || orgnrField;
-        
-        if (!searchField) {
-            console.log('BRreg: Search field not found');
-            return;
-        }
         
         console.log('BRreg: Initializing autocomplete on', searchField.name || searchField.id);
         
