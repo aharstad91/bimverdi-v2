@@ -29,23 +29,23 @@ $first_name = $user->first_name ?: $user->display_name;
 
     <!-- Search Section -->
     <div class="py-6">
-        <h2 class="text-lg font-medium text-[#1A1A1A] mb-1">
+        <h2 class="text-2xl font-medium text-[#1A1A1A] mb-2">
             <?php _e('Koble til ditt foretak', 'bimverdi'); ?>
         </h2>
-        <p class="text-sm text-[#5A5A5A] mb-4">
+        <p class="text-base text-[#5A5A5A] mb-5">
             <?php _e('Søk etter din arbeidsgiver for å koble profilen din til et foretak. Dette er nødvendig for registrering til arrangement, sjekk om din arbeidsgiver er registrert som deltaker etc.', 'bimverdi'); ?>
         </p>
 
         <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 block">
                     <circle cx="11" cy="11" r="8"/>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
             </div>
-            <input type="text"
+            <input type="search"
                    data-search-input
-                   class="w-full pl-10 pr-4 py-3 text-sm border border-[#D6D1C6] rounded-lg bg-white placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent"
+                   class="w-full !pl-12 !pr-4 !py-4 !h-auto !text-base border border-[#D6D1C6] !rounded-lg bg-white placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent"
                    placeholder="<?php esc_attr_e('Søk etter foretaksnavn eller org.nr...', 'bimverdi'); ?>"
                    autocomplete="off" />
         </div>
@@ -59,6 +59,63 @@ $first_name = $user->first_name ?: $user->display_name;
 
     <!-- Selected Company Detail (populated by JS) -->
     <div data-detail class="mt-4" aria-live="polite">
+    </div>
+
+    <!-- Sekundær CTA: Finner du ikke arbeidsgiver? -->
+    <p class="mt-4 text-sm text-[#5A5A5A]">
+        <?php _e('Finner du ikke arbeidsgiver?', 'bimverdi'); ?>
+        <a href="<?php echo esc_url(home_url('/min-side/foretak/registrer/')); ?>"
+           class="text-[#FF8B5E] hover:text-[#E87341] font-medium underline-offset-2 hover:underline">
+            <?php _e('Registrer som nytt foretak', 'bimverdi'); ?>
+        </a>
+    </p>
+
+    <!-- Motivasjon: Hva du får tilgang til -->
+    <div class="mt-10 pt-8 border-t border-[#E7E5E4]">
+        <h3 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-5">
+            <?php _e('Hva du får når du kobler deg til foretak', 'bimverdi'); ?>
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+            <div class="flex items-start gap-3">
+                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
+                    <?php echo bimverdi_icon('calendar', 18); ?>
+                </span>
+                <div>
+                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Arrangement', 'bimverdi'); ?></p>
+                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Meld deg på åpne og lukkede arrangement', 'bimverdi'); ?></p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
+                    <?php echo bimverdi_icon('users', 18); ?>
+                </span>
+                <div>
+                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Temagrupper', 'bimverdi'); ?></p>
+                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Faglige møter med bransjekollegaer', 'bimverdi'); ?></p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
+                    <?php echo bimverdi_icon('wrench', 18); ?>
+                </span>
+                <div>
+                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Verktøy- og kunnskapskatalog', 'bimverdi'); ?></p>
+                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Søk i bransjens verktøy og kunnskapskilder', 'bimverdi'); ?></p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
+                    <?php echo bimverdi_icon('newspaper', 18); ?>
+                </span>
+                <div>
+                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Nyheter og artikler', 'bimverdi'); ?></p>
+                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Siste oppdateringer fra nettverket', 'bimverdi'); ?></p>
+                </div>
+            </div>
+        </div>
+        <p class="mt-5 text-xs text-[#888888]">
+            <?php _e('Som ansatt i et betalende deltaker-, prosjektdeltaker- eller partnerforetak får du i tillegg tilgang til lukkede arrangement, opptak, rådgivning og prosjektkonsortier.', 'bimverdi'); ?>
+        </p>
     </div>
 
 </div>
