@@ -24,6 +24,7 @@ $title = $args['title'] ?? '';
 $description = $args['description'] ?? '';
 $actions = $args['actions'] ?? [];
 $show_header = $args['show_header'] ?? true;
+$show_sidenav = $args['show_sidenav'] ?? true;
 ?>
 
 <?php if ($show_header && $title): ?>
@@ -35,6 +36,7 @@ $show_header = $args['show_header'] ?? true;
 ]); ?>
 <?php endif; ?>
 
+<?php if ($show_sidenav): ?>
 <!-- Account Layout: Sidenav + Content -->
 <div class="flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-12">
     <!-- Sidenav -->
@@ -42,3 +44,9 @@ $show_header = $args['show_header'] ?? true;
 
     <!-- Main Content Area -->
     <div class="flex-1 min-w-0">
+<?php else: ?>
+<!-- Single-column layout (no sidenav) -->
+<div class="max-w-2xl mx-auto">
+    <div class="min-w-0"
+         data-layout="no-sidenav">
+<?php endif; ?>

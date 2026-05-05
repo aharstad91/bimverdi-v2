@@ -166,34 +166,34 @@ if ($company_id) {
     }
 }
 
+// Welcome-state: ny bruker uten foretak rett etter konto-aktivering.
+// Skal rendres som en fokusert flate uten sidebar og uten fallback-dashboard,
+// så brukeren får én tydelig handling: koble seg til foretak.
+$bruker_foretak = function_exists('bimverdi_get_bruker_foretak') ? bimverdi_get_bruker_foretak($user_id) : false;
+$is_welcome_state = isset($_GET['welcome']) && $_GET['welcome'] == '1' && !$company_id;
+
 ?>
 
 <!-- Account Layout with Sidenav -->
 <?php get_template_part('parts/components/account-layout', null, [
-    'title' => sprintf(__('Hei, %s', 'bimverdi'), $current_user->first_name ?: $current_user->display_name),
+    'title' => $is_welcome_state ? '' : sprintf(__('Hei, %s', 'bimverdi'), $current_user->first_name ?: $current_user->display_name),
     'description' => $company ? esc_html(get_the_title($company_id)) . ($user_role_label ? ' · ' . esc_html($user_role_label) : '') : __('Velkommen til Min Side', 'bimverdi'),
+    'show_sidenav' => !$is_welcome_state,
+    'show_header'  => !$is_welcome_state,
 ]); ?>
 
 <!-- Success Messages -->
 <?php if (isset($_GET['welcome']) && $_GET['welcome'] == '1'):
     $first_name = $current_user->first_name ?: $current_user->display_name;
-?>
-    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        <p class="text-sm text-green-800">
-            <strong><?php printf(__('Velkommen, %s!', 'bimverdi'), esc_html($first_name)); ?></strong>
-            <?php _e('Kontoen din er nå aktivert.', 'bimverdi'); ?>
-        </p>
-    </div>
-<?php endif; ?>
+    get_template_part('parts/components/success-banner', null, [
+        'title'   => sprintf(__('Velkommen, %s!', 'bimverdi'), $first_name),
+        'message' => __('Kontoen din er nå aktivert.', 'bimverdi'),
+    ]);
+endif; ?>
 
 <?php
 // BV20: Foretak-kobling widget for new users
-$bruker_foretak = function_exists('bimverdi_get_bruker_foretak') ? bimverdi_get_bruker_foretak($user_id) : false;
-if (isset($_GET['welcome']) && $_GET['welcome'] == '1' && !$company_id && !$bruker_foretak) :
+if ($is_welcome_state && !$bruker_foretak) :
     get_template_part('parts/minside/welcome-foretak-kobling', null, ['context' => 'welcome']);
 endif;
 ?>
@@ -204,43 +204,26 @@ if (isset($_GET['foretak_koblet']) && in_array($_GET['foretak_koblet'], ['deltak
     $is_deltaker_kobling = ($_GET['foretak_koblet'] === 'deltaker');
     // Cross-check against actual state
     if ($company_id || $bruker_foretak) :
-?>
-    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        <p class="text-sm text-green-800">
-            <?php if ($is_deltaker_kobling) : ?>
-                <strong><?php _e('Foretak koblet!', 'bimverdi'); ?></strong>
-                <?php _e('Du er nå lagt til som tilleggskontakt. Dashboardet ditt er oppdatert.', 'bimverdi'); ?>
-            <?php else : ?>
-                <strong><?php _e('Arbeidsgiver registrert!', 'bimverdi'); ?></strong>
-                <?php _e('Foretaket er lagret på profilen din.', 'bimverdi'); ?>
-            <?php endif; ?>
-        </p>
-    </div>
-<?php
+        get_template_part('parts/components/success-banner', null, [
+            'title'   => $is_deltaker_kobling ? __('Foretak koblet!', 'bimverdi') : __('Arbeidsgiver registrert!', 'bimverdi'),
+            'message' => $is_deltaker_kobling
+                ? __('Du er nå lagt til som tilleggskontakt. Dashboardet ditt er oppdatert.', 'bimverdi')
+                : __('Foretaket er lagret på profilen din.', 'bimverdi'),
+        ]);
     endif;
 endif;
 ?>
 
-<?php if (isset($_GET['invitation_accepted']) && $_GET['invitation_accepted'] == '1'): ?>
-    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        <p class="text-sm text-green-800">
-            <strong><?php _e('Invitasjon akseptert!', 'bimverdi'); ?></strong>
-            <?php if ($company): ?>
-                <?php printf(__('Du er nå koblet til %s.', 'bimverdi'), esc_html($company->post_title)); ?>
-            <?php else: ?>
-                <?php _e('Du er nå koblet til foretaket.', 'bimverdi'); ?>
-            <?php endif; ?>
-        </p>
-    </div>
-<?php endif; ?>
+<?php
+if (isset($_GET['invitation_accepted']) && $_GET['invitation_accepted'] == '1'):
+    get_template_part('parts/components/success-banner', null, [
+        'title'   => __('Invitasjon akseptert!', 'bimverdi'),
+        'message' => $company
+            ? sprintf(__('Du er nå koblet til %s.', 'bimverdi'), esc_html($company->post_title))
+            : __('Du er nå koblet til foretaket.', 'bimverdi'),
+    ]);
+endif;
+?>
 
 <?php
 // BV20: Show BRUKER-FORETAK info for users with lightweight company link
@@ -643,9 +626,9 @@ if (!$company && $bruker_foretak) : ?>
 
     </div>
 
-<?php else: ?>
+<?php elseif (!$is_welcome_state): ?>
 
-    <!-- Welcome dashboard for profil-users (no company) -->
+    <!-- Welcome dashboard for profil-users (no company, not in welcome-state flow) -->
     <div class="py-8 max-w-2xl mx-auto">
         <!-- Welcome header -->
         <div class="text-center mb-8">
