@@ -193,6 +193,13 @@ require_once get_template_directory() . '/parts/components/empty-state.php';
 require_once get_template_directory() . '/parts/components/item.php';
 
 /**
+ * Load Pricing Table Component
+ * Provides bimverdi_pricing_table() — render fra ACF Options eller injisert data,
+ * brukt av ACF Block og direkte template-kall.
+ */
+require_once get_template_directory() . '/parts/components/pricing-table.php';
+
+/**
  * Load Pagination Component
  * Provides bimverdi_pagination() function
  */

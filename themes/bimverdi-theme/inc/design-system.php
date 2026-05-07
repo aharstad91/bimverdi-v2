@@ -3042,6 +3042,202 @@ class BIM_Verdi_Design_System {
                 font-size: 0.875em;
             }
 
+            /* ============================================================
+               PRICING TABLE — bimverdi_pricing_table()
+               ============================================================ */
+            .bv-pricing {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                color: var(--color-text);
+                margin: 0;
+            }
+
+            .bv-pricing__scroll {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -1rem;
+                padding: 0 1rem;
+            }
+
+            @media (min-width: 768px) {
+                .bv-pricing__scroll {
+                    margin: 0;
+                    padding: 0;
+                }
+            }
+
+            .bv-pricing__table {
+                width: 100%;
+                min-width: 720px;
+                border-collapse: separate;
+                border-spacing: 0;
+                background: var(--color-bg);
+                font-size: 0.9375rem;
+                line-height: 1.5;
+            }
+
+            /* Header row med plan-titler */
+            .bv-pricing__table thead th {
+                vertical-align: bottom;
+                padding: 1.25rem 1rem 1.5rem;
+                text-align: left;
+                font-weight: 500;
+                border-bottom: 1px solid var(--color-divider);
+                background: transparent;
+            }
+
+            .bv-pricing__corner {
+                width: 28%;
+                min-width: 200px;
+            }
+
+            .bv-pricing__plan {
+                width: 18%;
+                min-width: 130px;
+            }
+
+            .bv-pricing__plan-title {
+                display: block;
+                font-size: 1.125rem;
+                font-weight: 500;
+                letter-spacing: -0.01em;
+                color: var(--color-text);
+            }
+
+            .bv-pricing__plan-flag {
+                display: inline-block;
+                margin-top: 0.375rem;
+                padding: 0.125rem 0.5rem;
+                font-size: 0.6875rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: var(--color-primary-dark);
+                background: rgba(255, 139, 94, 0.12);
+                border-radius: 9999px;
+            }
+
+            .bv-pricing__plan--highlight .bv-pricing__plan-title {
+                color: var(--color-primary-dark);
+            }
+
+            /* Rader */
+            .bv-pricing__table tbody tr {
+                border-top: 1px solid transparent;
+            }
+
+            .bv-pricing__table tbody td,
+            .bv-pricing__table tbody th {
+                padding: 0.875rem 1rem;
+                vertical-align: top;
+                border-bottom: 1px solid var(--color-divider-light);
+            }
+
+            .bv-pricing__label {
+                font-weight: 500;
+                color: var(--color-text);
+                text-align: left;
+                font-size: 0.9375rem;
+            }
+
+            .bv-pricing__cell {
+                color: var(--color-text-secondary);
+                font-size: 0.9375rem;
+            }
+
+            .bv-pricing__cell--header {
+                font-weight: 500;
+                color: var(--color-text);
+            }
+
+            .bv-pricing__cell--highlight {
+                background: rgba(255, 139, 94, 0.04);
+            }
+
+            /* Gruppe-overskrifter */
+            .bv-pricing__group-header th {
+                padding: 1.5rem 1rem 0.5rem !important;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: var(--color-text-secondary);
+                border-bottom: 1px solid var(--color-divider) !important;
+                background: var(--color-bg-alt);
+            }
+
+            /* Inkludert / ekskludert markører */
+            .bv-pricing__included {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                border-radius: 9999px;
+                background: rgba(179, 219, 135, 0.25);
+                color: #2F6B14;
+            }
+
+            .bv-pricing__included svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .bv-pricing__excluded {
+                color: var(--color-text-muted);
+                font-size: 1.125rem;
+                line-height: 1;
+            }
+
+            .bv-pricing__value {
+                color: var(--color-text);
+                font-weight: 500;
+            }
+
+            /* Fotnote-markører */
+            .bv-pricing__footnote-marker {
+                display: inline;
+                margin-left: 0.125rem;
+                font-size: 0.75em;
+                color: var(--color-text-secondary);
+                font-weight: 400;
+            }
+
+            /* Disclaimers */
+            .bv-pricing__disclaimers {
+                margin: 1.5rem 0 0;
+                padding: 0;
+                list-style: none;
+                font-size: 0.8125rem;
+                color: var(--color-text-secondary);
+                line-height: 1.5;
+            }
+
+            .bv-pricing__disclaimer {
+                padding-left: 1.25rem;
+                text-indent: -1.25rem;
+                margin-bottom: 0.375rem;
+            }
+
+            .bv-pricing__disclaimer .bv-pricing__footnote-marker {
+                display: inline-block;
+                width: 1rem;
+                margin-right: 0.25rem;
+                margin-left: 0;
+                text-indent: 0;
+            }
+
+            /* Mobil-justering */
+            @media (max-width: 640px) {
+                .bv-pricing__plan-title {
+                    font-size: 0.9375rem;
+                }
+
+                .bv-pricing__table tbody td,
+                .bv-pricing__table tbody th {
+                    padding: 0.75rem 0.75rem;
+                }
+            }
+
         </style>
         <?php
     }
