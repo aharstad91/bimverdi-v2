@@ -18,6 +18,20 @@ defined('ABSPATH') || exit;
 $preselected = $args['preselected'] ?? null;
 $has_preselected = is_array($preselected) && !empty($preselected['orgnr']) && !empty($preselected['navn']);
 
+// Two-step-flyt: ?nivaa=X velger deltakernivå før resten av skjemaet vises.
+// Validér mot ACF-pricing-data så ukjente verdier ignoreres.
+$valid_plan_keys = function_exists('bimverdi_pricing_valid_plan_keys')
+    ? bimverdi_pricing_valid_plan_keys()
+    : [];
+$selected_nivaa = isset($_GET['nivaa']) ? sanitize_key($_GET['nivaa']) : '';
+if ($selected_nivaa && !in_array($selected_nivaa, $valid_plan_keys, true)) {
+    $selected_nivaa = '';
+}
+// Pricing-velger vises når brukeren ankommer den dedikerte registrer-siden
+// uten valgt nivå. Inline-bruk fra dashboard (preselected fra BRREG-søk)
+// beholder eksisterende radio-grid for å bevare sin egen kontekst.
+$show_pricing_picker = !$has_preselected && empty($selected_nivaa);
+
 // Error messages
 $bv_error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
 $error_messages = [
@@ -59,6 +73,27 @@ $bransje_options = [
 ];
 ?>
 
+<?php if ($show_pricing_picker): ?>
+<!-- Step 1 av two-step-flyt: bruker velger deltakernivå via pricing-blokka.
+     Klikk «Velg» lander på samme URL med ?nivaa={plan_key} → step 2. -->
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <h2 class="text-base font-semibold text-[#1A1A1A] mb-2"><?php _e('Velg deltakernivå', 'bimverdi'); ?></h2>
+        <p class="text-sm text-[#5A5A5A]">
+            <?php _e('Klikk «Velg» for det nivået som passer foretaket ditt. Du fyller inn detaljene i neste steg.', 'bimverdi'); ?>
+        </p>
+    </div>
+    <?php
+    if (function_exists('bimverdi_pricing_table')) {
+        echo bimverdi_pricing_table(null, [
+            'cta_url_template' => '/min-side/foretak/registrer/?nivaa={plan_key}',
+        ]);
+    }
+    ?>
+</div>
+<?php return; ?>
+<?php endif; ?>
+
 <!-- Form Container (960px centered per UI Contract) -->
 <div class="max-w-3xl<?php echo $has_preselected ? '' : ' mx-auto'; ?>">
 
@@ -71,6 +106,21 @@ $bransje_options = [
                 <strong class="text-[#111827]">Tips:</strong> Start å skrive foretaksnavnet, så sjekker vi om dere allerede er deltaker.
             </p>
         </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($selected_nivaa): ?>
+    <!-- Step 2 av two-step-flyt: bekreft valgt nivå + tilbud om endring. -->
+    <div class="mb-6 flex items-start justify-between gap-4 p-4 bg-[#FFF8F5] border border-[#FF8B5E]/30 rounded-lg">
+        <div>
+            <p class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide mb-1"><?php _e('Valgt deltakernivå', 'bimverdi'); ?></p>
+            <p class="text-base font-semibold text-[#1A1A1A]">
+                <?php echo esc_html(function_exists('bimverdi_pricing_plan_title') ? bimverdi_pricing_plan_title($selected_nivaa) : $selected_nivaa); ?>
+            </p>
+        </div>
+        <a href="<?php echo esc_url(home_url('/min-side/foretak/registrer/')); ?>" class="text-sm text-[#FF8B5E] hover:underline whitespace-nowrap">
+            <?php _e('Endre nivå', 'bimverdi'); ?>
+        </a>
     </div>
     <?php endif; ?>
 
@@ -173,6 +223,11 @@ $bransje_options = [
         <!-- Del 2: Registration fields (hidden until org check, ALLTID synlig når preselected) -->
         <div id="bv-registration-fields" class="space-y-6"<?php echo $has_preselected ? '' : ''; ?>>
 
+        <?php if ($selected_nivaa): ?>
+        <!-- Two-step-flyt: nivå er allerede valgt fra pricing-blokka. Hidden input
+             erstatter radio-griden; eksisterende JS leser denne ved page-load. -->
+        <input type="hidden" name="deltakertype" value="<?php echo esc_attr($selected_nivaa); ?>">
+        <?php else: ?>
         <!-- Deltakertype / Deltakernivå -->
         <fieldset>
             <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -235,6 +290,7 @@ $bransje_options = [
             <p class="mt-2 text-xs text-[#888888]">Fakturering avtales etter registrering</p>
             <p class="mt-1 text-xs text-[#888888]">Påmelding i 2. kvartal gir 25 % rabatt på årsavgift. Etter 1. juli: 50 % rabatt.</p>
         </fieldset>
+        <?php endif; ?>
 
         <!-- Seksjoner som skjules for gratis brukerforetak -->
         <div id="bv-section-beskrivelse">
@@ -547,11 +603,19 @@ $bransje_options = [
     });
 
     form.addEventListener('submit', function() {
-      var checked = form.querySelector('input[name="deltakertype"]:checked');
+      var checked = form.querySelector('input[name="deltakertype"]:checked')
+                 || form.querySelector('input[type="hidden"][name="deltakertype"]');
       if (checked && checked.value === 'gratis') {
         conditionallyRequiredFields.forEach(function(f) { f.removeAttribute('required'); });
       }
     });
+
+    // Two-step-flyt: nivå pre-fylt via hidden input fra pricing-blokka.
+    // Kjør setTier ved page-load slik at gratis-flyten skjuler riktige felter.
+    var hiddenTier = form.querySelector('input[type="hidden"][name="deltakertype"]');
+    if (hiddenTier) {
+      setTier(hiddenTier.value === 'gratis' ? 'gratis' : 'paid');
+    }
   });
 })();
 </script>

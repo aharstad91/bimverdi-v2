@@ -516,6 +516,47 @@ function bimverdi_seed_pricing_data() {
 }
 
 /**
+ * Returner gyldige plan_keys fra ACF Options.
+ *
+ * Brukes av form-handlers for å validere ?nivaa= og POST-input.
+ *
+ * @return array Liste over plan_keys (strings).
+ */
+function bimverdi_pricing_valid_plan_keys(): array {
+    if (!function_exists('get_field')) {
+        return [];
+    }
+    $plans = get_field('pricing_plans', 'option') ?: [];
+    $keys = [];
+    foreach ($plans as $plan) {
+        $key = $plan['plan_key'] ?? '';
+        if ($key !== '') {
+            $keys[] = $key;
+        }
+    }
+    return $keys;
+}
+
+/**
+ * Slå opp plan_title for en gitt plan_key.
+ *
+ * @param string $plan_key
+ * @return string Tittel hvis funnet, ellers plan_key.
+ */
+function bimverdi_pricing_plan_title(string $plan_key): string {
+    if (!function_exists('get_field')) {
+        return $plan_key;
+    }
+    $plans = get_field('pricing_plans', 'option') ?: [];
+    foreach ($plans as $plan) {
+        if (($plan['plan_key'] ?? '') === $plan_key) {
+            return $plan['plan_title'] ?? $plan_key;
+        }
+    }
+    return $plan_key;
+}
+
+/**
  * Default plans-data (brukt av seed + backfill).
  *
  * @return array
@@ -707,7 +748,8 @@ function bimverdi_seed_pricing_pattern(): void {
         'post_status'  => 'publish',
         'post_title'   => 'Deltakeravgift-tabell',
         'post_name'    => 'pricing-tabell',
-        'post_content' => "<!-- wp:acf/bv-pricing-table /-->",
+        // Lock-attributt hindrer at blokken slettes/flyttes i Gutenberg.
+        'post_content' => '<!-- wp:acf/bv-pricing-table {"lock":{"remove":true,"move":true}} /-->',
     ], true);
 
     if (is_wp_error($post_id)) {
@@ -750,9 +792,12 @@ function bimverdi_register_pricing_block() {
         'keywords'        => ['deltakeravgift', 'deltakernivå', 'priser', 'tabell', 'deltaker'],
         'mode'            => 'preview',
         'supports'        => [
-            'align'  => ['wide', 'full'],
-            'anchor' => true,
-            'jsx'    => false,
+            'align'    => ['wide', 'full'],
+            'anchor'   => true,
+            'jsx'      => false,
+            // Skjul fra blokk-inserteren — blokken brukes kun via den seedede
+            // Synced Pattern-en og direkte PHP-kall, ikke som drop-anywhere-blokk.
+            'inserter' => false,
         ],
         'example' => [
             'attributes' => [
@@ -794,6 +839,60 @@ function bimverdi_render_pricing_block($block, $content = '', $is_preview = fals
     }
 
     echo '</div>';
+}
+
+/**
+ * Backfill v4: oppdater eksisterende Synced Pattern (uten lock-attributt) til
+ * å ha lock på blokk-instansen. Idempotent — sjekker først om innholdet
+ * allerede inneholder lock-attributtet før det skrives.
+ */
+add_action('init', 'bimverdi_backfill_pricing_pattern_lock_v4', 35);
+
+function bimverdi_backfill_pricing_pattern_lock_v4(): void {
+    if (get_option('bimverdi_pricing_pattern_locked_v4')) {
+        return;
+    }
+    if (!post_type_exists('wp_block')) {
+        return;
+    }
+
+    $existing = get_posts([
+        'name'             => 'pricing-tabell',
+        'post_type'        => 'wp_block',
+        'post_status'      => 'any',
+        'numberposts'      => 1,
+        'suppress_filters' => false,
+    ]);
+    if (empty($existing)) {
+        return;
+    }
+
+    $pattern = $existing[0];
+    $content = (string) $pattern->post_content;
+
+    // Allerede låst → marker som ferdig
+    if (strpos($content, '"lock"') !== false) {
+        update_option('bimverdi_pricing_pattern_locked_v4', current_time('mysql'));
+        return;
+    }
+
+    // Erstatt selv-lukkende ACF-blokk med låst variant.
+    $locked = '<!-- wp:acf/bv-pricing-table {"lock":{"remove":true,"move":true}} /-->';
+    $new_content = preg_replace(
+        '/<!--\s*wp:acf\/bv-pricing-table\s*\/-->/',
+        $locked,
+        $content,
+        1
+    );
+
+    if ($new_content && $new_content !== $content) {
+        wp_update_post([
+            'ID'           => $pattern->ID,
+            'post_content' => $new_content,
+        ]);
+    }
+
+    update_option('bimverdi_pricing_pattern_locked_v4', current_time('mysql'));
 }
 
 /**

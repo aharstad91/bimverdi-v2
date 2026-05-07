@@ -26,9 +26,16 @@ if (!defined('ABSPATH')) exit;
  * Render pricing-tabell.
  *
  * @param array|null $data Pricing-data eller null for å lese fra ACF Options.
+ * @param array      $opts Optional. Override-flagg:
+ *   - cta_url_template (string): mal med {plan_key}-placeholder, f.eks.
+ *     '/min-side/foretak/oppgrader/?nivaa={plan_key}'. Erstatter cta_url
+ *     fra ACF for hver plan. Brukes når samme tabell skal trigge ulike
+ *     flyter (registrer / oppgrader).
+ *   - exclude_plan_keys (array): plan_keys som skal filtreres bort fra
+ *     visningen, f.eks. ['gratis'] på oppgrader-siden.
  * @return string HTML.
  */
-function bimverdi_pricing_table($data = null) {
+function bimverdi_pricing_table($data = null, array $opts = []) {
     if (empty($data)) {
         $data = bimverdi_pricing_table_get_options_data();
     }
@@ -43,6 +50,21 @@ function bimverdi_pricing_table($data = null) {
     $disclaimers = $data['disclaimers'] ?? [];
     $features_id = 'bv-pricing-features-' . wp_unique_id();
     $start_open  = !empty($data['start_open']);
+
+    // Apply opts: filter excluded plans + override cta_url
+    $exclude_keys = $opts['exclude_plan_keys'] ?? [];
+    if (!empty($exclude_keys)) {
+        $plans = array_values(array_filter($plans, function ($plan) use ($exclude_keys) {
+            return !in_array($plan['plan_key'] ?? '', $exclude_keys, true);
+        }));
+    }
+    $url_template = $opts['cta_url_template'] ?? '';
+    if ($url_template !== '') {
+        foreach ($plans as &$plan) {
+            $plan['cta_url'] = str_replace('{plan_key}', $plan['plan_key'] ?? '', $url_template);
+        }
+        unset($plan);
+    }
 
     ob_start();
     ?>

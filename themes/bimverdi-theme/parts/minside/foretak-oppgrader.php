@@ -41,6 +41,25 @@ $foretak_navn  = $foretak ? $foretak->post_title : '';
 $pending       = bimverdi_get_pending_oppgradering($foretak_id);
 $bv_error      = isset($_GET['bv_error']) ? sanitize_key($_GET['bv_error']) : '';
 
+// Two-step-flyt: ?nivaa=X velger nivå før faktura-skjemaet vises.
+// Validér mot ACF, og ekskluder 'gratis' (ikke gyldig oppgraderingsmål).
+$valid_oppgr_keys = function_exists('bimverdi_pricing_valid_plan_keys')
+    ? array_values(array_filter(bimverdi_pricing_valid_plan_keys(), function ($k) { return $k !== 'gratis'; }))
+    : [];
+$selected_nivaa = isset($_GET['nivaa']) ? sanitize_key($_GET['nivaa']) : '';
+if ($selected_nivaa && !in_array($selected_nivaa, $valid_oppgr_keys, true)) {
+    $selected_nivaa = '';
+}
+$show_pricing_picker = empty($selected_nivaa);
+// Visning: hent fra ACF plan_title (kan være Bård-redigert).
+$selected_label = $selected_nivaa
+    ? (function_exists('bimverdi_pricing_plan_title') ? bimverdi_pricing_plan_title($selected_nivaa) : ucfirst($selected_nivaa))
+    : '';
+// Submit-verdi: server-handler forventer Deltaker / Prosjektdeltaker / Partner
+// (capitalized lowercase plan_key). Holder mapping uavhengig av plan_title
+// for å være robust mot Bård-redigering av visningsnavn.
+$selected_level = $selected_nivaa ? ucfirst($selected_nivaa) : '';
+
 $error_messages = [
     'missing_level'         => 'Du må velge et nivå før du kan sende forespørselen.',
     'missing_terms'         => 'Du må akseptere betingelsene for å sende forespørselen.',
@@ -61,26 +80,6 @@ if (empty($existing_ehf)) {
     $existing_ehf = 'nei';
 }
 
-$nivaaer = [
-    'Deltaker' => [
-        'label'     => 'Deltaker',
-        'features'  => ['Temagrupper og lukkede møter', 'Verktøyregistrering', 'Rabatt på konferanser'],
-        'personer'  => 3,
-        'pris'      => '8 000',
-    ],
-    'Prosjektdeltaker' => [
-        'label'     => 'Prosjektdeltaker',
-        'features'  => ['Alt i Deltaker', '1-2 timer rådgivning/mnd', 'Prosjektkonsortier'],
-        'personer'  => 4,
-        'pris'      => '24 000',
-    ],
-    'Partner' => [
-        'label'     => 'Partner',
-        'features'  => ['Alt i Prosjektdeltaker', 'Utvidet rådgivning', 'Styringsgruppe og piloter'],
-        'personer'  => 5,
-        'pris'      => '48 000',
-    ],
-];
 ?>
 
 <div class="max-w-[960px] mx-auto px-6 py-12">
@@ -127,10 +126,29 @@ $nivaaer = [
         </div>
     <?php endif; ?>
 
+    <?php if ($show_pricing_picker): ?>
+        <!-- Step 1: bruker velger nivå via pricing-blokka. Klikk «Velg» lander på
+             samme URL med ?nivaa={plan_key} → step 2 (faktura-skjema). -->
+        <div class="mb-6">
+            <h2 class="text-base font-semibold text-[#1A1A1A] mb-2"><?php _e('Velg deltakernivå', 'bimverdi'); ?></h2>
+            <p class="text-sm text-[#5A5A5A]">
+                <?php _e('Klikk «Velg» for nivået du vil oppgradere til. Du fyller inn faktura-info i neste steg.', 'bimverdi'); ?>
+            </p>
+        </div>
+        <?php
+        if (function_exists('bimverdi_pricing_table')) {
+            echo bimverdi_pricing_table(null, [
+                'cta_url_template'  => '/min-side/foretak/oppgrader/?nivaa={plan_key}',
+                'exclude_plan_keys' => ['gratis'],
+            ]);
+        }
+        ?>
+    <?php else: ?>
     <form method="post" action="<?php echo esc_url(home_url('/min-side/foretak/oppgrader/')); ?>" class="space-y-8">
         <?php wp_nonce_field('bimverdi_oppgradering_request', '_wpnonce'); ?>
         <input type="hidden" name="bimverdi_oppgradering_request" value="1">
         <input type="hidden" name="foretak_id" value="<?php echo esc_attr($foretak_id); ?>">
+        <input type="hidden" name="level" value="<?php echo esc_attr($selected_level); ?>">
 
         <!-- Honeypot (skjult, fanger bots) -->
         <div style="position:absolute;left:-9999px;" aria-hidden="true">
@@ -138,37 +156,16 @@ $nivaaer = [
             <input type="text" name="bv_website_url" id="bv_website_url" tabindex="-1" autocomplete="off">
         </div>
 
-        <!-- Nivå-velger -->
-        <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
-                Velg deltakernivå <span class="text-red-600">*</span>
-            </legend>
-            <p class="text-xs text-[#888888] mb-3">Du kan oppgradere senere hvis behovet endres</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <?php foreach ($nivaaer as $value => $type): ?>
-                    <label class="relative p-4 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5] flex flex-col">
-                        <div class="flex items-center gap-2 mb-2">
-                            <input type="radio" name="level" value="<?php echo esc_attr($value); ?>" required
-                                   class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E] flex-shrink-0">
-                            <span class="text-sm font-semibold text-[#1A1A1A]"><?php echo esc_html($type['label']); ?></span>
-                        </div>
-                        <ul class="space-y-1 flex-1">
-                            <?php foreach ($type['features'] as $feature): ?>
-                                <li class="text-xs text-[#5A5A5A] flex items-center gap-1.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
-                                    <?php echo esc_html($feature); ?>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                        <p class="mt-3 pt-3 border-t border-[#E5E0D5] text-xs text-[#888888]">
-                            <?php echo (int) $type['personer']; ?> personer · <?php echo esc_html($type['pris']); ?> kr/år
-                        </p>
-                    </label>
-                <?php endforeach; ?>
+        <!-- Step 2: bekreft valgt nivå + tilbud om endring. -->
+        <div class="flex items-start justify-between gap-4 p-4 bg-[#FFF8F5] border border-[#FF8B5E]/30 rounded-lg">
+            <div>
+                <p class="text-xs font-medium text-[#5A5A5A] uppercase tracking-wide mb-1"><?php _e('Valgt deltakernivå', 'bimverdi'); ?></p>
+                <p class="text-base font-semibold text-[#1A1A1A]"><?php echo esc_html($selected_label); ?></p>
             </div>
-            <p class="mt-2 text-xs text-[#888888]">Fakturering avtales separat med BIM Verdi etter godkjenning</p>
-            <p class="mt-1 text-xs text-[#888888]">Påmelding i 2. kvartal gir 25 % rabatt på årsavgift. Etter 1. juli: 50 % rabatt.</p>
-        </fieldset>
+            <a href="<?php echo esc_url(home_url('/min-side/foretak/oppgrader/')); ?>" class="text-sm text-[#FF8B5E] hover:underline whitespace-nowrap">
+                <?php _e('Endre nivå', 'bimverdi'); ?>
+            </a>
+        </div>
 
         <hr class="border-[#E5E0D5]">
 
@@ -258,6 +255,7 @@ $nivaaer = [
         </p>
 
     </form>
+    <?php endif; ?>
 
 </div>
 
