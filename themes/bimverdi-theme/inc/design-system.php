@@ -3073,6 +3073,15 @@ class BIM_Verdi_Design_System {
                 background: var(--color-bg);
                 font-size: 0.9375rem;
                 line-height: 1.5;
+                table-layout: fixed;
+            }
+
+            .bv-pricing__table--features {
+                margin-top: -1px;
+            }
+
+            .bv-pricing__col--highlight {
+                background: rgba(255, 139, 94, 0.04);
             }
 
             /* Header row med plan-titler */
@@ -3118,6 +3127,94 @@ class BIM_Verdi_Design_System {
 
             .bv-pricing__plan--highlight .bv-pricing__plan-title {
                 color: var(--color-primary-dark);
+            }
+
+            /* CTA-knapper i header */
+            .bv-pricing__cta {
+                display: block;
+                margin-top: 0.875rem;
+                padding: 0.625rem 0.875rem;
+                border-radius: 0.5rem;
+                font-size: 0.8125rem;
+                font-weight: 500;
+                text-align: center;
+                text-decoration: none;
+                white-space: nowrap;
+                transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+            }
+
+            a.bv-pricing__cta--primary,
+            a.bv-pricing__cta--primary:link,
+            a.bv-pricing__cta--primary:visited {
+                background: var(--color-primary);
+                color: #fff;
+                border: 1px solid var(--color-primary);
+            }
+
+            a.bv-pricing__cta--primary:hover,
+            a.bv-pricing__cta--primary:focus {
+                background: var(--color-primary-dark);
+                border-color: var(--color-primary-dark);
+                color: #fff;
+            }
+
+            a.bv-pricing__cta--secondary,
+            a.bv-pricing__cta--secondary:link,
+            a.bv-pricing__cta--secondary:visited {
+                background: transparent;
+                color: var(--color-text);
+                border: 1px solid var(--color-divider);
+            }
+
+            a.bv-pricing__cta--secondary:hover,
+            a.bv-pricing__cta--secondary:focus {
+                background: var(--color-bg-alt);
+                border-color: var(--color-text-secondary);
+                color: var(--color-text);
+            }
+
+            /* Expandable feature-seksjon */
+            .bv-pricing__toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                width: 100%;
+                margin: 0;
+                padding: 1rem 1.25rem;
+                background: var(--color-bg-alt);
+                border: 1px solid var(--color-divider);
+                border-radius: 0.5rem;
+                font-family: 'Inter', -apple-system, sans-serif;
+                font-size: 0.9375rem;
+                font-weight: 500;
+                color: var(--color-text);
+                cursor: pointer;
+                transition: background 0.15s ease, border-color 0.15s ease;
+            }
+
+            .bv-pricing__toggle:hover {
+                background: var(--color-bg-surface);
+                border-color: var(--color-text-secondary);
+            }
+
+            .bv-pricing__toggle-icon {
+                width: 16px;
+                height: 16px;
+                transition: transform 0.2s ease;
+                flex-shrink: 0;
+            }
+
+            .bv-pricing__toggle[aria-expanded="true"] .bv-pricing__toggle-icon {
+                transform: rotate(180deg);
+            }
+
+            .bv-pricing__features[hidden] {
+                display: none;
+            }
+
+            .bv-pricing__features {
+                margin-top: 0.5rem;
             }
 
             /* Rader */
@@ -3323,6 +3420,25 @@ class BIM_Verdi_Design_System {
                     alert.style.opacity = '0';
                     alert.style.transition = 'opacity 0.15s ease';
                     setTimeout(function() { alert.remove(); }, 150);
+                }
+            });
+        })();
+
+        /* BV Pricing — expandable feature-rader */
+        (function() {
+            document.addEventListener('click', function(e) {
+                var toggle = e.target.closest('.bv-pricing__toggle');
+                if (!toggle) return;
+                var targetId = toggle.getAttribute('aria-controls');
+                if (!targetId) return;
+                var target = document.getElementById(targetId);
+                if (!target) return;
+                var expanded = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                if (expanded) {
+                    target.setAttribute('hidden', '');
+                } else {
+                    target.removeAttribute('hidden');
                 }
             });
         })();

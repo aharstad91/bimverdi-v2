@@ -41,12 +41,15 @@ function bimverdi_pricing_table($data = null) {
     $header_rows = $data['header_rows'] ?? [];
     $groups      = $data['groups'] ?? [];
     $disclaimers = $data['disclaimers'] ?? [];
+    $features_id = 'bv-pricing-features-' . wp_unique_id();
+    $start_open  = !empty($data['start_open']);
 
     ob_start();
     ?>
-    <section class="bv-pricing not-prose" aria-label="Medlemskaps-priser">
+    <section class="bv-pricing not-prose" aria-label="Deltakeravgift og -nivå">
         <div class="bv-pricing__scroll">
-            <table class="bv-pricing__table">
+            <table class="bv-pricing__table bv-pricing__table--summary">
+                <?php echo bimverdi_pricing_colgroup($plans); ?>
                 <thead>
                     <tr>
                         <th scope="col" class="bv-pricing__corner"></th>
@@ -58,6 +61,14 @@ function bimverdi_pricing_table($data = null) {
                                 <span class="bv-pricing__plan-title"><?php echo esc_html($plan['plan_title']); ?></span>
                                 <?php if (!empty($plan['plan_highlight'])): ?>
                                     <span class="bv-pricing__plan-flag">Anbefalt</span>
+                                <?php endif; ?>
+                                <?php if (!empty($plan['cta_label']) && !empty($plan['cta_url'])): ?>
+                                    <a
+                                        class="bv-pricing__cta bv-pricing__cta--<?php echo !empty($plan['plan_highlight']) ? 'primary' : 'secondary'; ?>"
+                                        href="<?php echo esc_url(bimverdi_pricing_resolve_url($plan['cta_url'])); ?>"
+                                    >
+                                        <?php echo esc_html($plan['cta_label']); ?>
+                                    </a>
                                 <?php endif; ?>
                             </th>
                         <?php endforeach; ?>
@@ -80,34 +91,59 @@ function bimverdi_pricing_table($data = null) {
                             <?php endforeach; ?>
                         </tr>
                     <?php endforeach; ?>
-
-                    <?php foreach ($groups as $group): ?>
-                        <tr class="bv-pricing__group-header">
-                            <th
-                                scope="colgroup"
-                                colspan="<?php echo (int) (count($plans) + 1); ?>"
-                                class="bv-pricing__group-title"
-                            >
-                                <?php echo esc_html($group['group_title']); ?>
-                            </th>
-                        </tr>
-                        <?php foreach (($group['rows'] ?? []) as $row): ?>
-                            <tr class="bv-pricing__feature-row">
-                                <th scope="row" class="bv-pricing__label">
-                                    <?php echo esc_html($row['label']); ?>
-                                </th>
-                                <?php foreach ($plans as $plan): ?>
-                                    <?php $value = bimverdi_pricing_value_for_plan($row['values'] ?? [], $plan['plan_key']); ?>
-                                    <td class="bv-pricing__cell<?php echo !empty($plan['plan_highlight']) ? ' bv-pricing__cell--highlight' : ''; ?>">
-                                        <?php echo bimverdi_pricing_render_cell($value); ?>
-                                    </td>
-                                <?php endforeach; ?>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
+
+        <?php if (!empty($groups)): ?>
+            <button
+                type="button"
+                class="bv-pricing__toggle"
+                aria-expanded="<?php echo $start_open ? 'true' : 'false'; ?>"
+                aria-controls="<?php echo esc_attr($features_id); ?>"
+            >
+                <span class="bv-pricing__toggle-label">Klikk her for å se hva som inngår i de ulike deltakernivåene</span>
+                <svg class="bv-pricing__toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+
+            <div
+                id="<?php echo esc_attr($features_id); ?>"
+                class="bv-pricing__features"
+                <?php echo $start_open ? '' : 'hidden'; ?>
+            >
+                <div class="bv-pricing__scroll">
+                    <table class="bv-pricing__table bv-pricing__table--features">
+                        <?php echo bimverdi_pricing_colgroup($plans); ?>
+                        <tbody>
+                            <?php foreach ($groups as $group): ?>
+                                <tr class="bv-pricing__group-header">
+                                    <th
+                                        scope="colgroup"
+                                        colspan="<?php echo (int) (count($plans) + 1); ?>"
+                                        class="bv-pricing__group-title"
+                                    >
+                                        <?php echo esc_html($group['group_title']); ?>
+                                    </th>
+                                </tr>
+                                <?php foreach (($group['rows'] ?? []) as $row): ?>
+                                    <tr class="bv-pricing__feature-row">
+                                        <th scope="row" class="bv-pricing__label">
+                                            <?php echo esc_html($row['label']); ?>
+                                        </th>
+                                        <?php foreach ($plans as $plan): ?>
+                                            <?php $value = bimverdi_pricing_value_for_plan($row['values'] ?? [], $plan['plan_key']); ?>
+                                            <td class="bv-pricing__cell<?php echo !empty($plan['plan_highlight']) ? ' bv-pricing__cell--highlight' : ''; ?>">
+                                                <?php echo bimverdi_pricing_render_cell($value); ?>
+                                            </td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
 
         <?php if (!empty($disclaimers)): ?>
             <ul class="bv-pricing__disclaimers" role="list">
@@ -122,6 +158,47 @@ function bimverdi_pricing_table($data = null) {
     </section>
     <?php
     return (string) ob_get_clean();
+}
+
+/**
+ * Løs CTA-URL: relative URLer (som starter med "/") prepenes med home_url()
+ * så de fungerer både i lokal MAMP-subfolder og på prod-rot.
+ *
+ * @param string $url
+ * @return string
+ */
+function bimverdi_pricing_resolve_url(string $url): string {
+    $url = trim($url);
+    if ($url === '' || preg_match('#^https?://#i', $url) || str_starts_with($url, '#')) {
+        return $url;
+    }
+    if (str_starts_with($url, '/')) {
+        return home_url($url);
+    }
+    return $url;
+}
+
+/**
+ * Genererer en <colgroup> som deles mellom topp-tabellen og features-tabellen
+ * så kolonnene har samme bredde i begge.
+ *
+ * @param array $plans
+ * @return string
+ */
+function bimverdi_pricing_colgroup(array $plans): string {
+    $count = count($plans);
+    if ($count === 0) {
+        return '';
+    }
+    $plan_width = round(72 / $count, 2);
+    $html = '<colgroup>';
+    $html .= '<col style="width:28%">';
+    foreach ($plans as $plan) {
+        $highlight = !empty($plan['plan_highlight']) ? ' class="bv-pricing__col--highlight"' : '';
+        $html .= '<col' . $highlight . ' style="width:' . $plan_width . '%">';
+    }
+    $html .= '</colgroup>';
+    return $html;
 }
 
 /**

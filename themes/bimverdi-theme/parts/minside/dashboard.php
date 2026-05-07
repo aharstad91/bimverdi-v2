@@ -681,61 +681,19 @@ if (!$company && $bruker_foretak) : ?>
 
         <hr class="border-[#D6D1C6]">
 
-        <!-- Section B: What foretak unlocks -->
+        <!-- Section B: Pricing-tabell (deltakeravgift og -nivå) -->
         <div class="my-6">
             <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
-                <?php _e('Tilgjengelig for ansatte i foretak som er betalende deltakere, prosjektdeltakere og partnere', 'bimverdi'); ?>
+                <?php _e('Deltakeravgift og -nivå', 'bimverdi'); ?>
             </h4>
             <p class="text-xs text-[#5A5A5A] mb-4">
-                <?php _e('Som betalende deltaker får du også tilgang til tjenestene under. Velg «Registrer foretak» under for å sjekke om din arbeidsgiver allerede er deltaker — eller om du vil oppgradere til betalende deltaker.', 'bimverdi'); ?>
+                <?php _e('Sammenlign nivåene under og velg det som passer for deg eller arbeidsgiveren din.', 'bimverdi'); ?>
             </p>
-            <div class="space-y-3">
-                <div class="flex items-center gap-3 p-3">
-                    <span class="flex-shrink-0 text-[#D6D1C6]">
-                        <?php echo bimverdi_icon('wrench', 20); ?>
-                    </span>
-                    <div>
-                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Verktøyregistrering', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#888888]"><?php _e('Registrer og synliggjør verktøyene dine i BIM-katalogen', 'bimverdi'); ?></p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 p-3">
-                    <span class="flex-shrink-0 text-[#D6D1C6]">
-                        <?php echo bimverdi_icon('users', 20); ?>
-                    </span>
-                    <div>
-                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Temagrupper og lukkede møter', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#888888]"><?php _e('Delta i faglige temagrupper med bransjekollegaer', 'bimverdi'); ?></p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 p-3">
-                    <span class="flex-shrink-0 text-[#D6D1C6]">
-                        <?php echo bimverdi_icon('calendar', 20); ?>
-                    </span>
-                    <div>
-                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Lukkede arrangement og opptak', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#888888]"><?php _e('Tilgang til lukkede arrangement og opptak av tidligere arrangement', 'bimverdi'); ?></p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 p-3">
-                    <span class="flex-shrink-0 text-[#D6D1C6]">
-                        <?php echo bimverdi_icon('book-open', 20); ?>
-                    </span>
-                    <div>
-                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Kunnskapskilder', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#888888]"><?php _e('Tilgang til søk i kunnskapsbasen med åpne kilder over krav, forskrifter, standarder, veiledere, verktøy, artikler, arrangement', 'bimverdi'); ?></p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 p-3">
-                    <span class="flex-shrink-0 text-[#D6D1C6]">
-                        <?php echo bimverdi_icon('message-circle', 20); ?>
-                    </span>
-                    <div>
-                        <span class="text-sm font-medium text-[#5A5A5A]"><?php _e('Rådgivning og prosjekter', 'bimverdi'); ?></span>
-                        <p class="text-xs text-[#888888]"><?php _e('Personlig rådgivning og deltakelse i prosjektkonsortier', 'bimverdi'); ?></p>
-                    </div>
-                </div>
-            </div>
+            <?php
+            if (function_exists('bimverdi_render_pattern')) {
+                echo bimverdi_render_pattern('pricing-tabell');
+            }
+            ?>
         </div>
 
         <hr class="border-[#D6D1C6]">

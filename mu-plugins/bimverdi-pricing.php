@@ -29,8 +29,8 @@ add_action('acf/init', function () {
     }
 
     acf_add_options_page([
-        'page_title'  => 'Priser & medlemskap',
-        'menu_title'  => 'Priser & medlemskap',
+        'page_title'  => 'Deltakeravgift og -nivå',
+        'menu_title'  => 'Deltakeravgift',
         'menu_slug'   => 'bimverdi-pricing',
         'capability'  => 'manage_options',
         'parent_slug' => 'options-general.php',
@@ -59,7 +59,7 @@ function bimverdi_pricing_options_help_notice(): void {
         ? get_edit_post_link($pattern->ID)
         : admin_url('edit.php?post_type=wp_block');
     $pattern_label = $pattern
-        ? __('Rediger Synced Pattern «Pricing-tabell»', 'bimverdi')
+        ? __('Rediger Synced Pattern «Deltakeravgift-tabell»', 'bimverdi')
         : __('Opprett Synced Pattern', 'bimverdi');
 
     ?>
@@ -73,7 +73,7 @@ function bimverdi_pricing_options_help_notice(): void {
                 <?php
                 printf(
                     /* translators: %s: link to Synced Pattern editor */
-                    esc_html__('For å vise tabellen på en side, sett inn blokken «Pricing-tabell» — eller bruk %s for å redigere den sentrale plasseringen.', 'bimverdi'),
+                    esc_html__('For å vise tabellen på en side, sett inn blokken «Deltakeravgift-tabell» — eller bruk %s for å redigere den sentrale plasseringen.', 'bimverdi'),
                     '<a href="' . esc_url($pattern_link) . '">' . esc_html($pattern_label) . '</a>'
                 );
                 ?>
@@ -100,7 +100,7 @@ function bimverdi_register_pricing_fields() {
 
     acf_add_local_field_group([
         'key'      => 'group_bv_pricing',
-        'title'    => 'Pricing-tabell',
+        'title'    => 'Deltakeravgift-tabell',
         'fields'   => [
             // -----------------------------------------------------------------
             // PLANER (4 stk: gratis, deltaker, prosjektdeltaker, partner)
@@ -110,8 +110,8 @@ function bimverdi_register_pricing_fields() {
                 'label'        => 'Introduksjon',
                 'name'         => 'pricing_intro',
                 'type'         => 'message',
-                'message'      => '<strong>Tabellen vises i onboarding og på offentlig pricing-side.</strong><br>'
-                                . 'Endringer her slår igjennom alle steder pricing-tabellen vises. '
+                'message'      => '<strong>Tabellen vises i onboarding og på offentlig deltakeravgift-side.</strong><br>'
+                                . 'Endringer her slår igjennom alle steder tabellen vises. '
                                 . 'Bruk «✓» for inkludert, la feltet stå tomt for ikke inkludert, '
                                 . 'eller skriv egen tekst (f.eks. «kommer», «1/uke før 1.7.26»).',
             ],
@@ -120,7 +120,7 @@ function bimverdi_register_pricing_fields() {
                 'label'        => 'Planer (kolonner)',
                 'name'         => 'pricing_plans',
                 'type'         => 'repeater',
-                'instructions' => 'De 4 medlemskaps-nivåene som vises som kolonner. Rekkefølgen her bestemmer rekkefølgen i tabellen.',
+                'instructions' => 'De 4 deltakernivåene som vises som kolonner. Rekkefølgen her bestemmer rekkefølgen i tabellen.',
                 'min'          => 1,
                 'max'          => 6,
                 'layout'       => 'table',
@@ -148,6 +148,20 @@ function bimverdi_register_pricing_fields() {
                         'type'     => 'true_false',
                         'instructions' => 'Marker som anbefalt plan (visuell uthevelse).',
                         'ui'       => 1,
+                    ],
+                    [
+                        'key'      => 'field_bv_pricing_plan_cta_label',
+                        'label'    => 'CTA-tekst',
+                        'name'     => 'cta_label',
+                        'type'     => 'text',
+                        'instructions' => 'Knapp-tekst som vises i tabellen, f.eks. «Velg Deltaker» eller «Bli gratisbruker». La stå tom for å skjule knappen.',
+                    ],
+                    [
+                        'key'      => 'field_bv_pricing_plan_cta_url',
+                        'label'    => 'CTA-URL',
+                        'name'     => 'cta_url',
+                        'type'     => 'text',
+                        'instructions' => 'Hvor knappen skal lede. F.eks. «/min-side/foretak/registrer/?nivaa=deltaker». Relative URLer fungerer.',
                     ],
                 ],
             ],
@@ -345,12 +359,7 @@ function bimverdi_seed_pricing_data() {
     }
 
     // Planer (4 kolonner)
-    update_field('pricing_plans', [
-        ['plan_key' => 'gratis',           'plan_title' => 'Gratisbruker',      'plan_highlight' => false],
-        ['plan_key' => 'deltaker',         'plan_title' => 'Deltaker',          'plan_highlight' => true],
-        ['plan_key' => 'prosjektdeltaker', 'plan_title' => 'Prosjektdeltaker',  'plan_highlight' => false],
-        ['plan_key' => 'partner',          'plan_title' => 'Partner',           'plan_highlight' => false],
-    ], 'option');
+    update_field('pricing_plans', bimverdi_pricing_default_plans(), 'option');
 
     // Header-rader
     update_field('pricing_header_rows', [
@@ -507,6 +516,96 @@ function bimverdi_seed_pricing_data() {
 }
 
 /**
+ * Default plans-data (brukt av seed + backfill).
+ *
+ * @return array
+ */
+function bimverdi_pricing_default_plans(): array {
+    return [
+        [
+            'plan_key'       => 'gratis',
+            'plan_title'     => 'Gratisbruker',
+            'plan_highlight' => false,
+            'cta_label'      => 'Bli gratisbruker',
+            'cta_url'        => '/min-side/foretak/registrer/?nivaa=gratis',
+        ],
+        [
+            'plan_key'       => 'deltaker',
+            'plan_title'     => 'Deltaker',
+            'plan_highlight' => true,
+            'cta_label'      => 'Velg Deltaker',
+            'cta_url'        => '/min-side/foretak/registrer/?nivaa=deltaker',
+        ],
+        [
+            'plan_key'       => 'prosjektdeltaker',
+            'plan_title'     => 'Prosjektdeltaker',
+            'plan_highlight' => false,
+            'cta_label'      => 'Velg Prosjektdeltaker',
+            'cta_url'        => '/min-side/foretak/registrer/?nivaa=prosjektdeltaker',
+        ],
+        [
+            'plan_key'       => 'partner',
+            'plan_title'     => 'Partner',
+            'plan_highlight' => false,
+            'cta_label'      => 'Velg Partner',
+            'cta_url'        => '/min-side/foretak/registrer/?nivaa=partner',
+        ],
+    ];
+}
+
+/**
+ * Backfill CTA-felter på planer hvis de mangler. Kjøres etter at v1-seed
+ * er kjørt — beskyttet av eget v2-flagg så den ikke overskriver Bårds
+ * manuelle endringer.
+ */
+add_action('acf/init', 'bimverdi_seed_pricing_data_v2', 25);
+
+function bimverdi_seed_pricing_data_v2(): void {
+    if (get_option('bimverdi_pricing_seeded_v2')) {
+        return;
+    }
+
+    if (!function_exists('get_field') || !function_exists('update_field')) {
+        return;
+    }
+
+    $current_plans = get_field('pricing_plans', 'option');
+    if (!$current_plans) {
+        return;
+    }
+
+    $defaults = bimverdi_pricing_default_plans();
+    $defaults_by_key = [];
+    foreach ($defaults as $d) {
+        $defaults_by_key[$d['plan_key']] = $d;
+    }
+
+    $changed = false;
+    foreach ($current_plans as &$plan) {
+        $key = $plan['plan_key'] ?? '';
+        $default = $defaults_by_key[$key] ?? null;
+        if (!$default) {
+            continue;
+        }
+        if (empty($plan['cta_label']) && !empty($default['cta_label'])) {
+            $plan['cta_label'] = $default['cta_label'];
+            $changed = true;
+        }
+        if (empty($plan['cta_url']) && !empty($default['cta_url'])) {
+            $plan['cta_url'] = $default['cta_url'];
+            $changed = true;
+        }
+    }
+    unset($plan);
+
+    if ($changed) {
+        update_field('pricing_plans', $current_plans, 'option');
+    }
+
+    update_option('bimverdi_pricing_seeded_v2', current_time('mysql'));
+}
+
+/**
  * Helper: bygger values-array for én feature-rad fra en plan_key => value map.
  *
  * @param array $map ['gratis' => '✓', 'deltaker' => '', ...]
@@ -562,7 +661,7 @@ function bimverdi_seed_pricing_pattern(): void {
     $post_id = wp_insert_post([
         'post_type'    => 'wp_block',
         'post_status'  => 'publish',
-        'post_title'   => 'Pricing-tabell',
+        'post_title'   => 'Deltakeravgift-tabell',
         'post_name'    => 'pricing-tabell',
         'post_content' => "<!-- wp:acf/bv-pricing-table /-->",
     ], true);
@@ -599,12 +698,12 @@ function bimverdi_register_pricing_block() {
 
     acf_register_block_type([
         'name'            => 'bv-pricing-table',
-        'title'           => __('Pricing-tabell', 'bimverdi'),
-        'description'     => __('Medlemskaps-tabell med Gratis / Deltaker / Prosjektdeltaker / Partner. Data fra Innstillinger → Priser & medlemskap.', 'bimverdi'),
+        'title'           => __('Deltakeravgift-tabell', 'bimverdi'),
+        'description'     => __('Tabell over deltakernivåer: Gratis / Deltaker / Prosjektdeltaker / Partner. Data fra Innstillinger → Deltakeravgift.', 'bimverdi'),
         'render_callback' => 'bimverdi_render_pricing_block',
         'category'        => 'bimverdi',
         'icon'            => 'list-view',
-        'keywords'        => ['pricing', 'priser', 'medlemskap', 'tabell', 'deltaker'],
+        'keywords'        => ['deltakeravgift', 'deltakernivå', 'priser', 'tabell', 'deltaker'],
         'mode'            => 'preview',
         'supports'        => [
             'align'  => ['wide', 'full'],
