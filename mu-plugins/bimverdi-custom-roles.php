@@ -71,34 +71,33 @@ function bimverdi_register_custom_roles() {
 }
 
 /**
- * Sjekk om bruker er tilknyttet et foretak
+ * Sjekk om bruker er tilknyttet et foretak.
+ *
+ * Returnerer foretak-id (int) eller false. Ingen post-status-filtering —
+ * funksjonen er en ren data-lookup. Bruk bimverdi_user_has_company() når
+ * UI-synlighet krever publish/pending/draft-status.
+ *
+ * Delegerer til BIMVerdi_Access_Control::lookup_company_id() for å holde
+ * meta-key-prioritet konsistent med user_has_company og get_user_company.
  */
 function bimverdi_user_has_foretak($user_id = null) {
+    if (class_exists('BIMVerdi_Access_Control')) {
+        return BIMVerdi_Access_Control::lookup_company_id($user_id);
+    }
+
+    // Defensiv fallback hvis access-control ikke er lastet ennå.
     if (!$user_id) {
         $user_id = get_current_user_id();
     }
-    
-    // Sjekk via bim_verdi_company_id
-    $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
-    if (!empty($company_id)) {
-        return $company_id;
-    }
-    
-    // Sjekk via bimverdi_company_id (ny standard)
     $company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
-    if (!empty($company_id)) {
-        return $company_id;
+    if (empty($company_id)) {
+        $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
     }
-    
-    // Sjekk via ACF tilknyttet_foretak
-    if (function_exists('get_field')) {
-        $foretak = get_field('tilknyttet_foretak', 'user_' . $user_id);
-        if ($foretak) {
-            return is_object($foretak) ? $foretak->ID : $foretak;
-        }
+    if (empty($company_id) && function_exists('get_field')) {
+        $acf = get_field('tilknyttet_foretak', 'user_' . $user_id);
+        $company_id = is_object($acf) ? $acf->ID : $acf;
     }
-    
-    return false;
+    return empty($company_id) ? false : (int) $company_id;
 }
 
 /**

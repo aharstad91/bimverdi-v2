@@ -128,38 +128,73 @@ class BIMVerdi_Access_Control {
     }
     
     /**
+     * Slå opp foretak-id som er linket til en bruker via user-meta.
+     *
+     * Single source of truth for «hvor finner vi foretak-id for en bruker».
+     * Brukes av user_has_company, get_user_company og (gjennom wrapper)
+     * bimverdi_user_has_foretak. Holder prioritets-rekkefølgen konsistent
+     * uavhengig av kall-site.
+     *
+     * Prioritet (matcher migrasjons-historie):
+     *   1. bimverdi_company_id (ny standard)
+     *   2. bim_verdi_company_id (legacy fallback)
+     *   3. ACF-felt tilknyttet_foretak
+     *
+     * Returner kun raw ID — ikke status-sjekk her, så data-laget kan brukes
+     * uavhengig av om foretaket er publisert eller draft.
+     *
+     * @param int|null $user_id
+     * @return int|false Foretak-ID eller false hvis ingen lenke finnes.
+     */
+    public static function lookup_company_id($user_id = null) {
+        if (!$user_id) {
+            $user_id = get_current_user_id();
+        }
+        if (!$user_id) {
+            return false;
+        }
+
+        $company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
+        if (empty($company_id)) {
+            $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
+        }
+        if (empty($company_id) && function_exists('get_field')) {
+            $acf = get_field('tilknyttet_foretak', 'user_' . $user_id);
+            $company_id = is_object($acf) ? $acf->ID : $acf;
+        }
+
+        return empty($company_id) ? false : (int) $company_id;
+    }
+
+    /**
+     * Statuser som regnes som «brukeren har foretak» i UI-sammenheng.
+     *
+     * - publish: aktivt, normalt foretak
+     * - pending: under manuell godkjenning av Bård
+     * - draft: foretaket eksisterer men er ikke publisert (f.eks. midt i
+     *   redigering, eller satt manuelt). Brukeren ER fortsatt koblet til
+     *   det og bør se foretaks-meny — derfor inkludert.
+     *
+     * Eksplisitt ute: trash, auto-draft, inherit (rev/attachments).
+     */
+    const COMPANY_VISIBLE_STATUSES = array('publish', 'pending', 'draft');
+
+    /**
      * Check if user has a company linked
-     * 
+     *
      * @param int|null $user_id
      * @return bool
      */
     public static function user_has_company($user_id = null) {
-        if (!$user_id) {
-            $user_id = get_current_user_id();
-        }
-        
-        if (!$user_id) {
+        $company_id = self::lookup_company_id($user_id);
+        if (!$company_id) {
             return false;
         }
-        
-        // Try new meta key first, then legacy key, then ACF field
-        $company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
-        
-        if (empty($company_id)) {
-            $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true); // Legacy fallback
-        }
-        
-        if (empty($company_id) && function_exists('get_field')) {
-            $company_id = get_field('tilknyttet_foretak', 'user_' . $user_id); // ACF fallback
-        }
-        
-        if (empty($company_id)) {
-            return false;
-        }
-        
-        // Verify company exists (accept publish or pending status)
+
         $company = get_post($company_id);
-        return $company && $company->post_type === 'foretak' && in_array($company->post_status, array('publish', 'pending'));
+        return $company
+            && $company->post_type === 'foretak'
+            && in_array($company->post_status, self::COMPANY_VISIBLE_STATUSES, true);
     }
     
     /**
@@ -215,28 +250,21 @@ class BIMVerdi_Access_Control {
         if (!$user_id) {
             $user_id = get_current_user_id();
         }
-        
+
         if (!self::user_has_company($user_id)) {
             return false;
         }
-        
-        // Try new meta key first, then legacy key, then ACF field
-        $company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
-        
-        if (empty($company_id)) {
-            $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true); // Legacy fallback
+
+        $company_id = self::lookup_company_id($user_id);
+        if (!$company_id) {
+            return false;
         }
-        
-        if (empty($company_id) && function_exists('get_field')) {
-            $company_id = get_field('tilknyttet_foretak', 'user_' . $user_id); // ACF fallback
-        }
-        
+
         $company = get_post($company_id);
-        
         if (!$company) {
             return false;
         }
-        
+
         return array(
             'id' => $company->ID,
             'name' => $company->post_title,
