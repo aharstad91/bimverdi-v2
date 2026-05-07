@@ -3129,13 +3129,26 @@ class BIM_Verdi_Design_System {
                 color: var(--color-primary-dark);
             }
 
-            /* CTA-knapper i header */
+            /* CTA-rad nederst i topp-tabell */
+            .bv-pricing__cta-row td {
+                padding-top: 1.25rem !important;
+                padding-bottom: 1.25rem !important;
+                border-bottom: none !important;
+            }
+
+            .bv-pricing__cell--cta {
+                vertical-align: middle;
+            }
+
+            .bv-pricing__label--blank {
+                border-bottom: none !important;
+            }
+
             .bv-pricing__cta {
                 display: block;
-                margin-top: 0.875rem;
                 padding: 0.625rem 0.875rem;
                 border-radius: 0.5rem;
-                font-size: 0.8125rem;
+                font-size: 0.875rem;
                 font-weight: 500;
                 text-align: center;
                 text-decoration: none;

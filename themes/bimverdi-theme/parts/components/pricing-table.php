@@ -62,14 +62,6 @@ function bimverdi_pricing_table($data = null) {
                                 <?php if (!empty($plan['plan_highlight'])): ?>
                                     <span class="bv-pricing__plan-flag">Anbefalt</span>
                                 <?php endif; ?>
-                                <?php if (!empty($plan['cta_label']) && !empty($plan['cta_url'])): ?>
-                                    <a
-                                        class="bv-pricing__cta bv-pricing__cta--<?php echo !empty($plan['plan_highlight']) ? 'primary' : 'secondary'; ?>"
-                                        href="<?php echo esc_url(bimverdi_pricing_resolve_url($plan['cta_url'])); ?>"
-                                    >
-                                        <?php echo esc_html($plan['cta_label']); ?>
-                                    </a>
-                                <?php endif; ?>
                             </th>
                         <?php endforeach; ?>
                     </tr>
@@ -91,6 +83,34 @@ function bimverdi_pricing_table($data = null) {
                             <?php endforeach; ?>
                         </tr>
                     <?php endforeach; ?>
+
+                    <?php
+                    $has_any_cta = false;
+                    foreach ($plans as $plan) {
+                        if (!empty($plan['cta_label']) && !empty($plan['cta_url'])) {
+                            $has_any_cta = true;
+                            break;
+                        }
+                    }
+                    ?>
+                    <?php if ($has_any_cta): ?>
+                        <tr class="bv-pricing__cta-row">
+                            <th scope="row" class="bv-pricing__label bv-pricing__label--blank"></th>
+                            <?php foreach ($plans as $plan): ?>
+                                <td class="bv-pricing__cell bv-pricing__cell--cta<?php echo !empty($plan['plan_highlight']) ? ' bv-pricing__cell--highlight' : ''; ?>">
+                                    <?php if (!empty($plan['cta_label']) && !empty($plan['cta_url'])): ?>
+                                        <a
+                                            class="bv-pricing__cta bv-pricing__cta--<?php echo !empty($plan['plan_highlight']) ? 'primary' : 'secondary'; ?>"
+                                            href="<?php echo esc_url(bimverdi_pricing_resolve_url($plan['cta_url'])); ?>"
+                                            aria-label="<?php echo esc_attr(sprintf(__('%s — %s', 'bimverdi'), $plan['cta_label'], $plan['plan_title'])); ?>"
+                                        >
+                                            <?php echo esc_html($plan['cta_label']); ?>
+                                        </a>
+                                    <?php endif; ?>
+                                </td>
+                            <?php endforeach; ?>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

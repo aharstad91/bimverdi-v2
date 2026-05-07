@@ -526,31 +526,75 @@ function bimverdi_pricing_default_plans(): array {
             'plan_key'       => 'gratis',
             'plan_title'     => 'Gratisbruker',
             'plan_highlight' => false,
-            'cta_label'      => 'Bli gratisbruker',
+            'cta_label'      => 'Velg',
             'cta_url'        => '/min-side/foretak/registrer/?nivaa=gratis',
         ],
         [
             'plan_key'       => 'deltaker',
             'plan_title'     => 'Deltaker',
             'plan_highlight' => true,
-            'cta_label'      => 'Velg Deltaker',
+            'cta_label'      => 'Velg',
             'cta_url'        => '/min-side/foretak/registrer/?nivaa=deltaker',
         ],
         [
             'plan_key'       => 'prosjektdeltaker',
             'plan_title'     => 'Prosjektdeltaker',
             'plan_highlight' => false,
-            'cta_label'      => 'Velg Prosjektdeltaker',
+            'cta_label'      => 'Velg',
             'cta_url'        => '/min-side/foretak/registrer/?nivaa=prosjektdeltaker',
         ],
         [
             'plan_key'       => 'partner',
             'plan_title'     => 'Partner',
             'plan_highlight' => false,
-            'cta_label'      => 'Velg Partner',
+            'cta_label'      => 'Velg',
             'cta_url'        => '/min-side/foretak/registrer/?nivaa=partner',
         ],
     ];
+}
+
+/**
+ * Backfill v3: bytt gamle CTA-labels til generisk "Velg". Beskytter
+ * Bård-redigerte verdier ved å bare overskrive hvis nåværende label
+ * matcher en av v2-defaultene.
+ */
+add_action('acf/init', 'bimverdi_seed_pricing_data_v3', 26);
+
+function bimverdi_seed_pricing_data_v3(): void {
+    if (get_option('bimverdi_pricing_seeded_v3')) {
+        return;
+    }
+
+    if (!function_exists('get_field') || !function_exists('update_field')) {
+        return;
+    }
+
+    $current_plans = get_field('pricing_plans', 'option');
+    if (!$current_plans) {
+        return;
+    }
+
+    $old_labels = [
+        'Bli gratisbruker',
+        'Velg Deltaker',
+        'Velg Prosjektdeltaker',
+        'Velg Partner',
+    ];
+
+    $changed = false;
+    foreach ($current_plans as &$plan) {
+        if (in_array(($plan['cta_label'] ?? ''), $old_labels, true)) {
+            $plan['cta_label'] = 'Velg';
+            $changed = true;
+        }
+    }
+    unset($plan);
+
+    if ($changed) {
+        update_field('pricing_plans', $current_plans, 'option');
+    }
+
+    update_option('bimverdi_pricing_seeded_v3', current_time('mysql'));
 }
 
 /**
