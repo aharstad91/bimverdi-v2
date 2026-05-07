@@ -109,10 +109,12 @@ add_action('init', function () {
         exit;
     }
 
-    // Check if org number is already registered (needed for both gratis and paid)
+    // Check if org number is already registered (needed for both gratis and paid).
+    // Inkluderer 'pending' så ikke to brukere kan ha registrering på samme orgnr
+    // i kø samtidig (T5/D — admin-godkjennings-flyt 2026-05-07).
     $existing_foretak = get_posts([
         'post_type'   => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
-        'post_status' => 'publish',
+        'post_status' => ['publish', 'pending'],
         'meta_key'    => 'organisasjonsnummer',
         'meta_value'  => $organisasjonsnummer,
         'numberposts' => 1,
@@ -122,12 +124,15 @@ add_action('init', function () {
         exit;
     }
 
-    // --- GRATIS PATH: minimal foretak-opprettelse, early return ---
+    // --- GRATIS PATH: pending-foretak, venter på admin-godkjenning ---
+    // Endret 2026-05-07 (T5/D): registrering skaper ikke lenger publisert foretak.
+    // Bruker-aktivering (sett company_id, sett rolle, send velkomst-e-post) kjøres
+    // i transition-hook ved publish via bimverdi-foretak-pending.php.
     if ($deltakertype === 'gratis') {
         $foretak_id = wp_insert_post([
             'post_type'   => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
             'post_title'  => $bedriftsnavn,
-            'post_status' => 'publish',
+            'post_status' => 'pending',
             'post_author' => $user_id,
         ]);
 
@@ -142,34 +147,35 @@ add_action('init', function () {
             update_field('bv_rolle', 'Ikke deltaker', $foretak_id);
         }
 
-        update_user_meta($user_id, 'bimverdi_company_id', $foretak_id);
-        update_user_meta($user_id, 'bim_verdi_company_id', $foretak_id);
-        update_user_meta($user_id, 'bimverdi_account_type', 'foretak');
-        if (function_exists('update_field')) {
-            update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user_id);
-        }
+        // Lagre deltakertype som post-meta så transition-hook kan lese den
+        // ved godkjenning. Bruker-meta og rolle settes IKKE før godkjenning.
+        update_post_meta($foretak_id, '_bv_pending_deltakertype', 'gratis');
 
-        delete_user_meta($user_id, 'bimverdi_bruker_foretak_orgnr');
-        delete_user_meta($user_id, 'bimverdi_bruker_foretak_navn');
-        delete_user_meta($user_id, 'bimverdi_bruker_foretak_source');
-
-        // Send admin-kopi til post@bimverdi.no (SuperOffice-dokumentasjon, også for gratis)
+        // Send admin-varsel om ventende godkjenning
         if (function_exists('bimverdi_send_admin_notification_email')) {
             $current_user = wp_get_current_user();
             $admin_url_foretak = admin_url('post.php?post=' . $foretak_id . '&action=edit');
-            $admin_subject = sprintf('Nytt gratisforetak registrert: %s', $bedriftsnavn);
+            $admin_subject = sprintf('VENTER PÅ GODKJENNING — gratisforetak: %s', $bedriftsnavn);
             $admin_body = sprintf(
-                '<p>Et nytt gratisforetak (Ikke deltaker) er registrert:</p>
+                '<p>En ny gratisforetak-registrering venter på din godkjenning.</p>
+                <p style="background:#FFF8F5;padding:12px 16px;border-left:4px solid #FF8B5E;font-size:13px;">
+                    <strong>Sjekk før godkjenning:</strong> Stemmer brukerens e-postdomene med foretaket?
+                    Er dette en reell registrering?
+                </p>
                 <table style="border-collapse:collapse;font-size:14px;">
                     <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
                     <tr><td style="padding:4px 12px 4px 0;color:#666;">Org.nr</td><td>%s</td></tr>
-                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Hovedkontakt</td><td>%s &lt;%s&gt;</td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#666;">Registrert av</td><td>%s &lt;%s&gt;</td></tr>
                     <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
                 </table>
                 <p style="margin-top:24px;">
                     <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
-                        Åpne foretaket i wp-admin
+                        Vurder forespørselen i wp-admin
                     </a>
+                </p>
+                <p style="font-size:13px;color:#666;margin-top:16px;">
+                    Endre status til «Publisert» for å godkjenne, eller flytt til papirkurv for å avvise.
+                    Brukeren får automatisk e-post i begge tilfeller.
                 </p>%s',
                 esc_html($bedriftsnavn),
                 esc_html($organisasjonsnummer),
@@ -182,7 +188,10 @@ add_action('init', function () {
             bimverdi_send_admin_notification_email($admin_subject, $admin_body);
         }
 
-        wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
+        // Clear rate limit on success
+        delete_transient($rate_key);
+
+        wp_redirect(add_query_arg('pending', '1', home_url('/min-side/')));
         exit;
     }
 
@@ -304,12 +313,14 @@ add_action('init', function () {
         }
     }
 
-    // --- Create foretak post ---
+    // --- Create foretak post (pending — venter på admin-godkjenning) ---
+    // Endret 2026-05-07 (T5/D): registreringer skaper ikke lenger publisert foretak.
+    // Bruker-aktivering kjøres i transition-hook ved publish.
     $post_data = [
         'post_type'    => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
         'post_title'   => $bedriftsnavn,
         'post_content' => $beskrivelse,
-        'post_status'  => 'publish',
+        'post_status'  => 'pending',
         'post_author'  => $user_id,
     ];
 
@@ -320,6 +331,10 @@ add_action('init', function () {
         wp_redirect(add_query_arg('bv_error', 'system', $redirect_error));
         exit;
     }
+
+    // Lagre deltakertype som post-meta så transition-hook kan lese den
+    // ved godkjenning. Bruker-aktivering er ikke gjort ennå.
+    update_post_meta($foretak_id, '_bv_pending_deltakertype', $deltakertype);
 
     // --- Set ACF fields ---
     if (function_exists('update_field')) {
@@ -362,67 +377,44 @@ add_action('init', function () {
         }
     }
 
-    // --- Link user to foretak ---
-    update_user_meta($user_id, 'bimverdi_company_id', $foretak_id);
-    update_user_meta($user_id, 'bim_verdi_company_id', $foretak_id);
-    update_user_meta($user_id, 'bimverdi_account_type', 'foretak');
-
-    // Set user as hovedkontakt role if they have a basic role
-    $user = new WP_User($user_id);
-    $basic_roles = ['subscriber', 'medlem', 'tilleggskontakt'];
-    if (!empty(array_intersect($basic_roles, $user->roles))) {
-        $user->set_role($deltakertype);
-    }
-
-    // Set ACF user field
-    if (function_exists('update_field')) {
-        update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user_id);
-    }
-
     // Clear rate limit on success
     delete_transient($rate_key);
 
-    error_log('BIMVerdi: Foretak created: ' . $foretak_id . ' (' . $bedriftsnavn . ') by user ' . $user_id);
+    error_log('BIMVerdi: Foretak (pending) created: ' . $foretak_id . ' (' . $bedriftsnavn . ') by user ' . $user_id);
 
-    // Send confirmation email (non-blocking — don't let email failure prevent registration)
-    $personer_map = ['deltaker' => 3, 'prosjektdeltaker' => 4, 'partner' => 5];
-    $inkluderte_personer = $personer_map[$deltakertype] ?? 3;
-    $current_user = wp_get_current_user();
-    $email_subject = 'Velkommen til BIM Verdi — ' . $bedriftsnavn . ' er registrert';
-    $email_body = bimverdi_get_foretak_registered_email_html(
-        $bedriftsnavn,
-        $organisasjonsnummer,
-        $bv_rolle_map[$deltakertype],
-        $current_user->display_name,
-        $inkluderte_personer
-    );
-    $headers = ['Content-Type: text/html; charset=UTF-8'];
-    $email_sent = wp_mail($current_user->user_email, $email_subject, $email_body, $headers);
-    if (!$email_sent) {
-        error_log('BIMVerdi: Failed to send foretak registration email to ' . $current_user->user_email);
-    }
+    // Bruker-aktivering (sett user-meta, sett rolle, send velkomst-e-post,
+    // trigger faktura-prosess) er flyttet til transition-hook i
+    // bimverdi-foretak-pending.php. Skjer først ved publish-godkjenning.
 
-    // Send admin-kopi til post@bimverdi.no (SuperOffice-fakturaunderlag)
+    // Send admin-varsel om at en paid-tier-registrering venter på godkjenning
     if (function_exists('bimverdi_send_admin_notification_email')) {
+        $current_user = wp_get_current_user();
+        $personer_map = ['deltaker' => 3, 'prosjektdeltaker' => 4, 'partner' => 5];
+        $inkluderte_personer = $personer_map[$deltakertype] ?? 3;
         $admin_url_foretak = admin_url('post.php?post=' . $foretak_id . '&action=edit');
-        $admin_subject = sprintf('Nytt foretak registrert (%s): %s', $bv_rolle_map[$deltakertype], $bedriftsnavn);
+        $admin_subject = sprintf('VENTER PÅ GODKJENNING — %s: %s', $bv_rolle_map[$deltakertype], $bedriftsnavn);
         $admin_body = sprintf(
-            '<p>Nytt foretak registrert som <strong>%s</strong>:</p>
+            '<p>En ny <strong>%s</strong>-registrering venter på din godkjenning.</p>
+            <p style="background:#FFF8F5;padding:12px 16px;border-left:4px solid #FF8B5E;font-size:13px;">
+                <strong>Sjekk før godkjenning:</strong> Stemmer brukerens e-postdomene med foretaket?
+                Er dette en reell registrering? Sjekk faktura-info og kontakt SuperOffice for fakturaunderlag.
+            </p>
             <table style="border-collapse:collapse;font-size:14px;">
                 <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
                 <tr><td style="padding:4px 12px 4px 0;color:#666;">Org.nr</td><td>%s</td></tr>
                 <tr><td style="padding:4px 12px 4px 0;color:#666;">Deltakernivå</td><td><strong>%s</strong></td></tr>
                 <tr><td style="padding:4px 12px 4px 0;color:#666;">Inkluderte personer</td><td>%d</td></tr>
-                <tr><td style="padding:4px 12px 4px 0;color:#666;">Hovedkontakt</td><td>%s &lt;%s&gt;</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Registrert av</td><td>%s &lt;%s&gt;</td></tr>
                 <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
             </table>
             <p style="margin-top:24px;">
                 <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
-                    Åpne foretaket i wp-admin
+                    Vurder forespørselen i wp-admin
                 </a>
             </p>
             <p style="font-size:13px;color:#666;margin-top:16px;">
-                Bruker har akseptert betingelsene. Lagre dette i SuperOffice som fakturaunderlag.
+                Endre status til «Publisert» for å godkjenne (brukeren aktiveres + faktura kan sendes), eller flytt til papirkurv for å avvise.
+                Brukeren får automatisk e-post i begge tilfeller.
             </p>%s',
             esc_html($bv_rolle_map[$deltakertype]),
             esc_html($bedriftsnavn),
@@ -438,8 +430,8 @@ add_action('init', function () {
         bimverdi_send_admin_notification_email($admin_subject, $admin_body);
     }
 
-    // Redirect to foretak page with success
-    wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
+    // Redirect til pending-state på dashboard
+    wp_redirect(add_query_arg('pending', '1', home_url('/min-side/')));
     exit;
 });
 

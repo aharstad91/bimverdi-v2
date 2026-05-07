@@ -170,7 +170,15 @@ if ($company_id) {
 // Skal rendres som en fokusert flate uten sidebar og uten fallback-dashboard,
 // så brukeren får én tydelig handling: koble seg til foretak.
 $bruker_foretak = function_exists('bimverdi_get_bruker_foretak') ? bimverdi_get_bruker_foretak($user_id) : false;
-$is_welcome_state = isset($_GET['welcome']) && $_GET['welcome'] == '1' && !$company_id;
+
+// Pending-state: bruker har sendt foretak-registrering som venter på Bårds
+// godkjenning. Tar over UI-en så bruker ikke kan registrere på nytt eller
+// bli forvirret av welcome-state. T5/D fra synk 2026-05-06.
+$pending_foretak = (function_exists('bimverdi_get_user_pending_foretak') && !$company_id)
+    ? bimverdi_get_user_pending_foretak($user_id)
+    : null;
+
+$is_welcome_state = isset($_GET['welcome']) && $_GET['welcome'] == '1' && !$company_id && !$pending_foretak;
 
 ?>
 
@@ -190,6 +198,61 @@ $is_welcome_state = isset($_GET['welcome']) && $_GET['welcome'] == '1' && !$comp
         'message' => __('Kontoen din er nå aktivert.', 'bimverdi'),
     ]);
 endif; ?>
+
+<?php
+// Pending-state: bruker har sendt registrering, venter på Bårds godkjenning.
+// Vises i stedet for welcome-state og foretak-registrer-skjema. T5/D 2026-05-07.
+if ($pending_foretak) :
+    $pending_orgnr = function_exists('get_field') ? (string) get_field('organisasjonsnummer', $pending_foretak->ID) : '';
+    $just_submitted = isset($_GET['pending']) && $_GET['pending'] == '1';
+?>
+    <?php if ($just_submitted): ?>
+    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+        <p class="text-sm text-green-800">
+            <strong><?php _e('Forespørselen er sendt.', 'bimverdi'); ?></strong>
+            <?php _e('Vi sender deg en bekreftelse på e-post når foretaket er godkjent.', 'bimverdi'); ?>
+        </p>
+    </div>
+    <?php endif; ?>
+
+    <div class="max-w-2xl mx-auto py-12 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#FFF8F5] mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-[#1A1A1A] mb-3">
+            <?php _e('Forespørselen din venter på godkjenning', 'bimverdi'); ?>
+        </h2>
+
+        <p class="text-base text-[#5A5A5A] mb-6 leading-relaxed">
+            <?php
+            printf(
+                /* translators: %s: foretaks-navn */
+                esc_html__('Du har registrert %s. BIM Verdi vurderer registreringen manuelt og sender deg bekreftelse på e-post når den er godkjent.', 'bimverdi'),
+                '<strong class="text-[#1A1A1A]">' . esc_html($pending_foretak->post_title) . '</strong>'
+            );
+            ?>
+        </p>
+
+        <?php if ($pending_orgnr): ?>
+        <p class="text-sm text-[#888888] mb-8">
+            <?php printf(esc_html__('Org.nr: %s', 'bimverdi'), esc_html($pending_orgnr)); ?>
+        </p>
+        <?php endif; ?>
+
+        <div class="text-sm text-[#5A5A5A]">
+            <p class="mb-1"><?php _e('Spørsmål om forespørselen?', 'bimverdi'); ?></p>
+            <a href="mailto:post@bimverdi.no" class="text-[#FF8B5E] hover:underline">post@bimverdi.no</a>
+        </div>
+    </div>
+<?php
+// Skip resten av dashboard-rendering når pending er aktiv —
+// bruker skal ikke kunne registrere på nytt eller se welcome-state.
+get_template_part('parts/components/account-layout-end');
+return;
+endif;
+?>
 
 <?php
 // BV20: Foretak-kobling widget for new users
