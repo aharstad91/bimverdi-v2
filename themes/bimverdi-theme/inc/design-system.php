@@ -3131,8 +3131,8 @@ class BIM_Verdi_Design_System {
 
             /* CTA-rad nederst i topp-tabell */
             .bv-pricing__cta-row td {
-                padding-top: 1.25rem !important;
-                padding-bottom: 1.25rem !important;
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
                 border-bottom: none !important;
             }
 
@@ -3193,17 +3193,17 @@ class BIM_Verdi_Design_System {
                 justify-content: center;
                 gap: 0.5rem;
                 width: 100%;
-                margin: 0;
-                padding: 1rem 1.25rem;
+                margin: 0 !important;
+                padding: 0.875rem 1.25rem;
                 background: var(--color-bg-alt);
                 border: 1px solid var(--color-divider);
                 border-radius: 0.5rem;
                 font-family: 'Inter', -apple-system, sans-serif;
-                font-size: 0.9375rem;
+                font-size: 0.875rem;
                 font-weight: 500;
-                color: var(--color-text);
+                color: var(--color-text-secondary);
                 cursor: pointer;
-                transition: background 0.15s ease, border-color 0.15s ease;
+                transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
             }
 
             .bv-pricing__toggle:hover {
@@ -3313,27 +3313,33 @@ class BIM_Verdi_Design_System {
             }
 
             /* Disclaimers */
-            .bv-pricing__disclaimers {
-                margin: 1.5rem 0 0;
-                padding: 0;
-                list-style: none;
+            .bv-pricing ul.bv-pricing__disclaimers {
+                margin: 2.5rem 0 0 !important;
+                padding: 0 !important;
+                list-style: none !important;
                 font-size: 0.8125rem;
                 color: var(--color-text-secondary);
                 line-height: 1.5;
             }
 
-            .bv-pricing__disclaimer {
-                padding-left: 1.25rem;
-                text-indent: -1.25rem;
-                margin-bottom: 0.375rem;
+            .bv-pricing ul.bv-pricing__disclaimers li.bv-pricing__disclaimer {
+                list-style: none !important;
+                display: block !important;
+                padding: 0 !important;
+                margin: 0 0 0.5rem 0 !important;
+                text-indent: 0 !important;
+            }
+
+            .bv-pricing ul.bv-pricing__disclaimers li.bv-pricing__disclaimer::marker {
+                content: none;
             }
 
             .bv-pricing__disclaimer .bv-pricing__footnote-marker {
                 display: inline-block;
                 width: 1rem;
-                margin-right: 0.25rem;
+                margin-right: 0.375rem;
                 margin-left: 0;
-                text-indent: 0;
+                color: var(--color-text-secondary);
             }
 
             /* Mobil-justering */
