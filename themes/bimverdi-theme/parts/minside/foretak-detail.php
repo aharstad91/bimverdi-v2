@@ -179,12 +179,14 @@ if ($bv_error && isset($oppgradering_errors[$bv_error])):
                     <?php endif; ?>
 
                     <!-- Membership Status inline -->
+                    <?php $bv_rolle_label = function_exists('get_field') ? get_field('bv_rolle', $company_id) : ''; ?>
                     <div class="flex items-center gap-2 mt-3">
                         <?php if ($is_active): ?>
                             <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
-                            <span class="text-xs text-[#57534E]"><?php _e('Aktiv deltaker', 'bimverdi'); ?></span>
+                            <span class="text-xs text-[#57534E]">
+                                <?php echo $bv_rolle_label ? esc_html($bv_rolle_label) : esc_html__('Aktiv deltaker', 'bimverdi'); ?>
+                            </span>
                         <?php else: ?>
-                            <?php $bv_rolle_label = function_exists('get_field') ? get_field('bv_rolle', $company_id) : ''; ?>
                             <span class="w-2 h-2 rounded-full bg-<?php echo ($bv_rolle_label === 'Ikke deltaker') ? 'gray' : 'amber'; ?>-400 flex-shrink-0"></span>
                             <span class="text-xs text-[#57534E]"><?php echo ($bv_rolle_label === 'Ikke deltaker') ? esc_html__('Gratis brukerforetak', 'bimverdi') : esc_html__('Inaktiv deltaker', 'bimverdi'); ?></span>
                         <?php endif; ?>

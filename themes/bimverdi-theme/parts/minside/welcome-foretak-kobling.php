@@ -70,52 +70,19 @@ $first_name = $user->first_name ?: $user->display_name;
         </a>
     </p>
 
-    <!-- Motivasjon: Hva du får tilgang til -->
+    <!-- Motivasjon: Deltakeravgift og -nivå (pricing-pattern) -->
     <div class="mt-10 pt-8 border-t border-[#E7E5E4]">
-        <h3 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-5">
-            <?php _e('Hva du får når du kobler deg til foretak', 'bimverdi'); ?>
+        <h3 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
+            <?php _e('Deltakeravgift og -nivå', 'bimverdi'); ?>
         </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-            <div class="flex items-start gap-3">
-                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
-                    <?php echo bimverdi_icon('calendar', 18); ?>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Arrangement', 'bimverdi'); ?></p>
-                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Meld deg på åpne og lukkede arrangement', 'bimverdi'); ?></p>
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
-                    <?php echo bimverdi_icon('users', 18); ?>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Temagrupper', 'bimverdi'); ?></p>
-                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Faglige møter med bransjekollegaer', 'bimverdi'); ?></p>
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
-                    <?php echo bimverdi_icon('wrench', 18); ?>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Verktøy- og kunnskapskatalog', 'bimverdi'); ?></p>
-                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Søk i bransjens verktøy og kunnskapskilder', 'bimverdi'); ?></p>
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="flex-shrink-0 mt-0.5 text-[#5A5A5A]">
-                    <?php echo bimverdi_icon('newspaper', 18); ?>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-[#1A1A1A] leading-tight" style="margin:0;"><?php _e('Nyheter og artikler', 'bimverdi'); ?></p>
-                    <p class="text-xs text-[#5A5A5A]" style="margin:8px 0 0 0;"><?php _e('Siste oppdateringer fra nettverket', 'bimverdi'); ?></p>
-                </div>
-            </div>
-        </div>
-        <p class="mt-5 text-xs text-[#888888]">
-            <?php _e('Som ansatt i et betalende deltaker-, prosjektdeltaker- eller partnerforetak får du i tillegg tilgang til lukkede arrangement, opptak, rådgivning og prosjektkonsortier.', 'bimverdi'); ?>
+        <p class="text-xs text-[#5A5A5A] mb-4">
+            <?php _e('Sammenlign nivåene under og velg det som passer for deg eller arbeidsgiveren din.', 'bimverdi'); ?>
         </p>
+        <?php
+        if (function_exists('bimverdi_render_pattern')) {
+            echo bimverdi_render_pattern('pricing-tabell');
+        }
+        ?>
     </div>
 
 </div>
