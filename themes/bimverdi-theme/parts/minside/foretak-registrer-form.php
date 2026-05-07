@@ -557,10 +557,16 @@ $bransje_options = [
     function setTier(tier) {
       if (tier === currentTier) return;
       currentTier = tier;
+      // 'pristine' = ingen valg gjort ennå. Skjuler paid-only-felter (faktura,
+      // beskrivelse, logo, adresse, bransje) inntil bruker velger nivå.
+      // 'gratis' = bruker har eksplisitt valgt gratis brukerforetak.
+      // 'paid' = bruker har valgt deltaker/prosjektdeltaker/partner.
       var isGratis = tier === 'gratis';
+      var isPristine = tier === 'pristine';
+      var hideExtras = isGratis || isPristine;
 
       conditionallyRequiredFields.forEach(function(f) {
-        if (isGratis) {
+        if (hideExtras) {
           f.removeAttribute('required');
         } else {
           f.setAttribute('required', '');
@@ -569,10 +575,13 @@ $bransje_options = [
 
       gratisHiddenSectionIds.forEach(function(id) {
         var s = document.getElementById(id);
-        if (s) s.style.display = isGratis ? 'none' : '';
+        if (s) s.style.display = hideExtras ? 'none' : '';
       });
 
       if (submitButton) {
+        // Endre kun knapp-tekst når bruker har gjort eksplisitt gratis-valg.
+        // Pristine beholder original tekst så vi ikke pre-loader brukerens
+        // valg via UI.
         submitButton.textContent = isGratis ? 'Registrer gratis foretak' : originalButtonText;
       }
 
@@ -610,11 +619,20 @@ $bransje_options = [
       }
     });
 
-    // Two-step-flyt: nivå pre-fylt via hidden input fra pricing-blokka.
-    // Kjør setTier ved page-load slik at gratis-flyten skjuler riktige felter.
+    // Initialiser tier ved page-load:
+    // - Hidden input (two-step-flyt fra pricing-blokka): bruker har valgt nivå.
+    // - Allerede checket radio (pageshow fra back-cache, server-side error
+    //   som rendrer skjemaet på nytt): bruker har valgt nivå.
+    // - Verken/eller (dashboard inline BRREG-flyt): pristine — skjul paid-only-
+    //   felter (faktura, beskrivelse, logo, adresse, bransje) til bruker velger.
     var hiddenTier = form.querySelector('input[type="hidden"][name="deltakertype"]');
+    var checkedRadio = form.querySelector('input[type="radio"][name="deltakertype"]:checked');
     if (hiddenTier) {
       setTier(hiddenTier.value === 'gratis' ? 'gratis' : 'paid');
+    } else if (checkedRadio) {
+      setTier(checkedRadio.value === 'gratis' ? 'gratis' : 'paid');
+    } else {
+      setTier('pristine');
     }
   });
 })();
