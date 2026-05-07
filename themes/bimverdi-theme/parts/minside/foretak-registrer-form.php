@@ -330,49 +330,10 @@ $bransje_options = [
         <!-- Divider -->
         <hr class="border-[#E5E0D5]">
 
-        <!-- Address Section -->
-        <div>
-            <h3 class="text-base font-semibold text-[#1A1A1A] mb-4">Adresse</h3>
-            <div class="space-y-4">
-                <div>
-                    <label for="gateadresse" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                        Gateadresse
-                    </label>
-                    <input type="text"
-                           id="gateadresse"
-                           name="gateadresse"
-                           autocomplete="street-address"
-                           class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A]">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="postnummer" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                            Postnummer
-                        </label>
-                        <input type="text"
-                               id="postnummer"
-                               name="postnummer"
-                               maxlength="4"
-                               inputmode="numeric"
-                               autocomplete="postal-code"
-                               class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A]">
-                    </div>
-
-                    <div>
-                        <label for="poststed" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                            Poststed
-                        </label>
-                        <input type="text"
-                               id="poststed"
-                               name="poststed"
-                               autocomplete="address-level2"
-                               class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent text-[#1A1A1A]">
-                    </div>
-                </div>
-            </div>
-            <p class="mt-1 text-xs text-[#888888]">Fylles inn automatisk fra Brønnøysundregistrene</p>
-        </div>
+        <!-- Adresse hentes nå automatisk fra Brønnøysundregistrene server-side
+             (T6 — Bård 2026-05-06: «adresse er allerede i BRREG»). Skjemaet
+             trenger ikke å spørre brukeren. Hovedkontakt kan justere via
+             Rediger foretak hvis BRREG har feil verdi. -->
 
         <!-- Website -->
         <div>

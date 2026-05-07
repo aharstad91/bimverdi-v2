@@ -447,6 +447,59 @@ function bimverdi_ajax_save_bruker_foretak() {
  * @param array $data Raw API response
  * @return array Formatted company data
  */
+/**
+ * Server-side helper: hent adresse fra BRREG basert på orgnr.
+ *
+ * Brukes av foretak-registrer-handleren slik at adressen lagres på
+ * foretak-CPT uten at brukeren må fylle den inn manuelt (Bård 2026-05-06:
+ * «adresse er allerede i BRREG, trenger ikke å gjentas her»).
+ *
+ * Gjenbruker samme transient-cache som REST-handleren (cache_key
+ * brreg_company_{orgnr}) så vi unngår dobbel HTTP-call hvis brukeren
+ * nettopp har klikket fra BRREG-søk.
+ *
+ * @param string $orgnr 9-sifret organisasjonsnummer.
+ * @return array|null ['adresse' => string, 'postnummer' => string, 'poststed' => string] eller null ved feil.
+ */
+function bimverdi_brreg_fetch_company_address($orgnr) {
+    $orgnr = preg_replace('/\D/', '', (string) $orgnr);
+    if (strlen($orgnr) !== 9) {
+        return null;
+    }
+
+    $cache_key = 'brreg_company_' . $orgnr;
+    $cached = get_transient($cache_key);
+    $company = null;
+
+    if ($cached !== false && is_array($cached)) {
+        $company = $cached;
+    } else {
+        $response = wp_remote_get(
+            'https://data.brreg.no/enhetsregisteret/api/enheter/' . rawurlencode($orgnr),
+            array(
+                'timeout' => 8,
+                'headers' => array('Accept' => 'application/json'),
+            )
+        );
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return null;
+        }
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        if (!is_array($data)) {
+            return null;
+        }
+        $company = bimverdi_brreg_format_company($data);
+        set_transient($cache_key, $company, 15 * MINUTE_IN_SECONDS);
+    }
+
+    return array(
+        'adresse'    => (string) ($company['adresse'] ?? ''),
+        'postnummer' => (string) ($company['postnummer'] ?? ''),
+        'poststed'   => (string) ($company['poststed'] ?? ''),
+    );
+}
+
 function bimverdi_brreg_format_company($data) {
     $company = array(
         'orgnr' => $data['organisasjonsnummer'] ?? '',

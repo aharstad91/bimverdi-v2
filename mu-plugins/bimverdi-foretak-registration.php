@@ -68,6 +68,9 @@ add_action('init', function () {
     $bedriftsnavn     = sanitize_text_field($_POST['bedriftsnavn'] ?? '');
     $organisasjonsnummer = sanitize_text_field($_POST['organisasjonsnummer'] ?? '');
     $beskrivelse      = sanitize_textarea_field($_POST['beskrivelse'] ?? '');
+    // Adresse-felter er ikke lenger i registreringsskjemaet — hentes fra
+    // BRREG via orgnr senere (bimverdi_brreg_fetch_company_address).
+    // Behold POST-fallback for evt. legacy-flyter eller manuell admin-bruk.
     $gateadresse      = sanitize_text_field($_POST['gateadresse'] ?? '');
     $postnummer       = sanitize_text_field($_POST['postnummer'] ?? '');
     $poststed         = sanitize_text_field($_POST['poststed'] ?? '');
@@ -276,6 +279,28 @@ add_action('init', function () {
         if (!is_wp_error($logo_attachment_id)) {
             $metadata = wp_generate_attachment_metadata($logo_attachment_id, $upload['file']);
             wp_update_attachment_metadata($logo_attachment_id, $metadata);
+        }
+    }
+
+    // --- Auto-populer adresse fra BRREG hvis ikke i POST ---
+    // Adresse-felter ble fjernet fra registreringsskjemaet 2026-05-07
+    // (T6 — Bård 2026-05-06: «adresse er allerede i BRREG»). Vi henter
+    // verdiene direkte basert på orgnr så foretak-CPT alltid har dem
+    // tilgjengelige til faktura, kontaktinfo, osv.
+    if ((empty($gateadresse) || empty($postnummer) || empty($poststed))
+        && function_exists('bimverdi_brreg_fetch_company_address')
+    ) {
+        $brreg_address = bimverdi_brreg_fetch_company_address($organisasjonsnummer);
+        if (is_array($brreg_address)) {
+            if (empty($gateadresse) && !empty($brreg_address['adresse'])) {
+                $gateadresse = $brreg_address['adresse'];
+            }
+            if (empty($postnummer) && !empty($brreg_address['postnummer'])) {
+                $postnummer = $brreg_address['postnummer'];
+            }
+            if (empty($poststed) && !empty($brreg_address['poststed'])) {
+                $poststed = $brreg_address['poststed'];
+            }
         }
     }
 
