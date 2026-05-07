@@ -3106,7 +3106,7 @@ class BIM_Verdi_Design_System {
 
             .bv-pricing__plan-title {
                 display: block;
-                font-size: 1.125rem;
+                font-size: 1rem;
                 font-weight: 500;
                 letter-spacing: -0.01em;
                 color: var(--color-text);
