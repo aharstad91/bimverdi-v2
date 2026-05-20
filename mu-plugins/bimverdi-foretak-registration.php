@@ -145,11 +145,23 @@ add_action('init', function () {
             update_field('organisasjonsnummer', $organisasjonsnummer, $foretak_id);
             update_field('hovedkontaktperson', $user_id, $foretak_id);
             update_field('bv_rolle', 'Ikke deltaker', $foretak_id);
+
+            // Cache hoveddomenet fra hovedkontaktens e-post (Krav 20 / B-027).
+            if (function_exists('bimverdi_extract_root_domain')) {
+                $hoveddomene = bimverdi_extract_root_domain(wp_get_current_user()->user_email ?? '');
+                if ($hoveddomene) {
+                    update_field('bv_hoveddomene', $hoveddomene, $foretak_id);
+                }
+            }
         }
 
         // Lagre deltakertype som post-meta så transition-hook kan lese den
         // ved godkjenning. Bruker-meta og rolle settes IKKE før godkjenning.
         update_post_meta($foretak_id, '_bv_pending_deltakertype', 'gratis');
+
+        if (function_exists('bimverdi_purge_foretak_cache')) {
+            bimverdi_purge_foretak_cache($foretak_id);
+        }
 
         // Send admin-varsel om ventende godkjenning
         if (function_exists('bimverdi_send_admin_notification_email')) {

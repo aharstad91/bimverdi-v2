@@ -255,9 +255,27 @@ endif;
 ?>
 
 <?php
+// Krav 22: Block-vegg over kobling-widget hvis bruker kom hit via ?retry= fra blokkert oppgave.
+if (!$bruker_foretak && function_exists('bimverdi_pending_oppgave_status')) :
+    $retry_status = bimverdi_pending_oppgave_status();
+    if ($retry_status && $retry_status['state'] === 'active') :
+        $oppgave_label = $retry_status['oppgave']['label'] ?? 'registreringen';
+        get_template_part('parts/components/block-vegg', null, [
+            'oppgave_label' => $oppgave_label,
+            'retry_url'     => home_url('/min-side/?retry=1#kobling-skjema'),
+        ]);
+    elseif ($retry_status && $retry_status['state'] === 'expired') : ?>
+        <div class="bv-retry-expired" style="max-width:720px;margin:24px auto 0;padding:16px 24px;border-top:1px solid #D6D1C6;border-bottom:1px solid #D6D1C6;color:#5A5A5A;font-size:14px;">
+            <?php echo esc_html($retry_status['message']); ?>
+        </div>
+    <?php endif;
+endif;
+?>
+
+<?php
 // BV20: Foretak-kobling widget for new users
 if ($is_welcome_state && !$bruker_foretak) :
-    get_template_part('parts/minside/welcome-foretak-kobling', null, ['context' => 'welcome']);
+    get_template_part('parts/minside/welcome-foretak-kobling', null, ['context' => 'welcome', 'anchor_id' => 'kobling-skjema']);
 endif;
 ?>
 

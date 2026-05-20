@@ -45,6 +45,27 @@ add_action('init', function () {
         ? home_url('/min-side/kunnskapskilder/rediger/?kunnskapskilde_id=' . $kunnskapskilde_id)
         : home_url('/min-side/kunnskapskilder/registrer/');
 
+    // Krav 20 / R20.21 (invariant 1): Kunnskapskilde-registrering krever foretak.
+    // Gratisbrukere (med Gratisforetak) er OK. Legacy-kontakter uten foretak blokkeres.
+    // Admin bypasses.
+    if (
+        !user_can($user_id, 'manage_options')
+        && function_exists('bimverdi_user_has_company')
+        && !bimverdi_user_has_company($user_id)
+    ) {
+        if (function_exists('bimverdi_remember_pending_oppgave')) {
+            bimverdi_remember_pending_oppgave([
+                'url'   => $is_edit
+                    ? home_url('/min-side/kunnskapskilder/rediger/?kunnskapskilde_id=' . $kunnskapskilde_id)
+                    : home_url('/min-side/kunnskapskilder/registrer/'),
+                'label' => 'kunnskapskilde-registrering',
+                'context' => ['type' => 'kunnskapskilde'],
+            ]);
+        }
+        wp_redirect(home_url('/min-side/?retry=1'));
+        exit;
+    }
+
     // Verify nonce
     $nonce_action = $is_edit ? 'bimverdi_edit_kunnskapskilde' : 'bimverdi_register_kunnskapskilde';
     if (!wp_verify_nonce($_POST['_wpnonce'] ?? '', $nonce_action)) {

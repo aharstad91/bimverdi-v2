@@ -3,6 +3,320 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-05-20
+action: implementer+phase-0+phase-1
+files:
+  - wp-content/composer.json
+  - wp-content/composer.lock
+  - wp-content/vendor-data/psl/public_suffix_list.dat
+  - wp-content/mu-plugins/bimverdi-composer-autoload.php
+  - wp-content/mu-plugins/bimverdi-domain-helpers.php
+  - wp-content/mu-plugins/bimverdi-domain-blocklist.php
+  - wp-content/mu-plugins/bimverdi-pending-oppgave.php
+  - wp-content/mu-plugins/bimverdi-access-control.php
+  - wp-content/mu-plugins/bimverdi-foretak-registration.php
+  - wp-content/mu-plugins/bimverdi-event-registration.php
+  - wp-content/mu-plugins/bimverdi-newsletter.php
+  - wp-content/mu-plugins/bimverdi-kunnskapskilde-registration.php
+  - wp-content/mu-plugins/bimverdi-brreg-api.php
+  - wp-content/plugins/bim-verdi-core/includes/acf/register-foretak-fields.php
+  - wp-content/themes/bimverdi-theme/parts/components/block-vegg.php
+  - wp-content/themes/bimverdi-theme/parts/minside/dashboard.php
+  - wp-content/themes/bimverdi-theme/single-arrangement.php
+  - docs/plans/2026-05-20-001-feat-onboarding-grunnmur-blocking-plan.md
+summary: "Lukket Krav 20 Fase 0 (grunnmur) + Krav 22 Fase 1 (block-mekanikk). 9 units, all på branch feat/onboarding-grunnmur. Klar til skjermdeling med Bård 21. mai. Ikke deployet til prod."
+status: ready-for-review
+detail: |
+  **Branch:** feat/onboarding-grunnmur (på wp-content/-repoet)
+  **Plan:** docs/plans/2026-05-20-001-feat-onboarding-grunnmur-blocking-plan.md
+  **Demo-bruker for testing:** demo-legacy / DemoLegacy2026!
+
+  **Phase 0 — Grunnmur (datamodell + helpers):**
+    - Composer i wp-content/ med jeremykendall/php-domain-parser 6.4
+    - PSL .dat-fil cachet til vendor-data/psl/
+    - bimverdi-composer-autoload.php mu-plugin
+    - bimverdi-domain-helpers.php: extract_root_domain (PSL-strippet,
+      håndterer oslo.firma.no → firma.no, firma.co.uk korrekt),
+      find_foretak_by_email_domain, purge_foretak_cache
+    - bv_hoveddomene ACF-felt på foretak CPT
+    - Auto-cache fra hovedkontaktens e-post ved registrering OG ved
+      hovedkontakt-bytte
+    - Backfill: 87 av 90 eksisterende foretak fikk bv_hoveddomene
+    - bimverdi-domain-blocklist.php: bv_generelle_domener (Bårds
+      17 default-domener) + bv_engangsdomener_override + admin
+      Settings-side under "Innstillinger → BIM Verdi domener"
+
+  **Phase 1 — Block-mekanikk:**
+    - bimverdi-pending-oppgave.php: 30-min PHP-sesjon for å huske
+      hvilken registrering som ble blokkert, slik at vi kan resume
+      etter foretaks-kobling. Helpers: remember/get/resume/clear.
+    - parts/components/block-vegg.php: ordrett tekst per krav 22 R22.6
+      "Du må koble deg til ditt foretak/arbeidsgiver før du går videre"
+      + dynamic oppgave-label + "Koble til foretak"-CTA + UI Contract
+      Variant B (dividers, ikke bokser).
+    - Skjerpet bimverdi_check_event_access(): krever nå foretak for
+      ALLE adgang-verdier (ikke bare 'deltakere'). Foretak_required
+      block_type returneres med ordrett tekst.
+    - Single-arrangement.php: når access feiler med foretak_required,
+      rendrer ordrett tekst + "Koble til foretak"-CTA + lagrer pending
+      oppgave i sesjonen.
+    - bimverdi-newsletter.php: subscribe_newsletter som
+      COMPANY_REQUIRED_FEATURE. Innloggede uten foretak redirectes
+      til /min-side/?retry=1 med pending oppgave satt.
+    - bimverdi-kunnskapskilde-registration.php: foretak-guard på
+      POST-handler. Gratisbrukere OK; legacy-kontakter blokkeres.
+    - register_kunnskapskilde lagt til OPEN_FEATURES.
+    - Dashboard.php renderer block-vegg over welcome-foretak-kobling
+      når ?retry=1 og pending oppgave er gyldig. Hvis sesjon utløpt:
+      info-melding.
+    - bimverdi-brreg-api.php (set-bruker-foretak): resume-redirect
+      etter foretaks-kobling. Hvis pending oppgave finnes → send
+      brukeren tilbake dit i stedet for default dashboard.
+
+  **Verifisering (Chrome DevTools MCP):**
+    - Logget inn som demo-legacy (uten foretak)
+    - /arrangement/.../ viser ordrett block-tekst + "Koble til foretak"-CTA
+    - /min-side/?retry=1 viser block-veggen med pending oppgave label
+    - Newsletter POST redirecter til block-veggen
+    - Screenshots: claude/bard-context/screenshots/2026-05-20-*.png
+
+  **Ikke gjort (eksplisitt out-of-scope):**
+    - Velkomsttekst-omskriving (R20.7, R20.22 — Fase 2)
+    - Lås-UI "Krever Deltaker+" (R20.20 — Fase 2)
+    - Redusert meny-opprydding (R20.23-25 — Fase 2)
+    - Auto-tilleggskontakt-matching (R20.19 bruker helperne men
+      auto-matching i registreringsflyt er Fase 2)
+    - Avvise gmail/mailinator ved registrering (R20.27 — Fase 2,
+      bruker bimverdi_is_general_domain som er klar)
+    - Domain-blocklist sync-cron (Fase 3)
+    - Audit-trail for domene-match (R20.26 — Fase 3)
+    - PROD-DEPLOY — venter på Bårds approval etter skjermdeling 21. mai
+
+  **Neste steg:**
+    1. Andreas reviewer diffen
+    2. Skjermdeling med Bård 21. mai
+    3. Hvis OK: merge feat/onboarding-grunnmur → main → push → autodeploy
+    4. Backfill bv_hoveddomene på prod via wp-cli
+    5. Bård tester på prod, gir feedback
+
+---
+date: 2026-05-20
+action: validering+rapport
+files:
+  - claude/bard-context/validering-onboarding-2026-05-20.md
+summary: "Autonom validering av krav 20 (gratisforetak-grunnmur) + krav 22 (foretakskobling kreves) mot live-kode. Funn: 6/28 fulle treff, ~10 delvise, ~12 ikke-implementert. Rapport klar til møte 21. mai."
+status: done
+detail: |
+  **Metode:** Pulled prod-DB til localhost via sync-db.sh (5.6 MB,
+  1529 URL-erstatninger). Mappet kode-keywords mot kravspec.
+
+  **Hovedfunn:**
+    - Gratisforetak-konseptet (bv_rolle='Ikke deltaker') er bredt
+      implementert: dashboard, foretak-detalj, oppgraderings-flyt,
+      admin-listen, pending-flyt, welcome-state-renderer, pricing-
+      tabell på welcome.
+    - Domene-grunnmuren mangler helt: ingen `bv_hoveddomene`,
+      `bv_generelle_domener`, `bv_engangsdomener_override`,
+      `bimverdi_purge_foretak_cache()`, PSL-integrasjon, eller
+      automatisk match av bruker mot eksisterende foretak.
+    - Block-mekanikken (krav 22) er ikke skrevet: ingen ordrett
+      "Du må koble deg til ditt foretak"-vegg, ingen `?retry=` +
+      30-min-sesjon, nyhetsbrev har ingen foretak-sjekk,
+      arrangement `adgang === 'alle'` slipper alle innloggede.
+    - Velkomsttekst er generisk — krav 20s ordrette "Velkommen som
+      bruker i BIM Verdi. Vi har sjekket om din arbeidsgiver…"
+      finnes ikke (fordi mekanikken bak ikke finnes).
+
+  **Anbefalt rekkefølge for Bård:**
+    - Fase 0 (grunnmur): `bv_hoveddomene` + PSL + blocklists +
+      helpers.
+    - Fase 1 (block-mekanikk krav 22): `bimverdi-pending-oppgave`
+      mu-plugin + universell block-vegg + lukke arrangement/
+      nyhetsbrev-hull.
+    - Fase 2 (welcome-UX): ordrett tekst + lås-UI "Krever
+      Deltaker+" + meny-opprydding.
+
+  **Hovedbudskap til Bård:** "Vi har scaffolding, mangler motor."
+
+  **Rapport:** `claude/bard-context/validering-onboarding-2026-05-20.md`
+
+---
+date: 2026-05-20
+action: plan+scope-reflection
+files: []
+summary: "Plan for møte 21. mai: bygge Fase 0 (grunnmur) + Fase 1 (block-mekanikk) i en isolert lokal worktree i kveld, skjermdele med Bård i morgen, deploye til prod etter hans godkjenning. Parallelt: historisk gjennomgang bekrefter Andreas' følelse om at scope har vokst ~150% siden MVP-en ble bygget."
+status: in-progress
+detail: |
+  **Beslutning:** Vi tar ikke prod-endringer før Bård har sett og
+  godkjent. Bård har ikke tilgang til localhost, så plan B er:
+  bygge i worktree → skjermdele i morgen → deploy etter godkjenning
+  → Bård tester selv på prod.
+
+  **Scope-drift-refleksjon (etter forespørsel fra Andreas):**
+  Andreas kjente seg ikke igjen i Bårds frustrasjon over manglende
+  leveranse. Historisk gjennomgang av worklog-en bekrefter følelsen:
+
+    - MVP-scope (14. april): Gratisforetak basic, oppgradering,
+      artikler, verktøy, kunnskapskilder, arrangement-påmelding,
+      tilleggskontakt-invitasjoner. INGEN domene-match, INGEN
+      blocklists, INGEN PSL, INGEN retry-sesjon, INGEN ordrett
+      block-vegg.
+    - Faktiske deploys 14. april → 7. mai: ~13 features deployet til
+      prod (artikler, verktøy, fakturafelter, rabatt-disclaimer,
+      pricing-tabell, welcome-state-redesign, BRREG-adresse, 5
+      sikkerhetsbug-fixes, m.fl.).
+    - 11. mai: Bård leverte krav-pakka v1 (9 MD-filer, 1271 linjer)
+      — første gang `bv_hoveddomene`, blocklists, PSL og automatisk
+      domene-match dukker opp.
+    - 12.–13. mai: Krav 22 (foretakskobling-blokken med `?retry=`
+      + 30 min sesjon + ordrett tekst) introdusert.
+    - 11. mai → 20. mai: Andreas har ikke implementert det nye, men
+      Bård leste dette som "ikke tatt ballen". Viktig kontekst:
+      14.–17. mai var fridager (17. mai + helg), så reell arbeidstid
+      i perioden var 11.–13. mai + 18.–20. mai = 6 arbeidsdager,
+      ikke 9. Bård satt med pakka i helgen og fridagene og opplevde
+      stillstand — men det var fri-stillstand, ikke jobb-stillstand.
+
+  **Konklusjon:** Scope vokste ~150–200% siden MVP. Andreas leverte
+  bredt på det originale scopet. De nye kravene er reelle og bra,
+  men de er NYE krav fra etter 11. mai, ikke "manglende leveranse
+  på det gamle".
+
+  **Strategisk linje for møtet:** Vise tidslinjen uten å være
+  defensiv. Anerkjenne Bårds arbeid med kravpakka. Bruke
+  validerings-rapporten som vår felles plan fremover. Hovedbudskap:
+  "Vi har scaffolding, vi har levert det opprinnelige, nå bygger
+  vi det nye — i kveld."
+
+  **Neste steg (i kveld):**
+    1. Worktree: `feat/onboarding-grunnmur`
+    2. Fase 0: `bv_hoveddomene` + PSL + blocklists + helpers
+    3. Fase 1: `bimverdi-pending-oppgave` + block-vegg + lukke
+       hull i arrangement/nyhetsbrev/kunnskapskilde
+    4. Chrome MCP-verifikasjon av flytene
+    5. Klart for skjermdeling med Bård 21. mai
+
+---
+date: 2026-05-20
+action: sync+plan
+files: []
+summary: "Kort oppfølgings-synk (~5 min) med Bård. Han er frustrert over manglende fremdrift og har sendt alle 14 MD-filer + 99-fila på e-post. Avtale: Andreas svarer på de to siste avklarings-spørsmålene, kjører autonom kravspekk-vs-live sjekk i dag, og leverer rapport før møte 21. mai."
+status: in-progress
+detail: |
+  **Kilde:** `~/Desktop/bard-synk-20-mai.json` (~5 min, kort
+  morgensynk).
+
+  **Bårds frustrasjon:** Han har lagt mye arbeid i MD-filene de siste
+  ukene og opplevde at Andreas «ikke tok ballen» mellom 11. og 20.
+  mai. Han trenger fremdrift på onboarding, opp-/nedgradering, og
+  krav om foretakstilknytning — uten det står markedsføringen mot
+  deltakerne stille. Hans formulering: «mindre støy og strammere
+  regi».
+
+  **Konkret leveranse fra Bård:** Sendte 14 MD-filer på e-post —
+  alle siste-versjoner av krav-pakka inkludert «99-fila» med de to
+  åpne spørsmålene som venter på Andreas (req 25 + ett til).
+
+  **Avtalt prosess (Andreas eier):**
+  1. Behandle de 14 filene, svare på de to siste spørsmålene.
+  2. Kjøre **autonom statussjekk: kravspekk vs. live-løsning**
+     — agenten leser kravene og sjekker mot faktisk implementasjon
+     på onboarding, foretakstilknytning, registrering av abonnement,
+     invitering av tilleggskontakter.
+  3. Levere rapport (treff/avvik per krav) i dag.
+  4. Møte 21. mai: gå gjennom rapport + lande løsningsforslag.
+
+  **Andreas' refleksjon:** Anerkjenner Bårds kontekst-switching-
+  press og at krav-pakka er «gull verdt» som source of truth.
+  Konseptet er nå: kravspekk = sannhet, agent sjekker live mot
+  sannheten, vi får fasit på hva som mangler/ikke stemmer.
+
+  **Trello-koblings-flyten utsatt:** Bårds Cowork↔Trello-tilkobling
+  (forsøkt 19. mai, se foregående entry) parkeres til kravspekk-
+  validering er ferdig. Andreas påpekte at man bør ta ett og ett
+  kort i Cowork-flyten, ikke samle alle 27 og prøve å gå gjennom
+  dem på én gang — det ble forsøkt i går og fungerte ikke godt.
+
+  **Hva venter etter rapport:**
+  - Bård: lese rapport, prioritere hva som skal fikses først.
+  - Andreas: implementere fix-en på det som er kritisk for
+    onboarding-flyten (vil bli avklart 21. mai).
+---
+date: 2026-05-19
+action: sync+coaching+bug
+files: []
+summary: "Lengre synk (~30 min) med Bård. 9 av 11 åpne tema løst i krav-pakka, 1 gul, 1 rød. Eneste reelle åpne punkt: Req 25 (oppgradering/nedgradering av eksisterende kontakter). Bård bruker nå Claude Desktop Cowork med folder-access — coaching-anbefalingen fra 12. mai sitter. Forsøkt koble Cowork↔Trello via MCP — fant ikke connector i UI, sendte artikkel-link. Bug avdekket: nyhetsbrev-påmelding krever login før e-post-registrering."
+status: waiting
+detail: |
+  **Kilde:** `~/Desktop/bard-synk-19-mai.json` (~30 min).
+
+  **Bårds arbeidsflyt nå:**
+  - Har SharePoint som master-lager for MD-filene (manuell sletting
+    av gamle versjoner — kan ikke søke gamle+nye samtidig).
+  - Bruker Claude Desktop **Cowork** med folder-access på lokal
+    mappe — Andreas' coaching-anbefaling fra 12. mai er
+    implementert. Slipper last-opp/last-ned-syklusen.
+  - Krav-pakka består av filene 01–07 + 99-fila med åpne spørsmål
+    til Andreas.
+
+  **Status på krav-pakka:** 9 av 11 åpne tema løst, 1 gul, 1 rød.
+  Eneste reelle åpne punkt: **Req 25 — oppgradering/nedgradering
+  av eksisterende kontakter** (edge cases på hovedkontakt: hva
+  skjer når man bytter rolle, fjerner tilgang, etc.).
+
+  **Andreas demonstrerte oppdaterings-flyt:** Ny fil fra Andreas →
+  Bård drar inn i Cowork → Cowork oppdaterer kontekstfilene
+  automatisk. Bårds reaksjon: «da er vi på bølgelengden».
+
+  **/brainstorm-coaching:** Bård hadde ikke brukt slash-kommandoen
+  bevisst, men opplevde kontrollspørsmål-flyten uansett — Project
+  Instructions trigger den automatisk. Avklart at det er normalt.
+
+  **Trello-MCP-kobling forsøkt:**
+  - Andreas guidet Bård gjennom Claude Desktop → Settings →
+    Connectors/Extensions for å koble Trello.
+  - Connector finnes ikke i UI-en. Andreas har egen Trello-MCP via
+    terminal — ikke direkte overførbart til Desktop-app.
+  - Sendte artikkel-link i Teams. Bård prøver selv senere.
+  - **Fremtidsvisjon (ikke implementert):** Bård bruker Cowork til
+    å lage/redigere Trello-kort med kontekst fra kravspekk → Andreas'
+    agenter henter ferdige kort med all kontekst → mindre håndholding.
+
+  **Stefan Mikulitsch (AI-verktøy-oversikt):** Bård jobber parallelt
+  med Stefan om å koble hans AI-verktøy-oversikt til BIM Verdis
+  verktøy-CPT. Spurte om dette bør være eget Cowork-prosjekt eller
+  felles. **Konklusjon:** Én mappe, ulike prosjekter kan ha egne
+  instructions men dele kontekst — «waterfall»-modell der hver
+  Cowork-prosjekt har sin egen memory/instructions men aksess til
+  hele mappa.
+
+  **Bug avdekket under møtet — nyhetsbrev-påmelding:**
+  - Folk som ikke er innlogget blir sendt til login-side når de
+    prøver å registrere e-post for nyhetsbrev.
+  - Bård: «Jeg vil ikke sende nyhetsbrev til folk jeg ikke vet
+    hvilket foretak tilhører. Dette er et bedriftsnettverk, ikke
+    et sosialt nettverk.»
+  - **Beslutning:** Fjern nyhetsbrev-påmeldings-lenken helt fra
+    arrangement-sider (eller annen forekomst). Krever uansett
+    innlogget bruker — gir spam-følelse uten gevinst.
+  - Andreas tar oppgaven.
+
+  **Avtalt:**
+  - Andreas fortsetter validerings-jobben av krav-pakka.
+  - Bård prøver Trello-MCP-tilkobling selv via artikkel-link.
+  - Begge holder kontakt på Teams ved behov, ny synk torsdag.
+
+  **Hva venter på Andreas:**
+  1. Svare på de to siste avklarings-spørsmålene i 99-fila
+     (inkl. Req 25).
+  2. Fjerne nyhetsbrev-påmeldings-lenken.
+  3. Validere alle nye funksjoner mot krav-pakka (onboarding,
+     foretak, registrering av abonnement, invitering av
+     tilleggskontakter).
+
+  Ingen kode-endring i denne entryen — kun møtenotat. Bug-fix på
+  nyhetsbrev og kravspekk-validering kjøres i påfølgende entries.
+---
 date: 2026-05-12
 action: sync+coaching
 files: [claude/bard-context/02-ROLLER-OG-TILGANG.md, claude/meeting-todos-2026-05-12.md]
