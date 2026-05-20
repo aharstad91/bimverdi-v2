@@ -38,3 +38,7 @@ shared-context/
 # Prosjektdokumentasjon for Claude
 !_claude/
 !_claude/**
+
+# Worklog (blokkeres fra public via .htaccess)
+!WORKLOG.md
+!.htaccess

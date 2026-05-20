@@ -1,0 +1,4 @@
+# Blokker interne markdown-filer (WORKLOG.md, PROJECT-LOG.md, etc.)
+<FilesMatch "\.md$">
+    Require all denied
+</FilesMatch>
