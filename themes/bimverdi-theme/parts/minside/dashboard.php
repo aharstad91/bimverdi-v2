@@ -371,11 +371,11 @@ if (!$company && $bruker_foretak) : ?>
                         <?php if ($is_active): ?>
                             <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                             <span class="text-xs text-[#57534E]">
-                                <?php echo $bv_rolle_dash ? esc_html($bv_rolle_dash) : esc_html__('Aktiv deltaker', 'bimverdi'); ?>
+                                <?php echo esc_html(bimverdi_foretak_rolle_label($bv_rolle_dash)); ?>
                             </span>
                         <?php else: ?>
                             <span class="w-2 h-2 rounded-full bg-<?php echo ($bv_rolle_dash === 'Ikke deltaker') ? 'gray' : 'amber'; ?>-400 flex-shrink-0"></span>
-                            <span class="text-xs text-[#57534E]"><?php echo ($bv_rolle_dash === 'Ikke deltaker') ? esc_html__('Gratis brukerforetak', 'bimverdi') : esc_html__('Inaktiv deltaker', 'bimverdi'); ?></span>
+                            <span class="text-xs text-[#57534E]"><?php echo esc_html(bimverdi_foretak_rolle_label($bv_rolle_dash)); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -414,7 +414,7 @@ if (!$company && $bruker_foretak) : ?>
                                     <?php
                                     printf(
                                         /* translators: 1: deltakernivå, 2: dato */
-                                        esc_html__('Forespørsel for %1$s ble sendt %2$s. Bård vurderer manuelt og sender bekreftelse + faktura når den er godkjent.', 'bimverdi'),
+                                        esc_html__('Forespørsel for %1$s ble sendt %2$s. Du får e-post når vi har behandlet forespørselen.', 'bimverdi'),
                                         '<strong>' . esc_html($pending_oppgr_dash['level']) . '</strong>',
                                         esc_html(date_i18n('j. F Y', strtotime($pending_oppgr_dash['requested_at'])))
                                     );

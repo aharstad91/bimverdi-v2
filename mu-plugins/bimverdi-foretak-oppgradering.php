@@ -361,7 +361,7 @@ function bimverdi_send_oppgradering_request_emails($foretak_id, $level, $user_id
     $bruker_body = sprintf(
         '<p>Hei %s,</p>
         <p>Vi har mottatt din forespørsel om å oppgradere <strong>%s</strong> til <strong>%s</strong>.</p>
-        <p>Bård Krogshus i BIM Verdi vurderer forespørselen manuelt og sender deg en bekreftelses-e-post med faktura når oppgraderingen er godkjent.</p>
+        <p>Vi vurderer forespørselen manuelt og sender deg en bekreftelses-e-post når oppgraderingen er godkjent.</p>
         <p>Du kan se status på din forespørsel her: <a href="%s">Min Side — Foretak</a></p>
         <hr>
         <p style="font-size:12px;color:#666;">

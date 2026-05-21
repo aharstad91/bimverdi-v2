@@ -57,7 +57,7 @@ $is_active = $company_id ? bimverdi_is_company_active($company_id) : false;
     </svg>
     <div>
         <p class="text-green-800 text-sm font-medium">Oppgraderingsforespørsel sendt!</p>
-        <p class="text-green-800 text-sm mt-1">Du får e-post når Bård har behandlet forespørselen og sendt faktura.</p>
+        <p class="text-green-800 text-sm mt-1">Du får e-post når vi har behandlet forespørselen.</p>
     </div>
 </div>
 <?php endif; ?>
@@ -184,11 +184,11 @@ if ($bv_error && isset($oppgradering_errors[$bv_error])):
                         <?php if ($is_active): ?>
                             <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                             <span class="text-xs text-[#57534E]">
-                                <?php echo $bv_rolle_label ? esc_html($bv_rolle_label) : esc_html__('Aktiv deltaker', 'bimverdi'); ?>
+                                <?php echo esc_html(bimverdi_foretak_rolle_label($bv_rolle_label)); ?>
                             </span>
                         <?php else: ?>
                             <span class="w-2 h-2 rounded-full bg-<?php echo ($bv_rolle_label === 'Ikke deltaker') ? 'gray' : 'amber'; ?>-400 flex-shrink-0"></span>
-                            <span class="text-xs text-[#57534E]"><?php echo ($bv_rolle_label === 'Ikke deltaker') ? esc_html__('Gratis brukerforetak', 'bimverdi') : esc_html__('Inaktiv deltaker', 'bimverdi'); ?></span>
+                            <span class="text-xs text-[#57534E]"><?php echo esc_html(bimverdi_foretak_rolle_label($bv_rolle_label)); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -214,7 +214,7 @@ if ($bv_error && isset($oppgradering_errors[$bv_error])):
                                 <p class="text-sm text-[#5A5A5A] mt-1">
                                     Forespørsel for <strong><?php echo esc_html($pending_oppgr['level']); ?></strong> ble sendt
                                     <?php echo esc_html(date_i18n('j. F Y', strtotime($pending_oppgr['requested_at']))); ?>.
-                                    Bård vurderer manuelt og sender bekreftelse + faktura når den er godkjent.
+                                    Du får e-post når vi har behandlet forespørselen.
                                 </p>
                                 <a href="<?php echo esc_url(bimverdi_minside_url('foretak/oppgrader')); ?>" class="inline-block text-sm text-[#FF8B5E] hover:underline mt-3">
                                     Endre forespørselen

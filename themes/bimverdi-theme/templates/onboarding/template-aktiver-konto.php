@@ -580,6 +580,16 @@ $prefill_name = '';
                             </label>
                         </div>
 
+                        <div class="form-group">
+                            <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; line-height: 1.4;">
+                                <input type="checkbox" name="subscribe_newsletter" value="1"
+                                       style="margin-top: 4px; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--bv-accent);">
+                                <span style="font-size: var(--bv-text-sm); color: var(--bv-text-primary);">
+                                    Jeg vil motta nyhetsbrev fra BIM Verdi
+                                </span>
+                            </label>
+                        </div>
+
                         <button type="submit" name="bimverdi_verify_account" value="1" class="btn btn-primary">
                             Aktiver kontoen min
                         </button>

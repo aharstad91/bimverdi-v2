@@ -250,6 +250,11 @@ class BIMVerdi_Email_Verification {
         }
         update_user_meta($user_id, 'bimverdi_registered_at', current_time('mysql'));
 
+        // Lagre nyhetsbrev-preferanse (opt-in via checkbox på registreringsskjema).
+        // Tematiske valg (temagrupper) håndteres som separat prosjekt — kun ja/nei her.
+        $newsletter_subscribed = isset($_POST['subscribe_newsletter']) && (string) $_POST['subscribe_newsletter'] === '1' ? '1' : '0';
+        update_user_meta($user_id, 'bimverdi_newsletter_subscribed', $newsletter_subscribed);
+
         // Mark pending registration as verified
         $this->mark_as_verified($token_check['pending']->id);
 
