@@ -4,6 +4,72 @@
 
 ---
 date: 2026-05-21
+action: deploy+screenshare-followup
+files:
+  - mu-plugins/bimverdi-foretak-registration.php
+  - mu-plugins/bimverdi-foretak-oppgradering.php
+  - mu-plugins/bimverdi-email-verification.php
+  - mu-plugins/bimverdi-shared-helpers.php
+  - themes/bimverdi-theme/parts/minside/dashboard.php
+  - themes/bimverdi-theme/parts/minside/foretak-detail.php
+  - themes/bimverdi-theme/parts/minside/foretak-oppgrader.php
+  - themes/bimverdi-theme/templates/onboarding/template-aktiver-konto.php
+  - docs/plans/2026-05-21-001-feat-bard-screenshare-followup-plan.md
+  - claude/bard-context/admin-domener-howto.md
+summary: "Implementerte alle P0-todos fra Bård-møtet samme dag + deployet til prod. Auto-godkjenn Gratisforetak fjerner flaskehals for 562/608 brukere uten foretak. Tekstfikser + pricing-disclaimer + nyhetsbrev-checkbox lever på prod."
+status: deployed
+detail: |
+  **Commits:** 061ed2b (screenshare-followup) + bcd794c (worklog demo-prep) + eb3996e (merge)
+  **Branch:** feat/onboarding-grunnmur → main (no-ff merge, pushet til GitHub)
+  **Plan:** docs/plans/2026-05-21-001-feat-bard-screenshare-followup-plan.md
+
+  **7 implementation units, alle ferdige:**
+    1. Auto-godkjenn Gratisforetak — wp_insert_post(publish) direkte for
+       bv_rolle='Ikke deltaker', kaller bimverdi_foretak_pending_approve()
+       inline (transition-hook fyrer ikke siden old_status='new', ikke
+       'pending' — verifisert i E2E). Admin-mail subject endret til
+       "auto-godkjent (FYI)". Betalende roller beholder pending-flyt.
+    2. Tekstfikser i 5 lokasjoner — "Bård vurderer/sender" → "vi behandler".
+       grep -rn "Bård" på UI returnerer 0 treff på dashboard/oppgrader/detail.
+    3. Helper bimverdi_foretak_rolle_label() — Ikke deltaker → Gratis
+       brukerforetak; Deltaker → Deltakerforetak; +Prosjektdeltaker; +Partner.
+       Brukt i dashboard.php:378 + foretak-detail.php:191.
+    4. Pricing-disclaimer "Årsavgiften beregnes kvartalsvis. Du betaler kun
+       fra inneværende kvartal." synlig over betingelser-checkbox i
+       foretak-oppgrader.php.
+    5. Nyhetsbrev-checkbox i template-aktiver-konto.php — opt-in, default
+       unchecked. Lagrer user_meta bimverdi_newsletter_subscribed=0/1.
+       Tematiske valg (6 temagrupper) eksplisitt utsatt til eget prosjekt.
+    6. Doc admin-domener-howto.md for Bård — hvor og hvordan styre
+       bv_engangsdomener_override + bv_generelle_domener i wp-admin.
+    7. E2E Chrome MCP-validering på localhost (gjennomgang av happy path)
+       + merge til main + push til Servebolt + wp-cli backfill av
+       bv_hoveddomene på prod (80/80 foretak fikk verdi).
+
+  **E2E-verifisering (localhost, før push):**
+    - Ny bruker → aktiver-konto → nyhetsbrev-checkbox lagret som '1'
+    - Gratisforetak-registrering → post_status='publish' direkte
+    - User aktivert med bimverdi_company_id + account_type='foretak'
+    - bv_hoveddomene cachet (PSL stripping fungerer for 3-leddede)
+    - Dashboard viser "Gratis brukerforetak" via ny helper
+    - Oppgrader-skjema viser "Årsavgiften beregnes kvartalsvis" over terms
+    - Ingen "Bård"-leak i UI på dashboard eller oppgrader-side
+    - Testdata ryddet via SQL (user 645 + foretak 1954)
+
+  **Prod-deploy:**
+    - git push main eb3996e → Servebolt rsync-deploy
+    - Filer verifisert via SSH: pricing-disclaimer, rolle_label-helper og
+      auto-godkjent-strings finnes alle i deployerte filer
+    - wp-cli backfill: total=80 updated=80 skipped=0
+    - Smoke-test https://bimverdi.no/registrer/ returnerer 200, form rendres
+
+  **P1-saker utsatt (krever ny UX-runde med Bård):**
+    - Dobbel-melding på block-vegg (samme tekst på arrangement + min-side)
+    - "Klubb på flask" i deltaker-nivå-valg (Gratisbruker + Ikke deltaker)
+    - Tematisk nyhetsbrev-valg (6 temagrupper)
+
+---
+date: 2026-05-21
 action: e2e-verifisering+demo-prep
 files:
   - claude/bard-context/demo-prompt-2026-05-21.md
