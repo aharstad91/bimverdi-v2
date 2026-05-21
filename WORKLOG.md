@@ -3,6 +3,94 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-05-21
+action: e2e-verifisering+demo-prep
+files:
+  - claude/bard-context/demo-prompt-2026-05-21.md
+  - claude/bard-context/screenshots/2026-05-21-demo-arrangement-block.png
+  - claude/bard-context/screenshots/2026-05-21-demo-block-vegg.png
+  - claude/bard-context/screenshots/2026-05-21-demo-nyhetsbrev-block.png
+  - claude/bard-context/screenshots/2026-05-21-demo-admin-domener.png
+  - claude/bard-context/screenshots/2026-05-21-e2e-1-welcome.png
+  - claude/bard-context/screenshots/2026-05-21-e2e-2-dashboard-med-foretak.png
+  - claude/bard-context/screenshots/2026-05-21-e2e-3-pamelding-fullfort.png
+  - claude/bard-context/screenshots/2026-05-21-oppgrader-1-startpunkt.png
+  - claude/bard-context/screenshots/2026-05-21-oppgrader-2-velg-nivaa.png
+  - claude/bard-context/screenshots/2026-05-21-oppgrader-3-faktura-form.png
+  - claude/bard-context/screenshots/2026-05-21-oppgrader-4-sendt.png
+  - claude/bard-context/screenshots/2026-05-21-oppgrader-5-godkjent.png
+summary: "E2E-testet onboarding + oppgraderings-flyt via Chrome DevTools MCP på localhost. Alle 4 demo-steg fra Krav 20+22 verifisert. Full happy path: ny bruker → registrer foretak → meld på arrangement → oppgrader til Deltaker. 12 screenshots klare for Bård-skjermdeling."
+status: ready-for-review
+detail: |
+  **Branch:** feat/onboarding-grunnmur (commit f612825 — ikke deployet til prod)
+  **Sesjon med Bård:** pågående 21. mai 2026 — andre del kommer etter compact
+
+  **Demo-flyt verifisert (4 steg, krav 20+22):**
+    1. Arrangement-blokk på single-arrangement-side med ordrett R22.6-tekst
+       "Du må koble deg til ditt foretak/arbeidsgiver før du går videre"
+       + "Koble til foretak"-CTA (verifisert med demo-legacy).
+    2. Block-vegg på /min-side/?retry=1 med "FORETAKSKOBLING KREVES"-
+       heading, kontekst-melding som husker arrangement-tittelen,
+       og dashboard-state for onboarding under.
+    3. Nyhetsbrev-blokk i footer: submit → redirect til block-vegg,
+       kontekst-tekst skifter dynamisk fra "arrangement-påmelding"
+       til "nyhetsbrev-påmelding".
+    4. Admin-panel for domener: /wp-admin/options-general.php?page=
+       bv-domene-blocklist (slug ble feil i opprinnelig demo-prompt,
+       rettet til bv-domene-blocklist).
+
+  **E2E happy path med ny bruker (demo-bard-2026-05-21@bimverdi-demo.no):**
+    - /registrer/ → e-postverifiserings-lenke (token hentet fra DB)
+    - /aktiver-konto/ → sett navn + passord, aksepter betingelser
+    - Innlogget → /min-side/?welcome=1 med "Velkommen, Demo! Kontoen
+      din er nå aktivert" + foretak-CTA
+    - Naviger til arrangement 1718 → block-vegg vises på siden
+    - Klikk "Koble til foretak" → BRREG-søk på "Initial Force" →
+      autocomplete viser 10 treff → velg "INITIAL FORCE AS"
+    - BRREG-autofyll: org-nr 990340048, nettside, adresse, postnr
+    - Submit som Gratisbruker → "Forespørselen din venter på
+      godkjenning" (foretak post_status = pending)
+    - Manuelt godkjent for demo (UPDATE wp_posts SET post_status=
+      'publish'; satt bimverdi_company_id på user 644)
+    - bv_hoveddomene utledet automatisk til "bimverdi-demo.no" ✅
+      (Fase 0 grunnmur fungerer i praksis)
+    - Tilbake til arrangement → block-vegg borte, "Meld deg på"-
+      knapp aktiv → klikk → "Du er påmeldt"
+
+  **Oppgraderings-flyt (Gratisbruker → Deltaker):**
+    - Dashboard viser "Bli betalende deltaker"-CTA
+    - /min-side/foretak/oppgrader/ → pris-sammenligning med Velg pr nivå
+    - /min-side/foretak/oppgrader/?nivaa=deltaker → faktura-form:
+      EHF (ja/nei), faktura-e-post, faktura-referanse, aksept
+    - Submit → /min-side/foretak/?oppgradering_sendt=1 + dashboard-
+      status "Forespørsel for Deltaker ble sendt 21. May 2026.
+      Bård vurderer manuelt og sender bekreftelse + faktura når
+      den er godkjent."
+    - Simulert admin-godkjenning (DB-nivå): bv_rolle Deltaker,
+      _bv_oppgradering_pending slettet, _bv_oppgradering_history
+      fikk approved-entry
+    - Dashboard refresh → badge endret fra "Gratis brukerforetak"
+      til "Deltaker", verktøy-seksjon låst opp, oppgraderings-
+      status forsvunnet
+
+  **Funn å adressere før prod-deploy:**
+    1. **562 av 608 brukere (~92%) er uten foretak** — vil treffe
+       block-vegg ved første påmelding etter deploy. Manuell admin-
+       godkjenning av nye foretak kan bli stor flaskehals for Bård.
+    2. **Beslutning: gå for Alt 1** — auto-godkjenne Gratisforetak.
+       Bård godkjenner bare betalende (Deltaker+). Transcript med
+       detaljer kommer etter compact.
+    3. **#kobling-skjema-anker på block-vegg peker ingensteds** —
+       "Koble til foretak"-knappen scroller ikke til BRREG-søk.
+       Lite UX-glitch, men forvirrer brukeren.
+    4. **Demo-prompt-slug var feil** — `bv-domener` → rettet til
+       `bv-domene-blocklist` i demo-prompt-2026-05-21.md.
+
+  **Test-data ikke ryddet enda** — demo-bruker 644 + foretak 1952
+  (INITIAL FORCE AS som Deltaker) + 1 påmelding ligger på localhost-
+  DB. Skal ryddes etter Bård-møtet er ferdig.
+
+---
 date: 2026-05-20
 action: implementer+phase-0+phase-1
 files:
