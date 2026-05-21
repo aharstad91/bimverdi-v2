@@ -81,6 +81,34 @@ function bimverdi_validate_terms_acceptance($post_data, $field = 'aksept_betinge
 }
 
 // =============================================================================
+// FORETAK-HELPER: ROLLE-LABEL
+// =============================================================================
+
+/**
+ * Returner brukervennlig label for et foretaks rolle.
+ *
+ * Mapper bv_rolle-verdier til riktig "[rolle]foretak"-tekst slik at f.eks.
+ * 'Deltaker' vises som 'Deltakerforetak' (ikke 'Inaktiv deltaker') i UI.
+ *
+ * @param string|null $bv_rolle ACF-select-verdi ('Ikke deltaker', 'Deltaker', 'Prosjektdeltaker', 'Partner').
+ * @return string Visningstekst.
+ */
+function bimverdi_foretak_rolle_label($bv_rolle) {
+    switch ((string) $bv_rolle) {
+        case 'Ikke deltaker':
+            return 'Gratis brukerforetak';
+        case 'Deltaker':
+            return 'Deltakerforetak';
+        case 'Prosjektdeltaker':
+            return 'Prosjektdeltakerforetak';
+        case 'Partner':
+            return 'Partnerforetak';
+        default:
+            return $bv_rolle !== '' && $bv_rolle !== null ? (string) $bv_rolle : 'Foretak';
+    }
+}
+
+// =============================================================================
 // EMAIL-HELPER: TERMS-FOOTER
 // =============================================================================
 

@@ -52,6 +52,28 @@ add_action('init', function () {
     }
     set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
 
+    // Krav 22 / R22.4: nyhetsbrev krever foretak. Innloggede uten foretak
+    // sendes til block-vegg + foretaks-kobling. Gjester redirectes til
+    // innlogging (eksisterende WP-mønster) — etter login kommer de tilbake hit.
+    if (is_user_logged_in()) {
+        $current_user_id = get_current_user_id();
+        if (
+            function_exists('bimverdi_can_access')
+            && !bimverdi_can_access('subscribe_newsletter')
+            && !user_can($current_user_id, 'manage_options')
+        ) {
+            if (function_exists('bimverdi_remember_pending_oppgave')) {
+                bimverdi_remember_pending_oppgave([
+                    'url'   => $referrer,
+                    'label' => 'nyhetsbrev-påmelding',
+                    'context' => ['type' => 'newsletter'],
+                ]);
+            }
+            wp_redirect(home_url('/min-side/?retry=1'));
+            exit;
+        }
+    }
+
     // Sanitize and validate email
     $email = sanitize_email($_POST['newsletter_email'] ?? '');
 

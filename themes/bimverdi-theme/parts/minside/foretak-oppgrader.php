@@ -110,7 +110,7 @@ if (empty($existing_ehf)) {
                     <p class="text-sm text-[#5A5A5A]">
                         Forespørsel for <strong><?php echo esc_html($pending['level']); ?></strong> ble sendt
                         <?php echo esc_html(date_i18n('j. F Y \k\l. H:i', strtotime($pending['requested_at']))); ?>.
-                        Bård vurderer den manuelt og sender bekreftelse + faktura når den er godkjent.
+                        Du får e-post når vi har behandlet forespørselen.
                     </p>
                     <p class="text-sm text-[#5A5A5A] mt-3">
                         Hvis du ønsker å endre forespørselen til et annet nivå, kan du sende en ny under — den vil erstatte den eksisterende.
@@ -224,6 +224,11 @@ if (empty($existing_ehf)) {
 
         <hr class="border-[#E5E0D5]">
 
+        <!-- Pricing-disclaimer -->
+        <p class="text-sm text-[#5A5A5A]">
+            Årsavgiften beregnes kvartalsvis. Du betaler kun fra inneværende kvartal.
+        </p>
+
         <!-- Betingelser -->
         <fieldset>
             <label class="flex items-start gap-3 cursor-pointer">
@@ -250,8 +255,8 @@ if (empty($existing_ehf)) {
         </div>
 
         <p class="text-xs text-[#888888]">
-            Når du sender forespørselen får du en bekreftelse på e-post. Bård i BIM Verdi godkjenner manuelt
-            og sender deretter velkomst-e-post og faktura.
+            Når du sender forespørselen får du en bekreftelse på e-post. Vi godkjenner forespørselen manuelt
+            og sender deretter en velkomst-e-post.
         </p>
 
     </form>

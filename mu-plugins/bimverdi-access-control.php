@@ -26,7 +26,8 @@ class BIMVerdi_Access_Control {
      * Features that require any company connection (including free/gratis)
      */
     const COMPANY_REQUIRED_FEATURES = array(
-        'company_profile',    // Redigere foretaksprofil
+        'company_profile',     // Redigere foretaksprofil
+        'subscribe_newsletter', // Krav 22 / R22.5: nyhetsbrev krever foretak
     );
 
     /**
@@ -51,13 +52,14 @@ class BIMVerdi_Access_Control {
      * Features available to all registered users
      */
     const OPEN_FEATURES = array(
-        'view_dashboard',     // Se Min Side dashboard
-        'edit_profile',       // Redigere egen profil
-        'view_catalog',       // Se medlemskatalog
-        'view_tools',         // Se verktøykatalog
-        'register_event',     // Melde seg på arrangementer
-        'view_events',        // Se arrangementer
-        'connect_company',    // Koble til foretak
+        'view_dashboard',         // Se Min Side dashboard
+        'edit_profile',           // Redigere egen profil
+        'view_catalog',           // Se medlemskatalog
+        'view_tools',             // Se verktøykatalog
+        'register_event',         // Melde seg på arrangementer
+        'view_events',            // Se arrangementer
+        'connect_company',        // Koble til foretak
+        'register_kunnskapskilde', // Krav 20: Gratisbrukere kan registrere kunnskapskilder. Faktisk foretaks-blokk gjøres i POST-handler.
     );
     
     /**
@@ -324,6 +326,22 @@ class BIMVerdi_Access_Control {
             update_field('tilknyttet_foretak', $post_id, 'user_' . $hovedkontakt_id);
         } else {
             update_user_meta($hovedkontakt_id, 'tilknyttet_foretak', $post_id);
+        }
+
+        // Sync bv_hoveddomene fra hovedkontaktens e-post (Krav 20 / B-027).
+        // Skjer både ved nytt foretak og når hovedkontakt byttes.
+        $hovedkontakt = get_userdata($hovedkontakt_id);
+        if ($hovedkontakt && function_exists('bimverdi_extract_root_domain')) {
+            $hoveddomene = bimverdi_extract_root_domain($hovedkontakt->user_email);
+            if ($hoveddomene && function_exists('update_field')) {
+                $current = get_field('bv_hoveddomene', $post_id);
+                if ($current !== $hoveddomene) {
+                    update_field('bv_hoveddomene', $hoveddomene, $post_id);
+                    if (function_exists('bimverdi_purge_foretak_cache')) {
+                        bimverdi_purge_foretak_cache($post_id);
+                    }
+                }
+            }
         }
     }
 

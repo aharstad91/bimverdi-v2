@@ -390,6 +390,25 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                     <?php elseif (!$access_check['allowed']): ?>
                         <p class="text-[#57534E] text-sm mb-3"><?php echo esc_html($access_check['message']); ?></p>
 
+                        <?php if (($access_check['block_type'] ?? '') === 'foretak_required'):
+                            // Krav 22: lagre pending oppgave når brukeren klikker CTA-knappen, så vi kan resume etter foretaks-kobling.
+                            if (function_exists('bimverdi_remember_pending_oppgave')) {
+                                bimverdi_remember_pending_oppgave([
+                                    'url'   => get_permalink($arrangement_id),
+                                    'label' => sprintf('arrangement-påmelding (%s)', get_the_title($arrangement_id)),
+                                    'context' => ['arrangement_id' => $arrangement_id, 'type' => 'arrangement'],
+                                ]);
+                            }
+                            bimverdi_button([
+                                'text'       => 'Koble til foretak',
+                                'variant'    => 'primary',
+                                'size'       => 'default',
+                                'icon'       => 'building-2',
+                                'href'       => home_url('/min-side/?retry=1'),
+                                'full_width' => true,
+                            ]);
+                        endif; ?>
+
                     <?php else: ?>
                         <button type="button"
                                 class="bv-btn bv-btn--primary w-full"
@@ -755,6 +774,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         showMessage(res.data.message, false);
                         setTimeout(function() { location.reload(); }, 3000);
                     } else {
+                        // Krav 22: foretak_required → send brukeren til block-vegg
+                        if (res.data && res.data.redirect_url) {
+                            window.location.href = res.data.redirect_url;
+                            return;
+                        }
                         showMessage(res.data.message || 'Noe gikk galt.', true);
                         setLoading(btn, false);
                     }

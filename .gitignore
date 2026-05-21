@@ -42,3 +42,11 @@ shared-context/
 # Worklog (blokkeres fra public via .htaccess)
 !WORKLOG.md
 !.htaccess
+
+# Composer-avhengigheter (PSL + andre wp-content-pakker)
+!composer.json
+!composer.lock
+
+# Cached Public Suffix List for jeremykendall/php-domain-parser
+!vendor-data/
+!vendor-data/**

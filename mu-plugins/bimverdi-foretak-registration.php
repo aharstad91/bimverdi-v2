@@ -124,15 +124,16 @@ add_action('init', function () {
         exit;
     }
 
-    // --- GRATIS PATH: pending-foretak, venter på admin-godkjenning ---
-    // Endret 2026-05-07 (T5/D): registrering skaper ikke lenger publisert foretak.
-    // Bruker-aktivering (sett company_id, sett rolle, send velkomst-e-post) kjøres
-    // i transition-hook ved publish via bimverdi-foretak-pending.php.
+    // --- GRATIS PATH: auto-godkjent ved registrering ---
+    // Endret 2026-05-21 (Bård-møte): gratisforetak (bv_rolle = 'Ikke deltaker')
+    // auto-publiseres ved registrering. Bård godkjenner kun betalende.
+    // Bruker-aktivering kjøres direkte ved å kalle bimverdi_foretak_pending_approve()
+    // etter insert. Transition-hook fyrer ikke (siden old_status er 'new', ikke 'pending').
     if ($deltakertype === 'gratis') {
         $foretak_id = wp_insert_post([
             'post_type'   => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
             'post_title'  => $bedriftsnavn,
-            'post_status' => 'pending',
+            'post_status' => 'publish',
             'post_author' => $user_id,
         ]);
 
@@ -145,22 +146,43 @@ add_action('init', function () {
             update_field('organisasjonsnummer', $organisasjonsnummer, $foretak_id);
             update_field('hovedkontaktperson', $user_id, $foretak_id);
             update_field('bv_rolle', 'Ikke deltaker', $foretak_id);
+
+            // Cache hoveddomenet fra hovedkontaktens e-post (Krav 20 / B-027).
+            if (function_exists('bimverdi_extract_root_domain')) {
+                $hoveddomene = bimverdi_extract_root_domain(wp_get_current_user()->user_email ?? '');
+                if ($hoveddomene) {
+                    update_field('bv_hoveddomene', $hoveddomene, $foretak_id);
+                }
+            }
         }
 
-        // Lagre deltakertype som post-meta så transition-hook kan lese den
-        // ved godkjenning. Bruker-meta og rolle settes IKKE før godkjenning.
+        // Lagre deltakertype som post-meta så pending-approve-helperen kan lese
+        // den. Helperen sletter denne metaen når den er ferdig.
         update_post_meta($foretak_id, '_bv_pending_deltakertype', 'gratis');
 
-        // Send admin-varsel om ventende godkjenning
+        if (function_exists('bimverdi_purge_foretak_cache')) {
+            bimverdi_purge_foretak_cache($foretak_id);
+        }
+
+        // Aktiver bruker direkte (bimverdi_company_id, account_type='foretak',
+        // velkomst-e-post). Vi kaller helperen som hooken ellers ville kalt.
+        if (function_exists('bimverdi_foretak_pending_approve')) {
+            $foretak_post = get_post($foretak_id);
+            if ($foretak_post instanceof WP_Post) {
+                bimverdi_foretak_pending_approve($foretak_post);
+            }
+        }
+
+        // Send admin-varsel: auto-godkjent (FYI, ikke krever handling)
         if (function_exists('bimverdi_send_admin_notification_email')) {
             $current_user = wp_get_current_user();
             $admin_url_foretak = admin_url('post.php?post=' . $foretak_id . '&action=edit');
-            $admin_subject = sprintf('VENTER PÅ GODKJENNING — gratisforetak: %s', $bedriftsnavn);
+            $admin_subject = sprintf('Nytt gratisforetak registrert (auto-godkjent): %s', $bedriftsnavn);
             $admin_body = sprintf(
-                '<p>En ny gratisforetak-registrering venter på din godkjenning.</p>
-                <p style="background:#FFF8F5;padding:12px 16px;border-left:4px solid #FF8B5E;font-size:13px;">
-                    <strong>Sjekk før godkjenning:</strong> Stemmer brukerens e-postdomene med foretaket?
-                    Er dette en reell registrering?
+                '<p>Et nytt gratisforetak er registrert og automatisk godkjent.</p>
+                <p style="background:#F0F9F0;padding:12px 16px;border-left:4px solid #B3DB87;font-size:13px;">
+                    Krever ingen handling — dette er kun til informasjon.
+                    Gratisforetak (rolle <em>Ikke deltaker</em>) publiseres automatisk fra og med 2026-05-21.
                 </p>
                 <table style="border-collapse:collapse;font-size:14px;">
                     <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
@@ -170,12 +192,11 @@ add_action('init', function () {
                 </table>
                 <p style="margin-top:24px;">
                     <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
-                        Vurder forespørselen i wp-admin
+                        Se foretaket i wp-admin
                     </a>
                 </p>
                 <p style="font-size:13px;color:#666;margin-top:16px;">
-                    Endre status til «Publisert» for å godkjenne, eller flytt til papirkurv for å avvise.
-                    Brukeren får automatisk e-post i begge tilfeller.
+                    Hvis registreringen virker uautorisert, kan du redigere foretaket eller deaktivere brukeren manuelt i wp-admin.
                 </p>%s',
                 esc_html($bedriftsnavn),
                 esc_html($organisasjonsnummer),
@@ -191,7 +212,7 @@ add_action('init', function () {
         // Clear rate limit on success
         delete_transient($rate_key);
 
-        wp_redirect(add_query_arg('pending', '1', home_url('/min-side/')));
+        wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
         exit;
     }
 

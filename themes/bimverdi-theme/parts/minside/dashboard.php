@@ -255,9 +255,27 @@ endif;
 ?>
 
 <?php
+// Krav 22: Block-vegg over kobling-widget hvis bruker kom hit via ?retry= fra blokkert oppgave.
+if (!$bruker_foretak && function_exists('bimverdi_pending_oppgave_status')) :
+    $retry_status = bimverdi_pending_oppgave_status();
+    if ($retry_status && $retry_status['state'] === 'active') :
+        $oppgave_label = $retry_status['oppgave']['label'] ?? 'registreringen';
+        get_template_part('parts/components/block-vegg', null, [
+            'oppgave_label' => $oppgave_label,
+            'retry_url'     => home_url('/min-side/?retry=1#kobling-skjema'),
+        ]);
+    elseif ($retry_status && $retry_status['state'] === 'expired') : ?>
+        <div class="bv-retry-expired" style="max-width:720px;margin:24px auto 0;padding:16px 24px;border-top:1px solid #D6D1C6;border-bottom:1px solid #D6D1C6;color:#5A5A5A;font-size:14px;">
+            <?php echo esc_html($retry_status['message']); ?>
+        </div>
+    <?php endif;
+endif;
+?>
+
+<?php
 // BV20: Foretak-kobling widget for new users
 if ($is_welcome_state && !$bruker_foretak) :
-    get_template_part('parts/minside/welcome-foretak-kobling', null, ['context' => 'welcome']);
+    get_template_part('parts/minside/welcome-foretak-kobling', null, ['context' => 'welcome', 'anchor_id' => 'kobling-skjema']);
 endif;
 ?>
 
@@ -353,11 +371,11 @@ if (!$company && $bruker_foretak) : ?>
                         <?php if ($is_active): ?>
                             <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                             <span class="text-xs text-[#57534E]">
-                                <?php echo $bv_rolle_dash ? esc_html($bv_rolle_dash) : esc_html__('Aktiv deltaker', 'bimverdi'); ?>
+                                <?php echo esc_html(bimverdi_foretak_rolle_label($bv_rolle_dash)); ?>
                             </span>
                         <?php else: ?>
                             <span class="w-2 h-2 rounded-full bg-<?php echo ($bv_rolle_dash === 'Ikke deltaker') ? 'gray' : 'amber'; ?>-400 flex-shrink-0"></span>
-                            <span class="text-xs text-[#57534E]"><?php echo ($bv_rolle_dash === 'Ikke deltaker') ? esc_html__('Gratis brukerforetak', 'bimverdi') : esc_html__('Inaktiv deltaker', 'bimverdi'); ?></span>
+                            <span class="text-xs text-[#57534E]"><?php echo esc_html(bimverdi_foretak_rolle_label($bv_rolle_dash)); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -396,7 +414,7 @@ if (!$company && $bruker_foretak) : ?>
                                     <?php
                                     printf(
                                         /* translators: 1: deltakernivå, 2: dato */
-                                        esc_html__('Forespørsel for %1$s ble sendt %2$s. Bård vurderer manuelt og sender bekreftelse + faktura når den er godkjent.', 'bimverdi'),
+                                        esc_html__('Forespørsel for %1$s ble sendt %2$s. Du får e-post når vi har behandlet forespørselen.', 'bimverdi'),
                                         '<strong>' . esc_html($pending_oppgr_dash['level']) . '</strong>',
                                         esc_html(date_i18n('j. F Y', strtotime($pending_oppgr_dash['requested_at'])))
                                     );

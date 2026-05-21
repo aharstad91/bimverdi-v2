@@ -62,7 +62,22 @@ function bimverdi_ajax_register_event() {
     $adgang = get_field('adgang', $arrangement_id) ?: 'alle';
     $access_check = bimverdi_check_event_access($user_id, $adgang);
     if (!$access_check['allowed']) {
-        wp_send_json_error(['message' => $access_check['message']], 403);
+        $response = ['message' => $access_check['message']];
+
+        // Krav 22: hvis blokk-type er foretak_required, lagre pending oppgave
+        // og signaler redirect til block-vegg + foretaks-kobling.
+        $block_type = $access_check['block_type'] ?? '';
+        if ($block_type === 'foretak_required' && function_exists('bimverdi_remember_pending_oppgave')) {
+            bimverdi_remember_pending_oppgave([
+                'url'   => get_permalink($arrangement_id),
+                'label' => sprintf('arrangement-påmelding (%s)', get_the_title($arrangement_id)),
+                'context' => ['arrangement_id' => $arrangement_id, 'type' => 'arrangement'],
+            ]);
+            $response['block_type']   = $block_type;
+            $response['redirect_url'] = home_url('/min-side/?retry=1');
+        }
+
+        wp_send_json_error($response, 403);
     }
 
     // Check for duplicate registration
@@ -165,40 +180,51 @@ function bimverdi_ajax_unregister_event() {
  * @return array ['allowed' => bool, 'message' => string]
  */
 function bimverdi_check_event_access($user_id, $adgang) {
-    // 'alle' - anyone logged in can register
+    // Admin alltid OK (BIM Verdi-staff bypass per Krav 22).
+    if ($user_id && user_can($user_id, 'manage_options')) {
+        return ['allowed' => true, 'message' => ''];
+    }
+
+    // Må være innlogget for ALLE adgang-verdier
+    if (!$user_id) {
+        return [
+            'allowed'    => false,
+            'message'    => 'Du må ha en registrert brukerkonto for å melde deg på.',
+            'block_type' => 'login_required',
+        ];
+    }
+
+    // Krav 22 / R22.2: ALLE arrangement-påmeldinger krever foretak, uavhengig av adgang.
+    // Foretak-preflight kjører FØR adgang-spesifikk logikk.
+    if (!function_exists('bimverdi_user_has_company') || !bimverdi_user_has_company($user_id)) {
+        return [
+            'allowed'    => false,
+            'message'    => 'Du må koble deg til ditt foretak/arbeidsgiver før du går videre',
+            'block_type' => 'foretak_required',
+        ];
+    }
+
+    // 'alle' - alle innloggede med foretak kan registrere
     if ($adgang === 'alle') {
         return ['allowed' => true, 'message' => ''];
     }
 
-    // 'registrerte' - must be logged in (any role)
+    // 'registrerte' - tilsvarer 'alle' nå (foretak er kravet over).
     if ($adgang === 'registrerte') {
-        if (!$user_id) {
-            return [
-                'allowed' => false,
-                'message' => 'Du må ha en registrert brukerkonto for å melde deg på.',
-            ];
-        }
         return ['allowed' => true, 'message' => ''];
     }
 
-    // 'deltakere' or legacy 'medlemmer' - must have company with paying role
+    // 'deltakere' / 'medlemmer' - må ha foretak med betalende rolle
     if ($adgang === 'deltakere' || $adgang === 'medlemmer') {
-        if (!function_exists('bimverdi_user_has_company') || !bimverdi_user_has_company($user_id)) {
-            return [
-                'allowed' => false,
-                'message' => 'Dette arrangementet er for deltakere i BIM Verdi. Koble foretaket ditt for tilgang.',
-            ];
-        }
-
-        // Check that the company has a paying role
         $company = bimverdi_get_user_company($user_id);
         if ($company) {
             $company_id = is_array($company) ? ($company['id'] ?? $company['ID'] ?? 0) : $company;
             $bv_rolle = get_field('bv_rolle', $company_id);
             if (!$bv_rolle || $bv_rolle === 'Ikke deltaker') {
                 return [
-                    'allowed' => false,
-                    'message' => 'Dette arrangementet er for betalende deltakere i BIM Verdi.',
+                    'allowed'    => false,
+                    'message'    => 'Dette arrangementet er for betalende deltakere i BIM Verdi.',
+                    'block_type' => 'paying_required',
                 ];
             }
         }
@@ -206,7 +232,7 @@ function bimverdi_check_event_access($user_id, $adgang) {
         return ['allowed' => true, 'message' => ''];
     }
 
-    // Unknown adgang value - allow by default
+    // Unknown adgang value - allow by default (foretak-krav allerede oppfylt)
     return ['allowed' => true, 'message' => ''];
 }
 

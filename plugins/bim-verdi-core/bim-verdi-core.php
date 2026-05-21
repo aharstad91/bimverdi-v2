@@ -94,6 +94,9 @@ class BIM_Verdi_Core {
         
         // Load ACF user profile fields registration
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/acf/register-user-fields.php';
+
+        // Load ACF foretak fields registration (bv_hoveddomene)
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/acf/register-foretak-fields.php';
         
         // Gravity Forms removed — all forms replaced with plain HTML + mu-plugin handlers.
         // Former files: class-gravity-forms-manager.php, setup/class-profile-form-migration.php

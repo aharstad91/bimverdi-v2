@@ -435,6 +435,21 @@ function bimverdi_ajax_save_bruker_foretak() {
 
     error_log('BIMVerdi: User ' . $user_id . ' saved BRUKER-FORETAK: ' . $orgnr . ' (' . $navn . ')');
 
+    // Krav 22: hvis brukeren hadde en pending oppgave når de ble blokkert,
+    // resume til den i stedet for default dashboard.
+    $resume_url = function_exists('bimverdi_resume_pending_oppgave_url')
+        ? bimverdi_resume_pending_oppgave_url()
+        : null;
+    if ($resume_url) {
+        if (function_exists('bimverdi_clear_pending_oppgave')) {
+            bimverdi_clear_pending_oppgave();
+        }
+        wp_send_json_success([
+            'message'  => 'Foretak lagret. Sender deg tilbake til der du var.',
+            'redirect' => add_query_arg('foretak_koblet', 'bruker', $resume_url),
+        ]);
+    }
+
     wp_send_json_success([
         'message'  => 'Foretak lagret.',
         'redirect' => home_url('/min-side/?foretak_koblet=bruker'),
