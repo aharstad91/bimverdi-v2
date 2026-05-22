@@ -832,14 +832,25 @@ if (!$company && $bruker_foretak) : ?>
 
         <!-- Section B: Pricing-tabell (deltakeravgift og -nivå) -->
         <div class="my-6">
-            <h4 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
+            <p class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
                 <?php _e('Deltakeravgift og -nivå', 'bimverdi'); ?>
+            </p>
+            <h4 class="text-xl font-light text-[#1A1A1A] tracking-tight mb-3">
+                <?php _e('Gratisbruker eller aktiv deltaker?', 'bimverdi'); ?>
             </h4>
-            <p class="text-xs text-[#5A5A5A] mb-4">
-                <?php _e('Sammenlign nivåene under og velg det som passer for deg eller arbeidsgiveren din.', 'bimverdi'); ?>
+            <p class="text-sm text-[#5A5A5A] mb-4 max-w-2xl">
+                <?php _e('Sammenlign nivåene under og velg det som passer for din arbeidsgiver. Deltakeravgiften blir beregnet kvartalsvis fra det kvartalet du melder inn ditt foretak.', 'bimverdi'); ?>
             </p>
             <?php
-            if (function_exists('bimverdi_render_pattern')) {
+            // Når bruker har et koblet foretak fra BRREG-søk, lar vi pricing-tabellens
+            // «Velg»-knapper laste dashboardet på nytt med ?nivaa=X, slik at det
+            // inline-skjemaet under fanger opp valget via $selected_nivaa.
+            if ($bruker_foretak && !empty($bruker_foretak['orgnr']) && !empty($bruker_foretak['navn'])
+                && function_exists('bimverdi_pricing_table')) {
+                echo bimverdi_pricing_table(null, [
+                    'cta_url_template' => '/min-side/?nivaa={plan_key}#registrer-foretak',
+                ]);
+            } elseif (function_exists('bimverdi_render_pattern')) {
                 echo bimverdi_render_pattern('pricing-tabell');
             }
             ?>
@@ -849,11 +860,12 @@ if (!$company && $bruker_foretak) : ?>
 
         <!-- Section C: Inline foretak-registrering -->
         <?php if ($bruker_foretak && !empty($bruker_foretak['orgnr']) && !empty($bruker_foretak['navn'])): ?>
-            <div class="mt-6">
+            <div class="mt-6" id="registrer-foretak">
                 <h4 class="text-base font-semibold text-[#1A1A1A] mb-1"><?php _e('Registrer foretaket', 'bimverdi'); ?></h4>
-                <p class="text-xs text-[#5A5A5A] mb-4"><?php _e('Velg deltakernivå og fullfør registreringen for å få full tilgang til BIM Verdi-portalen.', 'bimverdi'); ?></p>
+                <p class="text-xs text-[#5A5A5A] mb-4"><?php _e('Velg deltakernivå over og fullfør registreringen for å få full tilgang til BIM Verdi-portalen.', 'bimverdi'); ?></p>
                 <?php get_template_part('parts/minside/foretak-registrer-form', null, [
-                    'preselected' => $bruker_foretak,
+                    'preselected'           => $bruker_foretak,
+                    'level_picker_external' => true,
                 ]); ?>
             </div>
         <?php else: ?>

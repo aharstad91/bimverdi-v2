@@ -574,7 +574,7 @@ $prefill_name = '';
                                     Jeg aksepterer
                                     <a href="<?php echo esc_url(defined('BV_TERMS_URL') ? BV_TERMS_URL : 'https://www.bimverdi.no/betingelser'); ?>"
                                        target="_blank" rel="noopener"
-                                       style="color: var(--bv-accent); text-decoration: underline;">betingelsene for medlemskap i BIM Verdi</a>
+                                       style="color: var(--bv-accent); text-decoration: underline;">betingelsene for registrering som bruker i BIM Verdi</a>
                                     <span class="required">*</span>
                                 </span>
                             </label>

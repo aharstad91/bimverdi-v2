@@ -18,6 +18,11 @@ defined('ABSPATH') || exit;
 $preselected = $args['preselected'] ?? null;
 $has_preselected = is_array($preselected) && !empty($preselected['orgnr']) && !empty($preselected['navn']);
 
+// Når kalleren (f.eks. dashboard) allerede rendrer en pricing-tabell over skjemaet,
+// skal vi ikke duplisere nivåvelgeren inni skjemaet. Default false → frittstående
+// registrer-side fortsetter å vise en inline pricing-tabell når nivå ikke er valgt.
+$level_picker_external = !empty($args['level_picker_external']);
+
 // Two-step-flyt: ?nivaa=X velger deltakernivå før resten av skjemaet vises.
 // Validér mot ACF-pricing-data så ukjente verdier ignoreres.
 $valid_plan_keys = function_exists('bimverdi_pricing_valid_plan_keys')
@@ -227,68 +232,28 @@ $bransje_options = [
         <!-- Two-step-flyt: nivå er allerede valgt fra pricing-blokka. Hidden input
              erstatter radio-griden; eksisterende JS leser denne ved page-load. -->
         <input type="hidden" name="deltakertype" value="<?php echo esc_attr($selected_nivaa); ?>">
+        <?php elseif ($level_picker_external): ?>
+        <!-- Dashboard rendrer pricing-tabellen over skjemaet; vi minner bare brukeren på å bruke den. -->
+        <div class="p-4 bg-[#FFF8F5] border border-[#FF8B5E]/30 rounded-lg flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <p class="text-sm text-[#1A1A1A]">
+                <strong><?php _e('Velg deltakernivå i tabellen over', 'bimverdi'); ?></strong> <?php _e('— klikk «Velg» for å fortsette registreringen.', 'bimverdi'); ?>
+            </p>
+        </div>
         <?php else: ?>
-        <!-- Deltakertype / Deltakernivå -->
+        <!-- Frittstående registrer-side: render pricing-tabellen inline så bruker kan velge nivå. -->
         <fieldset>
             <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
-                Velg deltakernivå <span class="text-red-600">*</span>
+                <?php _e('Velg deltakernivå', 'bimverdi'); ?> <span class="text-red-600">*</span>
             </legend>
-            <p class="text-xs text-[#888888] mb-3">Velg det nivået som passer foretaket ditt</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <?php
-                $deltakertyper = [
-                    'gratis' => [
-                        'label' => 'Gratis brukerforetak',
-                        'features' => ['Påmelding til åpne arrangementer', 'Registrer kunnskap og verktøy'],
-                        'personer' => 1,
-                        'pris' => '0',
-                    ],
-                    'deltaker' => [
-                        'label' => 'Deltaker',
-                        'features' => ['Temagrupper og lukkede møter', 'Verktøyregistrering', 'Rabatt på konferanser'],
-                        'personer' => 3,
-                        'pris' => '8 000',
-                    ],
-                    'prosjektdeltaker' => [
-                        'label' => 'Prosjektdeltaker',
-                        'features' => ['Alt i Deltaker', '1-2 timer rådgivning/mnd', 'Prosjektkonsortier'],
-                        'personer' => 4,
-                        'pris' => '24 000',
-                    ],
-                    'partner' => [
-                        'label' => 'Partner',
-                        'features' => ['Alt i Prosjektdeltaker', 'Utvidet rådgivning', 'Styringsgruppe og piloter'],
-                        'personer' => 5,
-                        'pris' => '48 000',
-                    ],
-                ];
-                foreach ($deltakertyper as $value => $type): ?>
-                <label class="relative p-4 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5] flex flex-col">
-                    <div class="flex items-center gap-2 mb-2">
-                        <input type="radio" name="deltakertype" value="<?php echo esc_attr($value); ?>" required
-                               class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E] flex-shrink-0">
-                        <span class="text-sm font-semibold text-[#1A1A1A]"><?php echo esc_html($type['label']); ?></span>
-                    </div>
-                    <ul class="space-y-1 flex-1">
-                        <?php foreach ($type['features'] as $feature): ?>
-                        <li class="text-xs text-[#5A5A5A] flex items-center gap-1.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M20 6 9 17l-5-5"/></svg>
-                            <?php echo esc_html($feature); ?>
-                        </li>
-                        <?php endforeach; ?>
-                    </ul>
-                    <p class="mt-3 pt-3 border-t border-[#E5E0D5] text-xs text-[#888888]">
-                        <?php if ($type['pris'] === '0'): ?>
-                            Gratis
-                        <?php else: ?>
-                            <?php echo (int) $type['personer']; ?> personer · <?php echo esc_html($type['pris']); ?> kr/år
-                        <?php endif; ?>
-                    </p>
-                </label>
-                <?php endforeach; ?>
-            </div>
-            <p class="mt-2 text-xs text-[#888888]">Fakturering avtales etter registrering</p>
-            <p class="mt-1 text-xs text-[#888888]">Påmelding i 2. kvartal gir 25 % rabatt på årsavgift. Etter 1. juli: 50 % rabatt.</p>
+            <p class="text-xs text-[#888888] mb-3"><?php _e('Klikk «Velg» for nivået som passer foretaket ditt.', 'bimverdi'); ?></p>
+            <?php
+            if (function_exists('bimverdi_pricing_table')) {
+                echo bimverdi_pricing_table(null, [
+                    'cta_url_template' => '/min-side/foretak/registrer/?nivaa={plan_key}',
+                ]);
+            }
+            ?>
         </fieldset>
         <?php endif; ?>
 

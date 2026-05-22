@@ -72,11 +72,14 @@ $first_name = $user->first_name ?: $user->display_name;
 
     <!-- Motivasjon: Deltakeravgift og -nivå (pricing-pattern) -->
     <div class="mt-10 pt-8 border-t border-[#E7E5E4]">
-        <h3 class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
+        <p class="text-xs font-semibold text-[#5A5A5A] uppercase tracking-wider mb-2">
             <?php _e('Deltakeravgift og -nivå', 'bimverdi'); ?>
+        </p>
+        <h3 class="text-xl font-light text-[#1A1A1A] tracking-tight mb-3">
+            <?php _e('Gratisbruker eller aktiv deltaker?', 'bimverdi'); ?>
         </h3>
-        <p class="text-xs text-[#5A5A5A] mb-4">
-            <?php _e('Sammenlign nivåene under og velg det som passer for deg eller arbeidsgiveren din.', 'bimverdi'); ?>
+        <p class="text-sm text-[#5A5A5A] mb-4 max-w-2xl">
+            <?php _e('Sammenlign nivåene under og velg det som passer for din arbeidsgiver. Deltakeravgiften blir beregnet kvartalsvis fra det kvartalet du melder inn ditt foretak.', 'bimverdi'); ?>
         </p>
         <?php
         if (function_exists('bimverdi_render_pattern')) {
