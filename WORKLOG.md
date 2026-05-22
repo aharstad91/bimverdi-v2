@@ -3,6 +3,59 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-05-22
+action: deploy+gratisbruker-orgnr-sharing
+files:
+  - mu-plugins/bimverdi-foretak-registration.php
+summary: "Flere gratisbrukere kan nå dele samme orgnr. Tidligere blokkerte orgnr_exists-sjekken alle gjenregistreringer; nå auto-kobles ny gratisbruker som tilleggskontakt til eksisterende publisert gratisforetak (bv_rolle='Ikke deltaker'). Betalende registrering blokkeres uendret."
+status: deployed
+detail: |
+  **Commit:** f0d4170 (deployet via GitHub→Servebolt-autodeploy)
+  **Branch:** main
+  **Trigger:** Bård-rapport 2026-05-22 — ny gratisbruker fikk feilmelding
+    «Dette organisasjonsnummeret er allerede registrert i BIM Verdi»
+    selv om eksisterende foretak var gratis.
+
+  **Endring:**
+    - Orgnr-eksistens-sjekken i bimverdi-foretak-registration.php
+      tillater nå auto-link når:
+        deltakertype === 'gratis'
+        AND existing.post_status === 'publish'
+        AND existing.bv_rolle === 'Ikke deltaker'
+    - Ny helper bimverdi_foretak_autolink_gratis_user($user_id, $foretak_id):
+        * setter bimverdi_company_id + bim_verdi_company_id (legacy)
+        * setter bimverdi_account_type='foretak'
+        * setter ACF tilknyttet_foretak på bruker
+        * setter tilleggskontakt-rolle (aldri downgrade admin)
+        * rydder BRREG-search-state (bimverdi_bruker_foretak_*)
+        * purger foretak-cache
+        * sender FYI-mail til admin (krever ingen handling)
+    - Pending eller paid eksisterende → fortsatt blokkering
+      (orgnr_exists-melding uendret).
+
+  **E2E-validering (Chrome MCP, localhost):**
+    - Positiv: ny gratisbruker (autolink-test) registrerte 983792685
+      (KEPLA AS, eksisterende gratisforetak). Redirect til
+      /min-side/foretak/?registered=1, ser «Mitt foretak: KEPLA AS —
+      Gratis brukerforetak». DB bekreftet:
+        user 647: bimverdi_company_id=1606, role=tilleggskontakt,
+        tilknyttet_foretak=1606.
+    - Negativ: betalende-registrering (deltaker) på samme orgnr →
+      redirect ?bv_error=orgnr_exists (uendret).
+    - Ingen duplikate foretak opprettet for orgnr 983792685 (én
+      foretak-post før og etter testene).
+    - Testbrukere ryddet etter validering.
+
+  **Prod-verifisering:**
+    - SSH-grep på Servebolt bekrefter 4 treff på autolink-helper +
+      can_auto_link i deployert fil.
+
+  **Utsatt:**
+    - Paid+gratis-orgnr-kombinasjon (krever ny UX-runde med Bård):
+      hva skjer hvis noen betaler for orgnr som alt har gratisforetak?
+      Bård svarte «ta det senere» 2026-05-22.
+
+---
 date: 2026-05-21
 action: deploy+screenshare-followup
 files:
