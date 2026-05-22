@@ -120,7 +120,29 @@ add_action('init', function () {
         'numberposts' => 1,
     ]);
     if (!empty($existing_foretak)) {
-        wp_redirect(add_query_arg('bv_error', 'orgnr_exists', $redirect_error));
+        // Bård-krav 2026-05-22: flere gratisbrukere skal kunne dele samme
+        // orgnr. Hvis eksisterende er publish + 'Ikke deltaker' (gratis) og
+        // ny registrering også er gratis, kobler vi brukeren til som
+        // tilleggskontakt i stedet for å blokkere.
+        $existing = $existing_foretak[0];
+        $existing_rolle = function_exists('get_field')
+            ? (string) get_field('bv_rolle', $existing->ID)
+            : (string) get_post_meta($existing->ID, 'bv_rolle', true);
+
+        $can_auto_link = (
+            $deltakertype === 'gratis'
+            && $existing->post_status === 'publish'
+            && $existing_rolle === 'Ikke deltaker'
+        );
+
+        if (!$can_auto_link) {
+            wp_redirect(add_query_arg('bv_error', 'orgnr_exists', $redirect_error));
+            exit;
+        }
+
+        bimverdi_foretak_autolink_gratis_user($user_id, $existing->ID);
+        delete_transient($rate_key);
+        wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
         exit;
     }
 
@@ -455,6 +477,74 @@ add_action('init', function () {
     wp_redirect(add_query_arg('pending', '1', home_url('/min-side/')));
     exit;
 });
+
+/**
+ * Koble en ny gratisbruker til et eksisterende gratisforetak som
+ * tilleggskontakt. Brukes når orgnr finnes fra før (Bård-krav 2026-05-22:
+ * flere gratisbrukere skal kunne dele samme orgnr).
+ *
+ * Speiler det company-invitations gjør ved accept_invitation: setter
+ * user-meta, ACF-felt, tilleggskontakt-rolle, og rydder BRREG-state.
+ *
+ * @param int $user_id
+ * @param int $foretak_id
+ */
+function bimverdi_foretak_autolink_gratis_user($user_id, $foretak_id) {
+    update_user_meta($user_id, 'bimverdi_company_id', $foretak_id);
+    update_user_meta($user_id, 'bim_verdi_company_id', $foretak_id);
+    update_user_meta($user_id, 'bimverdi_account_type', 'foretak');
+    if (function_exists('update_field')) {
+        update_field('tilknyttet_foretak', $foretak_id, 'user_' . $user_id);
+    }
+
+    delete_user_meta($user_id, 'bimverdi_bruker_foretak_orgnr');
+    delete_user_meta($user_id, 'bimverdi_bruker_foretak_navn');
+    delete_user_meta($user_id, 'bimverdi_bruker_foretak_source');
+
+    $user = new WP_User($user_id);
+    if (!in_array('administrator', $user->roles, true)) {
+        $user->set_role('tilleggskontakt');
+    }
+
+    if (function_exists('bimverdi_purge_foretak_cache')) {
+        bimverdi_purge_foretak_cache($foretak_id);
+    }
+
+    if (function_exists('bimverdi_send_admin_notification_email')) {
+        $foretak = get_post($foretak_id);
+        $current_user = wp_get_current_user();
+        $admin_url_foretak = admin_url('post.php?post=' . $foretak_id . '&action=edit');
+        $admin_subject = sprintf('Ny gratisbruker koblet til foretak: %s', $foretak ? $foretak->post_title : '#' . $foretak_id);
+        $terms_footer = function_exists('bimverdi_render_terms_footer_html')
+            ? bimverdi_render_terms_footer_html()
+            : '';
+        $admin_body = sprintf(
+            '<p>En ny bruker har koblet seg til et eksisterende gratisforetak via orgnr-match.</p>
+            <p style="background:#F0F9F0;padding:12px 16px;border-left:4px solid #B3DB87;font-size:13px;">
+                Krever ingen handling — kun til informasjon. Flere gratisbrukere kan dele samme orgnr som tilleggskontakter (Bård-krav 2026-05-22).
+            </p>
+            <table style="border-collapse:collapse;font-size:14px;">
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Foretak</td><td><strong>%s</strong></td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Ny tilleggskontakt</td><td>%s &lt;%s&gt;</td></tr>
+                <tr><td style="padding:4px 12px 4px 0;color:#666;">Tidspunkt</td><td>%s</td></tr>
+            </table>
+            <p style="margin-top:24px;">
+                <a href="%s" style="background:#FF8B5E;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                    Se foretaket i wp-admin
+                </a>
+            </p>%s',
+            esc_html($foretak ? $foretak->post_title : ''),
+            esc_html($current_user->display_name),
+            esc_html($current_user->user_email),
+            esc_html(date_i18n('j. F Y \k\l. H:i')),
+            esc_url($admin_url_foretak),
+            $terms_footer
+        );
+        bimverdi_send_admin_notification_email($admin_subject, $admin_body);
+    }
+
+    error_log("BIMVerdi: user $user_id auto-linked to existing gratisforetak $foretak_id");
+}
 
 /**
  * Generate HTML email for foretak registration confirmation
