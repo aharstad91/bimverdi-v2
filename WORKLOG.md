@@ -4,6 +4,58 @@
 
 ---
 date: 2026-05-28
+action: fix-orgnr-exists-blokk-paa-eksisterende-gratisforetak
+files:
+  - mu-plugins/bimverdi-foretak-registration.php
+summary: "Bård påpekte at han som gratisbruker ikke fikk oppgradert et eksisterende gratisforetak — registreringsskjemaet blokkerte med «orgnr_exists». Per ny regel (Bård 2026-05-28): gratisforetak har ingen «eier», enhver gratisbruker kan oppgradere det. Fix (Fase 1 — minimal unblock): når innsendt orgnr matcher et eksisterende gratisforetak (publish + Ikke deltaker) og bruker har valgt et betalende nivå, auto-linkes bruker som gratisbruker og redirectes til selvbetjent oppgrader-flyt (krav 24-v4) med valgt nivå."
+status: deployed
+detail: |
+  **Trigger:** Bård-mail 2026-05-28 med screenshot fra
+  /min-side/foretak/registrer/?nivaa=deltaker hvor han prøvde å registrere
+  BÅRD KROGSHUS (eksisterende gratisforetak 1955, orgnr 868332662) som
+  Deltaker og fikk feilmelding «Dette organisasjonsnummeret er allerede
+  registrert i BIM Verdi».
+
+  Bård avklarte produktregelen: «det finnes ikke en hovedkontakt i et
+  gratisforetak så alle gratisbrukere kan oppgrader til deltaker+ og bli
+  hovedkontakt».
+
+  **Diagnose:**
+  bimverdi-foretak-registration.php linje 132-141 hadde en `can_auto_link`-
+  sjekk som KUN tillot gjenbruk av eksisterende gratisforetak hvis ny
+  registrering også var gratis. Når bruker valgte Deltaker/Prosjektdeltaker/
+  Partner på orgnr som finnes som gratisforetak, ble de blokkert i stedet
+  for å bli sendt videre til selvbetjent oppgrader-flyt.
+
+  **Fix (Fase 1):**
+  Refaktorert orgnr-eksistens-blokken til tre eksplisitte grener:
+   1. Eksisterende gratis + ny gratis → auto-link, redirect til foretak-side
+      (uendret oppførsel fra 2026-05-22)
+   2. Eksisterende gratis + ny paid (deltaker/prosjektdeltaker/partner) →
+      auto-link bruker som gratisbruker, redirect til
+      /min-side/oppgrader/?nivaa=X. Krav 24-v4-flyten håndterer
+      konverteringen og setter brukeren som hovedkontakt.
+   3. Eksisterende paid eller pending → blokkér med orgnr_exists (uendret)
+
+  **Verifikasjon (curl, lokalt):**
+   - Test 1: paid + eksisterende gratis → 302 til /min-side/oppgrader/?nivaa=deltaker ✅
+            + auto-link satte bimverdi_company_id=1638 på testbruker ✅
+   - Test 2: gratis + eksisterende gratis → 302 til /min-side/foretak/?registered=1 ✅
+   - Test 4: paid + eksisterende paid → 302 til ?bv_error=orgnr_exists ✅
+   - Test 5: paid + ny orgnr → 302 til /min-side/?pending=1 ✅
+
+  **Fase 2 (utstående, egen runde):**
+  Rydde inkonsekvens i datamodellen — gratisforetak har fortsatt
+  `hovedkontaktperson`-felt satt. Det krever:
+   - Skippe hovedkontaktperson ved nyregistrering av gratisforetak
+   - Endre invitations + foretak-edit-access så alle gratisbrukere har
+     samme rettigheter (i dag krever begge hovedkontakt-rolle)
+   - Migrasjon for 21 eksisterende gratisforetak på prod
+  Ingen feature breaks i mellomtiden — oppgrader-flyten sjekker bare
+  `bimverdi_is_gratisbruker()` som ikke leser hovedkontaktperson.
+
+---
+date: 2026-05-28
 action: fix-bransje-required-minst-en
 files:
   - themes/bimverdi-theme/parts/minside/foretak-registrer-form.php

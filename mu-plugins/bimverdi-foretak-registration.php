@@ -121,28 +121,40 @@ add_action('init', function () {
     ]);
     if (!empty($existing_foretak)) {
         // Bård-krav 2026-05-22: flere gratisbrukere skal kunne dele samme
-        // orgnr. Hvis eksisterende er publish + 'Ikke deltaker' (gratis) og
-        // ny registrering også er gratis, kobler vi brukeren til som
-        // tilleggskontakt i stedet for å blokkere.
+        // orgnr. Hvis eksisterende er publish + 'Ikke deltaker' (gratis),
+        // kobler vi brukeren til som gratisbruker i stedet for å blokkere.
+        //
+        // Bård-regel 2026-05-28: enhver gratisbruker kan oppgradere et
+        // eksisterende gratisforetak til Deltaker+. Hvis ny registrering
+        // velger et betalende nivå, sender vi brukeren videre til selvbetjent
+        // oppgrader-flyt (krav 24-v4) i stedet for å lage et nytt foretak.
         $existing = $existing_foretak[0];
         $existing_rolle = function_exists('get_field')
             ? (string) get_field('bv_rolle', $existing->ID)
             : (string) get_post_meta($existing->ID, 'bv_rolle', true);
 
-        $can_auto_link = (
-            $deltakertype === 'gratis'
-            && $existing->post_status === 'publish'
+        $existing_is_gratis = (
+            $existing->post_status === 'publish'
             && $existing_rolle === 'Ikke deltaker'
         );
+        $valid_paid_levels = ['deltaker', 'prosjektdeltaker', 'partner'];
 
-        if (!$can_auto_link) {
-            wp_redirect(add_query_arg('bv_error', 'orgnr_exists', $redirect_error));
+        if ($existing_is_gratis && $deltakertype === 'gratis') {
+            bimverdi_foretak_autolink_gratis_user($user_id, $existing->ID);
+            delete_transient($rate_key);
+            wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
             exit;
         }
 
-        bimverdi_foretak_autolink_gratis_user($user_id, $existing->ID);
-        delete_transient($rate_key);
-        wp_redirect(add_query_arg('registered', '1', home_url('/min-side/foretak/')));
+        if ($existing_is_gratis && in_array($deltakertype, $valid_paid_levels, true)) {
+            bimverdi_foretak_autolink_gratis_user($user_id, $existing->ID);
+            delete_transient($rate_key);
+            wp_redirect(home_url('/min-side/oppgrader/?nivaa=' . rawurlencode($deltakertype)));
+            exit;
+        }
+
+        // Eksisterende foretak er paid eller pending → blokker som før.
+        wp_redirect(add_query_arg('bv_error', 'orgnr_exists', $redirect_error));
         exit;
     }
 
