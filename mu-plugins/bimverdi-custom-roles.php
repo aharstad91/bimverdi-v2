@@ -266,7 +266,13 @@ function bimverdi_add_kontakttype_views($views) {
     $counts = wp_cache_get('bv_kontakttype_view_counts', 'bimverdi');
     if ($counts === false) {
         $counts = ['hovedkontakt' => 0, 'tilleggskontakt' => 0, 'gratisbruker' => 0, 'ingen' => 0];
-        foreach (get_users(['fields' => ['ID']]) as $u) {
+        // Unhook filteret midlertidig så tellingen ikke begrenses av et aktivt
+        // ?bv_kontakttype-filter (vi vil telle ALLE brukere uavhengig av
+        // gjeldende filter-state).
+        remove_action('pre_get_users', 'bimverdi_filter_users_by_kontakttype');
+        $all_users = get_users(['fields' => ['ID'], 'number' => -1]);
+        add_action('pre_get_users', 'bimverdi_filter_users_by_kontakttype');
+        foreach ($all_users as $u) {
             $type = function_exists('bimverdi_get_kontakttype') ? bimverdi_get_kontakttype((int) $u->ID) : null;
             if ($type === null) {
                 $counts['ingen']++;
@@ -341,21 +347,44 @@ function bimverdi_render_kontakttype_filter($which) {
  */
 add_action('pre_get_users', 'bimverdi_filter_users_by_kontakttype');
 function bimverdi_filter_users_by_kontakttype($query) {
-    if (!is_admin() || empty($_GET['bv_kontakttype'])) {
+    global $pagenow;
+
+    // Bare apply på selve users.php list-table-spørringen — IKKE på alle
+    // WP_User_Query (WP kjører tonnevis av interne user-queries for hydrering
+    // av meta, capabilities osv., og hvis vi forstyrrer dem får vi 500).
+    if ($pagenow !== 'users.php' || !is_admin()) {
         return;
     }
+    if (empty($_GET['bv_kontakttype'])) {
+        return;
+    }
+    // Hvis queryen allerede har 'include' satt (f.eks. fra en annen filter
+    // eller en intern hydrering-query), respekter det og ikke overskriv.
+    $existing_include = $query->get('include');
+    if (!empty($existing_include)) {
+        return;
+    }
+
     $type = sanitize_key($_GET['bv_kontakttype']);
     if (!in_array($type, ['hovedkontakt', 'tilleggskontakt', 'gratisbruker', 'ingen'], true)) {
         return;
     }
 
-    // Bygg liste av matchende user-IDer ved å iterere alle brukere.
-    // Cache i 60 sekunder så pagineringen ikke trigger samme jobb hver gang.
+    // Re-entrance guard: vi kaller get_users() inne her for å bygge include-
+    // listen, og det vil trigge pre_get_users igjen i denne samme call-stacken.
+    static $running = false;
+    if ($running) {
+        return;
+    }
+
+    // Bygg liste av matchende user-IDer. Cache 60 sek mot pagineringskall.
     $cache_key = 'bv_kontakttype_users_' . $type;
     $matching_ids = wp_cache_get($cache_key, 'bimverdi');
     if ($matching_ids === false) {
+        $running = true;
+        $all = get_users(['fields' => ['ID'], 'number' => -1]);
+        $running = false;
         $matching_ids = [];
-        $all = get_users(['fields' => ['ID']]);
         foreach ($all as $u) {
             $uid = (int) $u->ID;
             $user_type = function_exists('bimverdi_get_kontakttype')
@@ -368,7 +397,7 @@ function bimverdi_filter_users_by_kontakttype($query) {
             }
         }
         if (empty($matching_ids)) {
-            $matching_ids = [0]; // ingen treff — bruk dummy så ingen vises
+            $matching_ids = [0]; // ingen treff — dummy så ingen vises
         }
         wp_cache_set($cache_key, $matching_ids, 'bimverdi', 60);
     }
