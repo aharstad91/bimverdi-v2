@@ -4,6 +4,214 @@
 
 ---
 date: 2026-05-28
+action: del-A-bard-feedback-shipped+del-B-rolle-rydding-shipped
+files:
+  - mu-plugins/bimverdi-betingelser-prices.php
+  - mu-plugins/bimverdi-foretak-konvertering.php
+  - mu-plugins/bimverdi-foretakstype-fields.php
+  - mu-plugins/bimverdi-foretakstype-backfill.php
+  - mu-plugins/bimverdi-invitasjons-type-migration.php
+  - mu-plugins/bimverdi-custom-roles.php
+  - mu-plugins/bimverdi-roles-sync.php
+  - themes/bimverdi-theme/parts/minside/oppgrader.php
+  - themes/bimverdi-theme/parts/minside/oppgrader-fullfort.php
+  - themes/bimverdi-theme/inc/minside-helpers.php
+  - themes/bimverdi-theme/parts/minside/dashboard.php
+summary: "To deployer pushet til main. Del A: hele krav-24-v4 selvbetjent oppgraderings-flyt med Bårds feedback fra møte 28. mai (årspriser, EHF-felt, fjernet BRREG-steg, fjernet kvartal-tall fra bekreftelse/e-post). Del B: rolle-rydding i wp-admin/users.php (tre nye kolonner, filter-dropdown, sync-script for WP-roller). Lokal DB synket ned fra prod og verifisert mot ekte data."
+status: shipped-live-A-and-B
+commits:
+  - f1779bc — feat(oppgrader): selvbetjent oppgraderings-flyt for gratisforetak (krav 24-v4)
+  - c693e56 — feat(admin): rolle- og deltakernivå-rydding i wp-admin/users.php
+detail: |
+  **Bakgrunn:** Møte med Bård 28. mai morgen. Han hadde testet onboarding-
+  flyten og hadde to bunker feedback: (A) oppgrader-flyten — kvartalsvis
+  pris-automatikk må vekk, EHF mangler, BRREG-steget er friksjon; og
+  (B) han mangler oversikt over hvem som er hovedkontakt før utsending
+  av nyhetsbrev til ~60 stk. Transcripts ligger på Andreas-Desktop som
+  `synk-bard-28mai-{en,to}.json`.
+
+  ---
+
+  **DEL A — krav-24-v4 oppgrader-flyt med Bårds feedback (commit f1779bc):**
+
+  Endringer i oppgrader-flyten (/min-side/oppgrader/):
+
+  1. **Pris-data refaktorert til årspris** (bimverdi-betingelser-prices.php):
+     - Deltaker 8 000, Prosjektdeltaker 24 000, Partner 48 000 kr/år.
+     - `bimverdi_calculate_oppgrader_invoice()` forenklet — fjernet hele
+       kvartal-strukturen (start_kvartal, antall_kvartaler, fra_dato,
+       til_dato, kvartaler_dekket). Returnerer nå bare {nivaa, aarspris,
+       totalbeloep, aar}.
+
+  2. **oppgrader.php (skjema):**
+     - "2. Bekreft foretaksdata" (BRREG-steg) FJERNET helt — Bård: data
+       fra BRREG kan ikke endres her uansett, så steget var unødvendig
+       friksjon.
+     - Skjemaet er nå 3 steg: Velg nivå → Faktureringsdetaljer → Bekreft.
+     - "kr / kvartal" → "kr / år" på nivå-radioene.
+     - Statisk disclaimer-tekst lagt til under nivå-valg: "Årsavgiften
+       beregnes kvartalsvis fra det kvartalet du melder inn ditt foretak.
+       Rabatt for oppstartbedrifter, utdanningsinstitusjoner og foretak
+       med omsetning lavere enn 5 MNOK — ta kontakt på tilbakemelding."
+     - Nytt EHF-organisasjonsnummer-felt i faktureringsdetaljer.
+     - Betinget validering: minst EHF eller faktura-e-post må fylles ut.
+       Validering håndheves serverside (missing_invoice_kanal-feilmelding).
+     - JS-helper for klientside UX (markerer felter som påkrevd basert
+       på hva som er fylt ut).
+     - Dynamisk pris-omberegning fjernet (ingen kvartal-math lenger).
+
+  3. **oppgrader-fullfort.php (bekreftelses-side):**
+     - Hele pris-paragrafen med kvartal-tall ("Faktura på X kr for Y
+       kvartaler fram til 31.12.Z") FJERNET.
+     - Erstattet med generisk: "BIM Verdi-administrasjonen oppretter
+       faktura manuelt og sender den til foretaket basert på fakturadetalj-
+       ene du fylte ut."
+     - URL-param `?total=X&kvartaler=Y&aar=Z&epost=...` redusert til
+       bare `?nivaa=X`.
+
+  4. **bimverdi-foretak-konvertering.php (handler + e-post):**
+     - Validering: brreg_bekreftet-krav fjernet. Lagt til EHF/e-post
+       conditional check (`missing_invoice_kanal`).
+     - Form-data utvidet med `ehf_orgnr` (sanitert, mellomrom strippet).
+     - Bekreftelses-e-post til ny hovedkontakt: kvartal-tall fjernet,
+       sier nå bare at admin sender faktura manuelt.
+     - Admin-e-post (post@bimverdi.no) endret: viser nå Årsavgift +
+       EHF-orgnr i stedet for kvartal-utregning. Lagt til påminnelse om
+       å beregne kvartals-rabatt + småforetak/utdanning-rabatter manuelt.
+
+  **Pushet i samlet commit (krav-24-v4-prototype fast-forwardet til main):**
+  10 filer, 1429 insertions. Inkluderte også andre uncommittede filer fra
+  krav-24-v4-prototype-branchen som henger sammen (foretakstype-fields,
+  foretakstype-backfill, invitasjons-type-migration, minside-helpers
+  med nye routes, dashboard.php CTA-redesign).
+
+  Servebolt auto-deployer fra main. Bård kan teste live så snart deploy
+  er klar (typisk <3 min).
+
+  **Chrome MCP-test før push:**
+  - /min-side/oppgrader/ viser 8/24/48 kr/år, ingen BRREG-steg, EHF-felt.
+  - Server-side validering: submit uten EHF eller e-post → korrekt
+    feilmelding "Du må fylle ut enten EHF-organisasjonsnummer eller
+    fakturamottakers e-post."
+  - /min-side/oppgrader/fullfort/?nivaa=deltaker viser ingen kvartal-tall.
+  - Ingen JS/PHP-feil i konsoll.
+
+  ---
+
+  **DB-SYNK FRA PROD TIL LOCALHOST (sync-db.sh --db):**
+
+  Lokal DB ble overskrevet med prod-dump for å teste del B mot ekte
+  data. Backup av tidligere lokal DB lagret i
+  /tmp/bimverdi-localhost-pre-sync-20260528-103558.sql før synk.
+
+  Etter synk: 596 users, 81 publiserte foretak. Men prod-DB hadde ingen
+  `bv_foretakstype` eller `bv_nivaa` (krav-24-v4 backfill aldri kjørt på
+  prod). Kjørte derfor `bimverdi_run_foretakstype_backfill()` lokalt mot
+  synkede prod-data — 91 foretak fikk korrekt foretakstype + nivå
+  (23 gratisforetak + 68 foretak: 49 deltaker + 12 prosjektdeltaker
+  + 7 partner). 0 ukjente bv_rolle.
+
+  **VIKTIG for Bård:** Backfillen må kjøres tilsvarende på prod etter
+  Servebolt-deploy, ellers er ingen brukere "gratisbruker" på prod og
+  oppgrader-knappen vises ikke. Trigger:
+  https://bimverdi.no/wp-admin/?bimverdi_backfill_foretakstype=1[&dry_run=1]
+
+  ---
+
+  **DEL B — rolle- og deltakernivå-rydding (commit c693e56):**
+
+  Bårds spørsmål: "Jeg mangler oversikt over hvem som har hvilken rolle,
+  på bedrifts- og personnivå. Hvem er allerede hovedkontakt? Jeg famler
+  litt i blinde her." Han venter med å sende ut nyhetsbrev til de
+  60 stk fordi han ikke kan stole på listen.
+
+  Endringer:
+
+  1. **bimverdi-foretakstype-fields.php — to nye helpers:**
+     - `bimverdi_get_kontakttype($uid)` → 'gratisbruker' | 'hovedkontakt'
+       | 'tilleggskontakt' | null. Computed fra foretakets bv_foretakstype
+       + hovedkontaktperson — sannhetskilden er foretak-data.
+     - `bimverdi_get_deltakernivaa($uid)` → 'gratisforetak' | 'deltaker'
+       | 'prosjektdeltaker' | 'partner' | null. Arvet fra foretakets
+       bv_nivaa.
+
+  2. **bimverdi-custom-roles.php — admin-kolonner og filter:**
+     - Eksisterende "Medlemskap"-kolonne FJERNET (blandet WP-rolle og
+       deltakernivå på en uleselig måte).
+     - Tre nye kolonner i wp-admin/users.php:
+       - **Foretak** — lenke til foretak-edit
+       - **Kontakttype** — Gratisbruker / Hovedkontakt / Tilleggskontakt
+       - **Deltakernivå** — Gratisforetak / Deltaker / Prosjektdeltaker
+         / Partner
+     - Filter-dropdown "Kontakttype" på toppen av brukerlisten med
+       opsjoner "Bare hovedkontakter" / tilleggskontakter / gratisbrukere
+       / uten foretak. Filtrering caches 60 sek (O(n) på user-listen).
+
+  3. **bimverdi-roles-sync.php (NY) — sync av WP-rolle:**
+     - `bimverdi_compute_target_wp_role($uid)` → ønsket WP-rolle.
+     - `bimverdi_run_roles_sync($dry_run)` → iterer alle brukere.
+     - Logikk:
+       - hovedkontakt + bv_nivaa=deltaker → WP-rolle 'deltaker'
+       - hovedkontakt + bv_nivaa=prosjektdeltaker → 'prosjektdeltaker'
+       - hovedkontakt + bv_nivaa=partner → 'partner'
+       - tilleggskontakt (uansett nivå) → 'tilleggskontakt'
+       - gratisbruker (uansett om hovedkontakt) → 'medlem'
+       - administrator → ALDRI rørt
+       - ingen foretak → urørt
+     - Admin-trigger: ?bimverdi_sync_roles=1[&dry_run=1]
+     - Idempotent.
+
+  **Lokal verifisering (mot synkede prod-data):**
+  - Dry-run viste 67 endringer av 596 users.
+  - Fordeling av endringer: 41 subscriber→deltaker, 12 subscriber→
+    prosjektdeltaker, 6 subscriber→partner, 3 tilleggskontakt→medlem,
+    + diverse småjusteringer.
+  - Stikkprøve på 3 users bekreftet at logikken matcher faktisk
+    hovedkontakt-status og bv_nivaa.
+  - Kjørt ekte sync lokalt: 67 brukere oppdatert.
+  - Konsistens-sjekk etter sync: 0 avvik mellom foretak.bv_nivaa og
+    hovedkontaktens WP-rolle.
+
+  **Final state lokal DB (= forventet på prod etter Bård kjører sync):**
+  - 402 medlem, 125 tilleggskontakt, 44 deltaker, 12 prosjektdeltaker,
+    7 partner, 3 administrator, 2 subscriber (manuelle).
+  - 87 hovedkontakter totalt (65 betalende + 22 gratisforetak) =
+    Bårds nyhetsbrev-målgruppe.
+
+  ---
+
+  **RAPPORT TIL BÅRD:**
+  Lagret i docs/2026-05-28-rolle-og-deltakernivaa-rapport.md (utenfor
+  versjonering, deles via meldings-app). Inneholder:
+  - Hva som er endret (kolonner + filter + sync)
+  - Resultat etter lokal sync (67 endringer, 0 avvik)
+  - Hvordan kjøre sync på prod
+  - Hvordan endre en persons rolle manuelt (via foretak-data)
+  - Steg-for-steg for å eksportere nyhetsbrev-målgruppen.
+
+  ---
+
+  **TODO på prod (Bård gjør selv):**
+
+  1. ⚠️  Kjør backfill: https://bimverdi.no/wp-admin/?bimverdi_backfill_foretakstype=1&dry_run=1
+     (først dry-run, så uten dry_run-param). Uten dette er ingen brukere
+     "gratisbruker" på prod og oppgrader-knappen er ikke synlig.
+  2. Kjør rolle-sync: https://bimverdi.no/wp-admin/?bimverdi_sync_roles=1&dry_run=1
+     (dry-run først, så ekte). Forventet: ~67 brukere oppdatert.
+  3. Åpne /wp-admin/users.php → filtrer "Bare hovedkontakter" → eksporter
+     via Tools → Export → Users for å få nyhetsbrev-mottakerne.
+  4. Test selvbetjent oppgrader-flyt med en gratisbruker.
+
+  **Gjenstår i Bård-sporet (ikke startet):**
+  - Nyhetsbrev-kravspec — Trello-kortet «nyhetsbrev / registrering / mal
+    og utsendelse» (https://trello.com/c/8GAdLLF7) har TO leveranser
+    bakt inn i ett kort. Skal splittes i (a) selve nyhetsbrev-malen og
+    (b) registrerings/temavalg-flyten. 7 åpne spørsmål må listes for
+    Bård å bekrefte før vi planlegger.
+  - Spam-kommentarer på "Hei Verden"-posten (egen sak, lavprioritet).
+
+---
+date: 2026-05-28
 action: demo-krav24-localhost+nyhetsbrev-kravspec-funnet-paa-trello
 files: []
 summary: "Helhetlig demo av oppgraderings-flyten (krav 24-v4) kjørt på localhost som Mari/SOL-IS — login → dashboard (CTA + Oppgrader-meny) → skjema med live pris-omberegning og egen-fakturaadresse-toggle → konvertering → fullført-side med EHF/admin-tekst. DB-state og e-post-utsendelse via Resend verifisert. SOL-IS nå Foretak/Deltaker i lokal DB. Skjermbilder i claude/demo-screenshots/. Klar for Bård-demo. Nyhetsbrev-mal-kravspec (TODO 2): IKKE i docs/krav/ — Bård har lagt den på Trello (https://trello.com/c/8GAdLLF7, Innboks)."
