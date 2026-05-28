@@ -10,6 +10,11 @@
 !mu-plugins/
 !mu-plugins/**
 
+# Lokal-only mu-plugins (underscore-prefix) — ALDRI push til prod.
+# Brukes for ting som skal kjøre kun på localhost (f.eks. e-post-
+# blokkering, debug-helpers). Disse må aldri leve på Servebolt.
+mu-plugins/_local-*.php
+
 # Egenutviklet plugin
 !plugins/
 plugins/*
