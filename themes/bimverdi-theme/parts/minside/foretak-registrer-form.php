@@ -450,10 +450,13 @@ $bransje_options = [
     ];
 
     var conditionallyRequiredFields = form.querySelectorAll(
-      '#beskrivelse, input[name="bransje_rolle[]"], #faktura_referanse'
+      '#beskrivelse, #faktura_referanse'
       // aksept_betingelser holdes required for ALLE (gratis + paid)
       // faktura_epost håndteres separat (conditional på EHF-state)
+      // bransje_rolle[] håndteres separat (minst én av flere — håndteres
+      // via syncBransjeRequired så vi ikke setter required på alle)
     );
+    var bransjeCheckboxes = form.querySelectorAll('input[name="bransje_rolle[]"]');
     var submitButton = form.querySelector('button[type="submit"]');
     var originalButtonText = submitButton ? submitButton.textContent : '';
     var currentTier = null;
@@ -461,6 +464,24 @@ $bransje_options = [
     // Faktura-epost wrapper + input (conditional på EHF=Nei)
     var fakturaEpostWrapper = document.getElementById('bv-faktura-epost-wrapper');
     var fakturaEpostInput = document.getElementById('faktura_epost');
+
+    // Bransje-gruppa er "minst én" — sett required kun på første checkbox så
+    // browseren stopper submit, og fjern når en hvilken som helst i gruppa
+    // hukes av. (Hvis vi setter required på alle blir hver enkelt obligatorisk.)
+    function syncBransjeRequired() {
+      if (!bransjeCheckboxes.length) return;
+      var first = bransjeCheckboxes[0];
+      var isPaid = currentTier === 'paid';
+      var anyChecked = false;
+      for (var i = 0; i < bransjeCheckboxes.length; i++) {
+        if (bransjeCheckboxes[i].checked) { anyChecked = true; break; }
+      }
+      if (isPaid && !anyChecked) {
+        first.setAttribute('required', '');
+      } else {
+        first.removeAttribute('required');
+      }
+    }
 
     function syncFakturaEpostRequired() {
       if (!fakturaEpostInput || !fakturaEpostWrapper) return;
@@ -512,6 +533,7 @@ $bransje_options = [
       }
 
       syncFakturaEpostRequired();
+      syncBransjeRequired();
     }
 
     form.addEventListener('change', function(e) {
@@ -519,6 +541,8 @@ $bransje_options = [
         setTier(e.target.value === 'gratis' ? 'gratis' : 'paid');
       } else if (e.target.name === 'ehf_faktura') {
         syncFakturaEpostRequired();
+      } else if (e.target.name === 'bransje_rolle[]') {
+        syncBransjeRequired();
       }
     });
 
@@ -542,6 +566,7 @@ $bransje_options = [
                  || form.querySelector('input[type="hidden"][name="deltakertype"]');
       if (checked && checked.value === 'gratis') {
         conditionallyRequiredFields.forEach(function(f) { f.removeAttribute('required'); });
+        if (bransjeCheckboxes.length) bransjeCheckboxes[0].removeAttribute('required');
       }
     });
 

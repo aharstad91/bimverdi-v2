@@ -4,6 +4,49 @@
 
 ---
 date: 2026-05-28
+action: fix-bransje-required-minst-en
+files:
+  - themes/bimverdi-theme/parts/minside/foretak-registrer-form.php
+summary: "Bård påpekte at registreringsskjemaet krevde at ALLE bransje-checkboxene måtte hukes av («Please check this box if you want to proceed» på neste boks etter den han hadde valgt). Roten: setTier() satte required på hver enkelt checkbox i bransje-gruppa, så browser behandlet hver som obligatorisk. Fix: bransje håndteres nå separat — required settes kun på første checkbox, og fjernes så snart en hvilken som helst boks i gruppa hukes av (klassisk «minst én»-pattern)."
+status: deployed
+detail: |
+  **Trigger:** Bård-screenshot fra /min-side/?nivaa=deltaker hvor han
+  hadde huket av «Bestiller/byggherre» og fikk browser-advarsel på
+  «Boligutvikler»: «Please check this box if you want to proceed.»
+  Bård presiserte: «På endre krav om å reg. min. EN rolle - ikke ALLE».
+
+  **Diagnose:**
+  foretak-registrer-form.php linje 452-456 inkluderte
+  `input[name="bransje_rolle[]"]` i conditionallyRequiredFields-listen.
+  Linje 494-500 itererte og satte `required` på HVER enkelt checkbox
+  i lista når tier var 'paid' — så browser krevde at hver bransje-
+  checkbox individuelt var huket av for at form-submit skulle gå
+  gjennom. Tekstdialogen «Du kan velge flere» tydet imidlertid på
+  at intensjonen var «minst én».
+
+  **Fix:**
+  1. Tok `input[name="bransje_rolle[]"]` ut av conditionallyRequiredFields
+     (skal ikke ha samme batch-required-behandling).
+  2. Ny syncBransjeRequired()-funksjon: setter required kun på første
+     checkbox når tier er 'paid' og ingen checkbox er huket. Fjerner
+     required så snart en hvilken som helst checkbox i gruppa hukes av.
+  3. Hook for change-event på `name=bransje_rolle[]` kaller syncBransjeRequired.
+  4. setTier() kaller syncBransjeRequired etter tier-bytte.
+  5. Submit-handler for gratis-tier rydder også required på første
+     bransje-checkbox (selv om seksjonen er skjult i gratis-state).
+  6. Server-side validering ('missing_bransje') uendret — den fanger
+     fortsatt edge-caser hvor JS ikke kjører.
+
+  **Verifikasjon (Chrome DevTools MCP på localhost):**
+   - nivaa=deltaker, page load → 1 av 14 checkboxes har required (første) ✅
+   - Klikk «Boligutvikler» (index 1) → 0 har required, submit lov ✅
+   - Uhake → første gjenvinner required (guard mot tom submit) ✅
+   - nivaa=gratis → seksjon `display:none`, 0 required ✅
+   - HTML-output (uten JS) viser ingen required-attributter på
+     bransje-checkboxene → graceful fallback til server-side validering ✅
+
+---
+date: 2026-05-28
 action: fix-betingelser-tekst-link-gratisbruker
 files:
   - mu-plugins/bimverdi-shared-helpers.php
