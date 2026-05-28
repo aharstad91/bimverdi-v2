@@ -179,28 +179,63 @@ function bimverdi_get_membership_level($user_id = null) {
 }
 
 /**
- * Vis rolle i admin user list
+ * BIM Verdi-kolonner i wp-admin/users.php (krav 02-v5)
+ *
+ * Erstatter tidligere "Medlemskap"-kolonne (som blandet deltakernivå og rolle)
+ * med tre tydelige kolonner som henter sannhetskilden fra foretak-data:
+ *   - Foretak       — lenke til tilknyttet foretak (eller "—")
+ *   - Kontakttype   — Gratisbruker / Hovedkontakt / Tilleggskontakt (computed)
+ *   - Deltakernivå  — Gratisforetak / Deltaker / Prosjektdeltaker / Partner
+ *
+ * Sortering på Kontakttype + Deltakernivå er ikke trivielt (computed på tvers
+ * av meta-tabeller) og er bevisst utelatt i v1. Bruk filter-dropdown for å
+ * isolere hovedkontakter (krav 24-v4 forberedelse).
  */
-add_filter('manage_users_columns', 'bimverdi_add_membership_column');
-function bimverdi_add_membership_column($columns) {
-    $columns['bimverdi_membership'] = __('Medlemskap', 'bimverdi');
+add_filter('manage_users_columns', 'bimverdi_add_user_columns');
+function bimverdi_add_user_columns($columns) {
+    $columns['bimverdi_foretak']        = __('Foretak', 'bimverdi');
+    $columns['bimverdi_kontakttype']    = __('Kontakttype', 'bimverdi');
+    $columns['bimverdi_deltakernivaa']  = __('Deltakernivå', 'bimverdi');
     return $columns;
 }
 
-add_action('manage_users_custom_column', 'bimverdi_show_membership_column', 10, 3);
-function bimverdi_show_membership_column($value, $column_name, $user_id) {
-    if ($column_name === 'bimverdi_membership') {
-        $level = bimverdi_get_membership_level($user_id);
+add_action('manage_users_custom_column', 'bimverdi_show_user_columns', 10, 3);
+function bimverdi_show_user_columns($value, $column_name, $user_id) {
+    if ($column_name === 'bimverdi_foretak') {
+        $foretak_id = function_exists('bimverdi_resolve_user_foretak_id')
+            ? bimverdi_resolve_user_foretak_id($user_id)
+            : 0;
+        if (!$foretak_id) {
+            return '<span style="color:#9CA3AF;">—</span>';
+        }
+        $title = get_the_title($foretak_id) ?: '(uten navn)';
+        $edit  = admin_url('post.php?post=' . $foretak_id . '&action=edit');
+        return sprintf('<a href="%s">%s</a>', esc_url($edit), esc_html($title));
+    }
 
-        $labels = array(
-            'partner' => '<span style="color: #7C3AED; font-weight: bold;">★ Partner</span>',
-            'prosjektdeltaker' => '<span style="color: #F97316; font-weight: bold;">◆ Prosjektdeltaker</span>',
-            'deltaker' => '<span style="color: #10B981;">● Deltaker</span>',
-            'tilleggskontakt' => '<span style="color: #6B7280;">+ Tilleggskontakt</span>',
-            'medlem' => '<span style="color: #9CA3AF;">○ Medlem</span>',
-        );
+    if ($column_name === 'bimverdi_kontakttype') {
+        $type = function_exists('bimverdi_get_kontakttype')
+            ? bimverdi_get_kontakttype($user_id)
+            : null;
+        $labels = [
+            'hovedkontakt'    => '<span style="color:#7C3AED; font-weight:bold;">★ Hovedkontakt</span>',
+            'tilleggskontakt' => '<span style="color:#6B7280;">+ Tilleggskontakt</span>',
+            'gratisbruker'    => '<span style="color:#9CA3AF;">○ Gratisbruker</span>',
+        ];
+        return $labels[$type] ?? '<span style="color:#9CA3AF;">—</span>';
+    }
 
-        return $labels[$level] ?? '-';
+    if ($column_name === 'bimverdi_deltakernivaa') {
+        $nivaa = function_exists('bimverdi_get_deltakernivaa')
+            ? bimverdi_get_deltakernivaa($user_id)
+            : null;
+        $labels = [
+            'partner'          => '<span style="color:#7C3AED; font-weight:bold;">Partner</span>',
+            'prosjektdeltaker' => '<span style="color:#F97316; font-weight:bold;">Prosjektdeltaker</span>',
+            'deltaker'         => '<span style="color:#10B981;">Deltaker</span>',
+            'gratisforetak'    => '<span style="color:#9CA3AF;">Gratisforetak</span>',
+        ];
+        return $labels[$nivaa] ?? '<span style="color:#9CA3AF;">—</span>';
     }
 
     if ($column_name === 'bimverdi_registered') {
@@ -213,6 +248,86 @@ function bimverdi_show_membership_column($value, $column_name, $user_id) {
     }
 
     return $value;
+}
+
+/**
+ * Filter-dropdown: "Kontakttype" over user-listen.
+ *
+ * Lar admin isolere alle hovedkontakter (Bårds nyhetsbrev-målgruppe),
+ * tilleggskontakter eller gratisbrukere. Filtrert resultat går gjennom
+ * WPs innebygde CSV-eksport (Tools → Export users), så Bård kan trekke ut
+ * en e-postliste uten egen rapport-funksjonalitet.
+ */
+add_action('restrict_manage_users', 'bimverdi_render_kontakttype_filter');
+function bimverdi_render_kontakttype_filter($which) {
+    // restrict_manage_users kjøres to ganger (top + bottom) — kun top.
+    if ($which !== 'top') {
+        return;
+    }
+    $selected = isset($_GET['bv_kontakttype']) ? sanitize_key($_GET['bv_kontakttype']) : '';
+    $options = [
+        ''                => __('Alle kontakttyper', 'bimverdi'),
+        'hovedkontakt'    => __('Bare hovedkontakter', 'bimverdi'),
+        'tilleggskontakt' => __('Bare tilleggskontakter', 'bimverdi'),
+        'gratisbruker'    => __('Bare gratisbrukere', 'bimverdi'),
+        'ingen'           => __('Uten foretak', 'bimverdi'),
+    ];
+    echo '<label class="screen-reader-text" for="bv_kontakttype">' . esc_html__('Filtrer på kontakttype', 'bimverdi') . '</label>';
+    echo '<select name="bv_kontakttype" id="bv_kontakttype" style="margin-right:6px;">';
+    foreach ($options as $val => $label) {
+        printf(
+            '<option value="%s"%s>%s</option>',
+            esc_attr($val),
+            selected($selected, $val, false),
+            esc_html($label)
+        );
+    }
+    echo '</select>';
+    submit_button(__('Filtrer', 'bimverdi'), '', 'bv_filter_submit', false);
+}
+
+/**
+ * Bygg WP_User_Query meta_query for kontakttype-filteret.
+ *
+ * Filtreringen er O(n) på user-listen (én meta-sjekk per user) men WP gir
+ * oss ikke et bedre alternativ uten å bygge en custom tabell — og 600 users
+ * er innenfor toleransen.
+ */
+add_action('pre_get_users', 'bimverdi_filter_users_by_kontakttype');
+function bimverdi_filter_users_by_kontakttype($query) {
+    if (!is_admin() || empty($_GET['bv_kontakttype'])) {
+        return;
+    }
+    $type = sanitize_key($_GET['bv_kontakttype']);
+    if (!in_array($type, ['hovedkontakt', 'tilleggskontakt', 'gratisbruker', 'ingen'], true)) {
+        return;
+    }
+
+    // Bygg liste av matchende user-IDer ved å iterere alle brukere.
+    // Cache i 60 sekunder så pagineringen ikke trigger samme jobb hver gang.
+    $cache_key = 'bv_kontakttype_users_' . $type;
+    $matching_ids = wp_cache_get($cache_key, 'bimverdi');
+    if ($matching_ids === false) {
+        $matching_ids = [];
+        $all = get_users(['fields' => ['ID']]);
+        foreach ($all as $u) {
+            $uid = (int) $u->ID;
+            $user_type = function_exists('bimverdi_get_kontakttype')
+                ? bimverdi_get_kontakttype($uid)
+                : null;
+            if ($type === 'ingen') {
+                if ($user_type === null) $matching_ids[] = $uid;
+            } else {
+                if ($user_type === $type) $matching_ids[] = $uid;
+            }
+        }
+        if (empty($matching_ids)) {
+            $matching_ids = [0]; // ingen treff — bruk dummy så ingen vises
+        }
+        wp_cache_set($cache_key, $matching_ids, 'bimverdi', 60);
+    }
+
+    $query->set('include', $matching_ids);
 }
 
 /**

@@ -159,6 +159,83 @@ function bimverdi_is_gratisbruker($user_id = null) {
 }
 
 /**
+ * Returnerer person-rollen ("kontakttype") for en bruker.
+ *
+ * Per krav 02-v5 er person-rollen alltid én av:
+ *   - 'hovedkontakt'      — bruker er ACF hovedkontaktperson for sitt foretak
+ *   - 'tilleggskontakt'   — bruker er tilknyttet et betalende foretak men ikke hovedkontakt
+ *   - 'gratisbruker'      — bruker er tilknyttet et gratisforetak
+ *   - null                — bruker har ingen foretak-tilknytning
+ *
+ * Sannhetskilden er foretak-data (bv_foretakstype + hovedkontaktperson),
+ * ikke user-meta eller WP-rolle.
+ *
+ * @param int|null $user_id
+ * @return string|null
+ */
+function bimverdi_get_kontakttype($user_id = null) {
+    if (!$user_id) {
+        $user_id = get_current_user_id();
+    }
+    if (!$user_id) {
+        return null;
+    }
+    $foretak_id = bimverdi_resolve_user_foretak_id($user_id);
+    if (!$foretak_id) {
+        return null;
+    }
+
+    $hovedkontakt_id = function_exists('get_field')
+        ? (int) get_field('hovedkontaktperson', $foretak_id)
+        : 0;
+    $is_hovedkontakt = ($hovedkontakt_id === (int) $user_id);
+
+    $type = bimverdi_get_foretakstype($foretak_id);
+    if ($type === 'gratisforetak') {
+        return 'gratisbruker';
+    }
+    if ($type === 'foretak') {
+        return $is_hovedkontakt ? 'hovedkontakt' : 'tilleggskontakt';
+    }
+    return null;
+}
+
+/**
+ * Returnerer deltakernivå arvet fra brukerens foretak.
+ *
+ * Verdier:
+ *   - 'gratisforetak'     — bv_foretakstype = 'gratisforetak'
+ *   - 'deltaker'          — bv_nivaa = 'deltaker'
+ *   - 'prosjektdeltaker'  — bv_nivaa = 'prosjektdeltaker'
+ *   - 'partner'           — bv_nivaa = 'partner'
+ *   - null                — bruker har ingen foretak-tilknytning
+ *
+ * @param int|null $user_id
+ * @return string|null
+ */
+function bimverdi_get_deltakernivaa($user_id = null) {
+    if (!$user_id) {
+        $user_id = get_current_user_id();
+    }
+    if (!$user_id) {
+        return null;
+    }
+    $foretak_id = bimverdi_resolve_user_foretak_id($user_id);
+    if (!$foretak_id) {
+        return null;
+    }
+    $type = bimverdi_get_foretakstype($foretak_id);
+    if ($type === 'gratisforetak') {
+        return 'gratisforetak';
+    }
+    if ($type === 'foretak') {
+        $nivaa = bimverdi_get_foretak_nivaa($foretak_id);
+        return $nivaa !== '' ? $nivaa : null;
+    }
+    return null;
+}
+
+/**
  * Helper: returnerer foretak-id som int (eller false).
  *
  * Eksisterende bimverdi_get_user_company() returnerer enten int eller array
