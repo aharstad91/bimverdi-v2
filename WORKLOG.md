@@ -4,6 +4,44 @@
 
 ---
 date: 2026-05-28
+action: fix-betingelser-tekst-link-gratisbruker
+files:
+  - mu-plugins/bimverdi-shared-helpers.php
+  - themes/bimverdi-theme/parts/minside/foretak-registrer-form.php
+summary: "Bård påpekte at Gratisbrukere ikke skal akseptere «betingelser for medlemskap» (deltakelse) — de skal akseptere personvern-betingelser. Helperen bimverdi_render_terms_acceptance_field() tar nå en $nivaa-parameter og renderer riktig tekst/lenke per nivå: gratis → /personvern/ + «betingelsene for personvern»; betalende → /betingelser + «betingelsene for deltakelse i BIM Verdi». Skjemaet sender $selected_nivaa til helperen."
+status: deployed
+detail: |
+  **Trigger:** Bård-mail 2026-05-28 med screenshot fra
+  /min-side/?nivaa=gratis#registrer-foretak hvor Gratisbruker-skjemaet
+  viste «betingelsene for medlemskap i BIM Verdi». Bård presiserte:
+  «En gratisbruker skal ikke akseptere betingelser for deltakelse —
+  en gratisbruker skal akseptere betingelser for personvern på
+  https://bimverdi.no/personvern/.»
+
+  **Diagnose:**
+  Helperen `bimverdi_render_terms_acceptance_field()` i shared-helpers.php
+  hadde hardkodet tekst «betingelsene for medlemskap i BIM Verdi» med
+  lenke til BV_TERMS_URL (= bimverdi.no/betingelser). Den ble brukt
+  uavhengig av nivå i foretak-registrer-form.php linje 397.
+
+  **Fix:**
+  1. Helperen tar nå valgfri `$nivaa`-parameter ('gratis' |
+     'deltaker' | 'prosjektdeltaker' | 'partner' | '').
+  2. Gratis → /personvern/ + «betingelsene for personvern».
+  3. Alle betalende → /betingelser + «betingelsene for deltakelse i
+     BIM Verdi» (default når nivaa ikke er gratis).
+  4. foretak-registrer-form.php sender nå $selected_nivaa til helperen.
+
+  **Verifikasjon (curl, lokalt):**
+   - nivaa=gratis → href=/personvern/, tekst «betingelsene for personvern» ✅
+   - nivaa=deltaker → href=/betingelser, tekst «...for deltakelse i BIM Verdi» ✅
+   - nivaa=prosjektdeltaker → samme som deltaker ✅
+   - nivaa=partner → samme som deltaker ✅
+
+  **Andre callere:** Ingen — helperen kalles kun fra foretak-registrer-form.php.
+
+---
+date: 2026-05-28
 action: fix-loop-min-side-nivaa-deltaker
 files:
   - themes/bimverdi-theme/inc/minside-helpers.php

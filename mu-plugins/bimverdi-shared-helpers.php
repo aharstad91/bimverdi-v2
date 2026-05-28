@@ -42,13 +42,18 @@ if (!defined('BV_TERMS_URL')) {
 /**
  * Render aksept-checkbox-blokk for skjema.
  *
- * Returnerer komplett <label>-blokk med checkbox + lenke til betingelser.
- * Konsistent UI på tvers av alle BV-skjemaer som krever aktiv aksept.
+ * Gratisbrukere godtar personvern-betingelser; betalende nivåer godtar
+ * deltakelses-betingelser. Default (uten nivå) viser deltakelses-tekst.
  *
- * @param string $name HTML name-attributt (default 'aksept_betingelser').
+ * @param string $name  HTML name-attributt (default 'aksept_betingelser').
+ * @param string $nivaa Plan-key ('gratis' | 'deltaker' | 'prosjektdeltaker' | 'partner' | '').
  * @return string HTML
  */
-function bimverdi_render_terms_acceptance_field($name = 'aksept_betingelser') {
+function bimverdi_render_terms_acceptance_field($name = 'aksept_betingelser', $nivaa = '') {
+    $is_gratis = ($nivaa === 'gratis');
+    $link_url  = $is_gratis ? home_url('/personvern/') : BV_TERMS_URL;
+    $link_text = $is_gratis ? 'betingelsene for personvern' : 'betingelsene for deltakelse i BIM Verdi';
+
     ob_start();
     ?>
     <label class="flex items-start gap-3 cursor-pointer">
@@ -56,8 +61,8 @@ function bimverdi_render_terms_acceptance_field($name = 'aksept_betingelser') {
                class="w-4 h-4 mt-0.5 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E] flex-shrink-0">
         <span class="text-sm text-[#1A1A1A]">
             Jeg aksepterer
-            <a href="<?php echo esc_url(BV_TERMS_URL); ?>" target="_blank" rel="noopener" class="text-[#FF8B5E] underline underline-offset-2 hover:text-[#E5764A]">
-                betingelsene for medlemskap i BIM Verdi
+            <a href="<?php echo esc_url($link_url); ?>" target="_blank" rel="noopener" class="text-[#FF8B5E] underline underline-offset-2 hover:text-[#E5764A]">
+                <?php echo esc_html($link_text); ?>
             </a>
             <span class="text-red-600">*</span>
         </span>

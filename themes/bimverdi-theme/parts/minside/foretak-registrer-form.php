@@ -394,7 +394,7 @@ $bransje_options = [
         <!-- Aksept av betingelser -->
         <div>
             <?php if (function_exists('bimverdi_render_terms_acceptance_field')) {
-                echo bimverdi_render_terms_acceptance_field('aksept_betingelser');
+                echo bimverdi_render_terms_acceptance_field('aksept_betingelser', $selected_nivaa);
             } else {
                 ?>
                 <label class="flex items-start gap-3 cursor-pointer">
