@@ -251,6 +251,52 @@ function bimverdi_show_user_columns($value, $column_name, $user_id) {
 }
 
 /**
+ * Legg til Kontakttype-lenker (Hovedkontakt / Gratisbruker / Tilleggskontakt
+ * / Uten foretak) i den native WP-rolle-lenkeraden øverst på users.php.
+ *
+ * Disse er computed fra foretak-data (ikke WP-roller), så de gir Bård det
+ * mentale bildet han forventer ("hvor mange hovedkontakter har vi?")
+ * uten å måtte åpne dropdown-en under.
+ */
+add_filter('views_users', 'bimverdi_add_kontakttype_views');
+function bimverdi_add_kontakttype_views($views) {
+    // Telleren er O(n) men caches i 5 min så pageload ikke straffes på hver
+    // visning. Cache invalideres når foretak-data endres er ikke kritisk —
+    // tallene oppdateres av seg selv innenfor 5 min.
+    $counts = wp_cache_get('bv_kontakttype_view_counts', 'bimverdi');
+    if ($counts === false) {
+        $counts = ['hovedkontakt' => 0, 'tilleggskontakt' => 0, 'gratisbruker' => 0, 'ingen' => 0];
+        foreach (get_users(['fields' => ['ID']]) as $u) {
+            $type = function_exists('bimverdi_get_kontakttype') ? bimverdi_get_kontakttype((int) $u->ID) : null;
+            if ($type === null) {
+                $counts['ingen']++;
+            } elseif (isset($counts[$type])) {
+                $counts[$type]++;
+            }
+        }
+        wp_cache_set('bv_kontakttype_view_counts', $counts, 'bimverdi', 5 * MINUTE_IN_SECONDS);
+    }
+
+    $current = isset($_GET['bv_kontakttype']) ? sanitize_key($_GET['bv_kontakttype']) : '';
+    $labels = [
+        'hovedkontakt'    => __('Hovedkontakt', 'bimverdi'),
+        'gratisbruker'    => __('Gratisbruker', 'bimverdi'),
+    ];
+    foreach ($labels as $key => $label) {
+        $url = add_query_arg('bv_kontakttype', $key, admin_url('users.php'));
+        $class = ($current === $key) ? ' class="current" aria-current="page"' : '';
+        $views['bv_' . $key] = sprintf(
+            '<a href="%s"%s>%s <span class="count">(%d)</span></a>',
+            esc_url($url),
+            $class,
+            esc_html($label),
+            (int) $counts[$key]
+        );
+    }
+    return $views;
+}
+
+/**
  * Filter-dropdown: "Kontakttype" over user-listen.
  *
  * Lar admin isolere alle hovedkontakter (Bårds nyhetsbrev-målgruppe),
