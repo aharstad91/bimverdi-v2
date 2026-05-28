@@ -145,6 +145,69 @@ detail: |
 
 ---
 date: 2026-05-28
+action: prod-backfill+rolle-sync+hovedkontakt-lenker+500-fix
+files:
+  - mu-plugins/bimverdi-custom-roles.php
+summary: "Kjørt bv_foretakstype-backfill (91 foretak) og rolle-sync (67 brukere) på prod via SSH/wp-cli, etter forhåndsbackup. Lagt til Hovedkontakt + Gratisbruker som filter-lenker øverst på wp-admin/users.php for å matche Bårds mentale modell. Fanget og fikset en 500-feil i pre_get_users-hook som slo til på alle WP_User_Query — inkludert interne single-user-hydreringer. Filter virker på live."
+status: shipped-live
+commits:
+  - 3e9ccd6 — feat(admin): vis Hovedkontakt + Gratisbruker som filter-lenker i users.php
+  - f4d3a59 — fix(admin): forhindre 500-feil ved kontakttype-filter på users.php
+detail: |
+  **Prod-state etter dagens kjøring (speiler lokal eksakt):**
+   - 596 users — 402 medlem · 125 tilleggskontakt · 44 deltaker
+     · 12 prosjektdeltaker · 7 partner · 3 administrator · 2 subscriber
+   - 87 hovedkontakter (65 betalende + 22 gratisforetak) = Bårds nyhetsbrev-
+     målgruppe. Kan isoleres via "Hovedkontakt (87)"-lenke øverst på users.php.
+
+  **Backfill + sync via SSH/wp-cli mot prod:**
+   - Pre-backup: /tmp/bimverdi-prod-pre-bardsync-20260528-111007.sql (8.2 MB,
+     lokalt på Andreas-maskin). Rollback om nødvendig:
+     `ssh ... "wp db import -" < backup.sql`
+   - Backfill: 91 foretak fikk bv_foretakstype + bv_nivaa
+     (23 gratisforetak + 68 foretak: 49 deltaker + 12 prosjektdeltaker
+     + 7 partner). 0 ukjente bv_rolle.
+   - Rolle-sync: 67 brukere fikk korrigert WP-rolle (41 subscriber→deltaker,
+     12 subscriber→prosjektdeltaker, 6 subscriber→partner, 3 tilleggskontakt
+     →medlem, m.fl.). 0 avvik etter sync.
+
+  **500-FEIL etter 3e9ccd6 — pre_get_users traff alle WP_User_Query:**
+  Hovedkontakt-lenken førte til HTTP 500 ved klikk. Diagnose: min
+  `bimverdi_filter_users_by_kontakttype()` ble registrert på pre_get_users
+  uten screen-context-sjekk. WP kjører dusinvis av interne WP_User_Query
+  per admin-render (hydrering av meta, capabilities, screen-options) —
+  hver fikk sin include-array overskrevet med min 65-IDs-liste, som
+  forårsaket kjedereaksjon → max execution time → 500.
+
+  Bugen lå allerede i del B-koden (c693e56) men ble ikke detekterbar før
+  jeg eksponerte ?bv_kontakttype-lenker i views_users (3e9ccd6).
+  Lokal wp-cli-test fanget det ikke fordi CLI ikke trigger admin-screen-
+  init-queries.
+
+  **Fix (f4d3a59):**
+   - `global \$pagenow; if (\$pagenow !== 'users.php' || !is_admin()) return;`
+     — filteret kjører nå kun på selve list-table-spørringen.
+   - Respekter eksisterende `include` i query (ikke overskriv).
+   - views_users-tellingen unhooker pre_get_users-filteret midlertidig
+     så lenke-counten ikke skjevheter av et aktivt ?bv_kontakttype-filter.
+   - Static \$running-guard mot re-entrance innen samme call-stack.
+
+  Andreas bekreftet "funker på live nå" 11:36 norsk tid. 65 hovedkontakter
+  rendres korrekt, ingen 500.
+
+  **Lærdom (memory):**
+   - feedback_pre_get_users_pagenow_check.md — alltid sjekk \$pagenow før
+     pre_get_users modifiserer query.
+   - reference_servebolt_deploy.md — Servebolt autodeploy skriver filer
+     direkte uten git pull, så `git log` på serveren viser misvisende HEAD.
+     Verifiser deploy med stat -c '%y' eller grep på nye symboler.
+
+  **Bårds eksport av nyhetsbrev-mottakere:**
+   wp-admin/users.php → klikk "Hovedkontakt (87)" → bulk-velg eller bruk
+   Tools → Export → Users.
+
+---
+date: 2026-05-28
 action: del-A-bard-feedback-shipped+del-B-rolle-rydding-shipped
 files:
   - mu-plugins/bimverdi-betingelser-prices.php
