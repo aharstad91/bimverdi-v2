@@ -4,6 +4,66 @@
 
 ---
 date: 2026-05-28
+action: fix-loop-min-side-nivaa-deltaker
+files:
+  - themes/bimverdi-theme/inc/minside-helpers.php
+summary: "Bård rapporterte i mail at «Velg Deltaker» på /min-side/ sendte ham i evig loop tilbake til /min-side/?nivaa=deltaker#registrer-foretak. Roten: statisk Gutenberg-pattern `pricing-tabell` har CTAs til `?nivaa=X#registrer-foretak`, men inline-skjemaet på dashboardet rendres kun når $bruker_foretak er satt (BRREG-søk). State 3 (uten foretak, uten BRREG-state) → ingen form → loop. Fix: server-side redirect på template_redirect som sender brukerne til /min-side/foretak/registrer/?nivaa=X som faktisk rendrer skjemaet."
+status: deployed
+detail: |
+  **Trigger:** Bård-mail 2026-05-28: «Når jeg vil oppgradere og velger
+  'deltaker' på https://bimverdi.no/min-side/?nivaa=deltaker#registrer-foretak
+  så går jeg i loop tilbake til https://bimverdi.no/min-side/?nivaa=deltaker
+  #registrer-foretak.»
+
+  **Diagnose (kode-trace):**
+  Dashboard har 3 user-states for pricing-tabellen:
+  1. Med foretak → "Bli Deltaker+"-CTA → /min-side/oppgrader/ (RIKTIG, krav 24-v4)
+  2. Uten foretak, MED $bruker_foretak (BRREG-søk gjort) → pricing-tabell
+     med CTA til /min-side/?nivaa=X#registrer-foretak → siden laster →
+     inline form (line 827) rendres → fungerer
+  3. Uten foretak, UTEN $bruker_foretak → static Gutenberg-pattern fallback
+     (line 818-820) → CTAs peker (via Gutenberg-konfig) til samme URL →
+     siden laster → MEN line 827 sjekker $bruker_foretak → form rendres
+     ikke → bruker ser samme tabell igjen → LOOP
+
+  Bård satt i state 3.
+
+  **Fix:** Server-side redirect i `bimverdi_minside_nivaa_unblock_redirect()`
+  hooked til `template_redirect` priority 6 (etter auth-check).
+  Guard-betingelser:
+   - Bare med ?nivaa= satt
+   - Bare logget-inn-brukere på /min-side/-roten (ikke sub-ruter)
+   - Bare for brukere uten $company_id OG uten $bruker_foretak (state 3)
+   - Bare for gyldige plan-keys validert mot bimverdi_pricing_valid_plan_keys()
+
+  Redirect → /min-side/foretak/registrer/?nivaa=X som rendrer
+  foretak-registrer-form.php step 2 direkte (foretak-registrer-form.php:31
+  leser allerede ?nivaa=-param).
+
+  **Verifikasjon (curl, lokalt):**
+   - State 3 + nivaa=deltaker → 302 → /min-side/foretak/registrer/?nivaa=deltaker ✅
+   - State 3 + nivaa=gratis/prosjektdeltaker/partner → 302 til riktig URL ✅
+   - State 3 + nivaa=blabla → 200 (ingen redirect) ✅
+   - State 3 uten ?nivaa= → 200 ✅
+   - State 2 (med bruker_foretak) + nivaa=deltaker → 200 (inline form virker) ✅
+   - State 1 (med company_id) + nivaa=deltaker → 200 ("Bli Deltaker+" CTA) ✅
+   - Sub-rute /min-side/foretak/registrer/?nivaa=deltaker → 200 (form rendres) ✅
+   - Destinasjonen rendrer skjemaet med "Valgt deltakernivå: Deltaker" og
+     hidden input deltakertype="deltaker" ✅
+
+  **Hva som IKKE er fikset (utsatt etter avtale med Andreas):**
+   - Den statiske Gutenberg-pattern'en `pricing-tabell` (CTAs peker til
+     /min-side/?nivaa=X#registrer-foretak) — pattern kan ryddes senere,
+     redirect'en gjør dette ikke-blokkerende.
+   - Horisontal scroll på tabellen i Bårds screenshot — UI-issue, kosmetisk.
+
+  **Neste steg etter prod-deploy:**
+   - Smoke-test som ikke-foretak-bruker på prod
+   - Svar til Bård: loopen er borte, tabellen ryddes i en senere runde,
+     spør om han ser andre "åpenbare feil" i flyten nå
+
+---
+date: 2026-05-28
 action: del-A-bard-feedback-shipped+del-B-rolle-rydding-shipped
 files:
   - mu-plugins/bimverdi-betingelser-prices.php

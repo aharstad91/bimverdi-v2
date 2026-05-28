@@ -639,3 +639,58 @@ add_filter('query_vars', 'bimverdi_minside_query_vars');
 if (function_exists('bimverdi_protect_minside') && !has_action('template_redirect', 'bimverdi_protect_minside')) {
     add_action('template_redirect', 'bimverdi_protect_minside', 5);
 }
+
+/**
+ * Unblock /min-side/?nivaa=X loop for users without company.
+ *
+ * Den statiske Gutenberg-pattern'en `pricing-tabell` har "Velg"-CTAs som
+ * peker til /min-side/?nivaa=X#registrer-foretak. Inline-skjemaet rendres
+ * kun når $bruker_foretak er satt (etter BRREG-søk). Uten det blir det en
+ * tilsynelatende loop. Sender brukerne til dedikert registreringsside.
+ */
+if (!function_exists('bimverdi_minside_nivaa_unblock_redirect')) {
+    function bimverdi_minside_nivaa_unblock_redirect() {
+        if (empty($_GET['nivaa']) || !is_user_logged_in() || !bimverdi_is_on_minside()) {
+            return;
+        }
+
+        // Bare dashboard-roten — sub-ruter (f.eks. /min-side/foretak/registrer/)
+        // håndterer ?nivaa= selv.
+        $current_route = function_exists('bimverdi_get_current_route') ? bimverdi_get_current_route() : '';
+        if (!in_array($current_route, ['', 'dashboard'], true)) {
+            return;
+        }
+
+        $user_id = get_current_user_id();
+        $company_id = get_user_meta($user_id, 'bimverdi_company_id', true);
+        if (empty($company_id)) {
+            $company_id = get_user_meta($user_id, 'bim_verdi_company_id', true);
+        }
+        if (!empty($company_id)) {
+            return;
+        }
+
+        $bruker_foretak = function_exists('bimverdi_get_bruker_foretak')
+            ? bimverdi_get_bruker_foretak($user_id)
+            : false;
+        if (!empty($bruker_foretak)) {
+            return;
+        }
+
+        $nivaa = sanitize_key($_GET['nivaa']);
+        $valid_keys = function_exists('bimverdi_pricing_valid_plan_keys')
+            ? bimverdi_pricing_valid_plan_keys()
+            : [];
+        if (!in_array($nivaa, $valid_keys, true)) {
+            return;
+        }
+
+        wp_safe_redirect(home_url('/min-side/foretak/registrer/?nivaa=' . $nivaa));
+        exit;
+    }
+}
+
+if (function_exists('bimverdi_minside_nivaa_unblock_redirect')
+    && !has_action('template_redirect', 'bimverdi_minside_nivaa_unblock_redirect')) {
+    add_action('template_redirect', 'bimverdi_minside_nivaa_unblock_redirect', 6);
+}
