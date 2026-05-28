@@ -396,69 +396,34 @@ if (!$company && $bruker_foretak) : ?>
             </div>
         </div>
 
-        <!-- Bli deltaker-CTA (kun for gratis brukerforetak) -->
-        <?php if ($bv_rolle_dash === 'Ikke deltaker'): ?>
-            <?php
-            $pending_oppgr_dash = ($is_hovedkontakt && function_exists('bimverdi_get_pending_oppgradering'))
-                ? bimverdi_get_pending_oppgradering($company_id)
-                : null;
-            ?>
+        <?php
+        // CTA "Bli Deltaker+" — vises for alle Gratisbrukere per krav 24-v4 AK-01.
+        // Per krav 02-v5: enhver Gratisbruker kan starte oppgradering; den som
+        // klikker blir Hovedkontakt etter konvertering. Konverteringen er
+        // selvbetjent og umiddelbar (ingen pending-state lenger).
+        $is_gratisbruker_dash = function_exists('bimverdi_is_gratisbruker')
+            ? bimverdi_is_gratisbruker($user_id)
+            : ($bv_rolle_dash === 'Ikke deltaker');
+        ?>
+        <?php if ($is_gratisbruker_dash): ?>
             <div class="py-8 border-b border-[#E7E5E4]">
-                <?php if ($is_hovedkontakt && $pending_oppgr_dash): ?>
-                    <div class="border border-[#FF8B5E]/40 rounded-lg p-5 bg-[#FFF8F5]">
-                        <div class="flex items-start gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-[#1A1A1A]"><?php _e('Oppgraderingsforespørsel sendt', 'bimverdi'); ?></p>
-                                <p class="text-sm text-[#5A5A5A] mt-1">
-                                    <?php
-                                    printf(
-                                        /* translators: 1: deltakernivå, 2: dato */
-                                        esc_html__('Forespørsel for %1$s ble sendt %2$s. Du får e-post når vi har behandlet forespørselen.', 'bimverdi'),
-                                        '<strong>' . esc_html($pending_oppgr_dash['level']) . '</strong>',
-                                        esc_html(date_i18n('j. F Y', strtotime($pending_oppgr_dash['requested_at'])))
-                                    );
-                                    ?>
-                                </p>
-                                <a href="<?php echo esc_url(bimverdi_minside_url('foretak/oppgrader')); ?>" class="inline-block text-sm text-[#FF8B5E] hover:underline mt-3">
-                                    <?php _e('Endre forespørselen', 'bimverdi'); ?>
-                                </a>
-                            </div>
+                <div class="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-[#1A1A1A]"><?php _e('Bli Deltaker+ og få full tilgang', 'bimverdi'); ?></p>
+                        <p class="text-sm text-[#5A5A5A] mt-1">
+                            <?php _e('Få tilgang til temagrupper, lukkede arrangementer, verktøyregistrering, artikler og rådgivning. Du blir hovedkontakt for foretaket — andre gratisbrukere blir tilleggskontakter.', 'bimverdi'); ?>
+                        </p>
+                        <div class="mt-4">
+                            <?php bimverdi_button([
+                                'text'    => __('Bli Deltaker+', 'bimverdi'),
+                                'href'    => bimverdi_minside_url('oppgrader'),
+                                'variant' => 'primary',
+                                'size'    => 'small',
+                            ]); ?>
                         </div>
                     </div>
-                <?php elseif ($is_hovedkontakt): ?>
-                    <div class="border border-[#E7E5E4] rounded-lg p-5 bg-[#FAFAF8]">
-                        <div class="flex items-start gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-[#1A1A1A]"><?php _e('Bli betalende deltaker', 'bimverdi'); ?></p>
-                                <p class="text-sm text-[#5A5A5A] mt-1">
-                                    <?php _e('Få tilgang til temagrupper, lukkede arrangementer, verktøyregistrering og rådgivning.', 'bimverdi'); ?>
-                                </p>
-                                <div class="mt-4">
-                                    <?php bimverdi_button([
-                                        'text'    => __('Oppgrader til betalende deltaker', 'bimverdi'),
-                                        'href'    => bimverdi_minside_url('foretak/oppgrader'),
-                                        'variant' => 'primary',
-                                        'size'    => 'small',
-                                    ]); ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <div class="border border-[#E7E5E4] rounded-lg p-5 bg-[#FAFAF8]">
-                        <div class="flex items-start gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-[#1A1A1A]"><?php _e('Foretaket er ikke betalende deltaker', 'bimverdi'); ?></p>
-                                <p class="text-sm text-[#5A5A5A] mt-1">
-                                    <?php _e('Hovedkontakten i foretaket må oppgradere for å gi deg tilgang til temagrupper, lukkede arrangementer, verktøyregistrering og rådgivning.', 'bimverdi'); ?>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
+                </div>
             </div>
         <?php endif; ?>
 

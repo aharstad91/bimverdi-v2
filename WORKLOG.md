@@ -3,6 +3,159 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-05-28
+action: demo-krav24-localhost+nyhetsbrev-kravspec-funnet-paa-trello
+files: []
+summary: "Helhetlig demo av oppgraderings-flyten (krav 24-v4) kjørt på localhost som Mari/SOL-IS — login → dashboard (CTA + Oppgrader-meny) → skjema med live pris-omberegning og egen-fakturaadresse-toggle → konvertering → fullført-side med EHF/admin-tekst. DB-state og e-post-utsendelse via Resend verifisert. SOL-IS nå Foretak/Deltaker i lokal DB. Skjermbilder i claude/demo-screenshots/. Klar for Bård-demo. Nyhetsbrev-mal-kravspec (TODO 2): IKKE i docs/krav/ — Bård har lagt den på Trello (https://trello.com/c/8GAdLLF7, Innboks)."
+status: ready-for-bard
+detail: |
+  **Demo-flyt verifisert (Mari Isdahl, user 625, SOL-IS ARKITEKTER AS = foretak 1669):**
+
+  1. Login som hovedkontakt for gratisforetak → redirect til /min-side/
+  2. Dashboard viser "Gratis brukerforetak"-status, CTA-blokk "Bli Deltaker+",
+     "Oppgrader" som menypunkt. AK-04 (vises kun for Gratisbrukere) ✅
+  3. /min-side/oppgrader/ renderer 4-seksjonsskjema med Deltaker forhåndsvalgt
+  4. Live pris-omberegning ved nivå-bytte (Deltaker→Prosjektdeltaker: 24 000→45 000)
+  5. Egen fakturaadresse-checkbox folder ut textarea via JS-toggle
+  6. Submit (Deltaker, 24 000 kr, 3 kvartaler Q2–Q4 2026) → konvertering OK
+  7. Fullført-side viser kravets eksakte EHF-tekst: "Faktura blir opprettet
+     manuelt og sendt via EHF til SOL-IS ARKITEKTER AS (orgnr 930874922)"
+  8. Navigasjonen oppdatert: "Oppgrader"-menypunkt borte automatisk (AK-04)
+
+  **Verifikasjon (debug.log 28-May 07:02):**
+  - DB: bv_foretakstype=foretak, bv_nivaa=deltaker, bv_rolle=Deltaker
+  - Resend ID 45287025... til mari@sol-is.no (bekreftelse)
+  - Resend ID e7e7a644... til post@bimverdi.no (admin-faktura)
+  - 0 kolleger varslet (Mari er eneste bruker i SOL-IS etter gårsdagens rydding)
+
+  **EHF-spørsmål (under demoen):** Andreas spurte hvorfor EHF ikke er i
+  skjemaet. Svar: B-031 parkerer hele fakturering-infrastrukturen — EHF
+  sendes fra Tripletex manuelt mot foretakets org.nr (ikke en e-post-adresse).
+  EHF-flyten er forklart for brukeren PÅ fullført-siden, ikke i skjemaet.
+  Mulig forbedring å diskutere med Bård: legg en setning under
+  "Faktureringsdetaljer" som forklarer at faktura sendes via EHF til org.nr.
+
+  **DB-state ETTER demo:** SOL-IS er nå Foretak/Deltaker på localhost.
+  Hvis Bård skal teste samme flyt selv må vi enten (a) rulle tilbake til
+  gratisforetak, eller (b) bruke et annet gratisforetak (1638 FÆRDER
+  BYGGKONTROLL, 1635 KVALSUND INGENIØRER, etc. — det finnes ~18 stk).
+
+  **TODO 2 (nyhetsbrev-mal) — kravspec funnet på Trello:**
+  Card: https://trello.com/c/8GAdLLF7/302-nyhetsbrev-registrering-mal-og-utsendelse
+  Liste: Innboks. Labels: Prioriteres, Ny funksjon. Andreas eier.
+
+  Kravet har TO deler:
+  - **A — Registrering:** (1) nyhetsbrev-abonnement krever foretakskobling
+    (dette ER allerede implementert i krav 22), (2) "Meld på"-knappen i
+    footer skal sende til /logg-inn/ med ferdigutfylt e-post slik bruker
+    velger login/opprett konto, (3) etter foretakskobling kan bruker velge
+    tema for nyhetsbrev.
+  - **B — Mal og utsendelse:** Sendes annenhver torsdag kl 12:00 fra
+    post@bimverdi.no. Emne: "Nytt & Nyttig fra BIM Verdi". Innhold:
+    overskrift + ingress (innhold merket med temavalg) → siste 3 artikler
+    (overskrift, av-hvem, 3 linjer + link) → neste arrangement → siste 3
+    verktøy/tjenester → siste 3 kunnskapskilder → siste 3 deltakere
+    (foretak). Link til /min-side/profil/rediger/ for å endre temavalg.
+    Avsender: "Nettverkshilsner fra Bård Krogshus, BIM Verdi".
+
+  **Avhengigheter for TODO 2:**
+  - Tematiske nyhetsbrev krever at brukere kan VELGE tema i profil →
+    profil-rediger.php trenger temagruppe-multiselect (eksisterer
+    taksonomien `temagruppe` allerede; brukerens valg lagres hvor?)
+  - Frekvens "annenhver torsdag kl 12" → WP-cron schedule
+  - Mal-rendering: HTML-template (kan bruke bimverdi_render_terms_footer_html
+    som mønster, eller egen newsletter-template-renderer)
+  - Sendetjeneste: Resend (allerede infra på plass) eller dedikert
+    nyhetsbrev-tjeneste? IKKE spesifisert i Trello-kortet.
+
+  **Anbefaling før implementasjon:** Spør Bård om (a) sendetjeneste-valg
+  (Resend mass-send vs Mailchimp/Brevo), (b) hvor temavalget skal lagres
+  på brukeren (user_meta vs ACF), (c) start-dato for første utsendelse
+  (annenhver torsdag fra hvilken dato?).
+
+---
+date: 2026-05-27
+action: bard-synk+prioritering+steg2-epost-fakturaadresse
+files:
+  - mu-plugins/bimverdi-foretak-konvertering.php
+  - themes/bimverdi-theme/parts/minside/oppgrader.php
+  - docs/krav/PROTOTYPE-RAPPORT-krav24.md
+  - docs/krav/PROTOTYPE-EDGE-CASE-RAPPORT-krav24.md
+summary: "Bård-synk 26. mai satte prioritering: (1) ferdigstill oppgraderings-flyten (krav 24-v4) FØR alt annet, (2) nyhetsbrev-mal innen 15. juni, (3) Stefans KI-verktøy + arrangementsoversikt. Demo + steg-2 27. mai: e-postutsendelse (3 e-poster) + egen-fakturaadresse-felt nå ferdig og E2E-verifisert; klar for prod hvis Bård godkjenner."
+status: waiting
+detail: |
+  **Kilde:** Synk med Bård 2026-05-26 (synk-bård-26-mai.json).
+  **Rollefordeling fremover:** Bård = arkitekt (skriver spec i MD-filer),
+    Andreas = teknisk implementerer. Bård bekreftet modellen.
+
+  **PRIORITERT REKKEFØLGE (Bårds ord: "logistikken må være ferdig før noe annet"):**
+
+  ## TODO 1 — Ferdigstill oppgraderings-flyten (krav 24-v4) [BLOKKERER ALT ANNET]
+    Prototype bygget + edge-case-testet (Units 1,4,5,6,7,9 ferdig).
+
+    STEG 2 FERDIG 2026-05-27 (E2E-verifisert via Chrome MCP som Mari/SOL-IS):
+    - [x] E-postutsendelse (AK-22, AK-23): erstattet stub i
+          bimverdi-foretak-konvertering.php med faktisk utsendelse av 3
+          e-poster — bekreftelse til hovedkontakt, varsel til hver
+          tilleggskontakt (kravets eksakte tekst), admin-faktura til
+          post@bimverdi.no. NB: prosjektet overstyrer wp_mail() via Resend
+          (bimverdi-resend-mail.php), så e-post sendes FAKTISK også fra
+          localhost. Test sendte 3 ekte e-poster via Resend (bekreftet ID-er
+          i debug.log). Egen-fakturaadresse tas med i admin-e-posten.
+    - [x] "Egen fakturaadresse"-felt (skjema-felt 6): checkbox + textarea
+          med JS-toggle i oppgrader.php, sanitert i handler.
+
+    GJENSTÅR før prod-deploy:
+    - [ ] Min Side-notifikasjoner til øvrige Gratisbrukere (B-029) — delt
+          infrastruktur (tabell wp_bimverdi_notifications, klokke-ikon+badge,
+          varslinger-side). Bevisst utelatt: større delsystem flere krav bruker.
+    - [ ] Nedgraderings-knapp i WP-admin + data-håndtering (AK-24, AK-25) —
+          admin-speilet av flyten; brukes kun "hvis betaling uteblir".
+    - [ ] Pris-henting fra bimverdi.no/betingelser/ (AK-5) — IKKE et gap:
+          parsing parkert med fakturerings-prosjektet (B-031), hardkodet
+          fallback er det v1 skal bruke per kravet. VERIFISER prisene
+          (8000/15000/25000) mot betingelser-siden før prod.
+    - [ ] Cron for årlig fornyelse (AK-27) — kravet motsier seg selv: prosa
+          sier "utenfor scope / eget krav 25", men det står som AK. Hører
+          til krav 25, ikke 24. Påpek for Bård.
+    - [ ] Avklar 3 åpne spørsmål med Bård (se under).
+
+  ## HVORFOR var ikke alt bygget i prototype-runden (3 kategorier)
+    1. Bårds egne parkeringer (IKKE gap): pris-parsing (B-031),
+       årlig fornyelse (krav 25).
+    2. Bevisst prototype-scoping: e-post + fakturaadresse-felt — nå FERDIG (steg 2).
+    3. Delt/større infrastruktur eller admin-speil: Min Side-notifikasjoner
+       (B-029), nedgraderings-knapp.
+
+  ## TODO 2 — Nyhetsbrev-mal [FRIST 15. JUNI]
+    - [ ] Bård skriver spec i MD-fil og sender til Andreas.
+    - [ ] Mal skal vise: siste kunnskapskilde, "siste ditt og siste datt".
+    - [ ] Bård trenger å sende ut nyhetsbrev FØR 2026-06-15.
+
+  ## TODO 3 — Nye tjenester [ETTER logistikk + nyhetsbrev]
+    - [ ] Stefans KI-verktøy: ~1800 KI-verktøy for byggenæringa importeres
+          som egen verktøyoversikt (samlet ~2000 med eksisterende 34).
+          Godkjenning fra Stefan finnes (mail + MD-fil). Tolke MD/word-filer
+          til verktøy-data. Verktøyene merkes på egen måte per dummy-bildet.
+    - [ ] Arrangementsoversikt — separat tjeneste under tjenestemenyen.
+
+  ## ÅPNE SPØRSMÅL TIL BÅRD (fra edge-case-rapporten):
+    1. Hva skjer hvis admin er koblet til et Gratisforetak — skal hun se
+       CTA, eller "bruk Tripletex"-melding?
+    2. Skal portalen vise "venter på betaling"-status, eller går konvertering
+       rett gjennom (admin nedgraderer manuelt om betaling uteblir)?
+    3. Skal fakturamottaker-feltet valideres mot bedrifts-epost (avvise
+       gmail osv.), eller er fri e-post OK?
+
+  ## ANDRE NOTATER:
+    - Pro-JSB gamlesida lastet ned (28 GB → 2,5 GB konvertert), ligger
+      lokalt. Skal opp som eget nettsted på Servebolt — ingen ekstra kostnad.
+    - Staging-løsning (demo-side av live) foreslått av Andreas, Bård
+      parkerte: "alt i sin tid".
+    - Demo skjer på localhost (stor endring, kan ikke pushes live ennå) —
+      samme modell som forrige gang.
+
+---
 date: 2026-05-22
 action: deploy+gratisbruker-orgnr-sharing
 files:

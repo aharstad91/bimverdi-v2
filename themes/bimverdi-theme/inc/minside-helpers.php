@@ -432,7 +432,11 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'foretak'             => 'foretak-detail',
             'foretak/rediger'     => 'foretak-rediger',
             'foretak/registrer'   => 'foretak-registrer',
-            'foretak/oppgrader'   => 'foretak-oppgrader',
+            'foretak/oppgrader'   => 'foretak-oppgrader', // Legacy admin-godkjenning (krav 24 v1 erstatter)
+
+            // Selvbetjent oppgradering (krav 24-v4)
+            'oppgrader'           => 'oppgrader',
+            'oppgrader/fullfort'  => 'oppgrader-fullfort',
             
             // Tools (Verktøy)
             'verktoy'             => 'verktoy-list',
@@ -564,6 +568,16 @@ if (!function_exists('bimverdi_get_minside_nav')) {
         // Artikler requires premium company (prosjektdeltaker/partner)
         if (!bimverdi_can_access('write_article')) {
             unset($nav['artikler']);
+        }
+
+        // "Oppgrader"-menypunkt vises kun for Gratisbrukere (krav 24-v4 AK-02).
+        if (function_exists('bimverdi_is_gratisbruker') && bimverdi_is_gratisbruker($user_id)) {
+            $nav['oppgrader'] = [
+                'label' => __('Oppgrader', 'bimverdi'),
+                'url'   => bimverdi_minside_url('oppgrader'),
+                'icon'  => 'trending-up',
+                'routes' => ['oppgrader', 'oppgrader/fullfort'],
+            ];
         }
 
         return $nav;
