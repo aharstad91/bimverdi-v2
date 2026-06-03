@@ -99,6 +99,69 @@ function bimverdi_nyhetsbrev_byline($person_navn, $foretak_navn) {
 }
 
 /**
+ * Normaliser en ACF-bildeverdi (array / attachment-ID / URL) til en absolutt URL.
+ * Tåler alle ACF return_format-varianter.
+ */
+function bimverdi_nyhetsbrev_acf_bilde_url($val, $size = 'medium') {
+    if (empty($val)) {
+        return '';
+    }
+    if (is_array($val)) {
+        if (!empty($val['sizes'][$size])) {
+            return $val['sizes'][$size];
+        }
+        return !empty($val['url']) ? $val['url'] : '';
+    }
+    if (is_numeric($val)) {
+        $url = wp_get_attachment_image_url((int) $val, $size);
+        return $url ?: '';
+    }
+    if (is_string($val)) {
+        return $val; // Allerede en URL.
+    }
+    return '';
+}
+
+/**
+ * Finn beste tilgjengelige bilde for en post, med CPT-spesifikk fallback-kjede.
+ * Returnerer ['url' => absolutt URL|'', 'type' => 'featured'|'logo'|'none'].
+ *
+ * Datadekning (localhost juni 2026): artikkel ~97% featured, foretak 0% featured
+ * men 73% ACF-logo, verktøy/kunnskapskilde/arrangement sparsomt → «vis hvis finnes».
+ */
+function bimverdi_nyhetsbrev_bilde($post_id, $cpt, $size = 'medium') {
+    // 1. Fremhevet bilde (alle CPT-er).
+    $url = get_the_post_thumbnail_url($post_id, $size);
+    if ($url) {
+        return ['url' => $url, 'type' => 'featured'];
+    }
+
+    // 2. CPT-spesifikke fallbacks.
+    if ($cpt === 'verktoy') {
+        $url = bimverdi_nyhetsbrev_acf_bilde_url(get_field('verktoy_logo', $post_id), $size);
+        if (!$url) {
+            $eier = get_field('eier_leverandor', $post_id);
+            $eier_id = is_object($eier) ? ($eier->ID ?? 0) : (int) $eier;
+            if ($eier_id) {
+                $url = bimverdi_nyhetsbrev_acf_bilde_url(get_field('logo', $eier_id), $size);
+            }
+        }
+        if ($url) {
+            return ['url' => $url, 'type' => 'logo'];
+        }
+    }
+
+    if ($cpt === 'foretak') {
+        $url = bimverdi_nyhetsbrev_acf_bilde_url(get_field('logo', $post_id), $size);
+        if ($url) {
+            return ['url' => $url, 'type' => 'logo'];
+        }
+    }
+
+    return ['url' => '', 'type' => 'none'];
+}
+
+/**
  * 1. Siste N publiserte artikler.
  */
 function bimverdi_nyhetsbrev_artikler($limit = 3) {
@@ -113,8 +176,9 @@ function bimverdi_nyhetsbrev_artikler($limit = 3) {
     ]);
 
     $items = [];
-    foreach ($q->posts as $post) {
+    foreach ($q->posts as $idx => $post) {
         $id = $post->ID;
+        $is_hero = ($idx === 0); // Toppartikkel = hero (stort bilde øverst).
 
         // Foretak: eksplisitt felt, ellers utledet fra forfatterens user meta.
         $bedrift = get_field('artikkel_bedrift', $id);
@@ -131,16 +195,21 @@ function bimverdi_nyhetsbrev_artikler($limit = 3) {
             $ingress = has_excerpt($id) ? get_the_excerpt($id) : $post->post_content;
         }
 
+        $bilde = bimverdi_nyhetsbrev_bilde($id, 'artikkel', $is_hero ? 'large' : 'medium');
+
         $items[] = [
             'tittel' => bimverdi_nyhetsbrev_plain(get_the_title($id)),
             'av'     => bimverdi_nyhetsbrev_byline(
                 bimverdi_nyhetsbrev_person_navn($author_id),
                 $foretak['navn']
             ),
-            'av_url' => $foretak['url'],
-            'utdrag' => bimverdi_nyhetsbrev_tekst($ingress),
-            'lenke'  => get_permalink($id),
-            'meta'   => '',
+            'av_url'     => $foretak['url'],
+            'utdrag'     => bimverdi_nyhetsbrev_tekst($ingress, $is_hero ? 40 : 24),
+            'lenke'      => get_permalink($id),
+            'meta'       => '',
+            'bilde'      => $bilde['url'],
+            'bilde_type' => $bilde['type'],
+            'hero'       => $is_hero,
         ];
     }
     wp_reset_postdata();
@@ -195,15 +264,20 @@ function bimverdi_nyhetsbrev_neste_arrangement() {
         $sted,
     ]);
 
+    $bilde = bimverdi_nyhetsbrev_bilde($id, 'arrangement', 'medium');
+
     wp_reset_postdata();
 
     return [[
-        'tittel' => bimverdi_nyhetsbrev_plain(get_the_title($id)),
-        'av'     => $arrangor ? bimverdi_nyhetsbrev_plain($arrangor) : '',
-        'av_url' => '',
-        'utdrag' => bimverdi_nyhetsbrev_tekst($beskrivelse),
-        'lenke'  => get_permalink($id),
-        'meta'   => implode(' · ', $meta_deler),
+        'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id)),
+        'av'         => $arrangor ? bimverdi_nyhetsbrev_plain($arrangor) : '',
+        'av_url'     => '',
+        'utdrag'     => bimverdi_nyhetsbrev_tekst($beskrivelse),
+        'lenke'      => get_permalink($id),
+        'meta'       => implode(' · ', $meta_deler),
+        'bilde'      => $bilde['url'],
+        'bilde_type' => $bilde['type'],
+        'hero'       => false,
     ]];
 }
 
@@ -224,13 +298,17 @@ function bimverdi_nyhetsbrev_verktoy($limit = 3) {
     foreach ($q->posts as $post) {
         $id = $post->ID;
         $foretak = bimverdi_nyhetsbrev_foretak(get_field('eier_leverandor', $id));
+        $bilde   = bimverdi_nyhetsbrev_bilde($id, 'verktoy', 'medium');
         $items[] = [
-            'tittel' => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('verktoy_navn', $id)),
-            'av'     => $foretak['navn'],
-            'av_url' => $foretak['url'],
-            'utdrag' => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
-            'lenke'  => get_permalink($id),
-            'meta'   => '',
+            'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('verktoy_navn', $id)),
+            'av'         => $foretak['navn'],
+            'av_url'     => $foretak['url'],
+            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
+            'lenke'      => get_permalink($id),
+            'meta'       => '',
+            'bilde'      => $bilde['url'],
+            'bilde_type' => $bilde['type'],
+            'hero'       => false,
         ];
     }
     wp_reset_postdata();
@@ -255,13 +333,17 @@ function bimverdi_nyhetsbrev_kunnskapskilder($limit = 3) {
         $id = $post->ID;
         $foretak = bimverdi_nyhetsbrev_foretak(get_field('tilknyttet_bedrift', $id));
         $person  = bimverdi_nyhetsbrev_person_navn(get_field('registrert_av', $id));
+        $bilde   = bimverdi_nyhetsbrev_bilde($id, 'kunnskapskilde', 'medium');
         $items[] = [
-            'tittel' => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('kunnskapskilde_navn', $id)),
-            'av'     => bimverdi_nyhetsbrev_byline($person, $foretak['navn']),
-            'av_url' => $foretak['url'],
-            'utdrag' => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
-            'lenke'  => get_permalink($id),
-            'meta'   => '',
+            'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('kunnskapskilde_navn', $id)),
+            'av'         => bimverdi_nyhetsbrev_byline($person, $foretak['navn']),
+            'av_url'     => $foretak['url'],
+            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
+            'lenke'      => get_permalink($id),
+            'meta'       => '',
+            'bilde'      => $bilde['url'],
+            'bilde_type' => $bilde['type'],
+            'hero'       => false,
         ];
     }
     wp_reset_postdata();
@@ -284,13 +366,17 @@ function bimverdi_nyhetsbrev_deltakere($limit = 3) {
     $items = [];
     foreach ($q->posts as $post) {
         $id = $post->ID;
+        $bilde = bimverdi_nyhetsbrev_bilde($id, 'foretak', 'medium');
         $items[] = [
-            'tittel' => bimverdi_nyhetsbrev_plain(get_the_title($id)),
-            'av'     => '',
-            'av_url' => '',
-            'utdrag' => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
-            'lenke'  => get_permalink($id),
-            'meta'   => '',
+            'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id)),
+            'av'         => '',
+            'av_url'     => '',
+            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
+            'lenke'      => get_permalink($id),
+            'meta'       => '',
+            'bilde'      => $bilde['url'],
+            'bilde_type' => $bilde['type'],
+            'hero'       => false,
         ];
     }
     wp_reset_postdata();
