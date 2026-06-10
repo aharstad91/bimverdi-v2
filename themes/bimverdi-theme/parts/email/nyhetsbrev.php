@@ -101,7 +101,7 @@ $bv_nb_kort_header = function ($seksjon) {
                  . 'Se alle ' . esc_html($seksjon['total']) . '&nbsp;→</a>';
     }
     return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
-         . '<td style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#FF8B5E;font-family:Inter,Arial,sans-serif;">'
+         . '<td class="nb-title" style="font-size:16px;font-weight:700;color:#1A1A1A;font-family:Inter,Arial,sans-serif;">'
          . esc_html($seksjon['tittel']) . '</td>'
          . '<td align="right">' . $se_alle . '</td>'
          . '</tr></table>';
@@ -149,7 +149,7 @@ $bv_nb_kort_header = function ($seksjon) {
         <!-- ============ HEADER (sentrert, på canvas) ============ -->
         <tr>
             <td align="center" style="padding:16px 24px 8px 24px;">
-                <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#FF8B5E;margin-bottom:14px;">
+                <div class="nb-title" style="font-size:16px;font-weight:700;color:#1A1A1A;margin-bottom:14px;">
                     BIM Verdi
                 </div>
                 <h1 class="nb-h1" style="margin:0;font-size:30px;line-height:1.2;font-weight:600;color:#1A1A1A;">
