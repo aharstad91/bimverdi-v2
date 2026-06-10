@@ -4,6 +4,82 @@
 
 ---
 date: 2026-06-10
+action: nyhetsbrev-mal-v2-kortdesign-bards-9juni-krav-pluss-test-til-bard-pluss-db-synk
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-content.php (to-fase nytt/oppdatert, totaler, se-alle-data)"
+  - "themes/bimverdi-theme/parts/email/nyhetsbrev.php (omskrevet — kortdesign v2)"
+  - "mu-plugins/bimverdi-nyhetsbrev-send.php (prod-URL-omskriving ved localhost-send)"
+  - "wp-config.php (lokal — baard@verdinettverk.no på test-allowlist)"
+summary: "Mal v2 etter Spark-referanse fra Andreas («MVP v0.5, alt for mye tekst»): kort-basert design (hvite avrundede kort på beige canvas), tekst-minimal (kun hero har utdrag — listerader er thumb+badge+tittel+byline), sentrert topp-header med ressurs-oversikt (Bårds gulrot: «utvalgt fra 587 ressurser» + fordeling + «Del noe selv»), NY/OPPDATERT-piller (to-fase-spørring: nye siste 30 dgr først, sist endrede som fyll), «Se alle N →» per kort, initial-placeholder (64px) der bilde mangler. Arrangement = hero-blokk på lik linje med toppsaken (Andreas: «noe av det viktigste»). Eyebrow-stil fjernet → seksjonstitler 16px bold mørk. Mobil-bug fikset (fast 600px → fluid width:100%/max-600). Test sendt Andreas+Bård; Bårds Outlook viste knuste bilder → rotårsak: localhost-URL-er i HTML → send_en skriver nå om alle URL-er til https://bimverdi.no ved localhost-send. Uploads/2026 (243MB) rsync-et ned (manglet lokalt). Andreas så at toppsaken var utdatert → full sync-db.sh kjørt (fersk DB), AEC-import re-kjørt (236/186, identisk), ny kladd 3254 generert — «Bridging the Gap» (NTNU) nå hero m/ NY-pille. 6 commits pushet."
+status: done
+detail: |
+  **Kontekst:** Andreas ville jobbe videre med nyhetsbrev-designet. Ga Spark-nyhetsbrev
+  som referanse og dommen «MVP v0.5 — alt for mye tekst». Bårds 4 mal-krav fra
+  09.06-synken lå også åpne (topp-header m/ ressurs-antall, nytt-vs-oppdatert,
+  design-trim, ikke nakne seksjoner).
+
+  **Innholdsmotor (content.php):**
+   - bimverdi_nyhetsbrev_hent_nytt_og_oppdatert(): to-fase — nye (publisert siste
+     30 dgr, filter bimverdi_nyhetsbrev_nylig_dager) først, deretter sist ENDREDE
+     eldre som fyll. Status per post: ny / oppdatert (endret etter cutoff) / ''
+     (eldre fyll → ingen badge, jf. «tydelig skille nytt vs gammelt»).
+   - bimverdi_nyhetsbrev_totaler(): publiserte per CPT (verktøy/kunnskapskilder/
+     artikler/deltakere) + sum til headeren.
+   - collect(): + totaler, og per seksjon total/arkiv_url/enhet for «Se alle».
+   - Arrangement: bilde 'large' + hero=true når bilde finnes (fallback kompakt rad).
+
+  **Mal (nyhetsbrev.php, omskrevet):** kort per seksjon, hero-mønster (bilde →
+  badge → [dato] → tittel → byline → utdrag → CTA), kompakt-rad-mønster uten
+  utdrag, seksjonsavhengig CTA-tekst («Se arrangementet» vs «Les hele saken»),
+  NY-pille oransje / OPPDATERT-pille beige, initial-placeholder, dark-mode-vars.
+  Eyebrows (oransje uppercase) → 16px/700/#1A1A1A normal-case per Andreas.
+
+  **Mobil-bug:** style width:600px gjorde at innholdet fløt over på 375px (titler
+  kuttet — verifisert m/ viewport-emulering). Fiks: width:100%;max-width:600px
+  (hybrid: width="600"-attributt beholdt for Outlook). Verifisert på 375px.
+
+  **⚠️ VIKTIG LÆRDOM — localhost-URL-er i e-post:** Test til Bård viste knuste
+  bilder i Outlook («Kan ikke vise det koblede bildet»). Andreas' egen klient
+  viste alt — fordi HANS maskin kjører MAMP (localhost:8888 resolver lokalt!).
+  Rotårsak: snapshot-HTML inneholder localhost-URL-er for bilder OG lenker.
+  Fiks i send_en: ved localhost-miljø skrives home_url → https://bimverdi.no
+  (overstyrbar: BIMVERDI_NYHETSBREV_PROD_URL). No-op på prod. Re-sendt begge —
+  Resend-ID f0013e15 (Andreas) + 2b2c8fc3 (Bård).
+  MERK: avmeldings-lenken peker dermed på prod, der endepunktet IKKE er deployet
+  ennå → 404 til branchen merges/deployes.
+
+  **Uploads manglet lokalt:** artikkel-thumbs 404 lokalt (200 på prod) — DB var
+  synket men aldri uploads. rsync uploads/2026 (243MB) fra Servebolt.
+
+  **DB-synk + gjenoppretting:** Andreas så at toppsaken var utdatert (prod hadde
+  «Bridging the Gap» publisert 10.06). Full ./sync-db.sh (DB 7,4MB + uploads).
+  DB-overskriving slettet lokal AEC-import + nyhetsbrev-kladd 3227 (begge
+  forventet/gjenopprettbart): re-kjørte aihub-selftest (51/51) + aihub-sync
+  (236 insert) + aihub-publish-batch --alle-mappede (186/186) — identisk med før.
+  Ny kladd 3254 generert: «Bridging the Gap» hero m/ NY, BIM Verdi 2.0 + ByggChat
+  m/ OPPDATERT — nytt-vs-oppdatert-logikken verifisert med ekte data.
+  (DB-synk logger også ut alle lokale sesjoner — Chrome-innlogging må gjøres på nytt.)
+
+  **Test-allowlist:** baard@verdinettverk.no lagt til BIMVERDI_NYHETSBREV_TEST_-
+  MOTTAKERE (lokal wp-config) etter Andreas' eksplisitte ja. Blocker-whitelisten
+  ble åpnet MIDLERTIDIG for Bård ved hver av de 2 sendingene og LUKKET igjen
+  umiddelbart etterpå (verifisert blokkert) — Bård står IKKE permanent i blockeren.
+
+  **Commits (feat/nyhetsbrev-mal, alle pushet):**
+   - c7645b5 feat: mal v2 — kortdesign + Bårds mal-krav
+   - 4e355c2 fix: fluid bredde (mobil)
+   - 8dad20b style: eyebrows → vanlige titler
+   - 1671734 feat: arrangement som hero-blokk
+   - 4c35967 fix: localhost-URL-er → prod-domene ved utsendelse
+   (+ tidligere i dag: b23fba6 AEC, ab1cb16 CPT, 38c63a3 send-motor, a75b3ab herding)
+
+  **Status/neste:** Andreas tilbudt re-send av fersk kladd (3254) til seg+Bård —
+  ikke besvart ennå. Deretter: Bårds dom på designet, massesend-motoren (xhigh,
+  eget steg), prod-deploy (krever BIMVERDI_NYHETSBREV_TEST_MOTTAKERE i prod
+  wp-config + verifiser at _local-email-blocker IKKE finnes på Servebolt).
+
+---
+date: 2026-06-10
 action: nyhetsbrev-send-motor-fase1-intern-testing-pluss-gdpr-avmelding-pluss-commits-pushet
 files:
   - "mu-plugins/bimverdi-nyhetsbrev-send.php (ny — test-send, avmelding, mottaker-resolusjon)"
