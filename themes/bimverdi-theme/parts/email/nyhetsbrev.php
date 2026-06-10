@@ -170,8 +170,12 @@ $bv_nb_kort_header = function ($seksjon) {
                     ?>
                 </p>
                 <?php endif; ?>
-                <p class="nb-muted" style="margin:14px 0 0 0;font-size:13px;line-height:1.5;<?php echo $muted; ?>">
-                    Del noe selv — så blir du synlig her.
+                <p class="nb-muted" style="margin:14px 0 0 0;font-size:13px;line-height:1.6;<?php echo $muted; ?>">
+                    Som gratisbruker kan du logge deg inn og registrere kunnskapskilder og delta
+                    på åpne arrangement. Som aktiv Deltaker kan du skrive artikler, registrere
+                    verktøy m.m.
+                    <a href="<?php echo esc_url(home_url('/logg-inn/')); ?>" style="color:#FF8B5E;font-weight:600;text-decoration:none;white-space:nowrap;">Logg inn her</a>
+                    og bli med å bygge &amp; bruke økosystemet.
                 </p>
             </td>
         </tr>

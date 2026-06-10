@@ -193,59 +193,35 @@ function bimverdi_nyhetsbrev_bilde($post_id, $cpt, $size = 'medium') {
 }
 
 /**
- * Cutoff for «nytt»: innhold publisert siste 30 dager regnes som nytt.
- * Justerbar via filteret bimverdi_nyhetsbrev_nylig_dager.
- */
-function bimverdi_nyhetsbrev_ny_cutoff() {
-    $dager = (int) apply_filters('bimverdi_nyhetsbrev_nylig_dager', 30);
-    return date('Y-m-d H:i:s', current_time('timestamp') - $dager * DAY_IN_SECONDS);
-}
-
-/**
- * To-fase-henting per seksjon (Bård-krav 09.06: nytt-vs-oppdatert-prioritering):
+ * Hent nye OG sist oppdaterte poster per seksjon (Bård 10.06):
  *
- *   Fase 1: NYE poster (publisert etter cutoff), nyeste først.
- *   Fase 2: hvis kvoten ikke er fylt — eldre poster sortert på sist ENDRET,
- *           så seksjonen aldri står tom/naken.
+ * Én spørring sortert på post_modified DESC — en fersk oppdatering er like
+ * nyhetsverdig som en ny registrering (seksjonene heter «Nye og sist
+ * oppdaterte …»). Nypubliserte poster har post_modified = post_date og
+ * sorteres dermed naturlig inn.
  *
- * Hver post får ->bv_nb_status: 'ny', 'oppdatert' (endret etter cutoff) eller
- * '' (eldre fyll-innhold — får ingen badge, jf. «tydelig skille nytt vs gammelt»).
+ * Badge per post (->bv_nb_status):
+ *   'ny'        — post_date ≈ post_modified (endret < 24 t etter publisering,
+ *                 dvs. nyregistrert og ikke vesentlig redigert siden)
+ *   'oppdatert' — redigert senere enn det (eksisterende post med ny aktivitet)
  *
  * @return WP_Post[]
  */
 function bimverdi_nyhetsbrev_hent_nytt_og_oppdatert($post_type, $limit, $extra = []) {
-    $cutoff = bimverdi_nyhetsbrev_ny_cutoff();
-    $base = array_merge([
+    $poster = get_posts(array_merge([
         'post_type'           => $post_type,
         'post_status'         => 'publish',
+        'posts_per_page'      => $limit,
+        'orderby'             => 'modified',
+        'order'               => 'DESC',
         'no_found_rows'       => true,
         'ignore_sticky_posts' => true,
         'suppress_filters'    => false,
-    ], $extra);
+    ], $extra));
 
-    $poster = get_posts(array_merge($base, [
-        'posts_per_page' => $limit,
-        'orderby'        => 'date',
-        'order'          => 'DESC',
-        'date_query'     => [['after' => $cutoff, 'inclusive' => true]],
-    ]));
     foreach ($poster as $p) {
-        $p->bv_nb_status = 'ny';
-    }
-
-    $mangler = $limit - count($poster);
-    if ($mangler > 0) {
-        $fyll = get_posts(array_merge($base, [
-            'posts_per_page' => $mangler,
-            'orderby'        => 'modified',
-            'order'          => 'DESC',
-            'post__not_in'   => wp_list_pluck($poster, 'ID') ?: [0],
-            'date_query'     => [['before' => $cutoff]],
-        ]));
-        foreach ($fyll as $p) {
-            $p->bv_nb_status = ($p->post_modified >= $cutoff) ? 'oppdatert' : '';
-        }
-        $poster = array_merge($poster, $fyll);
+        $alder_for_endring = strtotime($p->post_modified) - strtotime($p->post_date);
+        $p->bv_nb_status = ($alder_for_endring < DAY_IN_SECONDS) ? 'ny' : 'oppdatert';
     }
 
     return $poster;
@@ -500,17 +476,17 @@ function bimverdi_nyhetsbrev_collect() {
             ], $arkiv('arrangement', 'arrangementer')),
             array_merge([
                 'noekkel' => 'verktoy',
-                'tittel'  => 'Nye verktøy og tjenester',
+                'tittel'  => 'Nye og sist oppdaterte verktøy og tjenester',
                 'items'   => bimverdi_nyhetsbrev_verktoy(3),
             ], $arkiv('verktoy', 'verktøy')),
             array_merge([
                 'noekkel' => 'kunnskapskilder',
-                'tittel'  => 'Nye kunnskapskilder',
+                'tittel'  => 'Nye og sist oppdaterte kunnskapskilder',
                 'items'   => bimverdi_nyhetsbrev_kunnskapskilder(3),
             ], $arkiv('kunnskapskilde', 'kunnskapskilder')),
             array_merge([
                 'noekkel' => 'deltakere',
-                'tittel'  => 'Nye deltakere',
+                'tittel'  => 'Nye og sist oppdaterte deltakere',
                 'items'   => bimverdi_nyhetsbrev_deltakere(3),
             ], $arkiv('foretak', 'deltakere')),
         ],
