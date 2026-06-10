@@ -3,6 +3,344 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-06-09
+action: nyhetsbrev-cpt-bygd-pluss-kritisk-manage-options-cap-bug-funnet-og-fikset
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-cpt.php (ny)"
+  - "mu-plugins/bimverdi-nyhetsbrev-preview.php (endret — per-post øyeblikksbilde)"
+  - "mu-plugins/bimverdi-nyhetsbrev-content.php (endret — norsk dato-helper)"
+summary: "Bygde nyhetsbrev-CPT per Bårds 9.-juni-beslutning (cron → CPT + manuell send-knapp). «Generer nyhetsbrev nå» tar et FROSSET øyeblikksbilde (rendret e-post-HTML lagret i post meta) → forhåndsvis → manuell send (forberedt, ikke koblet). CPT admin-låst (manage_options), «Legg til ny» skjult, listekolonner + metaboks. 2 review-agenter sa SHIP; fikset deres medium-funn (engelske månedsnavn → norsk dato-helper, get_locale=en_US). KRITISK: da jeg åpnet wp-admin i Chrome for å vise siden, oppdaget jeg at CPT-en hadde brutt manage_options GLOBALT — jeg mappet de singulære meta-cap-ene (edit_post/read_post/delete_post) → manage_options, så WP registrerte manage_options SELV som meta-cap → do_not_allow → alle admins (inkl. Andreas) mistet wp-admin. Fikset ved å kun remappe plurale cap-er. Verifisert. IKKE committet ennå (AEC-endringer ligger også i working tree)."
+status: done
+detail: |
+  **Kontekst:** Andreas ba om å bygge nyhetsbrev-CPT-en og få det eksisterende
+  nyhetsbrevet (mal+innholdsmotor fra branch feat/nyhetsbrev-mal) inn i WP. Begrunnet
+  i Bård-synk 2026-06-09 som reverserte trigger fra cron → CPT + manuell send-knapp.
+
+  **Bygget (mu-plugins/bimverdi-nyhetsbrev-cpt.php):**
+   - CPT `nyhetsbrev` (public=false, admin-only via manage_options, show_in_menu).
+   - `bimverdi_nyhetsbrev_generer()` + `bimverdi_nyhetsbrev_snapshot()`: tar FROSSET
+     øyeblikksbilde — rendrer e-post-HTML via eksisterende bimverdi_render_nyhetsbrev()
+     og lagrer i post meta `_bv_nyhetsbrev_html` (wp_slash) + generated_at + item_count.
+     Poeng: det Bård forhåndsviser = nøyaktig det som sendes (innhold drifter ikke).
+   - Admin-UI: «Generer nyhetsbrev nå»-knapp (admin_post + nonce), «Oppdater
+     øyeblikksbilde» (kun kladd), metaboks (status/forhåndsvis/send-placeholder),
+     listekolonner (Status/Innhold/Forhåndsvis), «Legg til ny» skjult.
+   - Send-knapp bevisst DEAKTIVERT — Resend-utsendelse + mottakerkilde er neste steg.
+   - preview.php utvidet: `?bimverdi_nyhetsbrev_preview=<post_id>` viser lagret
+     øyeblikksbilde (live-render beholdt for `=1`).
+
+  **Review (2 agenter, per Andreas' rammer):** ce-security + ce-correctness, begge SHIP.
+   - Sikkerhet: ingen utnyttbare hull (caps/nonces/escaping/ingen open-redirect).
+   - Korrekthet: ett medium — date_i18n('j. F Y') ga engelske måneder (get_locale=en_US,
+     ingen nb_NO-pakke, verifisert mot prod). Fikset: `bimverdi_nyhetsbrev_dato_nb()`
+     (hardkodet bokmål-måneder) i content.php, brukt på tittel + visningsdatoer +
+     arrangement + body-«generert». Tittel nå «Nytt & Nyttig — 9. juni 2026».
+
+  **⚠️ KRITISK BUG (introdusert av meg, funnet + fikset samme sesjon):**
+   - Symptom: wp-admin (også /wp-admin/-dashbordet) 302-redirectet ALLE til /min-side/.
+   - Feildiagnose først: trodde det var pre-eksisterende/globalt. FEIL — det var min CPT.
+   - Rotårsak: jeg satte `'edit_post'/'read_post'/'delete_post' => 'manage_options'` i
+     CPT-ens capabilities. WordPress `_post_type_meta_capabilities()` registrerer da
+     `$post_type_meta_caps['manage_options'] = 'read_post'` → manage_options blir SELV en
+     meta-cap → `map_meta_cap('manage_options')` rekurserer til read_post uten post-ID →
+     `do_not_allow`. Resultat: manage_options brutt for ALLE brukere på hele localhost
+     (block_wp_admin_for_non_admins bouncet derfor alle, inkl. ID 1 Andreas).
+   - Bevis: `map_meta_cap('manage_options',2)` = ['do_not_allow'] mens activate_plugins/
+     read/edit_posts var friske; vedvarte selv etter remove_all_filters('map_meta_cap').
+   - Fiks: remap KUN plurale/primitive cap-er (edit_posts, edit_others_posts,
+     publish_posts, read_private_posts, create_posts, delete_posts) → manage_options.
+     ALDRI de tre singulære meta-cap-ene. Per-post-gating arver via map_meta_cap.
+   - Verifisert etter fiks: map_meta_cap('manage_options',2)=['manage_options']; ID1+ID2
+     current_user_can('manage_options')=JA; deltaker kan IKKE redigere nyhetsbrev;
+     wp-admin laster; forhåndsvisning rendrer alle 5 seksjoner (skjermbilder tatt).
+   - LÆRDOM: hadde dette blitt deployet ville Bård+Andreas mistet wp-admin på PROD.
+     De 2 review-agentene bekreftet at cap-ene var admin-gated (sant) men fanget ikke
+     den globale bivirkningen. WP capability-remapping = eksplisitt fallgruve å sjekke.
+
+  **Verifisert lokalt:** CPT-kladd ID 3227 («Nytt & Nyttig — 9. juni 2026», 13 elementer,
+  26 KB HTML). Neste arrangement i brevet = 17. juni (det Bård skal vise frem).
+
+  **Git:** branch feat/nyhetsbrev-mal, IKKE committet. Working tree har også uncommittede
+  AEC-endringer → del i egne commits (nyhetsbrev-CPT vs AEC) ved commit.
+  **Neste:** send-motor (Resend → WP-registrerte medlemmer + GDPR-avmelding) → live
+  «Send»-knapp. Pluss Bårds nye mal-krav fra 9.-juni (topp-header m/ressurs-antall +
+  nytt-vs-oppdatert-logikk) når malen polishes.
+
+---
+date: 2026-06-09
+action: aec-ai-hub-trinn1-bygd-importert-publisert-localhost-pagination-bard-matrise
+files:
+  - "wp-content/plugins/bim-verdi-core/includes/aec-ai-hub/class-tool-upserter.php (ny, Unit 5)"
+  - "wp-content/plugins/bim-verdi-core/includes/aec-ai-hub/class-aihub-sync.php (ny, Unit 5)"
+  - "wp-content/plugins/bim-verdi-core/includes/aec-ai-hub/class-selftest.php (ny, Unit 6)"
+  - "wp-content/plugins/bim-verdi-core/includes/aec-ai-hub/frontend.php (ny, Unit 7)"
+  - "wp-content/plugins/bim-verdi-core/includes/aec-ai-hub/class-admin-report.php (ny, Unit 8)"
+  - "wp-content/plugins/bim-verdi-core/includes/aec-ai-hub/class-category-mapper.php (Bårds matrise + Ukategorisert + Structural Design)"
+  - "wp-content/plugins/bim-verdi-core/cli/class-foretak-import-command.php (aihub-sync/-selftest/-publish-batch)"
+  - "wp-content/plugins/bim-verdi-core/bim-verdi-core.php (requires)"
+  - "wp-content/plugins/bim-verdi-core/includes/aec-ai-hub/README.md"
+  - "wp-content/themes/bimverdi-theme/archive-verktoy.php (Unit 7+9 + Vis flere-pagination)"
+  - "wp-content/themes/bimverdi-theme/single-verktoy.php (Unit 7 + dobbel-Oversikt-fiks)"
+  - "wp-content/themes/bimverdi-theme/parts/components/filter-bar.php (teller-alignment)"
+  - "wp-content/themes/bimverdi-theme/inc/design-system.php (.my-0 utility)"
+  - "docs/plans/2026-06-03-002-feat-aec-ai-hub-sync-trinn1-plan.md (Unit 5–9 [x])"
+  - "docs/plans/2026-06-09-001-feat-verktoy-vis-flere-pagination-plan.md (ny)"
+summary: "Bygde ut AEC AI Hub Trinn 1 Unit 5–10 og kjørte ekte import + demo-publisering på localhost. Upserter+sync (mutex, to-fase, dedup, livssyklus), CLI (aihub-sync/-selftest/-publish-batch) + committet selftest (51/51), frontend AI-badge/attribusjon/Kilde-filter, read-only adminrapport, reparert katalogens Temagruppe-filter til taksonomi (dual-source, NULL datamutasjon), og klient-side «Vis flere»-pagination (24/pulje). Import: 238 Champions → 236 unike → draft; publisert 186 mappede på localhost, 50 i «Ukategorisert» (draft); katalog totalt 223. Mapperen oppdatert til Bårds bekreftede matrise (CSV «BIM-AEC - Ark 1»), catch-all omdøpt «Midlertidig»→«Ukategorisert», naming-gap Engineering/Structural Design løst (→ProsjektBIM). 1800-spørsmålet avklart: full Notion-eksport = 475, fixturen vår er komplett. ALT localhost/reversibelt — ingenting committet eller deployet."
+status: done
+detail: |
+  **Sesjonens hovedleveranse:** AEC AI Hub-synkmotoren ferdigbygd og demonstrerbar.
+
+  **Units (plan 2026-06-03-002):**
+   - Unit 5: `class-tool-upserter.php` + `class-aihub-sync.php` — managed-vaktet,
+     URL-keyet upsert; mutex (transient, TTL 600s); to-fase fetch (abort før skriv ved
+     hard feil); champion-filter + dedup-collapse; orphan soft-unpublish (status-divergens-
+     vakt, rører ALDRI post_status på eksisterende); floor-vakt (<50%); ai_driven '1'/'0'.
+   - Unit 6: WP-CLI `aihub-sync [--dry-run]`, `aihub-selftest`, `aihub-publish-batch`
+     ([<temagruppe>]|--alle-mappede|--confirm|--sample). Committet self-cleaning selftest.
+   - Unit 7: `frontend.php` — AI-badge KUN på `_bv_aec_ai_driven==='1'`, attribusjon på alle
+     synkede, klient-side Kilde-filter. Fikset uescaped echo i single-verktoy.php (wp_kses_post).
+   - Unit 8: `class-admin-report.php` — read-only diagnose under «Verktøy» (manage_options,
+     ingen handlingsknapper/CSRF-flate); DB-tilstand + read-only fixture-forhåndsvisning + advarsler.
+   - Unit 9: reparert Temagruppe-filteret på `/verktoy/`. Rotårsak: `formaalstema`-meta lagrer
+     kort-nøkler (prosjekt/eiendom/sirk…) som ikke matchet CamelCase-fasetten → kun 1/35 medlems-
+     verktøy traff. Løst med DUAL-SOURCE (kode-only, ingen mutasjon): `data-temagruppe` fra union
+     av taksonomi-termer + legacy-meta via shim. 34/37 i ≥1 fasett etter fiks.
+   - Unit 10: go/no-go selftest + ekte import (draft) + bulk-publisering.
+
+  **Vis flere-pagination (plan 2026-06-09-001):** klient-side cap (24/pulje), «Vis flere»-knapp,
+  teller viser filtrert treff-total (ikke pulje), cap nullstilles ved filter/søk/reset, virker i
+  grid+liste. Verifisert i Chrome MCP. Filterbar-teller-alignment fikset (.my-0 i design-system.php).
+
+  **Import (localhost):** 475 fixture → 238 Champions → 236 unike (2 dup-URL collapset) → draft.
+  Idempotens bekreftet (2. kjøring 0 insert). Bulk-publisert mappede → 186 AEC publisert,
+  50 i «Ukategorisert» (draft). Katalog totalt 223 publiserte. Invarianter rene (0 mappet-men-draft,
+  0 publisert-men-umappet).
+
+  **Bårds mapping-matrise (CSV «BIM-AEC - Ark 1»):** mapperen satt til matrisen eksakt (11
+  kategorier). Catch-all omdøpt «Midlertidig»→«Ukategorisert» (Bårds navn) i ALL kode/CLI/doc.
+  Multi-mapping (Data Analysis→5 termer, AEC Hackathon→5, Robotics→4) er nå BEKREFTET Bård-intensjon.
+  Naming-gap løst: matrisen har «Engineering» (ikke i data), data har «Structural Design» (ikke i
+  matrise) → behandlet som ekvivalent, mappet ProsjektBIM (bekreft m/ Bård ved anledning).
+
+  **1800-spørsmålet avklart:** Bård foreslo å ta inn «alle ~1800». Full Notion-eksport (samme db-id
+  cd1f55…94, `_all.csv`) = 475 verktøy, IKKE 1800 — fixturen vår ER hele basen. «Importer alt» =
+  bare droppe Champion-filteret (→ 475). Basen bruker kun 15 distinkte kategorier → mapping skalerer
+  ikke med antall.
+
+  **Status / rester (ikke-blokkerende):** alt localhost/reversibelt, INGENTING committet eller
+  deployet. (1) Bård kan bekrefte Structural Design→ProsjektBIM. (2) tom «Midlertidig»-taksonomi-
+  term kan slettes. (3) B-032-utkast + Trello #312 ligger fortsatt hos Bård.
+
+---
+date: 2026-06-09
+action: prosessert-bard-synk-9-juni-nyhetsbrev-trigger-reversert-temagruppe-frist-aec-fil
+files:
+  - "claude/meeting-todos-2026-06-09.md (ny)"
+summary: "Prosesserte talemøte med Bård 9. juni (~/Desktop/barddd-synk.json). VIKTIGST: Bård REVERSERER nyhetsbrev-trigger-beslutningen fra 3. juni — IKKE cron/full automatikk, men egen Custom Post Type + manuell «send»-knapp (rød knapp) → Resend, så han kvalitetssikrer nyhetsverdi før utsendelse. Mottaker-kilde avklart: WP-registreringer (alle medlemmer ~5–600), SuperOffice droppet. To nye mal-krav: topp-header med ressurs-antall + intro, og nytt-vs-oppdatert-prioritering per seksjon. Temagruppeside-layout (Trello #309) fikk konkret frist 17. juni (Bård har arrangement 17.+23.). AEC: Bård sender januar-Notion-kopi i dag — men vi HAR allerede fixturen i repo (gate løst 08.06), så koding kan starte; diff fila ved ankomst. Budsjett +5000 kr juni → ~4 t. Ingen kodeendring — analyse/prep + dokumentasjon."
+status: done
+detail: |
+  **Kontekst:** Andreas ba meg lese 9.-juni-transkriptet og oppdatere TODO-lista
+  (meeting-todos + WORKLOG + minne). Møtet er nyere enn 2.-juni-synken og endrer
+  flere beslutninger tatt 3. juni.
+
+  **1. Nyhetsbrev — trigger-beslutning REVERSERT (superseder 2026-06-03):**
+   - 3. juni bekreftet Bård trigger = cron-jobb. 9. juni er han skeptisk til
+     helautomatisk utsendelse (frykter å «jage etter leveranse» — alltid kreve 3
+     nye når det kanskje finnes 1).
+   - NY løsning: nyhetsbrev som egen **Custom Post Type** i wp-admin. Hvert brev
+     autogenereres som CPT-entry (preview-link), og en **manuell «send»-knapp** →
+     Resend til X mottakere. Fjerner det meste av cron-server-jobben (plan-Unit 1E).
+     Behold innholds-/preview-motoren (1A–1C), bytt ut 1E.
+   - **Mottaker-kilde AVKLART:** send fra WordPress (WP-registreringer), alle
+     medlemmer (~5–600). SuperOffice-integrasjon DROPPET. GDPR: etter hvert kun
+     samtykkede. → lukker «WP vs SuperOffice»-blokkeringen på send-motor (1D).
+   - **To nye mal-krav:** (a) topp-header som lister ressurstyper + antall
+     («~250 ressurser») + intro «viser siste 3 av X» (gulrot for innleveringer);
+     (b) nytt-vs-oppdatert per seksjon: prio 1 = nye, prio 2 = sist oppdaterte for
+     å fylle kvote (ned til 2 hvis for få), tydelig skille nytt/gammelt + «se også
+     X andre». Pluss design-trim (for tekst-tung mockup) + mobilvennlig.
+
+  **2. AEC AI Hub — Bård sender januar-kopi (men vi har den):**
+   - Bård sender januar-Notion-kopi i dag (SharePoint→e-post). Strategi bekreftet:
+     bygg offline januar-kopi først, live-sync etterpå.
+   - MEN: fixturen finnes allerede i repo (bim-verdi-core/data/, 475 verktøy /
+     238 Champions, gate løst 2026-06-08). Koding av Fase A kan starte UTEN å vente.
+     Når Bårds fil kommer: diff mot eksisterende fixture før evt. erstatning.
+   - Bårds åpne «cloud/autopublisering» + «live-first source» henger på allerede
+     besluttet auto-publish→draft + B-032-utkast (venter Bårds godkjenning) + #312.
+
+  **3. Temagruppeside-layout (Trello #309) — FRIST 17. JUNI:**
+   - Vis 3 ressurser + «se mer» (i dag ~20 = lite attraktivt) + editerbar
+     Gutenberg-toppblokk (fagansvarlig-bilde, AI-agent-widget-plass).
+   - Bård vil helst ha den klar til 17. juni (arrangement 17. + 23.). Teknisk grei.
+
+  **4. Budsjett:** Bård legger på 5000 kr i juni → ~4 t. For å lande sentrale
+  punkter før sommeren.
+
+  **5. Minne:** Oppdatert project_juni2026_prioritering (trigger-reversering,
+  mottaker-kilde, nye mal-krav, temagruppe-frist, budsjett).
+
+  **Ingen kodeendring i denne entryen** — kun transkript-prosessering + dokumentasjon.
+  **Neste:** Oppdater nyhetsbrev-planen (cron→CPT+knapp), bygg send-motor mot
+  WP-mottakere, og start AEC Fase A (Unit 1–2). Temagruppe #309 mot 17.-juni-frist.
+
+---
+date: 2026-06-03
+action: prosessert-bard-synk-2-juni-trello-sjekk-stjepan-aec-ai-hub-underlag
+files:
+  - "claude/meeting-todos-2026-06-02.md (ny)"
+  - "claude/stjepan-aec-ai-hub/ (ny: plan v5 docx+txt, outreach-md, Stjepans eml)"
+summary: "Prosesserte talemøtet med Bård 2. juni (~/Desktop/synk-bard-2-juni.json). Bård har mistet ~20 deltakere → juni-mål = stoppe lekkasjen via verditjenester. To prosjekter delegert til Claude: (1) nyhetsbrev-mal [frist 15. juni], (2) AEC AI Hub-integrasjon (Stjepan Mikulić). Kryss-sjekket Trello: Bård la inn TO ferske kort 2.-3. juni som IKKE var i transkriptet (temagruppeside-layout #309, artikkel-redigeringstilgang #311). Mottok Stjepan-underlag fra Andreas — viste seg å være ferdig v5-implementeringsplan, ikke spec-fra-scratch. Bevart underlag i repo (lå kun i Spark-cache, jf. doffin-SPOF-lærdom). Ingen kodeendring — analyse/prep + dokumentasjon."
+status: done
+detail: |
+  **Kontekst:** Andreas ba meg gå gjennom 2.-juni-transkriptet (var uprosessert —
+  ingen WORKLOG/meeting-todos fantes for det), sjekke Trello for nyere detaljer fra
+  Bård, og prosessere Stjepan-underlaget han limte inn.
+
+  **1. Transkript-prosessering (claude/meeting-todos-2026-06-02.md):**
+   - Bårds rammesetting: ~9 t/mnd, 5 andre prosjekter, mistet ~20 deltakere.
+     Arbeidsdeling juni: Bård synker/trimmer data + utsendelser; Claude tar nyhetsbrev + Stjepan.
+   - TODO 1 Nyhetsbrev [frist 15. juni]: Trello-kort 69f893dd har rik spec (6 seksjoner,
+     tema-filtrert, annenhver torsdag 12:00 via Resend). AVVIK: transkript ber om temanøytral
+     fase 1 + tema fase 2; Bård har IKKE oppdatert kortet ennå. NB: bimverdi-newsletter.php
+     finnes allerede i mu-plugins (relevant for bygg).
+   - TODO 3 Selvbetjent WP-eksport for Bård (mail 28. mai 14:44).
+   - Stående: Fase 2 gratisforetak-rydding — Bård sa «la den bare stå». Doffin-nedetid bekreftet
+     som «to ulukkede linjer + feil plugin fikset av ekstern tråd». Sikkerhets-sidenote:
+     passord-resets på rekke er legitime (Bårds utsendelser), men overvåk masse-resets.
+
+  **2. Trello-sjekk (board BIM Verdi v2, 5baa05429aab173fc9448b9f):**
+   - Ferskeste aktivitet er IKKE de to muntlige prosjektene, men to nye kort:
+     * #309 «Endre layout på temagruppesider» (sist endret 3. juni, Andreas lagt til som member):
+       vis siste 5 ressurser + «Se mer» (ikke liste m/20), Dataformat-kolonne på kunnskapskilder,
+       Gutenberg-toppfelt for admin (temagruppeleder-bilde, agent-knapp).
+     * #311 «Artikler med redigeringstilgang» (2. juni): medforfatter kan redigere artikkel etter
+       publisering (gjentakelse av 12.-mai-wish; kjent Gutenberg-blokker).
+   - Stjepan-prosjektet har INGEN Trello-kort (bekreftet) — lever kun i e-post/Notion.
+
+  **3. Stjepan / AEC AI Hub (claude/stjepan-aec-ai-hub/):**
+   - «Stefan» i transkriptet = Stjepan Mikulić, CEO aiinaec.com. Mål: synke AI-verktøy fra hans
+     AEC AI Hub (Notion, 1700+ verktøy) inn i /verktoy/ med kildefilter + AI-badge + attribusjon.
+   - IKKE spec-fra-scratch: ferdig v5-implementeringsplan vedlagt (mapping-matrise, 4 scoping-
+     alternativer, 39-65 t estimat). Bevart i repo (docx+txt+outreach+Stjepans eml) — lå kun i
+     volatil Spark-cache.
+   - LÅST (Stjepans svar 25. mai): live DB-ID b6e6eebe-8809-4e0e-9b49-95da38e96768, live-sync
+     autorisert, attribusjon, ukentlig kadens.
+   - BLOKKERE: (a) Notion-integrasjon ikke koblet → 404, må opprettes + koblingslenke til Stjepan;
+     (b) Champion-flagget fjernet i live → ny scoping (plan §5: alt A vs B+C); (c) skjema-diff.
+   - To-trinn: Trinn 1 = Notion-kopi (cd1f55e6..., ~240 verktøy, Champion gyldig) byggbar UTEN
+     live-tilgang; Trinn 2 = live etter integrasjon. Kodebase: greenfield, ingen bv-aec-plugin finnes.
+
+  **4. Minne:** Opprettet project_juni2026_prioritering (lenket til Fase 2- + Resend-minner).
+
+  **/ce-plan kjørt + hardnet (samme sesjon):** Plan skrevet og deepened via 7-personers
+  adversarial review (feasibility/data-integrity/security/coherence/scope/adversarial/testing,
+  kjørt mot live DB) → `docs/plans/2026-06-03-002-feat-aec-ai-hub-sync-trinn1-plan.md`.
+  Review korrigerte to feilpremisser (katalogens formaalstema-filter er ødelagt label-vs-key →
+  temagruppe-taksonomi er autoritativ; fixture-proveniens uavklart) og kuttet Trinn 2-scope
+  (Notion-klient → stub, cron → utsatt, CLI-only). La til eierskaps-marker `_bv_aec_managed`,
+  mutex, dup-id/short-read-floor, status-divergens-vakt, sanitering, og `wp bimverdi aihub-selftest`.
+  Auto-publish flippet til draft-default (ny B-beslutning trengs).
+  **⛔ BLOCKER G1 før koding:** Stjepans eml nevner ikke kopi-DB cd1f55e6 + «no separate partner
+  copy» → bekreft page-id-bærende januar-eksport, ellers re-sekvensér (integrasjon først).
+  **Neste:** Andreas kompakter → `/ce-work` (start gate-uavhengige Unit 1/2/4/7; Unit 3/5/10 venter på G1).
+  Parallelt (Andreas): Notion-integrasjon «BIM Verdi sync» + koblingslenke til Stjepan (avblokkerer Trinn 2).
+
+---
+date: 2026-05-31
+action: produksjon-nede-bimverdi-doffin-avkuttede-filer-gjenopprettet
+files:
+  - "plugins/bimverdi-doffin/includes/class-doffin-api.php (server-only, gitignore-et)"
+  - "plugins/bimverdi-doffin/includes/class-admin.php (server-only, gitignore-et)"
+summary: "bimverdi.no var nede (HTTP 500, hele siden inkl. wp-admin) i flere timer. Årsak: to PHP-filer i pluginet bimverdi-doffin var avkuttet midt i siste metode → parse error → fatal på hver request. IKKE stotteordninger-bae (kjørte fint hele tiden) som ekstern Claude-tråd antok, og IKKE opplastingskanalen. Verifisert at zip-en lastet opp via wp-admin allerede inneholdt de halvskrevne filene (kilde-/build-feil hos Bårds plugin-Claude). Fikset ved å deaktivere → rekonstruere halene → full-lint → reaktivere. Site oppe igjen og verifisert."
+status: resolved
+detail: |
+  **Trigger:** Andreas meldte at bimverdi.no var nede. Bård hadde fått en
+  ekstern Claude-tråd til å «diagnostisere» et annet plugin (stotteordninger-bae)
+  og lage en «trygg» shortcode-versjon — den tråden jobbet blindt uten
+  server-tilgang og pekte på feil plugin.
+
+  **Symptom:** `curl https://bimverdi.no/` → HTTP 500. Også wp-admin nede →
+  feilen kjører på hver request (parse error i en aktiv plugin-fil).
+
+  **Diagnose (fra ekte produksjons-debug.log via SSH):**
+   - `PHP Parse error: Unclosed '(' ... class-doffin-api.php on line 375`
+   - Feilen lå i pluginet **bimverdi-doffin**, IKKE stotteordninger-bae.
+   - `php -l` på HELE pluginet avdekket en ANDRE avkuttet fil: class-admin.php
+     (kuttet i handle_clear_cache(), linje 490). Én dårlig upload traff flere filer.
+   - Begge filene kuttet presis på slutten av siste metode i klassen.
+
+  **Root cause (verifisert, ikke gjettet):**
+   - Opplasting skjedde via wp-admin zip (bevis: `wp-content/upgrade/` mtime 17:01
+     + alle doffin-filer identisk mtime 17:01:40 = WP-installerens signatur).
+   - Zip-en var strukturelt gyldig men inneholdt allerede de halvskrevne filene
+     (ellers ville WP feilet utpakking + rullet tilbake via upgrade-temp-backup).
+   - Konklusjon: filene ble kuttet da pluginet ble bygget/pakket (Bårds Claude
+     genererte ufullstendige filer), ikke under overføring. Kanalen var korrekt.
+
+  **Tiltak:**
+   1. `wp plugin deactivate bimverdi-doffin --skip-plugins` → site umiddelbart oppe (200).
+   2. Hentet begge filene til lokal /tmp, rekonstruerte halene:
+      - class-doffin-api.php: fullførte transient-DELETE i clear_cache() + lukket query()/metode/klasse.
+      - class-admin.php: fullførte wp_safe_redirect(add_query_arg(...)) i handle_clear_cache(),
+        speilet søster-handleren handle_save_cpv() (admin_url('admin.php')) + exit.
+      - Begge metodene var siste i sin klasse → trygt og fullstendig å gjenskape.
+   3. `php -l` rent på begge + backup av ødelagte filer på server som *.broken-20260531.
+   4. Full re-lint av alle 10 .php i pluginet → alle OK før reaktivering.
+   5. `wp plugin activate bimverdi-doffin` → reaktivert.
+
+  **Verifikasjon:**
+   - Forside HTTP 200, wp-admin 302, wp-login 200. Ingen nye parse/fatal-feil i debug.log.
+   - `wp eval`: API- og Admin-klasse laster, og clear_cache() (den gjenskapte
+     SQL-spørringen) kjørte uten feil.
+
+  **Risiko / oppfølging:**
+   - bimverdi-doffin (og alle Bårds custom-plugins) er gitignore-et — kun
+     bim-verdi-core er sporet. Ingen ren kopi/backup fantes, derfor måtte halene
+     rekonstrueres for hånd. Single point of failure.
+   - Foreslått rutine til Bård (ikke implementert ennå): (1) `php -l` på hver fil
+     FØR zip bygges — keystone som ville stoppet dette ved kilden; (2) test på
+     staging før prod; (3) behold forrige fungerende zip som rollback; (4) vurder
+     å ta custom-plugins inn i versjonskontroll. Kanalbytte hjelper ikke — kanalen
+     var aldri problemet.
+   - Sendt kort hendelsesoppsummering til Andreas for videresending til Bård.
+
+---
+date: 2026-05-28
+action: smoke-test-hovedkontakt-flyt-for-bard-utsendelse
+files: []
+summary: "Bård skal sende brev til 45 hovedkontakter og be dem (1) legge inn tilleggskontakter og (2) bekrefte deltakernivå. Kjørte smoke-test av paid-hovedkontakt-flyten på localhost for å verifisere at de 4 fixene i dag ikke har påvirket denne kodestien. Alle sider laster, invitations AJAX-handler funger ende-til-ende. Trygt å sende. Forbehold: «bekreft deltakernivå» er ikke egen UI — hovedkontakter ser nivået på /min-side/foretak/ som badge, ingen eksplisitt bekreft-knapp finnes."
+status: done
+detail: |
+  **Trigger:** Bård-spørsmål 2026-05-28 om utsendelse til 45 hovedkontakter er trygt
+  rett etter de 4 fixene i dag (loop, betingelser, bransje, orgnr-exists).
+
+  **Smoke-test setup:**
+   - Isolert test-bruker (deltaker-rolle) + test-foretak (Deltaker, bv_nivaa=deltaker)
+   - Brukerkobling via bimverdi_company_id + account_type='foretak'
+   - Hovedkontaktperson satt på foretaket
+
+  **Resultat (alle 5 tester ok):**
+   - GET /min-side/ → 200, viser «Deltakerforetak»-badge ✅
+   - GET /min-side/foretak/ → 200, viser nivå + hovedkontakt-info ✅
+   - GET /min-side/foretak/kolleger/ → 200, invitations-skjema rendres ✅
+   - GET /min-side/foretak/rediger/ → 200, skjema rendres ✅
+   - AJAX POST wp_ajax_bimverdi_send_invitation → success, invitasjon opprettet i
+     wp_bimverdi_invitations med token + 7-dagers utløp, e-post sendt via Resend ✅
+
+  **Konklusjon til Andreas:**
+   - De 4 fixene i dag treffer ikke hovedkontakt-flyten (registrering vs invitations
+     er ulike kodestier)
+   - Invitations-modulen er bekreftet å fungere ende-til-ende på localhost
+   - Trygt for Bård å sende brevet
+   - Forbehold: «bekreft deltakernivå» er visuell sjekk på /min-side/foretak/, ikke
+     en egen flyt. Hvis Bård vil ha eksplisitt bekreftelse må vi bygge eget skjema
+     (egen sak, ikke i scope nå)
+
+  **Ingen kodeendring i denne entryen** — kun verifikasjon. Testdata ryddet
+  (testbruker 652 + testforetak 2952 + invitasjon ID 73 slettet).
+
+---
 date: 2026-05-28
 action: fix-orgnr-exists-blokk-paa-eksisterende-gratisforetak
 files:

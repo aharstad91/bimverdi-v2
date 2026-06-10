@@ -26,6 +26,37 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Formater en dato med norske månedsnavn — uavhengig av installert språkpakke.
+ *
+ * Siten kjører get_locale()='en_US' (ingen nb_NO-pakke), så date_i18n('j. F Y')
+ * gir engelske måneder («9. June 2026»). Dette gir alltid bokmål («9. juni 2026»).
+ *
+ * @param int|string|null $timestamp Unix-ts, dato-streng (strtotime), eller null = nå (lokal tid).
+ * @param bool            $med_tid   Legg på « H:i».
+ * @return string
+ */
+function bimverdi_nyhetsbrev_dato_nb($timestamp = null, $med_tid = false) {
+    if ($timestamp === null) {
+        $timestamp = current_time('timestamp');
+    } elseif (!is_numeric($timestamp)) {
+        $timestamp = strtotime((string) $timestamp);
+    }
+    if (!$timestamp) {
+        return '';
+    }
+    $mnd = [
+        1 => 'januar', 2 => 'februar', 3 => 'mars', 4 => 'april',
+        5 => 'mai', 6 => 'juni', 7 => 'juli', 8 => 'august',
+        9 => 'september', 10 => 'oktober', 11 => 'november', 12 => 'desember',
+    ];
+    $ut = (int) date('j', $timestamp) . '. ' . $mnd[(int) date('n', $timestamp)] . ' ' . date('Y', $timestamp);
+    if ($med_tid) {
+        $ut .= ' ' . date('H:i', $timestamp);
+    }
+    return $ut;
+}
+
+/**
  * Trim fritekst til en kort, e-postvennlig ingress (≈3 linjer).
  */
 function bimverdi_nyhetsbrev_tekst($raw, $words = 28) {
@@ -260,7 +291,7 @@ function bimverdi_nyhetsbrev_neste_arrangement() {
     $beskrivelse = get_field('formal_tema', $id) ?: $post->post_content;
 
     $meta_deler = array_filter([
-        $dato ? date_i18n('j. F Y', strtotime($dato)) : '',
+        $dato ? bimverdi_nyhetsbrev_dato_nb($dato) : '',
         $sted,
     ]);
 
@@ -388,7 +419,7 @@ function bimverdi_nyhetsbrev_deltakere($limit = 3) {
  */
 function bimverdi_nyhetsbrev_collect() {
     return [
-        'generert'  => current_time('j. F Y'),
+        'generert'  => bimverdi_nyhetsbrev_dato_nb(),
         'seksjoner' => [
             [
                 'noekkel' => 'artikler',
