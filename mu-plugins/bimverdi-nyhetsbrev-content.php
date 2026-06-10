@@ -367,7 +367,9 @@ function bimverdi_nyhetsbrev_neste_arrangement() {
         $sted,
     ]);
 
-    $bilde = bimverdi_nyhetsbrev_bilde($id, 'arrangement', 'medium');
+    // Arrangement er noe av det viktigste i brevet — vis som hero (stort
+    // bilde + fokus) når bilde finnes. Uten bilde: kompakt rad m/ dato.
+    $bilde = bimverdi_nyhetsbrev_bilde($id, 'arrangement', 'large');
 
     wp_reset_postdata();
 
@@ -380,7 +382,7 @@ function bimverdi_nyhetsbrev_neste_arrangement() {
         'meta'       => implode(' · ', $meta_deler),
         'bilde'      => $bilde['url'],
         'bilde_type' => $bilde['type'],
-        'hero'       => false,
+        'hero'       => !empty($bilde['url']),
     ]];
 }
 

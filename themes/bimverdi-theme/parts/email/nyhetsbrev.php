@@ -193,8 +193,9 @@ $bv_nb_kort_header = function ($seksjon) {
                     <?php echo $bv_nb_kort_header($seksjon); ?>
 
                     <?php foreach ($seksjon['items'] as $i => $item):
-                        $badge   = $bv_nb_badge($item['status'] ?? '');
-                        $er_hero = !empty($item['hero']) && !empty($item['bilde']);
+                        $badge    = $bv_nb_badge($item['status'] ?? '');
+                        $er_hero  = !empty($item['hero']) && !empty($item['bilde']);
+                        $cta_tekst = ($seksjon['noekkel'] === 'arrangement') ? 'Se arrangementet' : 'Les hele saken';
                     ?>
 
                     <?php if ($er_hero): /* === HERO: full-bredde bilde + utdrag + CTA === */ ?>
@@ -210,6 +211,9 @@ $bv_nb_kort_header = function ($seksjon) {
                         <tr>
                             <td style="padding-top:16px;">
                                 <?php if ($badge): ?><div style="margin-bottom:8px;"><?php echo $badge; ?></div><?php endif; ?>
+                                <?php if (!empty($item['meta'])): ?>
+                                <div style="margin-bottom:6px;font-size:14px;font-weight:700;color:#FF8B5E;"><?php echo esc_html($item['meta']); ?></div>
+                                <?php endif; ?>
                                 <a href="<?php echo esc_url($item['lenke']); ?>" class="nb-title" style="color:#1A1A1A;text-decoration:none;font-size:21px;font-weight:600;line-height:1.3;">
                                     <?php echo esc_html($item['tittel']); ?>
                                 </a>
@@ -223,7 +227,7 @@ $bv_nb_kort_header = function ($seksjon) {
                                     <tr>
                                         <td bgcolor="#FF8B5E" style="background-color:#FF8B5E;border-radius:8px;">
                                             <a href="<?php echo esc_url($item['lenke']); ?>" style="display:inline-block;padding:11px 24px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">
-                                                Les hele saken&nbsp;→
+                                                <?php echo esc_html($cta_tekst); ?>&nbsp;→
                                             </a>
                                         </td>
                                     </tr>
