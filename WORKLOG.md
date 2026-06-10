@@ -4,6 +4,31 @@
 
 ---
 date: 2026-06-10
+action: nyhetsbrev-pluss-aec-kode-deployet-til-prod-bards-tekstendringer-implementert
+files:
+  - "main (merge feat/nyhetsbrev-mal, fast-forward 4b23c96..6b31808)"
+  - "prod wp-config.php (BIMVERDI_NYHETSBREV_TEST_MOTTAKERE lagt til, backup .bak-2026-06-10)"
+  - "mu-plugins/bimverdi-nyhetsbrev-content.php (Bårds badge-logikk: post_date≈post_modified)"
+  - "themes/bimverdi-theme/parts/email/nyhetsbrev.php (intro m/ Logg inn-lenke, titler)"
+summary: "Implementerte Bårds 3 tekstendringer fra Slack 13:42 (intro m/ «Logg inn her»-lenke erstatter gulrot-linjen; seksjonstitler → «Nye og sist oppdaterte …»; badge-logikk omlagt: utvalg sorteres på post_modified DESC, badge Ny hvis endret <24t etter publisering ellers Oppdatert, alle items får badge, 30-dagers-cutoff utgår). Deretter merget ALT (nyhetsbrev + AEC) til main og deployet til prod. AEC-sikkerhetssjekk FØR merge: synk kun via WP-CLI (ingen cron/admin-trigger), adminrapport read-only, frontend-helpers no-op uten synkede poster, datafiler .htaccess-blokkert. Post-deploy-verifisering (alle grønne): ingen email-blocker på prod, Bårds tekst landet, manage_options INTAKT (cap-buggen gjentok seg ikke), nyhetsbrev-CPT registrert, 0 AEC-verktøy live (katalog urørt: 37), avmeldings-endepunkt svarer 400/gyldig-validering, allowlist-konstant lastet. Bård kan nå generere/forhåndsvise/test-sende fra prod-admin, og avmeldings-lenken i test-e-poster virker (ikke 404 lenger)."
+status: done
+detail: |
+  **AEC på prod = kode, ikke data:** De 186 AEC-verktøyene kommer IKKE live før
+  noen bevisst kjører `wp bimverdi aihub-sync` + `aihub-publish-batch` PÅ SERVEREN.
+  Egen Bård-beslutning når det skal skje.
+
+  **Bård-beslutninger i dag (Slack):** verktøy-count i nyhetsbrev-header skal
+  matche /verktoy/ (gjør den — begge teller publiserte), arrangement-count viser
+  faktisk datamengde (134 inkl. historiske — bevisst).
+
+  **Gjenstår:** (1) massesend-motor (xhigh, eget steg — send-løkke, throttling
+  ~2/s, gjenopptak, sent_at-låsing, bekreftelse, BIMVERDI_NYHETSBREV_MASSESEND_AKTIV
+  opt-in). (2) reply-to fortsatt andreas@aharstad.no — avklar med Bård før ekte
+  utsendelse. (3) fersk [TEST] av kladd 3254 til Andreas+Bård ikke sendt ennå.
+  (4) Structural Design→ProsjektBIM-bekreftelse.
+
+---
+date: 2026-06-10
 action: nyhetsbrev-mal-v2-kortdesign-bards-9juni-krav-pluss-test-til-bard-pluss-db-synk
 files:
   - "mu-plugins/bimverdi-nyhetsbrev-content.php (to-fase nytt/oppdatert, totaler, se-alle-data)"
