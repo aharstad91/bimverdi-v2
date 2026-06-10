@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
  */
 define('BIMVERDI_RESEND_FROM_EMAIL', 'noreply@bimverdi.no');
 define('BIMVERDI_RESEND_FROM_NAME', 'BIM Verdi');
-define('BIMVERDI_RESEND_REPLY_TO', 'andreas@aharstad.no'); // Midlertidig - endre til hei@bimverdi.no
+define('BIMVERDI_RESEND_REPLY_TO', 'post@bimverdi.no'); // Besluttet av Andreas 2026-06-10 (gjaldt nyhetsbrev, konstanten er global for all e-post)
 
 /**
  * Kjernen i Resend-utsendelsen — kaller API-et direkte, uavhengig av hvilken

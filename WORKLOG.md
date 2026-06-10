@@ -4,6 +4,14 @@
 
 ---
 date: 2026-06-10
+action: reply-to-endret-til-post-bimverdi-no
+files:
+  - "mu-plugins/bimverdi-resend-mail.php (BIMVERDI_RESEND_REPLY_TO)"
+summary: "Reply-to endret fra andreas@aharstad.no (midlertidig siden Resend-oppsettet) til post@bimverdi.no — besluttet av Andreas i dag. MERK: konstanten er GLOBAL for all Resend-e-post (verifisering, invitasjoner, nyhetsbrev), ikke bare nyhetsbrevet — svar fra medlemmer på enhver systemmail går nå til post@bimverdi.no. Deployet til prod. Neste: plan for massesend-motoren (steg 1)."
+status: done
+
+---
+date: 2026-06-10
 action: nyhetsbrev-pluss-aec-kode-deployet-til-prod-bards-tekstendringer-implementert
 files:
   - "main (merge feat/nyhetsbrev-mal, fast-forward 4b23c96..6b31808)"
