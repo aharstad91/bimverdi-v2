@@ -193,21 +193,92 @@ function bimverdi_nyhetsbrev_bilde($post_id, $cpt, $size = 'medium') {
 }
 
 /**
+ * Cutoff for «nytt»: innhold publisert siste 30 dager regnes som nytt.
+ * Justerbar via filteret bimverdi_nyhetsbrev_nylig_dager.
+ */
+function bimverdi_nyhetsbrev_ny_cutoff() {
+    $dager = (int) apply_filters('bimverdi_nyhetsbrev_nylig_dager', 30);
+    return date('Y-m-d H:i:s', current_time('timestamp') - $dager * DAY_IN_SECONDS);
+}
+
+/**
+ * To-fase-henting per seksjon (Bård-krav 09.06: nytt-vs-oppdatert-prioritering):
+ *
+ *   Fase 1: NYE poster (publisert etter cutoff), nyeste først.
+ *   Fase 2: hvis kvoten ikke er fylt — eldre poster sortert på sist ENDRET,
+ *           så seksjonen aldri står tom/naken.
+ *
+ * Hver post får ->bv_nb_status: 'ny', 'oppdatert' (endret etter cutoff) eller
+ * '' (eldre fyll-innhold — får ingen badge, jf. «tydelig skille nytt vs gammelt»).
+ *
+ * @return WP_Post[]
+ */
+function bimverdi_nyhetsbrev_hent_nytt_og_oppdatert($post_type, $limit, $extra = []) {
+    $cutoff = bimverdi_nyhetsbrev_ny_cutoff();
+    $base = array_merge([
+        'post_type'           => $post_type,
+        'post_status'         => 'publish',
+        'no_found_rows'       => true,
+        'ignore_sticky_posts' => true,
+        'suppress_filters'    => false,
+    ], $extra);
+
+    $poster = get_posts(array_merge($base, [
+        'posts_per_page' => $limit,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'date_query'     => [['after' => $cutoff, 'inclusive' => true]],
+    ]));
+    foreach ($poster as $p) {
+        $p->bv_nb_status = 'ny';
+    }
+
+    $mangler = $limit - count($poster);
+    if ($mangler > 0) {
+        $fyll = get_posts(array_merge($base, [
+            'posts_per_page' => $mangler,
+            'orderby'        => 'modified',
+            'order'          => 'DESC',
+            'post__not_in'   => wp_list_pluck($poster, 'ID') ?: [0],
+            'date_query'     => [['before' => $cutoff]],
+        ]));
+        foreach ($fyll as $p) {
+            $p->bv_nb_status = ($p->post_modified >= $cutoff) ? 'oppdatert' : '';
+        }
+        $poster = array_merge($poster, $fyll);
+    }
+
+    return $poster;
+}
+
+/**
+ * Totaltall til topp-headeren (Bård-krav 09.06: ressurs-oversikt som
+ * publiseringsstimulering — «de siste 3 av X»).
+ */
+function bimverdi_nyhetsbrev_totaler() {
+    $typer = [
+        ['cpt' => 'verktoy',        'label' => 'verktøy'],
+        ['cpt' => 'kunnskapskilde', 'label' => 'kunnskapskilder'],
+        ['cpt' => 'artikkel',       'label' => 'artikler'],
+        ['cpt' => 'foretak',        'label' => 'deltakere'],
+    ];
+    $ut = ['sum' => 0, 'typer' => []];
+    foreach ($typer as $t) {
+        $antall = (int) wp_count_posts($t['cpt'])->publish;
+        $ut['typer'][] = ['label' => $t['label'], 'antall' => $antall];
+        $ut['sum']    += $antall;
+    }
+    return $ut;
+}
+
+/**
  * 1. Siste N publiserte artikler.
  */
 function bimverdi_nyhetsbrev_artikler($limit = 3) {
-    $q = new WP_Query([
-        'post_type'           => 'artikkel',
-        'post_status'         => 'publish',
-        'posts_per_page'      => $limit,
-        'orderby'             => 'date',
-        'order'               => 'DESC',
-        'no_found_rows'       => true,
-        'ignore_sticky_posts' => true,
-    ]);
+    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('artikkel', $limit);
 
     $items = [];
-    foreach ($q->posts as $idx => $post) {
+    foreach ($poster as $idx => $post) {
         $id = $post->ID;
         $is_hero = ($idx === 0); // Toppartikkel = hero (stort bilde øverst).
 
@@ -235,12 +306,13 @@ function bimverdi_nyhetsbrev_artikler($limit = 3) {
                 $foretak['navn']
             ),
             'av_url'     => $foretak['url'],
-            'utdrag'     => bimverdi_nyhetsbrev_tekst($ingress, $is_hero ? 40 : 24),
+            'utdrag'     => bimverdi_nyhetsbrev_tekst($ingress, $is_hero ? 30 : 18),
             'lenke'      => get_permalink($id),
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
             'hero'       => $is_hero,
+            'status'     => $post->bv_nb_status ?? '',
         ];
     }
     wp_reset_postdata();
@@ -316,17 +388,10 @@ function bimverdi_nyhetsbrev_neste_arrangement() {
  * 3. Siste N verktøy/tjenester.
  */
 function bimverdi_nyhetsbrev_verktoy($limit = 3) {
-    $q = new WP_Query([
-        'post_type'      => 'verktoy',
-        'post_status'    => 'publish',
-        'posts_per_page' => $limit,
-        'orderby'        => 'date',
-        'order'          => 'DESC',
-        'no_found_rows'  => true,
-    ]);
+    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('verktoy', $limit);
 
     $items = [];
-    foreach ($q->posts as $post) {
+    foreach ($poster as $post) {
         $id = $post->ID;
         $foretak = bimverdi_nyhetsbrev_foretak(get_field('eier_leverandor', $id));
         $bilde   = bimverdi_nyhetsbrev_bilde($id, 'verktoy', 'medium');
@@ -334,12 +399,13 @@ function bimverdi_nyhetsbrev_verktoy($limit = 3) {
             'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('verktoy_navn', $id)),
             'av'         => $foretak['navn'],
             'av_url'     => $foretak['url'],
-            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
+            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id), 18),
             'lenke'      => get_permalink($id),
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
             'hero'       => false,
+            'status'     => $post->bv_nb_status ?? '',
         ];
     }
     wp_reset_postdata();
@@ -350,17 +416,10 @@ function bimverdi_nyhetsbrev_verktoy($limit = 3) {
  * 4. Siste N kunnskapskilder.
  */
 function bimverdi_nyhetsbrev_kunnskapskilder($limit = 3) {
-    $q = new WP_Query([
-        'post_type'      => 'kunnskapskilde',
-        'post_status'    => 'publish',
-        'posts_per_page' => $limit,
-        'orderby'        => 'date',
-        'order'          => 'DESC',
-        'no_found_rows'  => true,
-    ]);
+    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('kunnskapskilde', $limit);
 
     $items = [];
-    foreach ($q->posts as $post) {
+    foreach ($poster as $post) {
         $id = $post->ID;
         $foretak = bimverdi_nyhetsbrev_foretak(get_field('tilknyttet_bedrift', $id));
         $person  = bimverdi_nyhetsbrev_person_navn(get_field('registrert_av', $id));
@@ -369,12 +428,13 @@ function bimverdi_nyhetsbrev_kunnskapskilder($limit = 3) {
             'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('kunnskapskilde_navn', $id)),
             'av'         => bimverdi_nyhetsbrev_byline($person, $foretak['navn']),
             'av_url'     => $foretak['url'],
-            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
+            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id), 18),
             'lenke'      => get_permalink($id),
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
             'hero'       => false,
+            'status'     => $post->bv_nb_status ?? '',
         ];
     }
     wp_reset_postdata();
@@ -385,29 +445,23 @@ function bimverdi_nyhetsbrev_kunnskapskilder($limit = 3) {
  * 5. Siste N deltakere (foretak).
  */
 function bimverdi_nyhetsbrev_deltakere($limit = 3) {
-    $q = new WP_Query([
-        'post_type'      => 'foretak',
-        'post_status'    => 'publish',
-        'posts_per_page' => $limit,
-        'orderby'        => 'date',
-        'order'          => 'DESC',
-        'no_found_rows'  => true,
-    ]);
+    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('foretak', $limit);
 
     $items = [];
-    foreach ($q->posts as $post) {
+    foreach ($poster as $post) {
         $id = $post->ID;
         $bilde = bimverdi_nyhetsbrev_bilde($id, 'foretak', 'medium');
         $items[] = [
             'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id)),
             'av'         => '',
             'av_url'     => '',
-            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id)),
+            'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id), 18),
             'lenke'      => get_permalink($id),
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
             'hero'       => false,
+            'status'     => $post->bv_nb_status ?? '',
         ];
     }
     wp_reset_postdata();
@@ -418,34 +472,45 @@ function bimverdi_nyhetsbrev_deltakere($limit = 3) {
  * Samle alle seksjonene i én struktur til malen.
  */
 function bimverdi_nyhetsbrev_collect() {
+    // «Se alle»-lenker per seksjon (Bård-krav 09.06: «dette er nyeste — se også
+    // våre X andre [posttype]»). Arkivlenke + totalantall publiserte.
+    $arkiv = function ($cpt, $enhet) {
+        return [
+            'total'     => (int) wp_count_posts($cpt)->publish,
+            'arkiv_url' => get_post_type_archive_link($cpt) ?: '',
+            'enhet'     => $enhet,
+        ];
+    };
+
     return [
         'generert'  => bimverdi_nyhetsbrev_dato_nb(),
+        'totaler'   => bimverdi_nyhetsbrev_totaler(),
         'seksjoner' => [
-            [
+            array_merge([
                 'noekkel' => 'artikler',
                 'tittel'  => 'Siste artikler',
                 'items'   => bimverdi_nyhetsbrev_artikler(3),
-            ],
-            [
+            ], $arkiv('artikkel', 'artikler')),
+            array_merge([
                 'noekkel' => 'arrangement',
                 'tittel'  => 'Neste arrangement',
                 'items'   => bimverdi_nyhetsbrev_neste_arrangement(),
-            ],
-            [
+            ], $arkiv('arrangement', 'arrangementer')),
+            array_merge([
                 'noekkel' => 'verktoy',
                 'tittel'  => 'Nye verktøy og tjenester',
                 'items'   => bimverdi_nyhetsbrev_verktoy(3),
-            ],
-            [
+            ], $arkiv('verktoy', 'verktøy')),
+            array_merge([
                 'noekkel' => 'kunnskapskilder',
                 'tittel'  => 'Nye kunnskapskilder',
                 'items'   => bimverdi_nyhetsbrev_kunnskapskilder(3),
-            ],
-            [
+            ], $arkiv('kunnskapskilde', 'kunnskapskilder')),
+            array_merge([
                 'noekkel' => 'deltakere',
                 'tittel'  => 'Nye deltakere',
                 'items'   => bimverdi_nyhetsbrev_deltakere(3),
-            ],
+            ], $arkiv('foretak', 'deltakere')),
         ],
     ];
 }
