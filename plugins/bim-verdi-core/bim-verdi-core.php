@@ -25,6 +25,30 @@ define('BIM_VERDI_CORE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BIM_VERDI_CORE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BIM_VERDI_CORE_PLUGIN_FILE', __FILE__);
 
+// --- AEC AI Hub-synk (Trinn 1) ----------------------------------------------
+// Se includes/aec-ai-hub/README.md + docs/plans/2026-06-03-002-…-plan.md.
+// Trinn 1 kjører UTEN live Notion-tilgang, mot en committet JSON-fixture, og
+// publiserer ALDRI automatisk (godkjenning er en separat bulk/batch-handling).
+if (!defined('BV_AIHUB_LIVE')) {
+    define('BV_AIHUB_LIVE', false);          // false = les committet fixture; true = Trinn 2 live-stub (kaster)
+}
+if (!defined('BV_AIHUB_AUTOPUBLISH')) {
+    define('BV_AIHUB_AUTOPUBLISH', false);   // hard sikring: importeren setter ALDRI 'publish' selv
+}
+if (!defined('BV_AIHUB_FIXTURE_PATH')) {
+    define('BV_AIHUB_FIXTURE_PATH', BIM_VERDI_CORE_PLUGIN_DIR . 'data/aec-ai-hub-tools.json');
+}
+// Fixture-property-navn (referér konstanter, ikke magiske strenger, nedstrøms).
+if (!defined('BV_AIHUB_PROP_CHAMPION')) {
+    define('BV_AIHUB_PROP_CHAMPION', 'champion');      // import-filter: 238 av 475
+}
+if (!defined('BV_AIHUB_PROP_AI_DRIVEN')) {
+    define('BV_AIHUB_PROP_AI_DRIVEN', 'ai_driven');    // AI-badge-gate: 176 av 238
+}
+if (!defined('BV_AIHUB_PROP_CATEGORIES')) {
+    define('BV_AIHUB_PROP_CATEGORIES', 'categories');  // → temagruppe-mapping
+}
+
 /**
  * Main BIM Verdi Core Plugin Class
  */
@@ -97,7 +121,33 @@ class BIM_Verdi_Core {
 
         // Load ACF foretak fields registration (bv_hoveddomene)
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/acf/register-foretak-fields.php';
-        
+
+        // Load AEC AI Hub-synk delte hjelpefunksjoner (bv_aec_normalize_url, bv_aec_name_key).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/helpers.php';
+
+        // Load AEC AI Hub-datakilde (fixture-leser + Trinn 2 live-stub). Ren klassedefinisjon,
+        // ingen side-effekter — instansieres/kalles av orkestratoren i senere units (Fase C+).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-tool-source.php';
+
+        // Load AEC AI Hub-kategorimapper (AEC-kategori → temagruppe; umappbar → «Midlertidig»).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-category-mapper.php';
+
+        // Load AEC AI Hub-upserter (managed-markør-vaktet, URL-keyet upsert + dedup + livssyklus).
+        // Ren klassedefinisjon, ingen side-effekter — drives av Sync-orkestratoren via CLI (Unit 6).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-tool-upserter.php';
+
+        // Load AEC AI Hub-synk-orkestrator (mutex → to-fase fetch → upsert → reconcile).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-aihub-sync.php';
+
+        // Load AEC AI Hub-selftest (committet, self-cleaning; drives av `wp bimverdi aihub-selftest`).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-selftest.php';
+
+        // Load AEC AI Hub-frontend-hjelpere (AI-badge, attribusjon, Kilde-verdi) brukt av temaets maler.
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/frontend.php';
+
+        // Load AEC AI Hub-adminrapport (read-only diagnose under «Verktøy»; ingen handlingsknapper).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-admin-report.php';
+
         // Gravity Forms removed — all forms replaced with plain HTML + mu-plugin handlers.
         // Former files: class-gravity-forms-manager.php, setup/class-profile-form-migration.php
 

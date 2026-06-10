@@ -2831,6 +2831,222 @@ class BIM_Verdi_CLI_Commands {
             WP_CLI::success("Temagruppe sync complete!");
         }
     }
+
+    /**
+     * Synk AEC AI Hub-verktøy (Trinn 1: committet fixture → managed draft-verktøy).
+     *
+     * Idempotent, deltaker-trygg upsert mot URL-nøkkel. Publiserer ALDRI selv —
+     * 236 utkast godkjennes via `aihub-publish-batch` (Decision 6). Trinn 1 leser
+     * den committede fixturen (BV_AIHUB_LIVE=false); live-Notion er Trinn 2.
+     *
+     * ## OPTIONS
+     *
+     * [--dry-run]
+     * : Beregn alt (filter/dedup/mapping/insert-vs-update) uten å skrive.
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi aihub-sync --dry-run
+     *     wp bimverdi aihub-sync
+     *
+     * @subcommand aihub-sync
+     * @param array $args
+     * @param array $assoc_args
+     */
+    public function aihub_sync($args, $assoc_args) {
+        $dry_run = isset($assoc_args['dry-run']);
+
+        WP_CLI::log('=== AEC AI Hub Sync ===');
+        WP_CLI::log('Kilde: ' . ((defined('BV_AIHUB_LIVE') && BV_AIHUB_LIVE) ? 'LIVE (Trinn 2)' : 'committet fixture (Trinn 1)'));
+        WP_CLI::log('Modus: ' . ($dry_run ? 'DRY RUN' : 'LIVE SKRIV'));
+        WP_CLI::log('');
+
+        $s = BV_AIHUB_Sync::run($dry_run);
+
+        if (!empty($s['mutex_bailed'])) {
+            WP_CLI::error($s['error']);
+        }
+        if (!empty($s['aborted'])) {
+            WP_CLI::error('Fase 1-abort (ingen poster rørt): ' . $s['error']);
+        }
+
+        $c = $s['counts'];
+        WP_CLI::log("Hentet (totalt):     {$c['fetched_total']}");
+        WP_CLI::log("Champions:           {$c['champions']}");
+        WP_CLI::log("Unike (etter dedup): {$c['unique_champions']}  (droppet {$c['dedup_dropped']})");
+        WP_CLI::log("Insert:              {$c['inserted']}");
+        WP_CLI::log("Update:              {$c['updated']}");
+        WP_CLI::log("Skip:                {$c['skipped']}");
+        WP_CLI::log("Umappbar (→ draft):  {$c['unmapped']}");
+        WP_CLI::log("Orphaned:            {$c['orphaned']}");
+
+        if (!empty($s['floor'])) {
+            WP_CLI::warning('FLOOR trigget — orphan-rekonsiliering hoppet over (mistenkt trunkert kilde).');
+        }
+        foreach ($s['warnings']['dedup'] as $w) {
+            WP_CLI::warning("Dedup «{$w['key']}»: beholdt «{$w['kept_name']}» av {" . implode(', ', $w['all_names']) . '}');
+        }
+        foreach ($s['warnings']['status_divergence'] as $d) {
+            WP_CLI::warning("Status-divergens på post {$d['post_id']} (status={$d['status']}, last_sync={$d['last_sync']}) — urørt + flagget.");
+        }
+        if (!empty($s['warnings']['rows'])) {
+            WP_CLI::log('Rad-merknader: ' . count($s['warnings']['rows']));
+        }
+
+        if ($dry_run) {
+            WP_CLI::warning('DRY RUN — ingen endringer ble gjort.');
+        } else {
+            WP_CLI::success('Synk fullført. Utkast godkjennes via `wp bimverdi aihub-publish-batch`.');
+        }
+    }
+
+    /**
+     * Kjør den committede AEC AI Hub-selftesten (G4-paritet, idempotens, deltaker-vakt,
+     * AI-flagg '1'/'0', dedup, orphan-livssyklus, floor, abort). Self-cleaning + produksjonstrygg.
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi aihub-selftest
+     *
+     * @subcommand aihub-selftest
+     * @param array $args
+     * @param array $assoc_args
+     */
+    public function aihub_selftest($args, $assoc_args) {
+        WP_CLI::log('=== AEC AI Hub Selftest ===');
+        $res = BV_AIHUB_Selftest::run();
+
+        foreach ($res['results'] as $r) {
+            if ($r['ok']) {
+                WP_CLI::log('  ✓ ' . $r['name']);
+            } else {
+                WP_CLI::log('  ✗ ' . $r['name'] . ($r['detail'] !== '' ? '  [' . $r['detail'] . ']' : ''));
+            }
+        }
+        WP_CLI::log('');
+        WP_CLI::log("Bestått: {$res['pass']}   Feilet: {$res['fail']}");
+
+        if ($res['fail'] > 0) {
+            WP_CLI::error("{$res['fail']} selftest-assertion(er) feilet.");
+        }
+        WP_CLI::success('Alle selftest-assertions bestått.');
+    }
+
+    /**
+     * Bulk/batch-godkjenn AEC AI Hub-utkast (Decision 6). Publiserer ALDRI umappbare
+     * («Ukategorisert») og krever eksplisitt --confirm. Uten --confirm = stikkprøve-visning.
+     *
+     * ## OPTIONS
+     *
+     * [<temagruppe>]
+     * : Temagruppe-term (navn eller slug) å publisere utkast for. Utelat ved --alle-mappede.
+     *
+     * [--alle-mappede]
+     * : Publiser alle mappede utkast (alle temagrupper unntatt «Ukategorisert»).
+     *
+     * [--confirm]
+     * : Faktisk publiser. Uten dette flagget vises kun stikkprøve + totaler (ingen skriv).
+     *
+     * [--sample=<n>]
+     * : Antall tilfeldige utkast å vise i stikkprøven (default 5).
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi aihub-publish-batch ProsjektBIM
+     *     wp bimverdi aihub-publish-batch ProsjektBIM --confirm
+     *     wp bimverdi aihub-publish-batch --alle-mappede --confirm
+     *
+     * @subcommand aihub-publish-batch
+     * @param array $args
+     * @param array $assoc_args
+     */
+    public function aihub_publish_batch($args, $assoc_args) {
+        $all     = isset($assoc_args['alle-mappede']);
+        $confirm = isset($assoc_args['confirm']);
+        $sample  = isset($assoc_args['sample']) ? max(0, (int) $assoc_args['sample']) : 5;
+        $term    = isset($args[0]) ? trim($args[0]) : '';
+
+        if (!$all && $term === '') {
+            WP_CLI::error('Oppgi en temagruppe, eller bruk --alle-mappede.');
+        }
+
+        // Bygg tax_query: enten én temagruppe, eller alle UNNTATT «Ukategorisert».
+        if ($all) {
+            $midlertidig = get_term_by('name', BV_AIHUB_Category_Mapper::UNMAPPED_TERM, 'temagruppe');
+            $tax_query   = array(array(
+                'taxonomy' => 'temagruppe',
+                'field'    => 'term_id',
+                'terms'    => $midlertidig ? array((int) $midlertidig->term_id) : array(0),
+                'operator' => 'NOT IN',
+            ));
+            $label = 'alle mappede temagrupper';
+        } else {
+            if (strcasecmp($term, BV_AIHUB_Category_Mapper::UNMAPPED_TERM) === 0) {
+                WP_CLI::error('«' . BV_AIHUB_Category_Mapper::UNMAPPED_TERM . '» er umappbar og kan ikke publiseres — remap til en ekte temagruppe først.');
+            }
+            $t = get_term_by('name', $term, 'temagruppe') ?: get_term_by('slug', sanitize_title($term), 'temagruppe');
+            if (!$t) {
+                WP_CLI::error("Fant ingen temagruppe «{$term}».");
+            }
+            $tax_query = array(array('taxonomy' => 'temagruppe', 'field' => 'term_id', 'terms' => array((int) $t->term_id)));
+            $label     = $t->name;
+        }
+
+        // Managed + draft + IKKE umappbar.
+        $q = new WP_Query(array(
+            'post_type'      => defined('BV_CPT_TOOL') ? BV_CPT_TOOL : 'verktoy',
+            'post_status'    => 'draft',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+            'meta_query'     => array(
+                'relation' => 'AND',
+                array('key' => '_bv_aec_managed', 'value' => '1'),
+                array('key' => '_bv_unmapped', 'value' => '1', 'compare' => '!='),
+            ),
+            'tax_query'      => $tax_query,
+        ));
+        $ids = $q->posts;
+
+        WP_CLI::log('=== AEC AI Hub Publish Batch ===');
+        WP_CLI::log("Mål:            {$label}");
+        WP_CLI::log('Mappede utkast: ' . count($ids));
+        WP_CLI::log('');
+
+        if (empty($ids)) {
+            WP_CLI::warning('Ingen mappede utkast å publisere.');
+            return;
+        }
+
+        // Stikkprøve.
+        $sample_ids = $ids;
+        shuffle($sample_ids);
+        $sample_ids = array_slice($sample_ids, 0, min($sample, count($sample_ids)));
+        WP_CLI::log('Stikkprøve (' . count($sample_ids) . '):');
+        foreach ($sample_ids as $pid) {
+            $tg = wp_get_post_terms($pid, 'temagruppe', array('fields' => 'names'));
+            WP_CLI::log("  • {$pid}: " . get_the_title($pid) . '  [' . implode(', ', $tg) . ']');
+        }
+        WP_CLI::log('');
+
+        if (!$confirm) {
+            WP_CLI::warning('Stikkprøve-visning — INGEN endringer gjort. Legg til --confirm for å publisere ' . count($ids) . ' utkast.');
+            return;
+        }
+
+        $published = 0;
+        foreach ($ids as $pid) {
+            $res = wp_update_post(array('ID' => $pid, 'post_status' => 'publish'), true);
+            if (is_wp_error($res)) {
+                WP_CLI::warning("Kunne ikke publisere {$pid}: " . $res->get_error_message());
+                continue;
+            }
+            // Synken «adopterer» den nye statusen så den ikke avpubliseres senere ved orphan.
+            update_post_meta($pid, '_bv_aec_last_sync_status', 'publish');
+            $published++;
+        }
+        WP_CLI::success("Publiserte {$published} av " . count($ids) . " utkast ({$label}).");
+    }
 }
 
 // Register WP-CLI command

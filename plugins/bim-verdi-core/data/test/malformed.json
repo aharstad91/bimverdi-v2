@@ -1,0 +1,11 @@
+{
+  "_meta": { "purpose": "malformed", "note": "Bevisst ødelagt JSON (manglende klamme + henging) → json_decode-feil → Fase 1-abort." },
+  "tools": [
+    {
+      "identity_key": "density.io",
+      "name": "Density",
+      "url": "https://www.density.io/",
+      "categories": ["PropTech"],
+      "champion": true,
+      "ai_driven": false
+    },

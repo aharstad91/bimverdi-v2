@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "note": "Selftest-fixtur: én rad uten URL → påkrevd-felt-feil → Fase 1-abort (ok=false).",
+    "purpose": "missing-url"
+  },
+  "tools": [
+    {
+      "identity_key": "density.io",
+      "name": "Density",
+      "short_desc": "Valid row.",
+      "long_desc": "",
+      "url": "https://www.density.io/",
+      "logo_url": "",
+      "categories": ["PropTech"],
+      "champion": true,
+      "ai_driven": false
+    },
+    {
+      "identity_key": "",
+      "name": "Verktøy uten URL",
+      "short_desc": "Mangler url.",
+      "long_desc": "",
+      "url": "",
+      "logo_url": "",
+      "categories": ["Platform"],
+      "champion": true,
+      "ai_driven": true
+    }
+  ]
+}

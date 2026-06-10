@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "note": "Selftest-fixtur: gyldig minimalsett. Blanding av champion/ai_driven + én mixed-case GitHub-path-rad for G4-paritet.",
+    "purpose": "valid"
+  },
+  "tools": [
+    {
+      "identity_key": "density.io",
+      "name": "Density",
+      "short_desc": "Workplace insights.",
+      "long_desc": "Save costs with workplaces that perform better.",
+      "url": "https://www.density.io/",
+      "logo_url": "",
+      "categories": ["PropTech"],
+      "champion": true,
+      "ai_driven": false
+    },
+    {
+      "identity_key": "github.com/SHL-Digital-Practice/ai.sthetic",
+      "name": "ai.sthetic",
+      "short_desc": "AI for design.",
+      "long_desc": "Generative design tooling on GitHub (case-sensitive path).",
+      "url": "https://github.com/SHL-Digital-Practice/ai.sthetic",
+      "logo_url": "",
+      "categories": ["Design Creation"],
+      "champion": true,
+      "ai_driven": true
+    },
+    {
+      "identity_key": "example.com/Tool",
+      "name": "Eksempelverktøy med ć",
+      "short_desc": "UTF-8 sanity.",
+      "long_desc": "Non-champion row to exercise the filter downstream.",
+      "url": "https://www.example.com/Tool/?utm=x#frag",
+      "logo_url": "",
+      "categories": ["Assistant"],
+      "champion": false,
+      "ai_driven": true
+    }
+  ]
+}

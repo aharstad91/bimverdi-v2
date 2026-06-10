@@ -1,0 +1,9 @@
+# Blokker all direkte HTTP-tilgang til datafiler (fixtures/eksporter).
+# Disse er kun for server-side import (WP-CLI), aldri offentlig nedlastbare.
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order deny,allow
+  Deny from all
+</IfModule>

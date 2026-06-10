@@ -121,7 +121,7 @@ function bimverdi_filter_bar($args = []) {
                         echo '<span class="text-[#E7E5E4]">|</span>';
                     }
                     ?>
-                    <p class="text-sm text-[#57534E] whitespace-nowrap">
+                    <p class="my-0 text-sm text-[#57534E] whitespace-nowrap">
                         Viser <span id="visible-count" class="font-medium text-[#111827]"><?php echo intval($args['result_count']); ?></span>
                         <?php if ($args['total_count'] > 0): ?>
                         av <?php echo intval($args['total_count']); ?>

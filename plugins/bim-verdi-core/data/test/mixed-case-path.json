@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "note": "Selftest-fixtur: rene mixed-case GitHub-path-rader. Verifiserer at bv_aec_normalize_url() bevarer path-case (G4) — blind lowercase ville brutt paritet og kollapset distinkte verktøy.",
+    "purpose": "mixed-case-path"
+  },
+  "tools": [
+    {
+      "identity_key": "github.com/SHL-Digital-Practice/ai.sthetic",
+      "name": "ai.sthetic",
+      "short_desc": "Mixed-case org + path.",
+      "long_desc": "",
+      "url": "https://github.com/SHL-Digital-Practice/ai.sthetic",
+      "logo_url": "",
+      "categories": ["Design Creation"],
+      "champion": true,
+      "ai_driven": true
+    },
+    {
+      "identity_key": "github.com/sverremh/AEC23_ChooseWise",
+      "name": "ChooseWise",
+      "short_desc": "Mixed-case path segment.",
+      "long_desc": "",
+      "url": "https://github.com/sverremh/AEC23_ChooseWise",
+      "logo_url": "",
+      "categories": ["Data Analysis"],
+      "champion": true,
+      "ai_driven": false
+    },
+    {
+      "identity_key": "github.com/gd3kr/BlenderGPT",
+      "name": "BlenderGPT",
+      "short_desc": "CamelCase repo name.",
+      "long_desc": "",
+      "url": "https://github.com/gd3kr/BlenderGPT",
+      "logo_url": "",
+      "categories": ["Design Creation"],
+      "champion": true,
+      "ai_driven": true
+    }
+  ]
+}

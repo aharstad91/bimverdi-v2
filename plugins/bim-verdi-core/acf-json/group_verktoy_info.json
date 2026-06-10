@@ -85,6 +85,26 @@
             "multiple": 0
         },
         {
+            "key": "field_kilde",
+            "label": "Kilde",
+            "name": "kilde",
+            "type": "select",
+            "instructions": "Hvor verktøyet kommer fra. Settes automatisk for eksternt synkede verktøy og kan ikke endres manuelt. Eierskapet til synk styres av den skjulte markøren _bv_aec_managed, ikke av dette feltet — å endre Kilde gir ingen synk-eierskap. Tomt/Medlemsregistrert = registrert av et medlem.",
+            "required": 0,
+            "choices": {
+                "": "Medlemsregistrert",
+                "aec_ai_hub": "AEC AI Hub"
+            },
+            "default_value": "",
+            "allow_null": 0,
+            "multiple": 0,
+            "ui": 0,
+            "ajax": 0,
+            "return_format": "value",
+            "readonly": 1,
+            "disabled": 1
+        },
+        {
             "key": "field_formaalstema",
             "label": "Formålstema",
             "name": "formaalstema",

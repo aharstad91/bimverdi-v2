@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "note": "Selftest-fixtur: reelle kolliderende dup-URL-er (youai.ai navnekonflikt, superhuman.com tap-fri). Gyldig paritet → ok=true + dup-warnings (IKKE abort). Merge-collapse skjer i upserteren.",
+    "purpose": "dup-url"
+  },
+  "tools": [
+    {
+      "identity_key": "youai.ai",
+      "name": "YouAi (MindStudio)",
+      "short_desc": "Build AI apps.",
+      "long_desc": "Longer, more descriptive name variant.",
+      "url": "https://youai.ai/",
+      "logo_url": "",
+      "categories": ["Platform"],
+      "champion": true,
+      "ai_driven": true
+    },
+    {
+      "identity_key": "youai.ai",
+      "name": "YouAi",
+      "short_desc": "Build AI apps.",
+      "long_desc": "Shorter name variant — deterministic dedup keeps the longest name.",
+      "url": "https://youai.ai/",
+      "logo_url": "",
+      "categories": ["Platform"],
+      "champion": true,
+      "ai_driven": true
+    },
+    {
+      "identity_key": "superhuman.com",
+      "name": "Superhuman",
+      "short_desc": "Fast email.",
+      "long_desc": "Identical fields across both rows → lossless collapse.",
+      "url": "https://superhuman.com/",
+      "logo_url": "",
+      "categories": ["Assistant"],
+      "champion": true,
+      "ai_driven": true
+    },
+    {
+      "identity_key": "superhuman.com",
+      "name": "Superhuman",
+      "short_desc": "Fast email.",
+      "long_desc": "Identical fields across both rows → lossless collapse.",
+      "url": "https://superhuman.com/",
+      "logo_url": "",
+      "categories": ["Assistant"],
+      "champion": true,
+      "ai_driven": true
+    }
+  ]
+}

@@ -17,6 +17,10 @@ $eier_id = get_field('eier_leverandor');
 $eier = $eier_id ? get_post($eier_id) : null;
 $kort_beskrivelse = get_field('kort_beskrivelse');
 $detaljert_beskrivelse = get_field('detaljert_beskrivelse');
+
+// AEC AI Hub-synkede poster har short_desc = avkuttet long_desc → dobbeltvisning.
+// Skjul kort_beskrivelse for synkede poster; vis kun den fulle teksten.
+$is_aec_synced = function_exists('bv_aec_is_synced') && bv_aec_is_synced(get_the_ID());
 $lenke = get_field('verktoy_lenke');
 $nedlastingslenke = get_field('nedlastingslenke');
 $logo = get_field('verktoy_logo');
@@ -173,11 +177,11 @@ $tool_updated = get_the_modified_date('d.m.Y');
             <div class="flex items-start gap-5 flex-1">
                 <?php if ($logo_url): ?>
                 <div class="flex-shrink-0 w-20 h-20 bg-white rounded-lg border border-[#E7E5E4] p-2 flex items-center justify-center">
-                    <img src="<?php echo esc_url($logo_url); ?>" alt="<?php the_title(); ?> logo" class="max-w-full max-h-full object-contain">
+                    <img src="<?php echo esc_url($logo_url); ?>" alt="<?php the_title(); ?> logo" referrerpolicy="no-referrer" class="max-w-full max-h-full object-contain">
                 </div>
                 <?php endif; ?>
                 <div>
-                    <h1 class="text-3xl font-bold text-[#111827] mb-1"><?php the_title(); ?><?php echo bimverdi_admin_id_badge(); ?><?php echo bimverdi_admin_user_badge(); ?></h1>
+                    <h1 class="text-3xl font-bold text-[#111827] mb-1 inline-flex items-center gap-2 flex-wrap"><span><?php the_title(); ?></span><?php if (function_exists('bv_aec_is_ai_driven') && bv_aec_is_ai_driven(get_the_ID())) { echo bv_aec_ai_badge_markup(); } ?><?php echo bimverdi_admin_id_badge(); ?><?php echo bimverdi_admin_user_badge(); ?></h1>
                     <?php if ($eier): ?>
                     <p class="text-[#57534E]">
                         <a href="<?php echo get_permalink($eier->ID); ?>" class="hover:underline">
@@ -210,7 +214,7 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 <section>
                     <h2 class="text-lg font-bold text-[#111827] mb-4">Oversikt</h2>
 
-                    <?php if (!empty($kort_beskrivelse)): ?>
+                    <?php if (!empty($kort_beskrivelse) && !$is_aec_synced): ?>
                     <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
                         <?php echo wpautop(esc_html($kort_beskrivelse)); ?>
                     </div>
@@ -218,12 +222,12 @@ $tool_updated = get_the_modified_date('d.m.Y');
 
                     <?php if (!empty($detaljert_beskrivelse)): ?>
                     <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
-                        <?php echo $detaljert_beskrivelse; ?>
+                        <?php echo wp_kses_post($detaljert_beskrivelse); ?>
                     </div>
-                    <?php elseif (empty($kort_beskrivelse)): ?>
+                    <?php elseif (empty($kort_beskrivelse) || $is_aec_synced): ?>
                     <div class="prose prose-sm max-w-none text-[#57534E] mb-6">
                         <?php if (has_excerpt()): ?>
-                            <p><?php echo get_the_excerpt(); ?></p>
+                            <p><?php echo esc_html(get_the_excerpt()); ?></p>
                         <?php else: ?>
                             <p class="italic">Ingen beskrivelse tilgjengelig.</p>
                         <?php endif; ?>
@@ -341,7 +345,7 @@ $tool_updated = get_the_modified_date('d.m.Y');
                             <dd class="text-sm">
                                 <a href="<?php echo esc_url($lenke); ?>"
                                    target="_blank"
-                                   rel="noopener"
+                                   rel="noopener noreferrer"
                                    class="text-[#FF8B5E] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($lenke, PHP_URL_HOST) ?: $lenke); ?>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -357,7 +361,7 @@ $tool_updated = get_the_modified_date('d.m.Y');
                             <dd class="text-sm">
                                 <a href="<?php echo esc_url($nedlastingslenke); ?>"
                                    target="_blank"
-                                   rel="noopener"
+                                   rel="noopener noreferrer"
                                    class="text-[#FF8B5E] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($nedlastingslenke, PHP_URL_HOST) ?: $nedlastingslenke); ?>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -420,6 +424,16 @@ $tool_updated = get_the_modified_date('d.m.Y');
                                 Eier
                             </dt>
                             <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($eier->post_title); ?></dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (function_exists('bv_aec_is_synced') && bv_aec_is_synced(get_the_ID())): ?>
+                        <div>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                Kilde
+                            </dt>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo bv_aec_attribution_html('full'); ?></dd>
                         </div>
                         <?php endif; ?>
                     </dl>

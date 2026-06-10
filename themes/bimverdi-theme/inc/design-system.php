@@ -188,6 +188,7 @@ class BIM_Verdi_Design_System {
             .pt-16 { padding-top: 4rem; }
             .pb-12 { padding-bottom: 3rem; }
             .mb-10 { margin-bottom: 2.5rem; }
+            .my-0 { margin-top: 0; margin-bottom: 0; }
 
             @media (min-width: 768px) {
                 .md\:block {
