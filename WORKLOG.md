@@ -54,6 +54,12 @@ detail: |
   grener (0 placeholdere igjen); UI-avvisning av ukjent adresse; ekte [TEST]-e-post
   levert (Resend-ID 9d3f4c8e…); avmelding 400/200 + meta satt + ryddet opp.
 
+  **Herding (etter Andreas' spørsmål om sperrer):** allowlist-sjekken håndheves nå
+  også INNERST i bimverdi_nyhetsbrev_send_en() — ikke bare i UI-handleren. Ingen
+  kodevei (heller ikke direkte/programmatiske kall på prod) kan levere utenfor
+  test-allowlisten før BIMVERDI_NYHETSBREV_MASSESEND_AKTIV settes til true i
+  wp-config. Verifisert: send_en("medlem@example.com") → WP_Error ikke_tillatt + logg.
+
   **⚠️ VIKTIG VED VIDERE ARBEID:** Masseutsendelse til de 590 er NESTE steg og skal
   bygges som eget, nøye gjennomgått steg (xhigh): send-løkke m/ per-mottaker-
   substitusjon, Resend-throttling (~2/s), gjenopptak ved avbrudd (ikke dobbel-send),

@@ -14,6 +14,11 @@
  *      og adresser i BIMVERDI_NYHETSBREV_TEST_MOTTAKERE (wp-config.php,
  *      kommaseparert streng). Maks 5 mottakere per forsøk. Gjelder også prod.
  *
+ *   🔒 Sperren håndheves INNERST i bimverdi_nyhetsbrev_send_en() — ikke bare
+ *      i UI-handleren. Ingen kodevei kan levere utenfor allowlisten før
+ *      BIMVERDI_NYHETSBREV_MASSESEND_AKTIV settes til true i wp-config
+ *      (bevisst opt-in når massesend-steget bygges).
+ *
  * I tillegg: GDPR-avmelding. Øyeblikksbildet lagres med per-mottaker-
  * placeholdere (%%BV_UID%% / %%BV_TOKEN%%) i avmeldings-lenken; denne motoren
  * bytter dem ut per mottaker. Endepunktet /?bv_nb_avmeld=<uid>&bvt=<token>
@@ -159,6 +164,19 @@ function bimverdi_nyhetsbrev_mottakere() {
  * @return true|WP_Error
  */
 function bimverdi_nyhetsbrev_send_en($post_id, $email, $subject_prefix = '') {
+    // ⛔ INNERSTE SPERRE (gjelder også prod, også direkte kall utenom UI-et):
+    // så lenge massesend ikke er eksplisitt aktivert i wp-config, nekter selve
+    // send-funksjonen å levere til adresser utenfor test-allowlisten. Massesend-
+    // steget senere må sette BIMVERDI_NYHETSBREV_MASSESEND_AKTIV = true bevisst.
+    $massesend_aktiv = defined('BIMVERDI_NYHETSBREV_MASSESEND_AKTIV') && BIMVERDI_NYHETSBREV_MASSESEND_AKTIV;
+    if (!$massesend_aktiv && !in_array(strtolower(trim($email)), bimverdi_nyhetsbrev_test_allowlist(), true)) {
+        error_log(sprintf(
+            '[bimverdi-nyhetsbrev-send] NEKTET send_en til "%s" — ikke på test-allowlist og massesend er ikke aktivert.',
+            $email
+        ));
+        return new WP_Error('ikke_tillatt', 'Adressen er ikke på test-allowlisten, og masseutsendelse er ikke aktivert.');
+    }
+
     $html = get_post_meta($post_id, '_bv_nyhetsbrev_html', true);
     if ($html === '') {
         return new WP_Error('mangler_snapshot', 'Nyhetsbrevet har ikke noe lagret øyeblikksbilde.');
