@@ -144,7 +144,7 @@ $bv_nb_kort_header = function ($seksjon) {
 <tr>
 <td align="center" class="nb-pad" style="padding:32px 16px 40px 16px;">
 
-    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
         <!-- ============ HEADER (sentrert, på canvas) ============ -->
         <tr>
