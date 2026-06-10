@@ -101,6 +101,11 @@ function bimverdi_nyhetsbrev_snapshot($post_id, $args = array()) {
 
     $data    = bimverdi_nyhetsbrev_collect();
     $context = (isset($args['context']) && is_array($args['context'])) ? $args['context'] : array();
+    // Avmeldings-lenken er per mottaker: lagre placeholdere i øyeblikksbildet,
+    // send-motoren (bimverdi_nyhetsbrev_send_en) bytter dem ut ved utsendelse.
+    $context = wp_parse_args($context, array(
+        'avmelding_url' => home_url('/?bv_nb_avmeld=%%BV_UID%%&bvt=%%BV_TOKEN%%'),
+    ));
     $html    = bimverdi_render_nyhetsbrev($data, $context);
 
     if ($html === '') {
@@ -226,6 +231,12 @@ add_action('admin_notices', function () {
             'oppdatert'      => array('success', 'Øyeblikksbildet er oppdatert med dagens innhold.'),
             'allerede_sendt' => array('warning', 'Nyhetsbrevet er allerede sendt og kan ikke endres.'),
             'feil'           => array('error', 'Kunne ikke generere nyhetsbrev. Sjekk at innholdsmotoren og malen er på plass.'),
+            'test_sendt'           => array('success', 'Test-e-post sendt. Sjekk innboksen (emne starter med [TEST]).'),
+            'test_feil'            => array('error', 'Test-utsendelsen feilet for én eller flere adresser — se error_log.'),
+            'test_tom'             => array('warning', 'Oppgi minst én e-postadresse for test-utsendelse.'),
+            'test_for_mange'       => array('warning', 'Maks 5 adresser per test-utsendelse.'),
+            'test_ikke_tillatt'    => array('error', 'Én eller flere adresser er ikke på test-allowlisten (din egen e-post + BIMVERDI_NYHETSBREV_TEST_MOTTAKERE i wp-config). Ingenting ble sendt.'),
+            'test_mangler_snapshot' => array('error', 'Nyhetsbrevet har ikke noe øyeblikksbilde å sende — generer først.'),
         );
         $key = sanitize_key($_GET['bv_nb_notice']);
         if (isset($map[$key])) {
@@ -355,11 +366,47 @@ function bimverdi_nyhetsbrev_metaboks($post) {
         echo '</form>';
     }
 
-    // Send — forberedt, kobles på i neste steg (Resend + mottakerliste).
+    // Test-utsendelse (intern): kun til egen e-post + wp-config-allowlist.
+    if ($has_html) {
+        $min_epost = wp_get_current_user()->user_email;
+        echo '<hr style="margin:14px 0;border:none;border-top:1px solid #e0e0e0;">';
+        echo '<p style="margin:0 0 6px 0;"><strong>Test-utsendelse (intern)</strong></p>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin:0;">';
+        echo '<input type="hidden" name="action" value="bimverdi_nyhetsbrev_send_test">';
+        echo '<input type="hidden" name="post_id" value="' . esc_attr($post->ID) . '">';
+        wp_nonce_field('bimverdi_nyhetsbrev_send_test_' . $post->ID);
+        echo '<input type="text" name="test_epost" value="' . esc_attr($min_epost) . '" '
+           . 'style="width:100%;margin-bottom:6px;" placeholder="navn@adresse.no">';
+        echo '<button type="submit" class="button button-secondary" style="width:100%;">Send test</button>';
+        echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">Kun din egen e-post '
+           . 'og adresser i <code>BIMVERDI_NYHETSBREV_TEST_MOTTAKERE</code> (wp-config) er tillatt. '
+           . 'Emnet prefikses med [TEST].</span>';
+        echo '</form>';
+
+        // Siste testutsendelser.
+        $logg = get_post_meta($post->ID, '_bv_nyhetsbrev_test_log', true);
+        if (is_array($logg) && $logg) {
+            echo '<p style="margin:10px 0 2px 0;color:#5A5A5A;font-size:12px;"><strong>Siste tester:</strong></p>';
+            foreach (array_slice(array_reverse($logg), 0, 3) as $rad) {
+                echo '<span style="display:block;color:#5A5A5A;font-size:12px;">'
+                   . esc_html(bimverdi_nyhetsbrev_dato_nb($rad['tid'], true)) . ' → '
+                   . esc_html(implode(', ', (array) $rad['til']))
+                   . ($rad['ok'] ? '' : ' <span style="color:#b32d2e;">(feilet)</span>')
+                   . '</span>';
+            }
+        }
+    }
+
+    // Massesend — IKKE implementert ennå. Bygges som eget steg etter intern testing.
     echo '<hr style="margin:14px 0;border:none;border-top:1px solid #e0e0e0;">';
-    echo '<button type="button" class="button" style="width:100%;" disabled>Send til mottakere</button>';
-    echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">Utsendelse via Resend kobles på i neste steg '
-       . '(mottakerkilde: WP-registrerte medlemmer).</span>';
+    if (function_exists('bimverdi_nyhetsbrev_mottakere')) {
+        $antall_mottakere = count(bimverdi_nyhetsbrev_mottakere());
+        echo '<p style="margin:0 0 6px 0;color:#5A5A5A;font-size:12px;">' . esc_html($antall_mottakere)
+           . ' medlemmer står klare som mottakere (avmeldte er trukket fra).</p>';
+    }
+    echo '<button type="button" class="button" style="width:100%;" disabled>Send til alle mottakere</button>';
+    echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">Masseutsendelse aktiveres '
+       . 'som eget steg etter intern testing.</span>';
 
     echo '</div>';
 }

@@ -25,115 +25,131 @@ define('BIMVERDI_RESEND_FROM_NAME', 'BIM Verdi');
 define('BIMVERDI_RESEND_REPLY_TO', 'andreas@aharstad.no'); // Midlertidig - endre til hei@bimverdi.no
 
 /**
- * Override wp_mail() til å bruke Resend API
+ * Kjernen i Resend-utsendelsen — kaller API-et direkte, uavhengig av hvilken
+ * wp_mail()-implementasjon som er aktiv. Brukes av wp_mail()-overriden under,
+ * og av _local-email-blocker.php (lokal whitelist) som definerer wp_mail()
+ * FØR denne filen lastes og derfor trenger en egen vei til ekte levering.
+ *
+ * Samme signatur/semantikk som wp_mail (minus attachments).
+ */
+function bimverdi_resend_send_via_api($to, $subject, $message, $headers = '') {
+    // Sjekk om Resend er konfigurert
+    if (!defined('BIMVERDI_RESEND_API_KEY') || empty(BIMVERDI_RESEND_API_KEY)) {
+        // Fallback til PHP mail() hvis Resend ikke er konfigurert
+        error_log('BIM Verdi: Resend API key ikke konfigurert, bruker PHP mail()');
+        return bimverdi_fallback_mail($to, $subject, $message, $headers);
+    }
+
+    // Parse headers
+    $parsed_headers = bimverdi_parse_email_headers($headers);
+
+    // Bestem content type
+    $content_type = isset($parsed_headers['content-type'])
+        ? $parsed_headers['content-type']
+        : 'text/plain';
+
+    // Bestem from
+    $from_email = isset($parsed_headers['from'])
+        ? $parsed_headers['from']
+        : BIMVERDI_RESEND_FROM_EMAIL;
+
+    $from_name = BIMVERDI_RESEND_FROM_NAME;
+
+    // Hvis from inneholder navn, parse det
+    if (preg_match('/^(.+)\s*<(.+)>$/', $from_email, $matches)) {
+        $from_name = trim($matches[1]);
+        $from_email = trim($matches[2]);
+    }
+
+    // Reply-to
+    $reply_to = isset($parsed_headers['reply-to'])
+        ? $parsed_headers['reply-to']
+        : BIMVERDI_RESEND_REPLY_TO;
+
+    // Normaliser mottakere til array
+    if (!is_array($to)) {
+        $to = array_map('trim', explode(',', $to));
+    }
+
+    // Bygg Resend payload
+    $payload = [
+        'from' => sprintf('%s <%s>', $from_name, $from_email),
+        'to' => $to,
+        'subject' => $subject,
+        'reply_to' => $reply_to,
+    ];
+
+    // Sett innhold basert på content type
+    if (strpos($content_type, 'text/html') !== false) {
+        $payload['html'] = $message;
+    } else {
+        $payload['text'] = $message;
+    }
+
+    // CC og BCC
+    if (!empty($parsed_headers['cc'])) {
+        $payload['cc'] = is_array($parsed_headers['cc'])
+            ? $parsed_headers['cc']
+            : array_map('trim', explode(',', $parsed_headers['cc']));
+    }
+
+    if (!empty($parsed_headers['bcc'])) {
+        $payload['bcc'] = is_array($parsed_headers['bcc'])
+            ? $parsed_headers['bcc']
+            : array_map('trim', explode(',', $parsed_headers['bcc']));
+    }
+
+    // Send via Resend API
+    $response = wp_remote_post('https://api.resend.com/emails', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . BIMVERDI_RESEND_API_KEY,
+            'Content-Type' => 'application/json',
+        ],
+        'body' => json_encode($payload),
+        'timeout' => 30,
+    ]);
+
+    // Håndter respons
+    if (is_wp_error($response)) {
+        error_log('BIM Verdi Resend feil: ' . $response->get_error_message());
+        return false;
+    }
+
+    $status_code = wp_remote_retrieve_response_code($response);
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+
+    if ($status_code >= 200 && $status_code < 300) {
+        // Logg suksess i debug-modus
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log(sprintf(
+                'BIM Verdi Resend: E-post sendt til %s (ID: %s)',
+                implode(', ', $to),
+                $body['id'] ?? 'ukjent'
+            ));
+        }
+        return true;
+    }
+
+    // Logg feil
+    error_log(sprintf(
+        'BIM Verdi Resend feil (%d): %s',
+        $status_code,
+        $body['message'] ?? 'Ukjent feil'
+    ));
+
+    return false;
+}
+
+/**
+ * Override wp_mail() til å bruke Resend API.
+ *
+ * På localhost har _local-email-blocker.php (laster først alfabetisk) allerede
+ * definert wp_mail() — da hopper denne over, og blockeren bestemmer hva som
+ * (eventuelt) slipper gjennom via bimverdi_resend_send_via_api().
  */
 if (!function_exists('wp_mail')) {
     function wp_mail($to, $subject, $message, $headers = '', $attachments = array()) {
-        // Sjekk om Resend er konfigurert
-        if (!defined('BIMVERDI_RESEND_API_KEY') || empty(BIMVERDI_RESEND_API_KEY)) {
-            // Fallback til PHP mail() hvis Resend ikke er konfigurert
-            error_log('BIM Verdi: Resend API key ikke konfigurert, bruker PHP mail()');
-            return bimverdi_fallback_mail($to, $subject, $message, $headers);
-        }
-
-        // Parse headers
-        $parsed_headers = bimverdi_parse_email_headers($headers);
-
-        // Bestem content type
-        $content_type = isset($parsed_headers['content-type'])
-            ? $parsed_headers['content-type']
-            : 'text/plain';
-
-        // Bestem from
-        $from_email = isset($parsed_headers['from'])
-            ? $parsed_headers['from']
-            : BIMVERDI_RESEND_FROM_EMAIL;
-
-        $from_name = BIMVERDI_RESEND_FROM_NAME;
-
-        // Hvis from inneholder navn, parse det
-        if (preg_match('/^(.+)\s*<(.+)>$/', $from_email, $matches)) {
-            $from_name = trim($matches[1]);
-            $from_email = trim($matches[2]);
-        }
-
-        // Reply-to
-        $reply_to = isset($parsed_headers['reply-to'])
-            ? $parsed_headers['reply-to']
-            : BIMVERDI_RESEND_REPLY_TO;
-
-        // Normaliser mottakere til array
-        if (!is_array($to)) {
-            $to = array_map('trim', explode(',', $to));
-        }
-
-        // Bygg Resend payload
-        $payload = [
-            'from' => sprintf('%s <%s>', $from_name, $from_email),
-            'to' => $to,
-            'subject' => $subject,
-            'reply_to' => $reply_to,
-        ];
-
-        // Sett innhold basert på content type
-        if (strpos($content_type, 'text/html') !== false) {
-            $payload['html'] = $message;
-        } else {
-            $payload['text'] = $message;
-        }
-
-        // CC og BCC
-        if (!empty($parsed_headers['cc'])) {
-            $payload['cc'] = is_array($parsed_headers['cc'])
-                ? $parsed_headers['cc']
-                : array_map('trim', explode(',', $parsed_headers['cc']));
-        }
-
-        if (!empty($parsed_headers['bcc'])) {
-            $payload['bcc'] = is_array($parsed_headers['bcc'])
-                ? $parsed_headers['bcc']
-                : array_map('trim', explode(',', $parsed_headers['bcc']));
-        }
-
-        // Send via Resend API
-        $response = wp_remote_post('https://api.resend.com/emails', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . BIMVERDI_RESEND_API_KEY,
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode($payload),
-            'timeout' => 30,
-        ]);
-
-        // Håndter respons
-        if (is_wp_error($response)) {
-            error_log('BIM Verdi Resend feil: ' . $response->get_error_message());
-            return false;
-        }
-
-        $status_code = wp_remote_retrieve_response_code($response);
-        $body = json_decode(wp_remote_retrieve_body($response), true);
-
-        if ($status_code >= 200 && $status_code < 300) {
-            // Logg suksess i debug-modus
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log(sprintf(
-                    'BIM Verdi Resend: E-post sendt til %s (ID: %s)',
-                    implode(', ', $to),
-                    $body['id'] ?? 'ukjent'
-                ));
-            }
-            return true;
-        }
-
-        // Logg feil
-        error_log(sprintf(
-            'BIM Verdi Resend feil (%d): %s',
-            $status_code,
-            $body['message'] ?? 'Ukjent feil'
-        ));
-
-        return false;
+        return bimverdi_resend_send_via_api($to, $subject, $message, $headers);
     }
 }
 

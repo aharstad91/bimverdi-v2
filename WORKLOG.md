@@ -3,6 +3,71 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-06-10
+action: nyhetsbrev-send-motor-fase1-intern-testing-pluss-gdpr-avmelding-pluss-commits-pushet
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-send.php (ny — test-send, avmelding, mottaker-resolusjon)"
+  - "mu-plugins/bimverdi-resend-mail.php (refaktor — kjerne ekstrahert til bimverdi_resend_send_via_api)"
+  - "mu-plugins/_local-email-blocker.php (lokal/gitignored — whitelist for Andreas' adresser)"
+  - "mu-plugins/bimverdi-nyhetsbrev-cpt.php (snapshot-placeholder + test-send-UI i metaboks + notiser)"
+  - "mu-plugins/bimverdi-nyhetsbrev-preview.php (placeholder-substitusjon med innlogget admins verdier)"
+  - "wp-config.php (lokal — BIMVERDI_NYHETSBREV_TEST_MOTTAKERE)"
+summary: "Bygde nyhetsbrev-send-motor FASE 1: KUN intern testing — masseutsendelse til medlemmer er BEVISST ikke implementert (ingen kodevei finnes). Test-send fra metaboksen er hardt gated: kun innlogget admins egen e-post + adresser i BIMVERDI_NYHETSBREV_TEST_MOTTAKERE (wp-config) tillates, maks 5, gjelder også prod. GDPR-avmelding bygget: HMAC-token-endepunkt /?bv_nb_avmeld=<uid>&bvt=<token> setter user_meta bv_nyhetsbrev_avmeldt + stilet bekreftelsesside. Øyeblikksbildet lagrer nå per-mottaker-placeholdere (%%BV_UID%%/%%BV_TOKEN%%) i avmeldings-lenken; send-motoren substituerer per mottaker. Localhost-blockeren fikk whitelist (Andreas' 2 adresser → ekte levering via Resend, alt annet blokkeres+logges). Mottaker-resolusjon: 590 medlemmer klare (5 medlemsroller, gyldig e-post, avmeldte trukket fra) — matcher Bårds ~5-600-anslag. Verifisert ende-til-ende: avvisning av ukjent adresse (rød notis, 0 sendt), ekte [TEST]-levering til andreas.harstad@initialforce.com (Resend-ID bekreftet), avmeldings-løkke (400 ved ugyldig token, 200+meta ved gyldig, testmeta ryddet). Også: AEC- og nyhetsbrev-CPT-arbeidet fra 09.06 committet i 2 separate commits og pushet (b23fba6 + ab1cb16, branch feat/nyhetsbrev-mal). Send-motor-filene er IKKE committet ennå."
+status: done
+detail: |
+  **Kontekst:** Andreas prioriterte: fullføre commit/push av 09.06-arbeidet, deretter
+  Resend-kobling for nyhetsbrevet — med eksplisitt krav: INGEN e-post til reelle
+  brukere nå, kun intern testing.
+
+  **Commits (først i økten):** working tree var skitten fra 09.06. Delt i to og pushet
+  til GitHub (branch feat/nyhetsbrev-mal, ny remote-branch):
+   - b23fba6 feat(aec-ai-hub): synkmotor Trinn 1 + Vis flere-pagination (24 filer)
+   - ab1cb16 feat(nyhetsbrev): CPT + frysende øyeblikksbilde + norsk dato-helper
+
+  **Send-motor (bimverdi-nyhetsbrev-send.php) — tre sikkerhetslag:**
+   1. ALLOWLIST I MOTOREN (gjelder også prod): test-send kun til innlogget admins
+      egen e-post + BIMVERDI_NYHETSBREV_TEST_MOTTAKERE (wp-config, kommaseparert).
+      Én ikke-tillatt adresse → HELE forsøket avvises, logges med brukernavn.
+   2. LOCALHOST-BLOCKER (eksisterende, utvidet): _local-email-blocker.php fikk
+      BV_LOCAL_EMAIL_TILLATT-whitelist (Andreas' 2 adresser). Whitelistede leveres
+      EKTE via ny bimverdi_resend_send_via_api() (ekstrahert kjerne i resend-mail,
+      tilgjengelig ved kjøretid selv om blockeren laster først). Resten blokkeres+logges.
+   3. MASSESEND EKSISTERER IKKE: ingen funksjon kan sende til mottakerlisten.
+      bimverdi_nyhetsbrev_mottakere() brukes KUN til telling i metaboksen.
+      «Send til alle mottakere»-knappen er disabled.
+
+  **GDPR-avmelding:**
+   - Token: hash_hmac sha256 (wp_salt auth), 20 tegn, per bruker. hash_equals-sjekk.
+   - Endepunkt uten innloggingskrav (e-postlenke), idempotent, nøytral feilside
+     (avslører ikke om bruker-ID finnes). Bekreftelsesside i BIM Verdi-stil.
+   - Snapshot lagrer placeholdere i avmeldings-URL; bimverdi_nyhetsbrev_send_en()
+     bytter per mottaker (WP-bruker → ekte uid+token; intern testadresse → forsiden).
+     Preview substituerer med innlogget admins verdier (klikkbar lenke).
+
+  **Bugs funnet/fikset underveis:**
+   - Emne var HTML-encodet («Nytt &#038; Nyttig») — get_the_title() returnerer
+     entiteter; fikset med wp_specialchars_decode i send_en.
+   - Snapshot 3227 hadde død '#'-avmeldingslenke — regenerert med placeholdere.
+
+  **Verifisert (WP-CLI + curl + Chrome):** php -l alle filer; token/URL/mottaker-
+  telling (590); blocker blokkerer ikke-whitelistet (logget); substitusjon begge
+  grener (0 placeholdere igjen); UI-avvisning av ukjent adresse; ekte [TEST]-e-post
+  levert (Resend-ID 9d3f4c8e…); avmelding 400/200 + meta satt + ryddet opp.
+
+  **⚠️ VIKTIG VED VIDERE ARBEID:** Masseutsendelse til de 590 er NESTE steg og skal
+  bygges som eget, nøye gjennomgått steg (xhigh): send-løkke m/ per-mottaker-
+  substitusjon, Resend-throttling (~2/s), gjenopptak ved avbrudd (ikke dobbel-send),
+  sent_at-låsing, bekreftelsesdialog. INGEN test mot reelle brukere — Andreas har
+  vært eksplisitt på dette (jf. Mari-uhellet 27. mai).
+
+  **Prod-notat:** BIMVERDI_NYHETSBREV_TEST_MOTTAKERE må defineres manuelt i prod
+  wp-config før test-send der (ellers er kun innlogget admins egen adresse tillatt
+  — som også er trygt).
+
+  **Git:** send-motor-filene IKKE committet ennå (venter på Andreas' innboks-sjekk).
+  _local-email-blocker.php og wp-config.php er lokale/gitignored og skal ALDRI committes.
+
+---
 date: 2026-06-09
 action: nyhetsbrev-cpt-bygd-pluss-kritisk-manage-options-cap-bug-funnet-og-fikset
 files:

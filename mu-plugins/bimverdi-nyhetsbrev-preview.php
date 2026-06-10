@@ -42,6 +42,17 @@ add_action('template_redirect', function () {
         if ($post_id > 0 && get_post_type($post_id) === 'nyhetsbrev') {
             $stored = get_post_meta($post_id, '_bv_nyhetsbrev_html', true);
             if ($stored !== '') {
+                // Avmeldings-placeholderne (%%BV_UID%%/%%BV_TOKEN%%) byttes per
+                // mottaker ved utsendelse — i forhåndsvisningen bruker vi den
+                // innloggede adminens egne verdier så lenken er klikkbar.
+                if (function_exists('bimverdi_nyhetsbrev_avmelding_token')) {
+                    $uid    = get_current_user_id();
+                    $stored = str_replace(
+                        array('%%BV_UID%%', '%%BV_TOKEN%%'),
+                        array((string) $uid, bimverdi_nyhetsbrev_avmelding_token($uid)),
+                        $stored
+                    );
+                }
                 nocache_headers();
                 header('Content-Type: text/html; charset=UTF-8');
                 // Lagret HTML echoes rått. Malen (parts/email/nyhetsbrev.php) er
