@@ -199,6 +199,17 @@ function bimverdi_nyhetsbrev_send_en($post_id, $email, $subject_prefix = '') {
         );
     }
 
+    // Localhost-URL-er virker kun på utviklerens egen maskin — hos andre
+    // mottakere blir bilder knuste og lenker døde (verifisert hos Bård,
+    // Outlook 10.06). Ved utsendelse fra lokalt miljø skrives alle URL-er om
+    // til produksjonsdomenet, der innholdet faktisk ligger. (Gjelder også
+    // avmeldings-lenken — den virker først når koden er deployet til prod.)
+    $hjemme = home_url();
+    if (stripos($hjemme, 'localhost') !== false || stripos($hjemme, '127.0.0.1') !== false) {
+        $prod = defined('BIMVERDI_NYHETSBREV_PROD_URL') ? BIMVERDI_NYHETSBREV_PROD_URL : 'https://bimverdi.no';
+        $html = str_replace($hjemme, untrailingslashit($prod), $html);
+    }
+
     // E-postemner er ren tekst — dekod HTML-entiteter fra get_the_title (&#038; → &).
     $subject = $subject_prefix . wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES);
     $headers = ['Content-Type: text/html; charset=UTF-8'];
