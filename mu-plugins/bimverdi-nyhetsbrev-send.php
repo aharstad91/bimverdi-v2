@@ -65,11 +65,21 @@ function bimverdi_nyhetsbrev_er_avmeldt($user_id) {
  * Avmeldings-endepunkt. Token-verifisert (hash_equals), idempotent, krever
  * ikke innlogging. Ugyldig lenke gir en nøytral feilside uten å avsløre om
  * bruker-ID-en finnes.
+ *
+ * Støtter to inngangsveier mot SAMME URL (?bv_nb_avmeld=<uid>&bvt=<token>):
+ *   - GET: bruker klikker lenken i brevet → HTML-bekreftelsesside.
+ *   - POST: e-postklientens One-Click-knapp (RFC 8058, List-Unsubscribe-Post
+ *     = One-Click). Query-parameterne ligger i URL-en (så $_GET er fylt selv
+ *     ved POST); vi svarer da 200 uten HTML-krav. Ingen nonce/CSRF her — det
+ *     er bevisst: HMAC-tokenet ER autentiseringen, og RFC 8058-POST-en kommer
+ *     fra mottakerens mailserver, ikke en innlogget økt.
  */
 add_action('template_redirect', function () {
     if (!isset($_GET['bv_nb_avmeld'])) {
         return;
     }
+
+    $er_post = (isset($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD']) === 'POST');
 
     $user_id = (int) $_GET['bv_nb_avmeld'];
     $token   = isset($_GET['bvt']) ? (string) $_GET['bvt'] : '';
@@ -81,6 +91,16 @@ add_action('template_redirect', function () {
 
     if ($gyldig && !bimverdi_nyhetsbrev_er_avmeldt($user_id)) {
         update_user_meta($user_id, 'bv_nyhetsbrev_avmeldt', current_time('mysql'));
+    }
+
+    // One-Click-POST: mailserveren forventer en rask 2xx, ikke en nettside.
+    // Svar minimalt og avslutt (idempotent — gjentatt POST gir også 200).
+    if ($er_post) {
+        nocache_headers();
+        status_header($gyldig ? 200 : 400);
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo $gyldig ? 'OK' : 'Invalid';
+        exit;
     }
 
     nocache_headers();
