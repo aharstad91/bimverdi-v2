@@ -486,6 +486,11 @@ function bimverdi_nyhetsbrev_utsendelse_manifest($post_id) {
     return is_array($manifest) ? $manifest : null;
 }
 
+/** Er en utsendelse startet (manifest finnes)? Styrer redigeringssperren. */
+function bimverdi_nyhetsbrev_utsendelse_startet($post_id) {
+    return bimverdi_nyhetsbrev_utsendelse_manifest($post_id) !== null;
+}
+
 /** Standard pending-rad for batch $i, avledet av manifestets fryste chunk. */
 function bimverdi_nyhetsbrev_batch_rad_standard($post_id, array $manifest, $i) {
     return [
@@ -1299,3 +1304,234 @@ function bimverdi_nyhetsbrev_utsendelse_kjor($post_id, $overta_stale = false, $s
         'karantene' => count(bimverdi_nyhetsbrev_karantene_liste($post_id)),
     ];
 }
+
+/* -------------------------------------------------------------------------
+ * 8. Masseutsendelse: admin-handlere (Unit 4).
+ *
+ * Bårds røde knapp: bekreftelses-mellomside → kjøring → rapport. Alle
+ * handlere: manage_options + nonce. UI-en (metaboks + notiser) bor i
+ * bimverdi-nyhetsbrev-cpt.php; her ligger kun POST-logikken.
+ *
+ * ⛔ Ingen av disse kan sende på localhost: kjøringsmotoren stopper på den
+ *    fail-closed gaten i send_batch (massesend_deaktivert/feil_miljo) lenge
+ *    før noe HTTP skjer. Mellomsiden og rapport-tilstandene er derfor fullt
+ *    testbare lokalt uten risiko for ekte utsendelse.
+ * ---------------------------------------------------------------------- */
+
+/** Felles: kjør (eller gjenoppta) utsendelsen og redirect tilbake med notis. */
+function bimverdi_nyhetsbrev_kjor_og_redirect($post_id, $overta_stale = false) {
+    $tilbake = admin_url('post.php?post=' . (int) $post_id . '&action=edit');
+    $rapport = bimverdi_nyhetsbrev_utsendelse_kjor($post_id, $overta_stale);
+
+    if (is_wp_error($rapport)) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_' . $rapport->get_error_code(), $tilbake));
+        exit;
+    }
+    wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_' . $rapport['status'], $tilbake));
+    exit;
+}
+
+/**
+ * Steg 1: bekreftelses-mellomside (plain HTML + nonce + PRG). Viser antall
+ * mottakere, fryst emne og forhåndsvisnings-lenke, og krever eksplisitt
+ * avkryssing før den endelige POST-en.
+ */
+add_action('admin_post_bimverdi_nyhetsbrev_bekreft', function () {
+    if (!current_user_can('manage_options')) {
+        wp_die('Ingen tilgang.');
+    }
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    check_admin_referer('bimverdi_nyhetsbrev_bekreft_' . $post_id);
+
+    $tilbake = admin_url('post.php?post=' . $post_id . '&action=edit');
+
+    if (!$post_id || get_post_type($post_id) !== BV_NYHETSBREV_CPT) {
+        wp_die('Ugyldig nyhetsbrev.');
+    }
+    if (bimverdi_nyhetsbrev_er_sendt($post_id)) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_allerede_sendt', $tilbake));
+        exit;
+    }
+    if (!get_post_meta($post_id, '_bv_nyhetsbrev_html', true)) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_mangler_snapshot', $tilbake));
+        exit;
+    }
+
+    // Gaten må være åpen FØR vi viser bekreftelsen — ellers er knappen død.
+    $gate = bimverdi_nyhetsbrev_massesend_gate();
+    if (is_wp_error($gate)) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_' . $gate->get_error_code(), $tilbake));
+        exit;
+    }
+
+    $antall  = count(bimverdi_nyhetsbrev_mottakere());
+    $emne    = wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES);
+    $preview = add_query_arg('bimverdi_nyhetsbrev_preview', $post_id, home_url('/'));
+
+    nocache_headers();
+    header('Content-Type: text/html; charset=UTF-8');
+    ?><!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Bekreft utsendelse – BIM Verdi</title>
+</head>
+<body style="margin:0;padding:0;background:#F7F5EF;font-family:Inter,system-ui,-apple-system,sans-serif;">
+<div style="max-width:560px;margin:64px auto;padding:0 24px;">
+    <p style="color:#FF8B5E;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 12px;">BIM Verdi · Nyhetsbrev</p>
+    <h1 style="color:#1A1A1A;font-size:26px;font-weight:500;margin:0 0 20px;">Bekreft utsendelse</h1>
+
+    <div style="background:#fff;border:1px solid #D6D1C6;border-radius:10px;padding:24px;margin:0 0 24px;">
+        <p style="margin:0 0 16px;color:#1A1A1A;font-size:15px;line-height:1.6;">
+            Du er i ferd med å sende nyhetsbrevet til
+            <strong style="font-size:18px;"><?php echo (int) $antall; ?> mottakere</strong>.
+            Dette kan <strong>ikke angres</strong>.
+        </p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;color:#5A5A5A;">
+            <tr><td style="padding:6px 0;width:90px;">Emne</td><td style="padding:6px 0;color:#1A1A1A;"><?php echo esc_html($emne); ?></td></tr>
+            <tr><td style="padding:6px 0;border-top:1px solid #EFE9DE;">Mottakere</td><td style="padding:6px 0;border-top:1px solid #EFE9DE;color:#1A1A1A;"><?php echo (int) $antall; ?> medlemmer (avmeldte trukket fra)</td></tr>
+            <tr><td style="padding:6px 0;border-top:1px solid #EFE9DE;">Avsender</td><td style="padding:6px 0;border-top:1px solid #EFE9DE;color:#1A1A1A;"><?php echo esc_html(defined('BIMVERDI_RESEND_FROM_EMAIL') ? BIMVERDI_RESEND_FROM_EMAIL : 'noreply@bimverdi.no'); ?></td></tr>
+        </table>
+        <p style="margin:16px 0 0;">
+            <a href="<?php echo esc_url($preview); ?>" target="_blank" style="color:#1A1A1A;font-size:14px;">Forhåndsvis brevet i ny fane →</a>
+        </p>
+    </div>
+
+    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0;">
+        <input type="hidden" name="action" value="bimverdi_nyhetsbrev_massesend">
+        <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+        <?php wp_nonce_field('bimverdi_nyhetsbrev_massesend_' . $post_id); ?>
+        <label style="display:flex;align-items:flex-start;gap:10px;margin:0 0 24px;color:#1A1A1A;font-size:15px;cursor:pointer;">
+            <input type="checkbox" name="bekreft_avkrysset" value="1" style="margin-top:3px;width:18px;height:18px;">
+            <span>Ja, send nyhetsbrevet til <?php echo (int) $antall; ?> mottakere nå.</span>
+        </label>
+        <div style="display:flex;gap:12px;align-items:center;">
+            <button type="submit" style="background:#FF8B5E;color:#1A1A1A;border:none;border-radius:8px;padding:13px 28px;font-size:15px;font-weight:600;cursor:pointer;">
+                Send nyhetsbrevet
+            </button>
+            <a href="<?php echo esc_url($tilbake); ?>" style="color:#5A5A5A;font-size:14px;">Avbryt</a>
+        </div>
+    </form>
+
+    <p style="border-top:1px solid #D6D1C6;padding-top:20px;margin:40px 0 0;color:#5A5A5A;font-size:13px;line-height:1.6;">
+        Lukker du fanen mens utsendelsen kjører, fortsetter den i bakgrunnen. Får du en
+        feilside, betyr det <strong>ikke</strong> at utsendelsen feilet — last editoren på
+        nytt og les statusrapporten før du eventuelt trykker «Fortsett».
+    </p>
+</div>
+</body>
+</html><?php
+    exit;
+});
+
+/**
+ * Steg 2: endelig kjøring. Krever avkryssing. Fryser manifestet (hvis ikke
+ * allerede gjort) og kjører motoren synkront.
+ */
+add_action('admin_post_bimverdi_nyhetsbrev_massesend', function () {
+    if (!current_user_can('manage_options')) {
+        wp_die('Ingen tilgang.');
+    }
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    check_admin_referer('bimverdi_nyhetsbrev_massesend_' . $post_id);
+
+    $tilbake = admin_url('post.php?post=' . $post_id . '&action=edit');
+
+    if (!$post_id || get_post_type($post_id) !== BV_NYHETSBREV_CPT) {
+        wp_die('Ugyldig nyhetsbrev.');
+    }
+    if (empty($_POST['bekreft_avkrysset'])) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_ikke_bekreftet', $tilbake));
+        exit;
+    }
+    if (bimverdi_nyhetsbrev_er_sendt($post_id)) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_allerede_sendt', $tilbake));
+        exit;
+    }
+
+    // Frys manifestet hvis dette er første kjøring (idempotent ved gjenopptak).
+    if (!bimverdi_nyhetsbrev_utsendelse_startet($post_id)) {
+        $start = bimverdi_nyhetsbrev_utsendelse_start($post_id);
+        if (is_wp_error($start)) {
+            wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_' . $start->get_error_code(), $tilbake));
+            exit;
+        }
+    }
+
+    bimverdi_nyhetsbrev_kjor_og_redirect($post_id);
+});
+
+/** «Fortsett utsendelse» (gjenopptak). Ingen avkryssing — manifest finnes alt. */
+add_action('admin_post_bimverdi_nyhetsbrev_fortsett', function () {
+    if (!current_user_can('manage_options')) {
+        wp_die('Ingen tilgang.');
+    }
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    check_admin_referer('bimverdi_nyhetsbrev_fortsett_' . $post_id);
+
+    $tilbake = admin_url('post.php?post=' . $post_id . '&action=edit');
+
+    if (!$post_id || get_post_type($post_id) !== BV_NYHETSBREV_CPT || !bimverdi_nyhetsbrev_utsendelse_startet($post_id)) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_mangler_manifest', $tilbake));
+        exit;
+    }
+
+    $overta_stale = !empty($_POST['overta_stale']);
+    bimverdi_nyhetsbrev_kjor_og_redirect($post_id, $overta_stale);
+});
+
+/**
+ * Manuell verifisering av en usikker batch (24-timers-vakten). Bård har
+ * sjekket Resend-dashboardet og velger:
+ *   - «marker_sendt»: brevet ER levert → marker sendt uten nye API-kall.
+ *   - «resend»: brevet er IKKE levert → bygg om batchen med ny
+ *     idempotency-nøkkel, klar for «Fortsett».
+ * Begge valg logges på batch-raden med bruker + tid.
+ */
+add_action('admin_post_bimverdi_nyhetsbrev_verifiser', function () {
+    if (!current_user_can('manage_options')) {
+        wp_die('Ingen tilgang.');
+    }
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    check_admin_referer('bimverdi_nyhetsbrev_verifiser_' . $post_id);
+
+    $tilbake = admin_url('post.php?post=' . $post_id . '&action=edit');
+    $batch   = isset($_POST['batch_indeks']) ? (int) $_POST['batch_indeks'] : -1;
+    $valg    = isset($_POST['valg']) ? sanitize_key($_POST['valg']) : '';
+    $bruker  = wp_get_current_user()->user_login;
+
+    if (!$post_id || get_post_type($post_id) !== BV_NYHETSBREV_CPT || $batch < 0) {
+        wp_die('Ugyldig forespørsel.');
+    }
+    $rad = bimverdi_nyhetsbrev_batch_rad($post_id, $batch);
+    if ($rad === null || empty($rad['manuell_verifisering'])) {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_verifisering_ugyldig', $tilbake));
+        exit;
+    }
+
+    if ($valg === 'marker_sendt') {
+        bimverdi_nyhetsbrev_marker_batch($post_id, $batch, [
+            'status'               => 'sendt',
+            'manuell_verifisering' => false,
+            'notat'                => sprintf('Manuelt verifisert LEVERT i Resend-dashboardet av %s (%s).', $bruker, current_time('mysql')),
+        ]);
+        bimverdi_nyhetsbrev_utsendelse_fullfor_hvis_ferdig($post_id);
+    } elseif ($valg === 'resend') {
+        // Ny idempotency-nøkkel (ombygging) — gammel nøkkel kan være utløpt
+        // ELLER fortsatt bundet til et forsøk vi nettopp avkreftet.
+        bimverdi_nyhetsbrev_ombygg_batch(
+            $post_id,
+            $batch,
+            $rad['mottakere'],
+            sprintf('manuell re-send (verifisert IKKE levert) av %s', $bruker)
+        );
+    } else {
+        wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_verifisering_ugyldig', $tilbake));
+        exit;
+    }
+
+    wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_verifisert', $tilbake));
+    exit;
+});
