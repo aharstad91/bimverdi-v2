@@ -3,6 +3,35 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-06-11
+action: nyhetsbrev-massesend-motor-unit-1-5-bygget-og-testet-lokalt
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-send.php (Unit 1–3, 5: manifest, batch-sender, kjøringsmotor, one-click POST)"
+  - "mu-plugins/bimverdi-nyhetsbrev-cpt.php (Unit 4: metaboks-tilstander a–f, redigeringssperre, notiser)"
+  - "docs/plans/2026-06-10-001-feat-nyhetsbrev-massesend-motor-plan.md (enheter krysset av + statusnotat)"
+summary: "Bygget massesend-motoren etter den review-herdede planen — Unit 1–4 + Unit 5-koden. Unit 1: immutabelt manifest (_bv_nyhetsbrev_utsendelse) som fryser mottakerliste+emne+from/reply_to+SHA-256 av HTML; per-batch meta-rader (_bv_nb_batch_{i}, à 50 = 12 batcher for 592); atomisk start-guard (add_post_meta unique); fullføringslogikk (alle sendt/superseded → sent_at). Unit 2: batch-sender mot Resend /emails/batch bak FAIL-CLOSED gate (BIMVERDI_NYHETSBREV_MASSESEND_AKTIV===true OG home_url===https://bimverdi.no OG API-nøkkel; ingen mail()-fallback; aldri bv_is_localhost_environment); Idempotency-Key per batch, ID-telling mot stille under-sending, 4xx→pending/5xx→usikker/409→fatal/429→retry-after. send_en() DEKOBLET: $massesend_aktiv-unntaket fjernet, test-allowlisten håndheves nå ALLTID. Unit 3: kjøringsmotor m/ atomisk kjøre-lås+heartbeat (3 min stale), usikre re-sendes først (24-t-vakt: blind re-send kun <20t, ellers manuell verifisering), pending filtreres for avmeldte/karantene med persist-før-send-ombygging (superseded m/ innebygd erstatning → krasj-reparasjon), karantene ved identifiserbar 4xx, totalstatus alltid avledet av batch-radene. Unit 4: metaboks-tilstandsmaskin (a) død knapp+gate-forklaring (b) rød Send-knapp (c) kjøring-pågår (d) delvis+Fortsett (e) per-batch manuell verifisering (f) Sendt; bekreftelses-mellomside (plain HTML+nonce+PRG); redigeringssperre når manifest finnes. Unit 5-kode: RFC 8058 one-click — avmeldings-endepunktet svarer POST→200 text/plain, GET→HTML, ugyldig→400, idempotent. SIKKERHETSKONTRAKTEN HOLDT: all testing mot gate-avvisning + pre_http_request-stub (0 ekte HTTP til Resend), konstanten aldri satt lokalt, gaten verifisert ærlig stengt i wp-admin. Testdekning: Unit1 20 + Unit2 (2 prosesser) + Unit3 27 + Unit4 render(a-f)+visuell + Unit5 curl — alle grønne. 3 commits (f7259d4, dd8f310, 25d2362) på wp-content/main, IKKE pushet/deployet ennå."
+status: done
+detail: |
+  **Gjenstår før go-live (eget xhigh-steg, krever Bård-beslutning + prod):**
+   1. Push wp-content/main → autodeploy (gaten nekter alt til konstanten settes — trygt).
+   2. Sett BIMVERDI_NYHETSBREV_MASSESEND_AKTIV i PROD wp-config (ALDRI lokalt).
+   3. Empirisk Unit 5-verifisering PÅ PROD mot allowlist (Andreas×2 + Bård):
+      (a) testbatch m/ headers → List-Unsubscribe synlig i Gmail;
+      (b) testbatch m/ én bevisst ugyldig adresse → observer Resends delfeil-format
+          → juster karantenelogikken hvis API gir per-element-status (i dag antas
+          atomisk batch-avvisning konservativt);
+      (c) one-click fra Gmail-UI → 200 + meta satt (fanger ev. WAF på POST).
+      Dokumenter funn i plan + WORKLOG FØR Bård sender første ekte brev.
+   4. Bård sender første ekte brev m/ Andreas i beredskap; sjekk Resend-dashboard
+      umiddelbart (antall sendt === antall mottakere).
+
+  **Viktig drifts-note:** En timeout-FEILSIDE under kjøring betyr IKKE feilet
+  utsendelse (ignore_user_abort + 15s per-kall-timeout + checkpoint). Last
+  editoren på nytt og les rapporten; Fortsett er sperret mens heartbeat er fersk.
+
+  **Etter landing:** /ce-compound på Mari Isdahl-hendelsen + pre_get_users/$pagenow.
+
+---
 date: 2026-06-10
 action: reply-to-endret-til-post-bimverdi-no
 files:
