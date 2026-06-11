@@ -40,6 +40,10 @@ $lisensmodell = get_field('lisensmodell');
 $versjon = get_field('versjon');
 $integrasjoner = get_field('integrasjoner');
 
+// Temagrupper koblet til verktøyet (taksonomi 'temagruppe' — autoritativ kobling,
+// gjelder både egne deltaker-verktøy og AEC/Stefan-verktøy).
+$temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
+
 // Check if current user can edit this tool (only hovedkontakt of owner company)
 $current_user_id = get_current_user_id();
 $can_edit = false;
@@ -438,6 +442,21 @@ $tool_updated = get_the_modified_date('d.m.Y');
                         <?php endif; ?>
                     </dl>
                 </section>
+
+                <?php if (!empty($temagrupper) && !is_wp_error($temagrupper)): ?>
+                <!-- Temagrupper Section -->
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-5">Temagrupper</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <?php foreach ($temagrupper as $gruppe): ?>
+                        <a href="<?php echo esc_url(get_term_link($gruppe)); ?>" class="inline-flex items-center gap-2 text-sm font-medium bg-[#ECFDF5] text-[#059669] px-3 py-1.5 rounded-lg hover:bg-[#D1FAE5] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                            <?php echo esc_html($gruppe->name); ?>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+                <?php endif; ?>
 
             </div>
 

@@ -240,7 +240,10 @@ function bimverdi_nyhetsbrev_totaler() {
     ];
     $ut = ['sum' => 0, 'typer' => []];
     foreach ($typer as $t) {
-        $antall = (int) wp_count_posts($t['cpt'])->publish;
+        // Foretak telles som deltakere (deltaker pluss), ikke alle foretak.
+        $antall = ($t['cpt'] === 'foretak')
+            ? bimverdi_nyhetsbrev_antall_deltakere()
+            : (int) wp_count_posts($t['cpt'])->publish;
         $ut['typer'][] = ['label' => $t['label'], 'antall' => $antall];
         $ut['sum']    += $antall;
     }
@@ -420,10 +423,41 @@ function bimverdi_nyhetsbrev_kunnskapskilder($limit = 3) {
 }
 
 /**
- * 5. Siste N deltakere (foretak).
+ * «Deltaker pluss» = betalende foretak: Deltaker, Prosjektdeltaker, Partner.
+ * Samme filter som archive-foretak.php:21-28 og front-page.php. Gratis-/
+ * «Ikke deltaker»-foretak skal IKKE regnes som deltakere i nyhetsbrevet.
+ * (Bård-bug 11.06: seksjonen viste 82 = 59 deltakere + 23 gratis-/uklassifiserte.)
+ */
+function bimverdi_nyhetsbrev_deltaker_meta_query() {
+    return [[
+        'key'     => 'bv_rolle',
+        'value'   => ['Deltaker', 'Prosjektdeltaker', 'Partner'],
+        'compare' => 'IN',
+    ]];
+}
+
+/**
+ * Antall publiserte foretak som faktisk er deltakere (deltaker pluss).
+ * wp_count_posts() kan ikke meta-filtrere, så vi teller via WP_Query->found_posts.
+ */
+function bimverdi_nyhetsbrev_antall_deltakere() {
+    $q = new WP_Query([
+        'post_type'      => 'foretak',
+        'post_status'    => 'publish',
+        'meta_query'     => bimverdi_nyhetsbrev_deltaker_meta_query(),
+        'posts_per_page' => 1,
+        'fields'         => 'ids',
+    ]);
+    return (int) $q->found_posts;
+}
+
+/**
+ * 5. Siste N deltakere (foretak) — kun deltaker pluss.
  */
 function bimverdi_nyhetsbrev_deltakere($limit = 3) {
-    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('foretak', $limit);
+    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('foretak', $limit, [
+        'meta_query' => bimverdi_nyhetsbrev_deltaker_meta_query(),
+    ]);
 
     $items = [];
     foreach ($poster as $post) {
@@ -454,7 +488,9 @@ function bimverdi_nyhetsbrev_collect() {
     // våre X andre [posttype]»). Arkivlenke + totalantall publiserte.
     $arkiv = function ($cpt, $enhet) {
         return [
-            'total'     => (int) wp_count_posts($cpt)->publish,
+            'total'     => ($cpt === 'foretak')
+                ? bimverdi_nyhetsbrev_antall_deltakere()
+                : (int) wp_count_posts($cpt)->publish,
             'arkiv_url' => get_post_type_archive_link($cpt) ?: '',
             'enhet'     => $enhet,
         ];

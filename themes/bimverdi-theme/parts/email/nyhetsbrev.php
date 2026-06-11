@@ -149,12 +149,24 @@ $bv_nb_kort_header = function ($seksjon) {
         <!-- ============ HEADER (sentrert, på canvas) ============ -->
         <tr>
             <td align="center" style="padding:16px 24px 8px 24px;">
+                <?php
+                // Topp-logo: busy-bee + «Nytt og nyttig» + BIM Verdi-logo som én PNG.
+                // Drop filen i temaet på assets/email/nyhetsbrev-logo.png, så vises
+                // den her (og erstatter tekst-tittelen). Mangler den, faller vi
+                // tilbake til ren tekst — ingenting knekker.
+                $bv_nb_logo_rel  = 'assets/email/nyhetsbrev-logo.png';
+                $bv_nb_logo_path = get_theme_file_path($bv_nb_logo_rel);
+                $bv_nb_logo_url  = get_theme_file_uri($bv_nb_logo_rel);
+                if (file_exists($bv_nb_logo_path)): ?>
+                <img src="<?php echo esc_url($bv_nb_logo_url); ?>" width="480" alt="BIM Verdi — Nytt &amp; Nyttig" style="display:block;margin:0 auto 4px auto;width:100%;max-width:480px;height:auto;border:0;outline:none;text-decoration:none;">
+                <?php else: ?>
                 <div class="nb-title" style="font-size:16px;font-weight:700;color:#1A1A1A;margin-bottom:14px;">
                     BIM Verdi
                 </div>
                 <h1 class="nb-h1" style="margin:0;font-size:30px;line-height:1.2;font-weight:600;color:#1A1A1A;">
                     Nytt &amp; Nyttig
                 </h1>
+                <?php endif; ?>
                 <p class="nb-text" style="margin:12px 0 0 0;font-size:15px;line-height:1.6;color:#5A5A5A;">
                     Det ferskeste fra nettverket — utvalgt fra
                     <strong style="color:#1A1A1A;"><?php echo esc_html($totaler['sum']); ?> ressurser</strong>.
@@ -292,7 +304,7 @@ $bv_nb_kort_header = function ($seksjon) {
             <td align="center" style="padding:20px 24px 0 24px;">
                 <p class="nb-text" style="margin:0;font-size:15px;line-height:1.6;color:#3A3A3A;">
                     Nettverkshilsner fra<br>
-                    <strong style="color:#1A1A1A;"><?php echo esc_html($context['avsender_navn']); ?></strong>, <?php echo esc_html($context['avsender_tittel']); ?>
+                    <strong style="color:#1A1A1A;"><?php echo esc_html($context['avsender_tittel']); ?></strong>
                 </p>
             </td>
         </tr>

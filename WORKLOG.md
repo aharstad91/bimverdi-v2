@@ -4,6 +4,38 @@
 
 ---
 date: 2026-06-11
+action: bard-synk-11juni-nyhetsbrev-deltaker-bug-redaksjonelt-verktoy-temagruppe
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-content.php (deltaker-bug: filter på deltaker pluss)"
+  - "themes/bimverdi-theme/parts/email/nyhetsbrev.php (fjernet Bård-navn, topp-logo-slot)"
+  - "themes/bimverdi-theme/single-verktoy.php (temagruppe-blokk i høyre spalte)"
+summary: "Implementert fra Bård-synk 11.06 (transkript BIMVerdi-synk-11juni.json), 3 Fable-Explore-agenter kartla parallelt, deretter seriell implementering. (1) NYHETSBREV DELTAKER-BUG: «Nye og sist oppdaterte deltakere» viste 82, deltakeroversikten 59. DB-verifisert årsak: seksjonen telte ALLE publiserte foretak (43 Deltaker + 9 Prosjektdeltaker + 7 Partner = 59 ekte + 22 «Ikke deltaker»-gratisforetak + 1 uten rolle = 82) og manglet rolle-filter; IFE (post 2955, bv_rolle=Ikke deltaker, opprettet 29.05) dukket opp som «ny» fordi den var nyeste foretak-post — ikke hallusinering. Fiks: nye helpers bimverdi_nyhetsbrev_deltaker_meta_query() (Deltaker/Prosjektdeltaker/Partner IN, identisk med archive-foretak.php:21-28) + bimverdi_nyhetsbrev_antall_deltakere() (WP_Query->found_posts, siden wp_count_posts ikke kan meta-filtrere). Tre kallsteder fikset: deltakere(), totaler() (kun foretak), arkiv-closure (kun foretak). WP-CLI-verifisert: deltakere=59, lista viser nå NTNU/JM Norge/Wk Entreprenør (IFE ute). (2) REDAKSJONELT: fjernet «Bård Krogshus» fra footer-signatur → «Nettverkshilsner fra BIM Verdi» (bruker avsender_tittel); topp-header fikk logo-slot (assets/email/nyhetsbrev-logo.png via get_theme_file_uri → prod-rewrites korrekt) med tekst-fallback når PNG mangler. (3) VERKTØY-DETALJSIDE: ny «Temagrupper»-blokk i høyre spalte på single-verktoy.php, grønne lenke-pills (get_term_link, foretak-mønster), kun når terms finnes (193/223 verktøy har temagruppe). (4) TEST-UTSENDELSE: verifisert at komma-separerte mottakere ALLEREDE virker (preg_split /[,\\s]+/, maks 5, hard allowlist-gate) — INGEN kodeendring; allowlist-gaten beholdt bevisst (Mari Isdahl-vern). Alle 3 filer php -l rene. IKKE deployet — lokale endringer som venter Andreas-test + push."
+status: done
+detail: |
+  **Bård-beslutninger fra synk 11.06 (kontekst for åpne punkter):**
+   - AEC-verktøy (223 stk) GODKJENT til å gå live «som det er» — pushes fra DB
+     via kommando (egen Bård/Andreas-handling, ikke gjort her). Bård demo 17. + 23. juni.
+   - AEC-KATEGORI-GAP (BEKREFTET av Bård, men UTSATT — rører AEC-data, planlegges
+     ikke før demo): 186 AEC-verktøy mangler både type_ressurs og verktoykategori
+     (ufiltrerbare, bærer _bv_aec_raw_category som «PropTech» m.m.). Beslutning:
+     map råkategori → verktoykategori, ukjente (PropTech++) → «Annet» (i dag 0 verktøy),
+     eksponer verktoykategori som fasett på archive-verktoy.php. QA-pass på de ~200
+     («finn åpenbart ukategoriserte») gjøres som egen datajobb. Bård publiserer først,
+     Andreas tester live, så justeres videre.
+   - LOGO: Bård sender kombinert busy-bee + «Nytt og nyttig» + BIM Verdi-logo som
+     én PNG. Slot er klar — drop filen i themes/bimverdi-theme/assets/email/nyhetsbrev-logo.png
+     FØR snapshot genereres (file_exists sjekkes ved snapshot-frysing).
+   - RESEND-GRENSE: gratisplan ~500-600 e-post/døgn, 592 mottakere tett på taket;
+     Bård rydder mottakerlista < 500 (gamle/utmeldte fra 2017-2019).
+   - Test mot utvalgte personer = legg adresser i BIMVERDI_NYHETSBREV_TEST_MOTTAKERE
+     på PROD wp-config (gaten løsnes IKKE i kode).
+
+  **Bilde-med-tekst-modulen** (Bård syntes en så rar ut): IKKE endret — vag
+  tilbakemelding, to kandidater (initial-bokstav-placeholder linje 79-91, eller
+  hero-img alt-tekst-styling). Venter konkret eksempel fra Bård før endring.
+
+---
+date: 2026-06-11
 action: nyhetsbrev-massesend-motor-unit-1-5-bygget-og-testet-lokalt
 files:
   - "mu-plugins/bimverdi-nyhetsbrev-send.php (Unit 1–3, 5: manifest, batch-sender, kjøringsmotor, one-click POST)"
