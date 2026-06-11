@@ -259,7 +259,7 @@ add_action('admin_notices', function () {
             'test_feil'            => array('error', 'Test-utsendelsen feilet for én eller flere adresser — se error_log.'),
             'test_tom'             => array('warning', 'Oppgi minst én e-postadresse for test-utsendelse.'),
             'test_for_mange'       => array('warning', 'Maks 5 adresser per test-utsendelse.'),
-            'test_ikke_tillatt'    => array('error', 'Én eller flere adresser er ikke på test-allowlisten (din egen e-post + BIMVERDI_NYHETSBREV_TEST_MOTTAKERE i wp-config). Ingenting ble sendt.'),
+            'test_ikke_tillatt'    => array('error', 'Én eller flere adresser er ugyldige eller ikke tillatt for test-send i dette miljøet. Ingenting ble sendt.'),
             'test_mangler_snapshot' => array('error', 'Nyhetsbrevet har ikke noe øyeblikksbilde å sende — generer først.'),
         );
         $key = sanitize_key($_GET['bv_nb_notice']);
@@ -394,21 +394,24 @@ function bimverdi_nyhetsbrev_metaboks($post) {
         echo '<p style="color:#5A5A5A;font-size:12px;margin:8px 0 0;">🔒 Øyeblikksbildet er låst — en utsendelse er startet.</p>';
     }
 
-    // Test-utsendelse (intern): kun til egen e-post + wp-config-allowlist.
+    // Test-utsendelse: fri adresse-input på prod (Bårds QA), stram allowlist i utvikling.
     if ($has_html) {
         $min_epost = wp_get_current_user()->user_email;
+        $er_prod   = function_exists('bimverdi_nyhetsbrev_er_prod') && bimverdi_nyhetsbrev_er_prod();
         echo '<hr style="margin:14px 0;border:none;border-top:1px solid #e0e0e0;">';
-        echo '<p style="margin:0 0 6px 0;"><strong>Test-utsendelse (intern)</strong></p>';
+        echo '<p style="margin:0 0 6px 0;"><strong>Test-utsendelse</strong></p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin:0;">';
         echo '<input type="hidden" name="action" value="bimverdi_nyhetsbrev_send_test">';
         echo '<input type="hidden" name="post_id" value="' . esc_attr($post->ID) . '">';
         wp_nonce_field('bimverdi_nyhetsbrev_send_test_' . $post->ID);
         echo '<input type="text" name="test_epost" value="' . esc_attr($min_epost) . '" '
-           . 'style="width:100%;margin-bottom:6px;" placeholder="navn@adresse.no">';
+           . 'style="width:100%;margin-bottom:6px;" placeholder="navn@adresse.no, navn2@adresse.no">';
         echo '<button type="submit" class="button button-secondary" style="width:100%;">Send test</button>';
-        echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">Kun din egen e-post '
-           . 'og adresser i <code>BIMVERDI_NYHETSBREV_TEST_MOTTAKERE</code> (wp-config) er tillatt. '
-           . 'Emnet prefikses med [TEST].</span>';
+        $test_hjelp = $er_prod
+            ? 'Skriv inn adressene testen skal gå til (kommaseparert, maks 5). Emnet prefikses med [TEST].'
+            : 'Testmiljø: kun din egen e-post og adresser i <code>BIMVERDI_NYHETSBREV_TEST_MOTTAKERE</code> (wp-config) er tillatt. Emnet prefikses med [TEST].';
+        echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">'
+           . wp_kses($test_hjelp, array('code' => array())) . '</span>';
         echo '</form>';
 
         // Siste testutsendelser.

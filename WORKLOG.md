@@ -4,6 +4,48 @@
 
 ---
 date: 2026-06-11
+action: nyhetsbrev-test-send-miljostyrt-prod-fri-adresseinput
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-send.php (test-send: miljøstyrt per-adresse-gate)"
+  - "mu-plugins/bimverdi-nyhetsbrev-cpt.php (metabox-hjelpetekst + varsel, miljøbevisst)"
+summary: "Test-send gjort MILJØSTYRT så Bård kan QA-sende til adresser han selv skriver inn på live. Bakgrunn: gammel kode hard-gatet test-send til innlogget admins egen e-post + BIMVERDI_NYHETSBREV_TEST_MOTTAKERE (wp-config) på ALLE miljøer inkl. prod — det blokkerte Bårds arbeidsflyt (han redigerer ikke wp-config). Andreas presiserte at no-email-vernet var en UTVIKLINGS-fase-beskyttelse, ikke en produktregel. Fiks: ny bimverdi_nyhetsbrev_er_prod() (untrailingslashit(home_url())==='https://bimverdi.no' — samme positive, fail-closed DB-sjekk som massesend-gaten) + ny bimverdi_nyhetsbrev_test_adresse_tillatt(email) = is_email AND (er_prod OR på allowlist). Regelen håndheves BÅDE i UI-handleren og innerst i send_en(). PROD: enhver gyldig e-post admin skriver inn (fortsatt maks 5, admin-only/manage_options, nonce). UTVIKLING (localhost/staging/CLI/LAN-IP): uendret stram allowlist + _local-email-blocker.php — utviklingsvernet intakt, ingen lekkasje mens vi bygger. Metabox-hjelpetekst nå miljøbevisst (prod: «skriv inn adressene»; utv: allowlist-tekst); feilvarsel ompresisert (ikke lenger «ikke på allowlisten», som var feil på prod). Massesend-stien URØRT (egen MASSESEND_AKTIV-gate, rører aldri send_en). Verifisert: php -l rent begge filer; wp eval testet alle 4 tilfeller (localhost vilkårlig=false, localhost ugyldig=false, simulert prod vilkårlig=true, simulert prod ugyldig=false). Deployet til prod via push til main (denne committen → autodeploy Servebolt)."
+status: done
+detail: |
+  **Sikkerhetsmodell etter endring:**
+  - send_en() er KUN brukt av test-stien (massesend går via wp_remote_post mot
+    Resend /emails/batch, utenom wp_mail og send_en). Relaksering av send_en
+    påvirker derfor bare test-send.
+  - Fail-closed retning: kun NØYAKTIG prod-domenet får fri input; alt annet
+    (localhost, staging, kopiert config, CLI uten SERVER_NAME) faller til stram
+    allowlist. Samme deteksjon massesend-gaten allerede stoler på.
+  - Mari Isdahl-vernet (27.05) består: localhost sender aldri til vilkårlige
+    adresser. Bård står fortsatt IKKE permanent i noen whitelist.
+
+  **Reversibelt:** ren kodeendring; revert av committen + push gjenoppretter
+  gammel hard allowlist på alle miljøer.
+
+---
+date: 2026-06-11
+action: aec-ai-hub-verktoy-publisert-til-prod-186-live
+files:
+  - "prod DB (wp bimverdi aihub-sync + aihub-publish-batch — ingen kodeendring)"
+summary: "AEC AI Hub-verktøyene satt LIVE på prod etter Bård-godkjenning i synk 11.06 («klart til å gå live som det er»). Effort xhigh (prod-data, offentlig). Stegvis: (1) aihub-sync --dry-run verifiserte ren fixture-import (Insert 236, Update 0, Skip 0 — rører IKKE de 37 medlemsverktøyene; 50 umappbare → draft). (2) aihub-sync (live) opprettet 236 utkast. (3) aihub-publish-batch --alle-mappede --confirm publiserte alle 186 mappede (--sample=10 var bare visnings-stikkprøve, --confirm kjørte hele settet). Sluttilstand prod WP-CLI-verifisert: publiserte verktoy 37→223, publiserte AEC 186, publiserte AEC uten temagruppe 0, gjenværende utkast 91 (41 gamle + 50 umappede AEC). Front-end Chrome-verifisert: /verktoy/ viser «223 av 223», AEC-kort med «Kilde: AEC AI Hub» + AI-badge + temagruppe-label, Kilde-fasett virker; detaljside (sloyd) viser nytt TEMAGRUPPER-kort med grønn ProsjektBIM-lenke (funksjonen fra commit bd8050d). Kilde fixture: committet Trinn 1-data i repo (data preservert, ikke spør om fixturen igjen)."
+status: done
+detail: |
+  **GJENSTÅR — de 50 umappede AEC-utkastene (ukategorisert/«Annet»-gapet):**
+  Holdt bevisst tilbake som draft (mangler temagruppe-mapping). Dette er QA-jobben
+  Bård vil ha: map råkategori (_bv_aec_raw_category, f.eks. PropTech) → verktoykategori,
+  ukjente → «Annet» (i dag 0 verktøy), eksponer verktoykategori som fasett på
+  archive-verktoy.php. Egen oppgave, planlegges — ikke gjort i denne økten.
+
+  **Admin-debug-badge VERIFISERT trygg:** detaljsiden viser «#3024» + forfatter-
+  e-post ved tittelen for innlogget admin, men curl utlogget gir 0 treff på
+  e-post/forfatter → badgen er admin-only, lekker IKKE til anonyme/medlemmer.
+
+  **Reversibelt:** publisering kan angres ved å sette AEC-postene tilbake til draft.
+
+---
+date: 2026-06-11
 action: bard-synk-11juni-nyhetsbrev-deltaker-bug-redaksjonelt-verktoy-temagruppe
 files:
   - "mu-plugins/bimverdi-nyhetsbrev-content.php (deltaker-bug: filter på deltaker pluss)"

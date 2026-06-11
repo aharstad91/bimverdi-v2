@@ -11,14 +11,18 @@
  *      den gjør null API-kall. Selve senderen bygges som eget steg bak
  *      fail-closed miljøgate (se docs/plans/2026-06-10-001-*).
  *
- *   ✅ Test-send er HARDT begrenset: kun til innlogget admins egen e-post
- *      og adresser i BIMVERDI_NYHETSBREV_TEST_MOTTAKERE (wp-config.php,
- *      kommaseparert streng). Maks 5 mottakere per forsøk. Gjelder også prod.
+ *   ✅ Test-send (maks 5 mottakere per forsøk) er MILJØSTYRT:
+ *        • PROD (home_url === https://bimverdi.no): admin kan sende test til
+ *          adressene hen selv skriver inn — Bårds QA-arbeidsflyt før massesend.
+ *        • UTVIKLING (localhost/staging/CLI): HARDT begrenset til innlogget
+ *          admins egen e-post + BIMVERDI_NYHETSBREV_TEST_MOTTAKERE (wp-config,
+ *          kommaseparert). Utviklingsvern: ingen test-lekkasje til vilkårlige
+ *          adresser mens vi bygger. _local-email-blocker.php er ekstra nett lokalt.
  *
- *   🔒 Sperren håndheves INNERST i bimverdi_nyhetsbrev_send_en() — ikke bare
- *      i UI-handleren. Ingen kodevei kan levere utenfor allowlisten før
- *      BIMVERDI_NYHETSBREV_MASSESEND_AKTIV settes til true i wp-config
- *      (bevisst opt-in når massesend-steget bygges).
+ *   🔒 Regelen håndheves INNERST i bimverdi_nyhetsbrev_send_en() — ikke bare i
+ *      UI-handleren. Test-stien er adskilt fra massesend, som har sin EGEN
+ *      fail-closed gate (BIMVERDI_NYHETSBREV_MASSESEND_AKTIV, settes ALDRI
+ *      lokalt) og aldri rører send_en().
  *
  * I tillegg: GDPR-avmelding. Øyeblikksbildet lagres med per-mottaker-
  * placeholdere (%%BV_UID%% / %%BV_TOKEN%%) i avmeldings-lenken; denne motoren
@@ -243,18 +247,16 @@ function bimverdi_nyhetsbrev_avmelding_url_prod($user_id) {
  * @return true|WP_Error
  */
 function bimverdi_nyhetsbrev_send_en($post_id, $email, $subject_prefix = '') {
-    // ⛔ INNERSTE SPERRE (gjelder også prod, også direkte kall utenom UI-et):
-    // test-send leverer KUN til adresser på test-allowlisten — ALLTID, også
-    // etter at massesend-konstanten er satt på prod. (Review-funn 10.06: et
-    // tidligere $massesend_aktiv-unntak her ville permanent kortsluttet
-    // vernet fra go-live. Massesend-stien har sin EGEN gate og rører aldri
-    // denne funksjonen.)
-    if (!in_array(strtolower(trim($email)), bimverdi_nyhetsbrev_test_allowlist(), true)) {
+    // ⛔ INNERSTE SPERRE (også for direkte kall utenom UI-et): test-send følger
+    // den miljøstyrte regelen i bimverdi_nyhetsbrev_test_adresse_tillatt() —
+    // fri adresse-input på prod (Bårds QA), stram allowlist i utvikling.
+    // Massesend-stien har sin EGEN fail-closed gate og rører ALDRI send_en().
+    if (!bimverdi_nyhetsbrev_test_adresse_tillatt($email)) {
         error_log(sprintf(
-            '[bimverdi-nyhetsbrev-send] NEKTET send_en til "%s" — ikke på test-allowlist.',
+            '[bimverdi-nyhetsbrev-send] NEKTET send_en til "%s" — ikke tillatt i dette miljøet.',
             $email
         ));
-        return new WP_Error('ikke_tillatt', 'Adressen er ikke på test-allowlisten. Test-send går aldri utenfor allowlisten.');
+        return new WP_Error('ikke_tillatt', 'Adressen er ugyldig eller ikke tillatt for test-send i dette miljøet.');
     }
 
     $html = get_post_meta($post_id, '_bv_nyhetsbrev_html', true);
@@ -279,8 +281,9 @@ function bimverdi_nyhetsbrev_send_en($post_id, $email, $subject_prefix = '') {
  * ---------------------------------------------------------------------- */
 
 /**
- * Adresser som test-send kan gå til: innlogget brukers egen e-post + adresser
+ * Test-allowlisten for UTVIKLINGSMILJØ: innlogget brukers egen e-post + adresser
  * i BIMVERDI_NYHETSBREV_TEST_MOTTAKERE (wp-config, kommaseparert). Små bokstaver.
+ * På prod ignoreres denne — se bimverdi_nyhetsbrev_test_adresse_tillatt().
  */
 function bimverdi_nyhetsbrev_test_allowlist() {
     $tillatt = [];
@@ -300,6 +303,35 @@ function bimverdi_nyhetsbrev_test_allowlist() {
     }
 
     return array_values(array_unique($tillatt));
+}
+
+/**
+ * Er vi på produksjon? DB-basert (home_url) — samme positive, fail-closed
+ * sjekk som massesend-gaten. Alt som IKKE er nøyaktig prod-domenet (localhost,
+ * staging, LAN-IP, WP-CLI uten SERVER_NAME) regnes som utvikling.
+ */
+function bimverdi_nyhetsbrev_er_prod() {
+    return untrailingslashit(home_url()) === 'https://bimverdi.no';
+}
+
+/**
+ * Kan test-send gå til denne adressen i dette miljøet?
+ *
+ *   • PROD  → enhver gyldig e-post admin skriver inn (Bårds QA-arbeidsflyt).
+ *   • UTV.  → kun adresser på test-allowlisten (utviklingsvern mot lekkasje).
+ *
+ * Maks-antall (5), admin-rettighet og nonce håndteres av UI-handleren; dette
+ * er den per-adresse-regelen som ALLTID også håndheves innerst i send_en().
+ */
+function bimverdi_nyhetsbrev_test_adresse_tillatt($email) {
+    $email = strtolower(trim((string) $email));
+    if (!is_email($email)) {
+        return false;
+    }
+    if (bimverdi_nyhetsbrev_er_prod()) {
+        return true;
+    }
+    return in_array($email, bimverdi_nyhetsbrev_test_allowlist(), true);
 }
 
 add_action('admin_post_bimverdi_nyhetsbrev_send_test', function () {
@@ -332,13 +364,13 @@ add_action('admin_post_bimverdi_nyhetsbrev_send_test', function () {
         exit;
     }
 
-    // ⛔ HARD GATE: alle adresser må stå på test-allowlisten. Én ugyldig →
-    // ingenting sendes. Dette er vernet mot å nå ekte medlemmer, også på prod.
-    $allowlist = bimverdi_nyhetsbrev_test_allowlist();
+    // ⛔ PER-ADRESSE GATE (miljøstyrt): fri input på prod (Bårds QA), stram
+    // allowlist i utvikling. Én adresse som ikke slipper gjennom → ingenting
+    // sendes. Samme regel håndheves innerst i send_en().
     foreach ($adresser as $adresse) {
-        if (!is_email($adresse) || !in_array(strtolower($adresse), $allowlist, true)) {
+        if (!bimverdi_nyhetsbrev_test_adresse_tillatt($adresse)) {
             error_log(sprintf(
-                '[bimverdi-nyhetsbrev-send] AVVIST test-send til "%s" (ikke på allowlist) av %s',
+                '[bimverdi-nyhetsbrev-send] AVVIST test-send til "%s" (ikke tillatt i dette miljøet) av %s',
                 $adresse,
                 wp_get_current_user()->user_login
             ));
