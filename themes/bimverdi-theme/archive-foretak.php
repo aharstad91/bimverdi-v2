@@ -13,6 +13,11 @@ get_header();
 // Include filter bar component (includes view-toggle)
 require_once get_template_directory() . '/parts/components/filter-bar.php';
 
+// Temagruppe-filter via deep-link (?temagruppe[]=<slug>) — server-side, jf. #309.
+$temagruppe_filter = (isset($_GET['temagruppe']) && is_array($_GET['temagruppe']))
+    ? array_map('sanitize_text_field', $_GET['temagruppe'])
+    : array();
+
 // Get all foretak in random order
 $args = array(
     'post_type' => 'foretak',
@@ -26,6 +31,16 @@ $args = array(
         ),
     ),
 );
+
+if (!empty($temagruppe_filter)) {
+    $args['tax_query'] = array(
+        array(
+            'taxonomy' => 'temagruppe',
+            'field'    => 'slug',
+            'terms'    => $temagruppe_filter,
+        ),
+    );
+}
 
 $members_query = new WP_Query($args);
 $total_foretak = $members_query->found_posts;

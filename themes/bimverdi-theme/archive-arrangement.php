@@ -10,6 +10,14 @@
 
 get_header();
 
+// Temagruppe-filter via deep-link (?temagruppe[]=<slug>) — server-side, jf. #309.
+$temagruppe_filter = (isset($_GET['temagruppe']) && is_array($_GET['temagruppe']))
+    ? array_map('sanitize_text_field', $_GET['temagruppe'])
+    : array();
+$tg_tax_query = !empty($temagruppe_filter)
+    ? array(array('taxonomy' => 'temagruppe', 'field' => 'slug', 'terms' => $temagruppe_filter))
+    : array();
+
 // Query upcoming events (based on toggle, not date)
 $upcoming_args = array(
     'post_type' => 'arrangement',
@@ -29,6 +37,7 @@ $upcoming_args = array(
     'orderby' => 'meta_value',
     'order' => 'ASC',
 );
+if (!empty($tg_tax_query)) { $upcoming_args['tax_query'] = $tg_tax_query; }
 $upcoming_events = new WP_Query($upcoming_args);
 
 // Query past events (based on toggle)
@@ -50,6 +59,7 @@ $past_args = array(
     'orderby' => 'meta_value',
     'order' => 'DESC',
 );
+if (!empty($tg_tax_query)) { $past_args['tax_query'] = $tg_tax_query; }
 $past_events = new WP_Query($past_args);
 
 /**
