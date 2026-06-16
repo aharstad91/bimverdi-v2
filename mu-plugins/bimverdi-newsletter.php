@@ -52,20 +52,37 @@ add_action('init', function () {
     }
     set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
 
-    // Krav 22 / R22.4: nyhetsbrev krever foretak. Innloggede uten foretak
-    // sendes til block-vegg + foretaks-kobling. Gjester redirectes til
-    // innlogging (eksisterende WP-mønster) — etter login kommer de tilbake hit.
-    if (is_user_logged_in()) {
-        $current_user_id = get_current_user_id();
+    // Krav 22 / R22.4: nyhetsbrev-abonnement er en registrering og krever
+    // foretakskobling. Avvises server-side FØR lagring — uansett miljø og
+    // uansett om knappen er synlig (krav 22: visningen er uendret, blokken
+    // skjer her). Administrator er unntatt (kan registrere på vegne av andre).
+    $er_admin = is_user_logged_in() && current_user_can('manage_options');
+
+    if (!$er_admin) {
+        // Gjest: hard blokk → innlogging. Husk oppgaven, lagre ingenting.
+        if (!is_user_logged_in()) {
+            if (function_exists('bimverdi_remember_pending_oppgave')) {
+                bimverdi_remember_pending_oppgave([
+                    'url'     => $referrer,
+                    'label'   => 'nyhetsbrev-påmelding',
+                    'context' => ['type' => 'newsletter'],
+                ]);
+            }
+            // Etter innlogging sendes brukeren tilbake til der hen prøvde.
+            wp_redirect(wp_login_url(add_query_arg('retry', '1', $referrer)));
+            exit;
+        }
+
+        // Innlogget uten foretakskobling (inkl. legacy "Kontakt uten foretak"):
+        // blokk-vegg + foretaks-kobling. Lagrer ingenting.
         if (
             function_exists('bimverdi_can_access')
             && !bimverdi_can_access('subscribe_newsletter')
-            && !user_can($current_user_id, 'manage_options')
         ) {
             if (function_exists('bimverdi_remember_pending_oppgave')) {
                 bimverdi_remember_pending_oppgave([
-                    'url'   => $referrer,
-                    'label' => 'nyhetsbrev-påmelding',
+                    'url'     => $referrer,
+                    'label'   => 'nyhetsbrev-påmelding',
                     'context' => ['type' => 'newsletter'],
                 ]);
             }
