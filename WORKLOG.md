@@ -3,6 +3,40 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-06-23
+action: deployet-hele-juni-synk-batch-til-prod-pluss-B7-B8-B9-fra-synk-23.06
+files:
+  - "mu-plugins/bimverdi-foretak-nivaa-quickedit.php (NY — B8 quick-edit deltakernivå)"
+  - "mu-plugins/bimverdi-user-modified-column.php (NY — B7 Sist oppdatert-kolonne)"
+  - "mu-plugins/bimverdi-arrangement-avlyst.php (A4 emne-fiks + A5 restyle)"
+  - "mu-plugins/bimverdi-access-control.php (B9: write_article PREMIUM→ACTIVE)"
+  - "themes/bimverdi-theme/single-theme_group.php (A1 intro full bredde + A6 Fagrådgiver)"
+  - "themes/bimverdi-theme/single-arrangement.php (A2 max-w-5xl→max-w-7xl)"
+  - "themes/bimverdi-theme/inc/acf/temagruppe-fields.php (A6 ACF-label, ingen field-name endret)"
+  - "themes/bimverdi-theme/inc/minside-helpers.php + parts/minside/dashboard.php + artikler-skriv.php + artikler-rediger.php (B9 stale 'premium only'-kommentarer rettet)"
+  - "themes/bimverdi-theme/template-parts/temagruppe/fagansvarlig.php (A6 død template-part-label)"
+  - "commit 05a2e13 (19 filer, +1475/-194) — pushet origin/main, Servebolt autodeploy"
+summary: "Synk 23.06 (Andreas↔Bård) + DEPLOY av hele juni-batchen. Demoen i synken viste 'ingenting' fordi 22.06-strømmene aldri var pushet (lå kun localhost) — avklart, alt deployet nå. EFFORT: ultracode; B8 kjørt med xhigh-varsomhet (Andreas bekreftet via AskUserQuestion: re-synk WP-rolle JA, inkluder gratisforetak-nedgradering JA, xhigh JA). A-FINPUSS fra synk: (A1) .tg-intro max-width:760px fjernet → temagruppe-intro i full bredde. (A2) single-arrangement container max-w-5xl→max-w-7xl (Bård: for mye luft/scroll). (A3) ressursrigg var allerede pikselidentisk m/ temagruppe-kortene (rr-* = tg-* hex); A2-bredden gir 3-kol som matcher temagruppe — ingen kodeendring nødvendig. (A4) avlyst-e-post DEBUGGET: 'ingenting skjedde' i demoen = miljø-forvirring (POST nådde aldri handler), IKKE bug — verifisert ende-til-ende via WP-CLI (ok=true, sent=1, gate holdt) + Resend (levert til andreas@aharstad.no). Skjermbilde avslørte ekte bug: emnefelt viste rått '&#8217;' → fikset med html_entity_decode + CR/LF-strip (header-injection-forsvar). (A5) avlyst-metaboks restylet roligere (grå testmodus-boks ikke gul, normal knapp). (A6) 'Faglig ansvarlig'→'Fagrådgiver' (Bård rekrutterer frivillige som vegrer 'ansvarlig'): single-theme_group eyebrow + ACF tab/instruksjons-labels + død template-part; INGEN ACF field-name/key endret. NYE (synk 23.06): (B7) 'Sist oppdatert'-kolonne på wp-admin/users (ny mu-plugin; profile_update/user_register stamper bv_user_modified; faller tilbake til registreringsdato; togglebar via Screen Options). (B8) Quick-edit av deltakernivå på foretak-CPT (ny mu-plugin). UTREDNING avdekket trippel-felt-modell: bv_rolle (legacy, styrer can_access) + bv_nivaa+bv_foretakstype (ny) + WP-rolle, og at roles-sync IKKE auto-fyrer på lagring. Kanonisk stille setter bimverdi_admin_set_foretak_nivaa() setter alle tre konsistent + re-synker WP-rolle for koblede brukere (ingen e-post) + varig audit-meta. Quick-edit UI på eksisterende 'deltakernivaa'-kolonne (dropdown + JS-prefill + inline-save-handler m/ nonce+cap+autosave-guards). Verifisert ende-til-ende via UI: deltaker→prosjektdeltaker→restore, 3 felt + bruker 181 WP-rolle fulgte. (B9) Artikkelskriving åpnet fra Prosjektdeltaker+Partner til ALLE betalende inkl. Deltaker (write_article PREMIUM_FEATURES→ACTIVE_COMPANY_FEATURES); verifisert Deltaker-foretak can_access=JA. ADVERSARIAL REVIEW (Workflow, 4 perspektiver + verifiseringspass): 0 bekreftede reelle funn, regresjon=0, ingen avlyst-gate-lekkasjesti. Lows adressert: A4 CR/LF-strip, B8 varig audit-meta (error_log roteres bort på Servebolt), 5 villedende 'premium only'-kommentarer rettet. Alle 18 PHP-filer i changesettet php -l rene før push. DEPLOY VERIFISERT på prod via SSH: 4 nye filer present, innhold landet, avlyst-gate gated (default true + allowlist andreas@aharstad.no); bimverdi.no HTTP 200 (forside/temagruppe/arrangement/login)."
+status: closed
+detail: |
+  **DEPLOYET OG VERIFISERT PÅ PROD.** commit 05a2e13 → origin/main → Servebolt autodeploy.
+  SSH-verifisert: nye mu-plugins present, Fagrådgiver/max-w-7xl/write_article landet,
+  avlyst-gate aktiv. bimverdi.no svarer 200. Bård kan teste live før torsdag.
+
+  **🔒 AVLYST-GATE LIVE MEN AKTIV:** bimverdi_avlyst_gate_active()=true på prod →
+  knappen sender KUN til andreas@aharstad.no ('Send testkopi'). Åpne for ekte påmeldte
+  = add_filter('bimverdi_avlyst_gate_active','__return_false') + Bårds eksplisitte go.
+  Se memory feedback_email_utsending_lock_egen_adresse.
+
+  **ÅPNE PUNKTER:**
+  - Avlyst → ekte påmeldte: venter Andreas' go etter at han har sett testkopi-e-posten.
+  - B8 deltakernivå-endring: STILLE nå (per Bård). Varslingslogistikk ved nivå-endring
+    utsatt til 'over sommeren' (Bård 23.06).
+  - Localhost demo-data (2914→avlyst, ByggesaksBIM fagrådgiver Jan Erik, demo-token)
+    deployet IKKE (kun lokal DB). Står fortsatt lokalt — kan ryddes på forespørsel.
+  - Trello-kort 'Endre fagansvarlig→fagrådgiver på temagruppe' = LØST (A6).
+
+---
 date: 2026-06-22
 action: implemented-6-strommer-fra-juni-synk-verifisert-localhost-IKKE-deployet
 files:
@@ -19,8 +53,11 @@ files:
   - "docs/plans/2026-06-22-001-feat-juni-synk-batch-plan.md (NY)"
   - "docs/2026-06-22-wp-admin-bruker-data-audit.md (NY)"
 summary: "Bygget 6 strømmer fra synk 22.06 (Andreas↔Bård) + 3 Teams-saker. ALT verifisert på localhost, INGENTING deployet til prod ennå (venter Andreas' go). (A) AVLYST-VARSEL: ny mu-plugin med metabox-knapp på arrangement-edit (vises kun når arrangement_status=avlyst) → sender «avlyst»-e-post til påmeldte via wp_mail. 🔒 HARD SIKKERHETSGATE (Andreas-krav): redigeres til allowlist=[andreas@aharstad.no] som siste steg, ekte deltakere varsles ALDRI før gaten åpnes eksplisitt (filter bimverdi_avlyst_gate_active). Kun e-post (SMS droppet). Verifisert: 3 ekte påmeldte på arr 2914 (inkl Bård) telles men sending går kun til Andreas. (B) REGISTRERING: mobil+stilling påkrevd i steg 2 (template-aktiver-konto.php) + server-validering i handle_verification_submission(); eksisterende brukere (uten bimverdi_registered_at) urørt; ACF required forblir 0 for å ikke tvinge profil-redigering. (C) RESSURS-RIGG: ny delt inc/ressurs-rig.php (bv_ressurs_rig_render) porter temagruppe-matrisen til bunnen av single-arrangement.php, drevet av arrangementets temagruppe(r) union, ekskluderer seg selv; overskrift «{N} ressurser som er kategorisert med samme tema som dette arrangementet». Verifisert 191 ressurser/5 blokker på ByggesaksBIM-arr. (D) TEMAGRUPPE-SIDE: 2-kol topp-grid fagansvarlig + featured arrangement-kort (kommende→ellers nyeste), matrise-arrangement-blokk beholdt nede. (E) GRID-BUG /arrangement/: rotårsak = nested <a> (admin-badge inni kort-lenke) → kun synlig for innloggede admins → Bård så det, public ikke. IKKE deploy-drift. Fikset med stretched-link (article + badge som søsken). DOM verifisert 1 rent kort. (F) WP-ADMIN: ny Nyhetsbrev-kolonne på brukerliste; metaboks «Rolle: medlem» (villedende hardkodet fallback) → viser nå autoritativ deltakernivå (bv_nivaa); audit-rapport om sann vs legacy brukerdata (Skanska-tilfellet). MERK: de 3 kolonne-helperne fantes ALLEREDE i bimverdi-foretakstype-fields.php (explorer-kart tok feil) — kolonnene var aldri ødelagte; fjernet mine duplikater etter redeclare-fatal fanget i localhost-test. Adversariell review (20 agenter): 9 funn, 4 fikset (fail-closed tom allowlist, idempotens-vakt mot dobbel-send, audit-logg av hvem som sender, is_wp_error-guard i single-theme_group.php linje 158/211), 5 akseptert m/ begrunnelse. Alle php -l rene."
-status: open
+status: closed
 detail: |
+  **DEPLOYET 2026-06-23** (commit 05a2e13) — se entry øverst. Resten av denne posten
+  er historisk (var korrekt da den ble skrevet; deploy var ennå ikke gjort).
+
   **NESTE: DEPLOY.** Ingenting er pushet til prod. Deploy = commit wp-content/ →
   push GitHub → Servebolt autodeploy. Demo for Bård (i morgen) krever deploy først,
   ELLER localhost-screenshare. Selv etter deploy er avlyst-e-posten trygt låst til
