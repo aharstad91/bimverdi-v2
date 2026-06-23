@@ -4,6 +4,30 @@
 
 ---
 date: 2026-06-23
+action: avlyst-gate-åpnet-LIVE-på-prod-miljøstyrt + localhost-demodata-ryddet
+files:
+  - "mu-plugins/bimverdi-arrangement-avlyst.php (gate: default-true → MILJØSTYRT; ny bimverdi_avlyst_er_prod())"
+  - "commit dea40e4 (+27/-6) — pushet origin/main, Servebolt autodeploy, verifisert på prod"
+  - "localhost DB (IKKE deploy): arr 2914 avlyst→planlagt + _bv_avlyst_varsel_* slettet; ByggesaksBIM(303) demo-fagrådgiver tømt"
+summary: "Andreas godkjente testkopien («Testkopi på avlyst så bra ut») → «få dette live» + «rydd også i localhost». EFFORT: flagget /effort xhigh før gate-åpning (prod masse-e-post-enablement = irreversibel/omdømme). (1) AVLYST-GATE ÅPNET PÅ PROD, men MILJØSTYRT i stedet for globalt __return_false: bimverdi_avlyst_gate_active() bruker nå ny bimverdi_avlyst_er_prod() = untrailingslashit(home_url())==='https://bimverdi.no' (speiler bimverdi_nyhetsbrev_er_prod). PROD: gate AV → varsel til ekte påmeldte (LIVE). localhost/dev/staging/WP-CLI: gate PÅ → kun allowlist (andreas@aharstad.no). HVORFOR miljøstyrt: localhost sender ekte e-post via Resend, så en global åpning ville gjort lokal test til reell masseutsending. wp_get_environment_type() er ubrukelig — defaulter til 'production' også på localhost (WP_ENVIRONMENT_TYPE ikke satt, verifisert begge miljø); home_url eneste pålitelige signal. VERIFISERT prod via SSH: er_prod=true, gate_active=false (LIVE), allowlist=andreas@aharstad.no intakt (nød-regating: add_filter('bimverdi_avlyst_gate_active','__return_true')). localhost: gate_active=true (testmodus). php -l rent. Utsending er ALDRI automatisk — admin må trykke knappen. (2) LOCALHOST RYDDET (kun lokal DB, ikke deployet): arr 2914 arrangement_status avlyst→planlagt (120 andre = planlagt) + _bv_avlyst_varsel_sent_at/count slettet; ByggesaksBIM(303) demo-fagrådgiver 'Jan Erik Eriksen'/'Fagansvarlig BIM' tømt til (empty). 'demo-token' fantes ikke i postmeta/usermeta/options — allerede borte. Reelle kontaktpersoner 'Jan Erik Domaas/Evanger' (posts 225/237-240) urørt. 0 avlyst-arrangementer igjen lokalt."
+status: closed
+detail: |
+  **AVLYST ER NÅ LIVE PÅ PROD.** commit dea40e4 → origin/main → Servebolt autodeploy.
+  Gate miljøstyrt: live på bimverdi.no, testmodus alle andre steder.
+
+  **⚠️ PROD-ARRANGEMENT 2914 («17. juni intro») STÅR AVLYST MED 5 EKTE PÅMELDTE
+  (inkl. Bård Krogshus), aldri varslet.** post_modified=17. juni 13:50 (selve dagen,
+  FØR min testing 22-23.06) → reell avlysning, IKKE mitt test-artefakt. Arrangementet
+  er 6 dager passert. BESLUTNING 23.06 (Andreas via AskUserQuestion): LA STÅ AVLYST,
+  IKKE SEND — et varsel i etterkant er poengløst. Metaboks-knappen «Send til 5
+  deltakere» er ARMERT på 2914; ikke klikk ved uhell (sender til Bård + 4 ekte).
+
+  **NB for fremtidige sesjoner:** avlyst-gaten er IKKE lenger en bug å «fikse». På prod
+  ER det meningen at varsel går til ekte påmeldte. Se memory
+  feedback_email_utsending_lock_egen_adresse (oppdatert 23.06).
+
+---
+date: 2026-06-23
 action: deployet-hele-juni-synk-batch-til-prod-pluss-B7-B8-B9-fra-synk-23.06
 files:
   - "mu-plugins/bimverdi-foretak-nivaa-quickedit.php (NY — B8 quick-edit deltakernivå)"
