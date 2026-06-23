@@ -4,10 +4,13 @@
  * Description: Manuell knapp på arrangement-edit som sender «avlyst»-e-post til
  *              påmeldte deltakere. Kun e-post (ingen SMS). Jf. Teams/synk 22.06.
  *
- * 🔒 SIKKERHETSGATE (Andreas 22.06): I denne fasen REDIRIGERES hele utsendingen
- *    til allowlisten (andreas@aharstad.no). Ekte påmeldte telles/vises, men
- *    varsles IKKE. Å gå live til ekte deltakere krever eksplisitt go fra Andreas
- *    (sett filteret 'bimverdi_avlyst_gate_active' til false — bevisst handling).
+ * 🔒 SIKKERHETSGATE (Andreas 22.06 → live på prod 23.06 etter godkjent testkopi):
+ *    MILJØSTYRT. På PROD (home_url = https://bimverdi.no) er gaten AV → varselet
+ *    går til de ekte påmeldte. I ALLE andre miljøer (localhost/dev — som sender
+ *    ekte e-post via Resend! — staging, WP-CLI uten korrekt home_url) er gaten PÅ
+ *    → hele utsendingen redirigeres til allowlisten (andreas@aharstad.no).
+ *    Nød-regating på prod: add_filter('bimverdi_avlyst_gate_active', '__return_true').
+ *    Utsending er uansett ALDRI automatisk — en admin må trykke knappen i metaboksen.
  *
  * @package BIMVerdi
  */
@@ -26,11 +29,29 @@ function bimverdi_avlyst_allowlist() {
 }
 
 /**
+ * Er vi på produksjon? DB-basert (home_url), positiv + fail-closed — speiler
+ * bimverdi_nyhetsbrev_er_prod(). Alt som IKKE er nøyaktig prod-domenet
+ * (localhost — som sender ekte e-post via Resend — staging, LAN-IP, WP-CLI uten
+ * korrekt home_url) regnes som utvikling og holder gaten PÅ.
+ *
+ * MERK: wp_get_environment_type() er ubrukelig her — den defaulter til
+ * 'production' når WP_ENVIRONMENT_TYPE ikke er satt, så også localhost rapporterer
+ * 'production'. home_url er det eneste signalet som faktisk skiller miljøene.
+ */
+function bimverdi_avlyst_er_prod() {
+    return untrailingslashit(home_url()) === 'https://bimverdi.no';
+}
+
+/**
  * Er sikkerhetsgaten aktiv? true = send KUN til allowlist (ikke ekte deltakere).
- * Default true. Åpne for ekte deltakere er en bevisst, separat handling.
+ *
+ * MILJØSTYRT: LIVE på prod (gate AV → sender til ekte påmeldte), TESTMODUS i alle
+ * andre miljøer (gate PÅ → kun allowlist). Fortsatt overstyrbar via filter —
+ * nød-regating på prod: add_filter('bimverdi_avlyst_gate_active', '__return_true').
  */
 function bimverdi_avlyst_gate_active() {
-    return (bool) apply_filters('bimverdi_avlyst_gate_active', true);
+    $default_gated = !bimverdi_avlyst_er_prod(); // prod → av (live); ellers → på (test)
+    return (bool) apply_filters('bimverdi_avlyst_gate_active', $default_gated);
 }
 
 /**
