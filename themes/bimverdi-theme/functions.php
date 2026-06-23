@@ -246,6 +246,12 @@ require_once get_template_directory() . '/inc/mock-data.php';
 require_once get_template_directory() . '/inc/admin-helpers.php';
 
 /**
+ * Load Ressurs-rig (delt oversiktsmatrise — temagruppe + arrangementsmal)
+ * Provides bv_ressurs_rig_render() / bv_ressurs_rig_build()
+ */
+require_once get_template_directory() . '/inc/ressurs-rig.php';
+
+/**
  * Load ACF Field Groups (with graceful fallback if file missing)
  */
 $acf_temagruppe_fields = get_template_directory() . '/inc/acf/temagruppe-fields.php';

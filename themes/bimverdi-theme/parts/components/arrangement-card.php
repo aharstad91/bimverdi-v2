@@ -37,8 +37,8 @@ if ($tid_slutt) $time_str .= ' – ' . $tid_slutt;
 $has_image = has_post_thumbnail($event_id);
 ?>
 
-<a href="<?php echo esc_url($permalink); ?>"
-   class="group flex flex-col bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all overflow-hidden h-full">
+<article
+   class="group relative flex flex-col bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all overflow-hidden h-full">
 
     <!-- Visual: featured image or temagruppe-color fallback -->
     <div class="relative aspect-[16/9] bg-[#F5F5F4] overflow-hidden">
@@ -81,7 +81,15 @@ $has_image = has_post_thumbnail($event_id);
         <div>
             <h3 class="text-lg font-bold text-[#111827] mb-2 leading-tight tracking-tight line-clamp-2">
                 <?php echo esc_html(get_the_title($event_id)); ?>
-                <?php if (function_exists('bimverdi_admin_id_badge')) echo bimverdi_admin_id_badge($event_id); ?>
+                <?php
+                // Admin-badge er en egen <a>. Den MÅ ligge over (z-10), ikke inni, det
+                // strukne kort-lenken under — ellers blir det <a> inni <a> (ugyldig HTML),
+                // og nettleseren bryter opp kortet. Jf. grid-bug rapportert 22.06.
+                if (function_exists('bimverdi_admin_id_badge')) {
+                    $bv_arr_badge = bimverdi_admin_id_badge($event_id);
+                    if ($bv_arr_badge) echo '<span class="relative z-10">' . $bv_arr_badge . '</span>';
+                }
+                ?>
             </h3>
 
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#57534E]">
@@ -116,4 +124,10 @@ $has_image = has_post_thumbnail($event_id);
             </span>
         </div>
     </div>
-</a>
+
+    <!-- Strukket lenke: hele kortet klikkbart uten å nøste <a> inni <a>.
+         Ligger på toppen av statisk innhold (z-[1]); admin-badgen over (z-10) forblir klikkbar. -->
+    <a href="<?php echo esc_url($permalink); ?>"
+       class="absolute inset-0 z-[1]"
+       aria-label="<?php echo esc_attr(get_the_title($event_id)); ?>"></a>
+</article>

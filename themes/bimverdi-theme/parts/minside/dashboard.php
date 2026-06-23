@@ -99,7 +99,7 @@ if ($company_id) {
         $my_kilder_count = $kilder_fallback_query->found_posts;
     }
 
-    // Artikler query (user's own, premium only)
+    // Artikler query (user's own — betalende foretak inkl. Deltaker, jf. B9 23.06)
     if (function_exists('bimverdi_can_access') && bimverdi_can_access('write_article')) {
         $my_articles = get_posts([
             'post_type'      => 'artikkel',
@@ -558,7 +558,7 @@ if (!$company && $bruker_foretak) : ?>
             <?php endif; ?>
         </div>
 
-        <!-- 4b. Mine artikler (premium only) -->
+        <!-- 4b. Mine artikler (betalende foretak inkl. Deltaker) -->
         <?php if (function_exists('bimverdi_can_access') && bimverdi_can_access('write_article')): ?>
         <div class="py-8 border-b border-[#E7E5E4]">
             <div class="flex items-center justify-between mb-4">

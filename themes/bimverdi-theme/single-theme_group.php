@@ -158,7 +158,7 @@ if (!empty($verktoy_ids)) {
         $items[] = [
             'title'   => get_the_title($vt->ID),
             'href'    => get_permalink($vt->ID),
-            'meta'    => !empty($cats) ? $cats[0] : '',
+            'meta'    => (!empty($cats) && !is_wp_error($cats)) ? $cats[0] : '',
             'avatar'  => ['src' => $logo_url, 'initials' => bv_tg_initials(get_the_title($vt->ID))],
         ];
     }
@@ -210,7 +210,7 @@ if ($tg_tax) {
         $items[] = [
             'title'  => get_the_title($f->ID),
             'href'   => get_permalink($f->ID),
-            'meta'   => !empty($bransje) ? $bransje[0] : '',
+            'meta'   => (!empty($bransje) && !is_wp_error($bransje)) ? $bransje[0] : '',
             'avatar' => ['src' => $logo_url, 'initials' => bv_tg_initials(get_the_title($f->ID))],
         ];
     }
@@ -285,6 +285,54 @@ if ($tg_tax) {
 $total_items = 0;
 foreach ($blocks as $b) { $total_items += (int) $b['total']; }
 
+// ── Featured arrangement til topp-kortet (ved siden av fagansvarlig) ──
+// Bård 22.06: vis NESTE kommende arrangement i temagruppen; finnes ingen,
+// vis NYESTE tidligere. Matrise-blokken «Arrangementer» beholdes nede.
+$featured_arr_id       = 0;
+$featured_arr_upcoming = false;
+if ($tg_tax) {
+    $fa_up = new WP_Query([
+        'post_type' => 'arrangement', 'posts_per_page' => 1, 'fields' => 'ids',
+        'meta_key' => 'arrangement_dato', 'orderby' => 'meta_value', 'order' => 'ASC',
+        'meta_query' => ['relation' => 'AND',
+            ['key' => 'arrangement_status_toggle', 'value' => 'kommende'],
+            ['key' => 'arrangement_status', 'value' => 'planlagt']],
+        'tax_query' => $tg_tax,
+    ]);
+    if (!empty($fa_up->posts)) {
+        $featured_arr_id = (int) $fa_up->posts[0];
+        $featured_arr_upcoming = true;
+    } else {
+        $fa_past = new WP_Query([
+            'post_type' => 'arrangement', 'posts_per_page' => 1, 'fields' => 'ids',
+            'meta_key' => 'arrangement_dato', 'orderby' => 'meta_value', 'order' => 'DESC',
+            'meta_query' => ['relation' => 'OR',
+                ['key' => 'arrangement_status_toggle', 'value' => 'tidligere'],
+                ['key' => 'arrangement_status', 'value' => 'avlyst']],
+            'tax_query' => $tg_tax,
+        ]);
+        if (!empty($fa_past->posts)) {
+            $featured_arr_id = (int) $fa_past->posts[0];
+        }
+    }
+    wp_reset_postdata();
+}
+
+// Rendervariabler for featured-kortet
+$featured_arr = null;
+if ($featured_arr_id) {
+    $fa_types  = wp_get_post_terms($featured_arr_id, 'arrangementstype', ['fields' => 'names']);
+    $fa_avlyst = (get_field('arrangement_status', $featured_arr_id) === 'avlyst');
+    $featured_arr = [
+        'title'    => get_the_title($featured_arr_id),
+        'href'     => get_permalink($featured_arr_id),
+        'dato'     => bv_tg_format_dato($featured_arr_id, $months_no),
+        'type'     => (!empty($fa_types) && !is_wp_error($fa_types)) ? $fa_types[0] : '',
+        'avlyst'   => $fa_avlyst,
+        'upcoming' => $featured_arr_upcoming,
+    ];
+}
+
 require_once get_template_directory() . '/parts/components/button.php';
 ?>
 
@@ -313,7 +361,7 @@ require_once get_template_directory() . '/parts/components/button.php';
 /* Gutenberg-redigerbar intro */
 .tg-intro {
     font-size: 16px; line-height: 1.7; color: var(--tg-text-secondary);
-    max-width: 760px;
+    /* Full bredde i header-containeren (Bård 22.06: temagruppe-intro i 100 % bredde) */
 }
 .tg-intro > *:first-child { margin-top: 0; }
 .tg-intro > *:last-child { margin-bottom: 0; }
@@ -322,13 +370,46 @@ require_once get_template_directory() . '/parts/components/button.php';
 .tg-intro img { max-width: 100%; height: auto; border-radius: 10px; }
 .tg-intro a { color: var(--tg-accent); }
 
+/* ── Topp-rad: fagansvarlig + featured arrangement ── */
+.tg-top-grid { display: grid; gap: 16px; margin-top: 22px; align-items: stretch; }
+.tg-top-grid--two { grid-template-columns: 1fr 1fr; max-width: 940px; }
+.tg-top-grid--one { grid-template-columns: 1fr; max-width: 460px; }
+@media (max-width: 768px) { .tg-top-grid--two { grid-template-columns: 1fr; } }
+
 /* Fagansvarlig */
 .tg-fagansvarlig {
     display: flex; align-items: center; gap: 14px;
-    margin-top: 22px; padding: 14px 18px;
+    padding: 14px 18px; height: 100%;
     border: 1px solid var(--tg-border); border-radius: 12px;
-    background: var(--tg-surface); max-width: 460px;
+    background: var(--tg-surface);
 }
+
+/* Featured arrangement-kort (samme «firkant» som fagansvarlig) */
+.tg-arr-card {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 14px 18px; height: 100%;
+    border: 1px solid var(--tg-border); border-radius: 12px;
+    background: var(--tg-surface); text-decoration: none; color: inherit;
+}
+a.tg-arr-card:hover { text-decoration: none; border-color: var(--tg-accent); }
+.tg-arr-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--tg-text-muted);
+}
+.tg-arr-title {
+    font-size: 15px; font-weight: 600; color: var(--tg-text); line-height: 1.35;
+    margin: 2px 0 1px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+a.tg-arr-card:hover .tg-arr-title { color: var(--tg-text-secondary); }
+.tg-arr-meta { font-size: 13px; color: var(--tg-text-secondary); }
+.tg-arr-avlyst { color: #772015; font-weight: 600; }
+.tg-arr-more {
+    margin-top: auto; padding-top: 8px;
+    font-size: 13px; font-weight: 600; color: var(--tg-accent);
+    display: inline-flex; align-items: center; gap: 5px;
+}
+a.tg-arr-card:hover .tg-arr-more { gap: 8px; color: var(--tg-accent-dark); }
 .tg-fag-avatar {
     width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
     object-fit: cover; display: flex; align-items: center; justify-content: center;
@@ -458,28 +539,58 @@ a.tg-block-more:hover { gap: 8px; text-decoration: none; color: var(--tg-accent-
                 <div class="tg-intro"><p><?php echo esc_html(get_the_excerpt()); ?></p></div>
             <?php endif; ?>
 
-            <?php if ($fagansvarlig_navn) : ?>
-            <div class="tg-fagansvarlig">
-                <?php if ($bilde_url) : ?>
-                    <img class="tg-fag-avatar" src="<?php echo esc_url($bilde_url); ?>" alt="<?php echo esc_attr($fagansvarlig_navn); ?>">
-                <?php else : ?>
-                    <span class="tg-fag-avatar" style="background: var(--tg-accent);"><?php echo esc_html(bv_tg_initials($fagansvarlig_navn)); ?></span>
-                <?php endif; ?>
-                <div class="tg-fag-body">
-                    <div class="tg-fag-eyebrow">Faglig ansvarlig</div>
-                    <div class="tg-fag-name"><?php echo esc_html($fagansvarlig_navn); ?></div>
-                    <?php if ($fagansvarlig_tittel || $bedrift_navn) : ?>
-                        <div class="tg-fag-role">
-                            <?php echo esc_html($fagansvarlig_tittel); ?><?php if ($fagansvarlig_tittel && $bedrift_navn) echo ', '; echo esc_html($bedrift_navn); ?>
-                        </div>
+            <?php
+            // Topp-rad: fagansvarlig (venstre) + featured arrangement (høyre).
+            // Bruker hele bredden når begge finnes (Bård 22.06: utnytt høyre tredjedel).
+            $has_fag      = (bool) $fagansvarlig_navn;
+            $has_featured = (bool) $featured_arr;
+            if ($has_fag || $has_featured) :
+                $top_cols = ($has_fag && $has_featured) ? 'tg-top-grid--two' : 'tg-top-grid--one';
+            ?>
+            <div class="tg-top-grid <?php echo $top_cols; ?>">
+
+                <?php if ($has_fag) : ?>
+                <div class="tg-fagansvarlig">
+                    <?php if ($bilde_url) : ?>
+                        <img class="tg-fag-avatar" src="<?php echo esc_url($bilde_url); ?>" alt="<?php echo esc_attr($fagansvarlig_navn); ?>">
+                    <?php else : ?>
+                        <span class="tg-fag-avatar" style="background: var(--tg-accent);"><?php echo esc_html(bv_tg_initials($fagansvarlig_navn)); ?></span>
                     <?php endif; ?>
-                    <?php if ($bedrift_url || $fagansvarlig_linkedin) : ?>
-                        <div class="tg-fag-links">
-                            <?php if ($bedrift_url) : ?><a href="<?php echo esc_url($bedrift_url); ?>"><?php echo esc_html($bedrift_navn ?: 'Foretak'); ?></a><?php endif; ?>
-                            <?php if ($fagansvarlig_linkedin) : ?><a href="<?php echo esc_url($fagansvarlig_linkedin); ?>" target="_blank" rel="noopener">LinkedIn</a><?php endif; ?>
-                        </div>
-                    <?php endif; ?>
+                    <div class="tg-fag-body">
+                        <div class="tg-fag-eyebrow">Fagrådgiver</div>
+                        <div class="tg-fag-name"><?php echo esc_html($fagansvarlig_navn); ?></div>
+                        <?php if ($fagansvarlig_tittel || $bedrift_navn) : ?>
+                            <div class="tg-fag-role">
+                                <?php echo esc_html($fagansvarlig_tittel); ?><?php if ($fagansvarlig_tittel && $bedrift_navn) echo ', '; echo esc_html($bedrift_navn); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($bedrift_url || $fagansvarlig_linkedin) : ?>
+                            <div class="tg-fag-links">
+                                <?php if ($bedrift_url) : ?><a href="<?php echo esc_url($bedrift_url); ?>"><?php echo esc_html($bedrift_navn ?: 'Foretak'); ?></a><?php endif; ?>
+                                <?php if ($fagansvarlig_linkedin) : ?><a href="<?php echo esc_url($fagansvarlig_linkedin); ?>" target="_blank" rel="noopener">LinkedIn</a><?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
+                <?php endif; ?>
+
+                <?php if ($has_featured) : ?>
+                <a class="tg-arr-card" href="<?php echo esc_url($featured_arr['href']); ?>">
+                    <span class="tg-arr-eyebrow">
+                        <?php echo bimverdi_get_icon_svg('calendar', 13); ?>
+                        <?php echo $featured_arr['upcoming'] ? 'Neste arrangement' : 'Siste arrangement'; ?>
+                    </span>
+                    <span class="tg-arr-title"><?php echo esc_html($featured_arr['title']); ?></span>
+                    <?php if ($featured_arr['dato'] || $featured_arr['type'] || $featured_arr['avlyst']) : ?>
+                    <span class="tg-arr-meta">
+                        <?php if ($featured_arr['avlyst']) : ?><span class="tg-arr-avlyst">Avlyst</span><?php if ($featured_arr['dato'] || $featured_arr['type']) echo ' · '; ?><?php endif; ?>
+                        <?php echo esc_html($featured_arr['dato']); ?><?php if ($featured_arr['dato'] && $featured_arr['type']) echo ' · '; ?><?php echo esc_html($featured_arr['type']); ?>
+                    </span>
+                    <?php endif; ?>
+                    <span class="tg-arr-more">Se arrangement <?php echo bimverdi_get_icon_svg('arrow-right', 14); ?></span>
+                </a>
+                <?php endif; ?>
+
             </div>
             <?php endif; ?>
 

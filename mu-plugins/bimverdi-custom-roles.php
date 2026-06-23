@@ -174,8 +174,33 @@ function bimverdi_get_membership_level($user_id = null) {
     if (in_array('medlem', $user->roles)) {
         return 'medlem';
     }
-    
+
     return false;
+}
+
+/**
+ * MERK: bimverdi_resolve_user_foretak_id(), bimverdi_get_kontakttype() og
+ * bimverdi_get_deltakernivaa() er ALLEREDE definert i bimverdi-foretakstype-fields.php
+ * (sannhetskilde: bv_foretakstype + bv_nivaa + hovedkontaktperson). Kolonnene under
+ * bruker dem via function_exists()-guard. Ikke redefiner her — det gir redeclare-fatal.
+ */
+
+/**
+ * Nyhetsbrev-status for en bruker. Leser kun user_meta — WP primer user-meta-
+ * cachen for hele list-tabellen (cache_users()), så dette blir cache-treff, ikke N+1.
+ * '1' = abonnent, '0' = nei/avmeldt, ellers ukjent (pre-eksisterende bruker).
+ * Footer-skjema-tabellen (wp_bimverdi_newsletter, e-post-keyed) krysskobles
+ * bevisst IKKE per rad her — egen avmeldings-sporing er en oppfølging (se rapport).
+ */
+function bimverdi_get_newsletter_status($user_id) {
+    $meta = get_user_meta($user_id, 'bimverdi_newsletter_subscribed', true);
+    if ($meta === '1') {
+        return 'subscribed';
+    }
+    if ($meta === '0') {
+        return 'no';
+    }
+    return 'unknown';
 }
 
 /**
@@ -196,6 +221,7 @@ function bimverdi_add_user_columns($columns) {
     $columns['bimverdi_foretak']        = __('Foretak', 'bimverdi');
     $columns['bimverdi_kontakttype']    = __('Kontakttype', 'bimverdi');
     $columns['bimverdi_deltakernivaa']  = __('Deltakernivå', 'bimverdi');
+    $columns['bimverdi_newsletter']     = __('Nyhetsbrev', 'bimverdi');
     return $columns;
 }
 
@@ -236,6 +262,18 @@ function bimverdi_show_user_columns($value, $column_name, $user_id) {
             'gratisforetak'    => '<span style="color:#9CA3AF;">Gratisforetak</span>',
         ];
         return $labels[$nivaa] ?? '<span style="color:#9CA3AF;">—</span>';
+    }
+
+    if ($column_name === 'bimverdi_newsletter') {
+        $status = function_exists('bimverdi_get_newsletter_status')
+            ? bimverdi_get_newsletter_status($user_id)
+            : 'unknown';
+        $labels = [
+            'subscribed' => '<span style="color:#10B981; font-weight:bold;">✓ Ja</span>',
+            'no'         => '<span style="color:#6B7280;">Nei</span>',
+            'unknown'    => '<span style="color:#9CA3AF;">—</span>',
+        ];
+        return $labels[$status] ?? $labels['unknown'];
     }
 
     if ($column_name === 'bimverdi_registered') {

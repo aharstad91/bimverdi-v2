@@ -3,6 +3,112 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-06-22
+action: implemented-6-strommer-fra-juni-synk-verifisert-localhost-IKKE-deployet
+files:
+  - "mu-plugins/bimverdi-arrangement-avlyst.php (NY)"
+  - "themes/bimverdi-theme/inc/ressurs-rig.php (NY)"
+  - "themes/bimverdi-theme/single-arrangement.php"
+  - "themes/bimverdi-theme/single-theme_group.php"
+  - "themes/bimverdi-theme/parts/components/arrangement-card.php"
+  - "themes/bimverdi-theme/functions.php"
+  - "themes/bimverdi-theme/templates/onboarding/template-aktiver-konto.php"
+  - "mu-plugins/bimverdi-email-verification.php"
+  - "mu-plugins/bimverdi-custom-roles.php"
+  - "mu-plugins/bimverdi-access-control.php"
+  - "docs/plans/2026-06-22-001-feat-juni-synk-batch-plan.md (NY)"
+  - "docs/2026-06-22-wp-admin-bruker-data-audit.md (NY)"
+summary: "Bygget 6 strømmer fra synk 22.06 (Andreas↔Bård) + 3 Teams-saker. ALT verifisert på localhost, INGENTING deployet til prod ennå (venter Andreas' go). (A) AVLYST-VARSEL: ny mu-plugin med metabox-knapp på arrangement-edit (vises kun når arrangement_status=avlyst) → sender «avlyst»-e-post til påmeldte via wp_mail. 🔒 HARD SIKKERHETSGATE (Andreas-krav): redigeres til allowlist=[andreas@aharstad.no] som siste steg, ekte deltakere varsles ALDRI før gaten åpnes eksplisitt (filter bimverdi_avlyst_gate_active). Kun e-post (SMS droppet). Verifisert: 3 ekte påmeldte på arr 2914 (inkl Bård) telles men sending går kun til Andreas. (B) REGISTRERING: mobil+stilling påkrevd i steg 2 (template-aktiver-konto.php) + server-validering i handle_verification_submission(); eksisterende brukere (uten bimverdi_registered_at) urørt; ACF required forblir 0 for å ikke tvinge profil-redigering. (C) RESSURS-RIGG: ny delt inc/ressurs-rig.php (bv_ressurs_rig_render) porter temagruppe-matrisen til bunnen av single-arrangement.php, drevet av arrangementets temagruppe(r) union, ekskluderer seg selv; overskrift «{N} ressurser som er kategorisert med samme tema som dette arrangementet». Verifisert 191 ressurser/5 blokker på ByggesaksBIM-arr. (D) TEMAGRUPPE-SIDE: 2-kol topp-grid fagansvarlig + featured arrangement-kort (kommende→ellers nyeste), matrise-arrangement-blokk beholdt nede. (E) GRID-BUG /arrangement/: rotårsak = nested <a> (admin-badge inni kort-lenke) → kun synlig for innloggede admins → Bård så det, public ikke. IKKE deploy-drift. Fikset med stretched-link (article + badge som søsken). DOM verifisert 1 rent kort. (F) WP-ADMIN: ny Nyhetsbrev-kolonne på brukerliste; metaboks «Rolle: medlem» (villedende hardkodet fallback) → viser nå autoritativ deltakernivå (bv_nivaa); audit-rapport om sann vs legacy brukerdata (Skanska-tilfellet). MERK: de 3 kolonne-helperne fantes ALLEREDE i bimverdi-foretakstype-fields.php (explorer-kart tok feil) — kolonnene var aldri ødelagte; fjernet mine duplikater etter redeclare-fatal fanget i localhost-test. Adversariell review (20 agenter): 9 funn, 4 fikset (fail-closed tom allowlist, idempotens-vakt mot dobbel-send, audit-logg av hvem som sender, is_wp_error-guard i single-theme_group.php linje 158/211), 5 akseptert m/ begrunnelse. Alle php -l rene."
+status: open
+detail: |
+  **NESTE: DEPLOY.** Ingenting er pushet til prod. Deploy = commit wp-content/ →
+  push GitHub → Servebolt autodeploy. Demo for Bård (i morgen) krever deploy først,
+  ELLER localhost-screenshare. Selv etter deploy er avlyst-e-posten trygt låst til
+  andreas@aharstad.no (gate aktiv som default).
+
+  **AVKLAR MED BÅRD / ETTERPÅ:**
+  - Avlyst-varsel: når skal gaten åpnes for ekte deltakere? (Krever bevisst endring
+    av bimverdi_avlyst_gate_active-filteret + Bårds go.)
+  - F WP-admin-kolonner: Bård skulle sende kolonne-ønskeliste på Teams. Nyhetsbrev-
+    «har meldt seg av»-sporing (unsubscribe_timestamp i wp_bimverdi_newsletter) utsatt
+    til lista kommer.
+  - Skanska-foretaket står som draft på prod (import-artefakt) — publiser eller la stå?
+  - Jan Erik/«FF»-tekstfeil på temagruppe = redaksjonelt innhold Bård/Andreas retter i
+    wp-admin (ikke kode).
+
+  **Plan + audit:** docs/plans/2026-06-22-001-feat-juni-synk-batch-plan.md,
+  docs/2026-06-22-wp-admin-bruker-data-audit.md
+
+---
+date: 2026-06-16
+action: resend-diagnose-test2-verifiseringsmail-levert-suppression-hypotese-avkreftet
+files:
+  - "(ingen kodeendring — diagnose via Resend MCP)"
+summary: "Oppfølging av det åpne punktet fra forrige 16.06-økt: kjørte Resend MCP (etter session-restart) for test2@krogshus.no. RESULTAT: leveringen er OK — suppression-hypotesen AVKREFTET. To aktiverings-e-poster («Aktiver din BIM Verdi-konto») sendt i dag 07:35:43 (ID 31fcf3e8) og 07:37:14 (ID 811752d6), begge last_event=delivered, ingen bounce/complaint/suppression. Admin-varslene til post@bimverdi.no («Ny bruker-registrering startet: test2@krogshus.no», 07:35:44 + 07:37:14) også delivered. get-contact ga 404 — forventet, dette er transaksjonelle send, ikke audience-kontakt. NØKKELOBSERVASJON: ingen «Bruker-registrering fullført»-mail for test2 (til sammenligning har baard.krogshus@gmail.com både startet+fullført 14.06) → registreringen ble startet to ganger men aldri fullført. Konklusjon: IKKE leverings- eller kodefeil — brukerfeil (aktiveringslenken ble aldri klikket). Andreas enig. Aktiveringstoken 029332de-… var gyldig 24t fra 07:37."
+status: closed
+detail: |
+  Lukker e-post-diagnose-sporet fra forrige 16.06-post. Den åpne herdingen
+  (logg advarsel når verifiseringsmail feiler — send er fortsatt fire-and-forget
+  i bimverdi-email-verification.php:120) er IKKE gjort; vurder ved neste behov,
+  men den forklarer ikke dette tilfellet siden e-postene faktisk ble levert.
+  Hvis Bård likevel melder at mail aldri kom frem: sjekk SPF/DKIM på bimverdi.no
+  i Resend + spam-mappe — men ingenting tyder på det nå.
+
+---
+date: 2026-06-16
+action: temagruppe-redesign-pluss-nyhetsbrev-gjest-gate-pluss-verifiseringsmail-diagnose-pluss-resend-mcp
+files:
+  - "themes/bimverdi-theme/single-theme_group.php (omskrevet — oversiktsmatrise + Gutenberg-topp)"
+  - "themes/bimverdi-theme/archive-foretak.php (temagruppe-filter via ?temagruppe[])"
+  - "themes/bimverdi-theme/archive-arrangement.php (temagruppe-filter via ?temagruppe[])"
+  - "mu-plugins/bimverdi-newsletter.php (gjest-gate: nyhetsbrev krever foretak, Krav 22)"
+  - "docs/plans/2026-06-16-001-feat-temagruppe-side-kompakt-layout-plan.md (ny plan)"
+summary: "Fra Bård-synk 16.06 (BIMVerdi-synk-tirs-16juni.json). (1) NYHETSBREV GJEST-HULL (Bårds hastesak, remi.hansen meldte seg på uten konto): footer-påmeldingen gatet kun innloggede mot foretakskobling — gjester falt rett gjennom til lagring. Lukket server-side: gjest → wp_login_url+retry (lagrer ingenting), innlogget-uten-foretak → /min-side/?retry=1, admin unntatt (Krav 22 v3). Eneste skriver til wp_bimverdi_newsletter, ingen bakvei. Eksisterende påmeldinger beholdt (krav-non-goal). Deployet (commit 6cd3c4c). (2) TEMAGRUPPE-REDESIGN #309 (Bårds prioritet til torsdag/demo 17.+23.): erstattet fane-/full-liste-layouten i single-theme_group.php med 3-kol oversiktsmatrise — 5 blokker (Kunnskapskilder/Verktøy/Artikler/Deltakere/Arrangementer) à overskrift+antall+3 nyeste+«Se alle N →» til filtrert arkiv (?temagruppe[]=<slug>, array-param pga arkivenes is_array-gate). Redigerbar Gutenberg-topp + fagansvarlig-blokk (felt fantes alt). Unit 5: temagruppe-filter lagt til archive-foretak + archive-arrangement (server-side) så Deltakere/Arrangementer-lenkene virker. Antall matcher arkivene eksakt (deltakere=bv_rolle IN; arrangement=status_toggle kommende/tidligere). Fikset latent bug: arrangement-query brukte feil meta (dato→arrangement_dato). Grid-fiks: min-width:0 → like 1fr-kolonner, ingen overflow. Farge/lenke til standarden: brand-oransje accent (ikke per-temagruppe-blå), liste-hover mørk→grå uten underline (UI-CONTRACT §3.5/§4.2). Verifisert live på prod (35/26/6/13/3, sum 83). Deployet (commit 9e2a49c). (3) VERIFISERINGSMAIL-DIAGNOSE: Bård fikk ikke verifiseringsmail (test2@krogshus.no). Tracet hele stien — IKKE reused-email-bug (pending-rad opprettet 07:37, email_exists=false → ren sti, «allerede registrert»-grenen fyrte ikke); ingen blocker på prod; Resend-nøkkel satt; ingen fatal. Reell svakhet: send er fire-and-forget (send_verification_email-retur ignoreres i bimverdi-email-verification.php:120) → send-feil usynlige. Mest sannsynlig årsak = leverings-side (Resend-suppression av krogshus.no-testadresser / spam). (4) RESEND MCP koblet på (local scope) for å sjekke last_event direkte — krever session-restart."
+status: open
+detail: |
+  **ÅPENT — neste session (etter restart for Resend MCP):**
+  - Kjør Resend MCP list/get email for test2@krogshus.no → les last_event
+    (delivered/bounced/complained/suppressed). Bekreft/avkreft suppression-hypotesen.
+  - Bård retester med fersk, aldri-brukt ekte innboks (gmail) — kommer den frem
+    bekrefter det adresse-suppression, ikke kodefeil.
+  - Vurdert herding (ikke gjort): logg advarsel når verifiseringsmail feiler
+    (gjør stille feil synlige). Spurte Andreas — ikke besluttet.
+
+  **SEPARAT PROD-HELSE-FUNN:** wp-content/vendor/ mangler på prod (65 autoload-
+  feil/dag fra bimverdi-composer-autoload.php). IKKE årsak til e-postproblemet
+  (Resend bruker wp_remote_post), men noe annet trenger composer-pakkene —
+  egen sak, kjør/verifiser composer install på prod.
+
+  **UTSATT fra #309 (egne oppgaver):** dataformat-kolonne på kunnskapskilder
+  (ikke nevnt 16.06), AI-agent-widget i temagruppe-toppen (fremtid), mobil-finpuss.
+  Verktøy-arkivets count-drift (dropdown 30 vs 24 synlige) = gammel dual-source-
+  data, egen ryddejobb.
+
+  **PARKERT:** nyhetsbrev tas på torsdagssynk; Bård har «et par andre design-innspill».
+
+---
+date: 2026-06-11
+action: undersokelse-verktoy-temagruppe-mangler-pa-live-ingen-deploy-feil
+files:
+  - "(ingen kodeendring — diagnose via wp eval prod + localhost)"
+summary: "Andreas meldte at temagruppe-blokken ikke vises på https://bimverdi.no/verktoy/autodesk-architecture-engineering-construction-collection-2/ på live, men «bare på localhost». Diagnose: IKKE en deploy-feil og INGEN localhost↔prod-forskjell for dette verktøyet. Template-blokken ER deployet (grep single-verktoy.php = 1). Posten (ID 297, «Autodesk Architecture Engineering & Construction Collection», slug …collection-2) er et MEDLEMSVERKTØY (_bv_aec_source tomt), ikke AEC-import, og har INGEN temagruppe tilordnet — verifisert identisk på både prod og localhost (get_page_by_path + WP_Query-søk + wp post term list, alle tomme begge steder). Templaten skjuler derfor blokken korrekt (UI-contract P4: vis kun det som finnes). Det Andreas så temagruppe på localhost var et ANNET Autodesk-verktøy: «Pype AI (Autodesk)» (ID 3188, AEC-import, ProsjektBIM). Funksjonen er bekreftet live på AEC-verktøy (eks. /verktoy/chatgpt/ viser blokken). Prod-telling: 223 publiserte verktøy — 193 MED temagruppe (alle 186 AEC + 7 medlem), 30 UTEN (alle 30 medlemsverktøy, 0 AEC)."
+status: open
+detail: |
+  **Åpent — venter på Andreas/Bård-beslutning:** De 30 gamle MEDLEMSVERKTØYENE
+  uten temagruppe (Autodesk AEC Collection, Tvinn Teleport, Findable, Luccid AI,
+  Prosjektbistand, TFM Manage, Naviate Accelerate, Naviate Zero, Digital
+  samhandlingsledelse, m.fl.) er ikke kategorisert. Dette er en REDAKSJONELL
+  datajobb (ikke kode) — hvert verktøy må knyttes til riktig temagruppe, en
+  avgjørelse Bård bør ta. Tilbudt 3 veier: (1) lag oversikt over de 30 med
+  forslag til temagruppe per verktøy for godkjenning før setting, (2) sett kun
+  Autodesk AEC Collection nå hvis temagruppe oppgis, (3) la det ligge (ikke en
+  feil). Ingen handling utført ennå.
+
+  Beslektet: den separate AEC-ukategorisert-QA-jobben gjelder de 50 UMAPPEDE
+  AEC-utkastene (råkategori → verktoykategori/«Annet» + fasett) — en ANNEN sak
+  enn disse 30 medlemsverktøyene som mangler temagruppe.
+
+---
 date: 2026-06-11
 action: nyhetsbrev-test-send-miljostyrt-prod-fri-adresseinput
 files:

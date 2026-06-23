@@ -15,7 +15,7 @@ $user_id = $current_user->ID;
 $company_id = get_user_meta($user_id, 'bimverdi_company_id', true)
            ?: get_user_meta($user_id, 'bim_verdi_company_id', true);
 
-// Redirect if not premium
+// Redirect hvis ikke skrivetilgang (betalende foretak inkl. Deltaker — B9 23.06)
 if (!bimverdi_can_access('write_article')) {
     wp_redirect(home_url('/min-side/'));
     exit;

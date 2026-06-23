@@ -65,7 +65,7 @@ function bimverdi_register_temagruppe_acf_fields() {
             // === FAGANSVARLIG TAB ===
             [
                 'key' => 'field_temagruppe_tab_fagansvarlig',
-                'label' => 'Fagansvarlig',
+                'label' => 'Fagrådgiver',
                 'name' => '',
                 'type' => 'tab',
                 'placement' => 'top',
@@ -75,7 +75,7 @@ function bimverdi_register_temagruppe_acf_fields() {
                 'label' => 'Navn',
                 'name' => 'fagansvarlig_navn',
                 'type' => 'text',
-                'instructions' => 'Fullt navn på fagansvarlig.',
+                'instructions' => 'Fullt navn på fagrådgiver.',
             ],
             [
                 'key' => 'field_temagruppe_fagansvarlig_tittel',
@@ -90,7 +90,7 @@ function bimverdi_register_temagruppe_acf_fields() {
                 'label' => 'Bedrift',
                 'name' => 'fagansvarlig_bedrift',
                 'type' => 'post_object',
-                'instructions' => 'Velg bedriften fagansvarlig jobber i.',
+                'instructions' => 'Velg bedriften fagrådgiver jobber i.',
                 'post_type' => ['foretak'],
                 'return_format' => 'id',
                 'allow_null' => 1,
@@ -100,7 +100,7 @@ function bimverdi_register_temagruppe_acf_fields() {
                 'label' => 'Profilbilde',
                 'name' => 'fagansvarlig_bilde',
                 'type' => 'image',
-                'instructions' => 'Profilbilde av fagansvarlig (kvadratisk, min 200x200px).',
+                'instructions' => 'Profilbilde av fagrådgiver (kvadratisk, min 200x200px).',
                 'return_format' => 'id',
                 'preview_size' => 'thumbnail',
             ],

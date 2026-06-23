@@ -38,15 +38,16 @@ class BIMVerdi_Access_Control {
         'edit_tool',          // Redigere verktøy
         'join_temagruppe',    // Velge temagrupper
         'view_members_full',  // Se fullt medlemsinnhold
+        'write_article',      // Skrive artikler (Bård 23.06: åpnet fra Prosjektdeltaker+Partner til ALLE betalende, inkl. Deltaker)
     );
 
     /**
-     * Features that require a PREMIUM company — bv_rolle = 'Prosjektdeltaker' or 'Partner'
+     * Features that require a PREMIUM company — bv_rolle = 'Prosjektdeltaker' or 'Partner'.
+     * Tom nå: write_article ble flyttet til ACTIVE_COMPANY_FEATURES 23.06 (jf. synk).
+     * Beholdt (med PREMIUM_ROLES) for framtidige premium-funksjoner.
      */
     const PREMIUM_ROLES = array('Prosjektdeltaker', 'Partner');
-    const PREMIUM_FEATURES = array(
-        'write_article',      // Skrive artikler fra Min Side
-    );
+    const PREMIUM_FEATURES = array();
     
     /**
      * Features available to all registered users
@@ -377,7 +378,22 @@ class BIMVerdi_Access_Control {
                         <?php echo esc_html($company['name']); ?>
                     </a>
                     <br>
-                    <small>Status: <?php echo esc_html($company['status']); ?> | Rolle: <?php echo esc_html($company['role']); ?></small>
+                    <small>Status: <?php echo esc_html($company['status']); ?> | Deltakernivå:
+                        <?php
+                        // Autoritativ tier via bimverdi_get_deltakernivaa() (bv_foretakstype
+                        // + bv_nivaa). Den gamle 'bimverdi_company_role'-metaen falt tilbake
+                        // til «medlem» (et term vi ikke bruker) og forvirret — jf. audit 22.06.
+                        $bv_nivaa = function_exists('bimverdi_get_deltakernivaa')
+                            ? bimverdi_get_deltakernivaa($user->ID) : null;
+                        $bv_nivaa_labels = [
+                            'partner'          => 'Partner',
+                            'prosjektdeltaker' => 'Prosjektdeltaker',
+                            'deltaker'         => 'Deltaker',
+                            'gratisforetak'    => 'Gratisforetak',
+                        ];
+                        echo esc_html($bv_nivaa_labels[$bv_nivaa] ?? 'Ikke satt');
+                        ?>
+                    </small>
                 </td>
             </tr>
             <?php endif; ?>

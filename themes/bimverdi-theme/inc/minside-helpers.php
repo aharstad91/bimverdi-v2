@@ -565,7 +565,7 @@ if (!function_exists('bimverdi_get_minside_nav')) {
             unset($nav['verktoy']);
         }
 
-        // Artikler requires premium company (prosjektdeltaker/partner)
+        // Artikler krever betalende foretak (Deltaker/Prosjektdeltaker/Partner — B9 23.06)
         if (!bimverdi_can_access('write_article')) {
             unset($nav['artikler']);
         }

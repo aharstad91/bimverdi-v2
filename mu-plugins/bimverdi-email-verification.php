@@ -188,6 +188,16 @@ class BIMVerdi_Email_Verification {
             exit;
         }
 
+        // Validate required profile fields: mobil + stilling (Teams/Bård 22.06).
+        // Gjelder KUN ny registrering via dette skjemaet. Eksisterende brukere
+        // (uten bimverdi_registered_at) berøres ikke.
+        $phone     = sanitize_text_field($_POST['phone'] ?? '');
+        $job_title = sanitize_text_field($_POST['job_title'] ?? '');
+        if ($phone === '' || $job_title === '') {
+            wp_redirect(add_query_arg('bv_error', 'missing_profile_fields', $error_redirect));
+            exit;
+        }
+
         // Validate terms acceptance (Bårds krav 2026-04-28)
         if (function_exists('bimverdi_validate_terms_acceptance') && !bimverdi_validate_terms_acceptance($_POST)) {
             wp_redirect(add_query_arg('bv_error', 'missing_terms', $error_redirect));
@@ -230,6 +240,15 @@ class BIMVerdi_Email_Verification {
             'ID' => $user_id,
             'display_name' => $full_name,
         ));
+
+        // Lagre påkrevde profilfelt (ACF user-felt 'phone' / 'job_title') — 22.06.
+        if (function_exists('update_field')) {
+            update_field('phone', $phone, 'user_' . $user_id);
+            update_field('job_title', $job_title, 'user_' . $user_id);
+        } else {
+            update_user_meta($user_id, 'phone', $phone);
+            update_user_meta($user_id, 'job_title', $job_title);
+        }
 
         // Set role and account type
         // Note: wp_create_user triggers 'user_register' hook, which may have already

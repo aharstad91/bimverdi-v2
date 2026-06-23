@@ -51,7 +51,7 @@ if (count($name_parts) >= 2) {
 
 <section class="pb-6 border-b border-[#D6D1C6]">
     <h3 class="text-sm font-semibold text-[#5A5A5A] uppercase tracking-wide mb-4">
-        Fagansvarlig
+        Fagrådgiver
     </h3>
 
     <div class="flex items-start gap-4">

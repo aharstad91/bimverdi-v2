@@ -68,6 +68,7 @@ if (is_user_logged_in()) {
 $form_error_messages = array(
     'weak_password' => 'Passord må være minst 8 tegn.',
     'missing_name'  => 'Vennligst oppgi navnet ditt.',
+    'missing_profile_fields' => 'Vennligst oppgi både mobilnummer og stilling.',
     'missing_terms' => 'Du må akseptere betingelsene for å aktivere kontoen.',
     'user_exists'   => 'Denne e-postadressen er allerede registrert. <a href="' . esc_url(home_url('/logg-inn/')) . '" style="color: inherit; font-weight: 600;">Logg inn her</a>',
     'nonce'         => 'Noe gikk galt. Vennligst prøv igjen.',
@@ -555,6 +556,22 @@ $prefill_name = '';
                                    value="<?php echo esc_attr($prefill_name); ?>"
                                    class="form-input<?php echo $form_error === 'missing_name' ? ' has-error' : ''; ?>"
                                    autocomplete="name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="bv-phone">Mobilnummer <span class="required">*</span></label>
+                            <input type="tel" id="bv-phone" name="phone" required
+                                   placeholder="+47 912 34 567"
+                                   class="form-input<?php echo $form_error === 'missing_profile_fields' ? ' has-error' : ''; ?>"
+                                   autocomplete="tel">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="bv-job-title">Stilling / tittel <span class="required">*</span></label>
+                            <input type="text" id="bv-job-title" name="job_title" required
+                                   placeholder="f.eks. Prosjektleder, Arkitekt"
+                                   class="form-input<?php echo $form_error === 'missing_profile_fields' ? ' has-error' : ''; ?>"
+                                   autocomplete="organization-title">
                         </div>
 
                         <div class="form-group">
