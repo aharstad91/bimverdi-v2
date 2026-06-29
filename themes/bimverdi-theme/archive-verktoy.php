@@ -148,10 +148,12 @@ foreach (array_keys($type_ressurs_options) as $value) {
     $type_ressurs_counts[$value] = $count_query->found_posts;
 }
 
-// Kilde-fasett (AEC AI Hub-synket vs medlemsregistrert) — klient-side filter på data-kilde.
+// Kilde-fasett (AEC AI Hub-synket vs deltakerregistrert) — klient-side filter på data-kilde.
+// Vises som to synlige toggle-pills (ikke dropdown), jf. synk 29.06. Intern nøkkel 'medlem'
+// beholdes for URL-/data-attributt-kompatibilitet; KUN labelen er endret til deltaker-språk.
 $kilde_options = [
     'aec_ai_hub' => 'AEC AI Hub',
-    'medlem'     => 'Medlemsregistrert',
+    'medlem'     => 'Deltakerregistrerte verktøy',
 ];
 $selected_kilde = isset($_GET['kilde']) ? array_map('sanitize_text_field', (array) $_GET['kilde']) : [];
 $aec_count = (new WP_Query([
@@ -217,18 +219,12 @@ $kilde_counts = [
                     'counts'       => $type_ressurs_counts,
                     'filter_class' => 'filter-type',
                 ],
-                [
-                    'name'         => 'kilde[]',
-                    'label'        => 'Kilde',
-                    'options'      => $kilde_options,
-                    'selected'     => $selected_kilde,
-                    'counts'       => $kilde_counts,
-                    'filter_class' => 'filter-kilde',
-                ],
+                // Kilde er flyttet ut av dropdownen til synlige toggle-pills under filterlinjen.
             ],
             'result_count'       => $tools_query->found_posts,
             'total_count'        => $tools_query->found_posts,
             'result_label'       => 'verktøy',
+            'extra_active_count' => count($selected_kilde), // kilde-pills rendres utenfor dropdowns
             'reset_id'           => 'reset-filters',
             'view_toggle'        => [
                 'storage_key' => 'bv-view-verktoy',
@@ -237,6 +233,26 @@ $kilde_counts = [
             ],
         ]);
         ?>
+
+        <!-- Kilde-toggler: synlige pills som erstatter Kilde-dropdownen (synk 29.06).
+             Gjenbruker .filter-kilde-checkbox-logikken; ingen valgt = viser begge kilder. -->
+        <div class="flex flex-wrap items-center gap-2 mb-8 -mt-4" role="group" aria-label="Filtrer etter kilde">
+            <?php
+            foreach (['medlem', 'aec_ai_hub'] as $kval):
+                if (!isset($kilde_options[$kval])) continue;
+                $kchecked = in_array($kval, $selected_kilde, true);
+                $kcount   = isset($kilde_counts[$kval]) ? intval($kilde_counts[$kval]) : null;
+            ?>
+            <label class="cursor-pointer select-none">
+                <input type="checkbox" name="kilde[]" value="<?php echo esc_attr($kval); ?>"
+                       class="filter-checkbox filter-kilde peer sr-only" <?php checked($kchecked); ?>>
+                <span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full border border-[#E7E5E4] text-[#57534E] bg-white">
+                    <?php echo esc_html($kilde_options[$kval]); ?>
+                    <?php if ($kcount !== null): ?><span class="text-xs opacity-70"><?php echo $kcount; ?></span><?php endif; ?>
+                </span>
+            </label>
+            <?php endforeach; ?>
+        </div>
 
         <!-- Tools Grid & List -->
         <?php if ($tools_query->have_posts()):
@@ -513,14 +529,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var searchTerm = searchInput ? searchInput.value.trim() : '';
         if (searchTerm) params.set('s', searchTerm);
 
+        // Temagruppe/type ligger i dropdowns ([data-multiselect]); kilde er nå frittstående pills.
         var filterMap = {
-            'temagruppe': '.filter-temagruppe:checked',
-            'type_ressurs': '.filter-type:checked',
+            'temagruppe': '[data-multiselect] .filter-temagruppe:checked',
+            'type_ressurs': '[data-multiselect] .filter-type:checked',
             'kilde': '.filter-kilde:checked'
         };
         Object.keys(filterMap).forEach(function(key) {
-            var checked = document.querySelectorAll('[data-multiselect] ' + filterMap[key]);
-            checked.forEach(function(cb) { params.append(key, cb.value); });
+            document.querySelectorAll(filterMap[key]).forEach(function(cb) { params.append(key, cb.value); });
         });
 
         var newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');

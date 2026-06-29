@@ -25,6 +25,15 @@ define('BIMVERDI_RESEND_FROM_NAME', 'BIM Verdi');
 define('BIMVERDI_RESEND_REPLY_TO', 'post@bimverdi.no'); // Besluttet av Andreas 2026-06-10 (gjaldt nyhetsbrev, konstanten er global for all e-post)
 
 /**
+ * Kanonisk prod-deteksjon (speiler bimverdi_avlyst_er_prod / _nyhetsbrev_er_prod).
+ * home_url er eneste pålitelige signal — wp_get_environment_type() defaulter til
+ * 'production' også på localhost. Fail-closed: alt annet enn prod-domenet = ikke prod.
+ */
+function bimverdi_resend_er_prod() {
+    return untrailingslashit(home_url()) === 'https://bimverdi.no';
+}
+
+/**
  * Kjernen i Resend-utsendelsen — kaller API-et direkte, uavhengig av hvilken
  * wp_mail()-implementasjon som er aktiv. Brukes av wp_mail()-overriden under,
  * og av _local-email-blocker.php (lokal whitelist) som definerer wp_mail()
@@ -97,6 +106,37 @@ function bimverdi_resend_send_via_api($to, $subject, $message, $headers = '') {
         $payload['bcc'] = is_array($parsed_headers['bcc'])
             ? $parsed_headers['bcc']
             : array_map('trim', explode(',', $parsed_headers['bcc']));
+    }
+
+    // Global BCC til post@bimverdi.no — KUN på prod (synk 29.06: «BCC alt utgående,
+    // test verdien»). Localhost/dev sender ekte e-post via Resend, så vi gater på
+    // er_prod() for å aldri lekke kopier dit.
+    // MERK BLAST-RADIUS: dette fanger ALT som går via wp_mail() på prod — ikke bare
+    // BIM Verdi-transaksjonelle (registrering/opp-nedgradering/invitasjon/avlyst/passord),
+    // men også WP-core-varsler og tredjeparts-plugins (Gravity Forms-skjema, backup-
+    // sammendrag fra Duplicator/AI1WM). Det er bevisst i testfasen. Masse-nyhetsbrevet
+    // går utenom (direkte mot Resend batch-API). Snevres/skrus av via filteret
+    // bimverdi_resend_global_bcc_aktiv hvis post@ blir for støyete.
+    if (bimverdi_resend_er_prod()
+        && apply_filters('bimverdi_resend_global_bcc_aktiv', true, $to, $subject)) {
+        $global_bcc = apply_filters('bimverdi_resend_global_bcc_adresse', 'post@bimverdi.no');
+        $global_bcc = is_email($global_bcc) ? strtolower($global_bcc) : '';
+        if ($global_bcc) {
+            // Dedupe mot eksisterende mottakere så admin-varsler som ALT går til
+            // post@bimverdi.no ikke får dobbel kopi. (Feedback-skjemaet BCCer
+            // admin_email, ikke post@ — det dedupes derfor ikke her, men det er ok:
+            // post@ får da én kopi av feedback, som er ønsket innsyn.)
+            $eksisterende = array_map('strtolower', array_map('trim', array_merge(
+                (array) $to,
+                isset($payload['cc'])  ? (array) $payload['cc']  : [],
+                isset($payload['bcc']) ? (array) $payload['bcc'] : []
+            )));
+            if (!in_array($global_bcc, $eksisterende, true)) {
+                $payload['bcc'] = isset($payload['bcc'])
+                    ? array_merge((array) $payload['bcc'], [$global_bcc])
+                    : [$global_bcc];
+            }
+        }
     }
 
     // Send via Resend API

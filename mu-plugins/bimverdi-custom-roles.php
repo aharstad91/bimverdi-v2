@@ -459,6 +459,79 @@ function bimverdi_make_registered_column_sortable($columns) {
 }
 
 /**
+ * Gjør «Navn» + «Nyhetsbrev» sorterbare (synk 29.06, Bård-ønske om klikkbare
+ * kolonneheadere). «Navn» bruker native display_name-orderby; «Nyhetsbrev» er
+ * meta-basert og oversettes i pre_get_users under.
+ *
+ * Kontakttype + Deltakernivå forblir bevisst USORTERBARE — de er computed på
+ * tvers av foretak-meta uten en enkelt user-meta-nøkkel (se kommentar v/linje 215).
+ * Sortering der krever en denormalisert rang-nøkkel (egen oppfølger, v1.5).
+ */
+add_filter('manage_users_sortable_columns', 'bimverdi_user_sortable_columns');
+function bimverdi_user_sortable_columns($columns) {
+    $columns['name']                = 'display_name';          // native WP_User_Query-orderby
+    $columns['bimverdi_newsletter'] = 'bv_orderby_newsletter'; // token → meta, se kart under
+    return $columns;
+}
+
+/**
+ * Kart fra sorterings-token → user-meta-nøkkel for meta-baserte kolonner.
+ * Andre mu-plugins (f.eks. «Sist oppdatert») registrerer egne tokens via filteret.
+ */
+function bimverdi_user_orderby_meta_map() {
+    return apply_filters('bimverdi_user_orderby_meta_map', [
+        'bv_orderby_newsletter' => 'bimverdi_newsletter_subscribed',
+    ]);
+}
+
+/**
+ * Oversett en meta-basert sorterings-token til faktisk meta-sortering.
+ *
+ * Vi legger på en EGEN LEFT JOIN mot meta-nøkkelen og sorterer på den aliasen.
+ * LEFT JOIN beholder ALLE brukere (også de uten metaen — NULL sorteres sist),
+ * og vi sorterer garantert på RIKTIG meta. (En meta_query OR(EXISTS,NOT EXISTS)
+ * + orderby-på-klausul ville i WP_User_Query havnet på den nøkkelløse primær-
+ * joinen og sortert på en vilkårlig meta-rad — verifisert feil i adversariell
+ * review 29.06.) Samme $pagenow-vakt som kontakttype-filteret (memory:
+ * pre_get_users uten $pagenow-sjekk krasjer WP sine interne user-fetches).
+ */
+add_action('pre_get_users', 'bimverdi_handle_user_meta_orderby');
+function bimverdi_handle_user_meta_orderby($query) {
+    global $pagenow;
+    if ($pagenow !== 'users.php' || !is_admin()) {
+        return;
+    }
+    $orderby = $query->get('orderby');
+    if (!is_string($orderby) || $orderby === '') {
+        return;
+    }
+    $map = bimverdi_user_orderby_meta_map();
+    if (!isset($map[$orderby])) {
+        return;
+    }
+    $meta_key = $map[$orderby];
+    $dir = (strtoupper((string) $query->get('order')) === 'ASC') ? 'ASC' : 'DESC';
+
+    // Engangs, query-scopet pre_user_query: egen LEFT JOIN + ORDER BY på den.
+    $rewrite = function ($uq) use ($meta_key, $dir, &$rewrite) {
+        global $wpdb;
+        $alias = 'bv_sort_meta';
+        $uq->query_from .= $wpdb->prepare(
+            " LEFT JOIN {$wpdb->usermeta} AS {$alias} ON ({$wpdb->users}.ID = {$alias}.user_id AND {$alias}.meta_key = %s)",
+            $meta_key
+        );
+        $uq->query_orderby = sprintf(
+            'ORDER BY %s.meta_value %s, %s.ID ASC',
+            $alias,
+            $dir,
+            $wpdb->users
+        );
+        remove_action('pre_user_query', $rewrite);
+    };
+    add_action('pre_user_query', $rewrite);
+}
+
+/**
  * Vis BIM Verdi medlemskap i bruker-profil (admin)
  */
 add_action('show_user_profile', 'bimverdi_show_membership_in_profile');

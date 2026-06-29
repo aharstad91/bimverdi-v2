@@ -62,3 +62,21 @@ function bimverdi_render_modified_column($output, $column_name, $user_id) {
     }
     return $label;
 }
+
+/**
+ * Gjør «Sist oppdatert» sorterbar (synk 29.06). Selve meta-sorteringen +
+ * $pagenow-vakta håndteres av bimverdi_handle_user_meta_orderby() i
+ * bimverdi-custom-roles.php; her registrerer vi bare kolonnen som sorterbar
+ * og kobler token → meta-nøkkel inn i det delte kartet.
+ */
+add_filter('manage_users_sortable_columns', 'bimverdi_modified_sortable_column');
+function bimverdi_modified_sortable_column($columns) {
+    $columns['bv_user_modified'] = 'bv_orderby_modified';
+    return $columns;
+}
+
+add_filter('bimverdi_user_orderby_meta_map', 'bimverdi_modified_register_orderby');
+function bimverdi_modified_register_orderby($map) {
+    $map['bv_orderby_modified'] = 'bv_user_modified';
+    return $map;
+}

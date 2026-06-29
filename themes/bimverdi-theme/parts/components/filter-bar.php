@@ -67,6 +67,7 @@ function bimverdi_filter_bar($args = []) {
         'result_label'       => 'resultater',
         'show_reset'         => true,
         'reset_id'           => 'reset-filters',
+        'extra_active_count' => 0, // aktive filtre rendret UTENFOR dropdowns (f.eks. kilde-pills)
     ];
 
     $args = wp_parse_args($args, $defaults);
@@ -76,6 +77,7 @@ function bimverdi_filter_bar($args = []) {
     foreach ($args['dropdowns'] as $dropdown) {
         $active_filter_count += count($dropdown['selected'] ?? []);
     }
+    $active_filter_count += (int) $args['extra_active_count'];
     ?>
 
     <!-- Filter Bar -->
@@ -344,9 +346,15 @@ function bimverdi_filter_bar_script($args) {
             });
         });
 
+        // Kilde-pills ligger utenfor [data-multiselect] — tell dem også, og oppdater
+        // badgen når de toggles (de syncer ikke via dropdown-mekanismen).
+        document.querySelectorAll('.filter-kilde').forEach(function(pill) {
+            pill.addEventListener('change', function() { updateMobileFilterCount(); });
+        });
+
         // Update mobile filter count badge
         function updateMobileFilterCount() {
-            var count = document.querySelectorAll('[data-multiselect] input[type="checkbox"]:checked').length;
+            var count = document.querySelectorAll('[data-multiselect] input[type="checkbox"]:checked, .filter-kilde:checked').length;
             var badge = document.querySelector('[data-mobile-count]');
             if (badge) {
                 badge.textContent = count;

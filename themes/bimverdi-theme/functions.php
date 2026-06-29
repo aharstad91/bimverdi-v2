@@ -100,6 +100,12 @@ function bimverdi_enqueue_assets() {
         .peer-checked\:bg-red-50 { background-color: rgb(254 242 242) !important; }
         .peer-checked\:border-\[\#FF8B5E\] { border-color: #FF8B5E !important; }
         .peer-checked\:bg-orange-50 { background-color: rgb(255 247 237) !important; }
+        /* Kilde-toggle-pills (archive-verktoy): valgt + tastaturfokus. peer-checked finnes
+           ikke i compiled CSS, så vi styler på faktisk .filter-kilde-struktur. */
+        .filter-kilde + span { transition: background-color .15s, color .15s, border-color .15s; }
+        .filter-kilde:not(:checked) + span:hover { border-color: #111827 !important; }
+        .filter-kilde:checked + span { background-color: #111827 !important; color: #fff !important; border-color: #111827 !important; }
+        .filter-kilde:focus-visible + span { outline: 2px solid #111827 !important; outline-offset: 2px !important; }
     ');
 }
 add_action('wp_enqueue_scripts', 'bimverdi_enqueue_assets');
