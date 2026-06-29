@@ -3,6 +3,41 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-06-29
+action: synk-29.06-batch2-deployet-verktoy-kildefilter+global-bcc-prod+sorterbare-brukerkolonner
+files:
+  - "themes/bimverdi-theme/archive-verktoy.php (Enhet 1: Kilde-dropdown → 2 synlige toggle-pills + rename medlem→deltaker)"
+  - "themes/bimverdi-theme/functions.php (Enhet 1/Fix B: ekte CSS for .filter-kilde checked/focus/hover — peer-checked finnes ikke i precompiled Tailwind)"
+  - "themes/bimverdi-theme/parts/components/filter-bar.php (Fix C: mobil-badge teller kilde-pills; ny extra_active_count-arg)"
+  - "mu-plugins/bimverdi-resend-mail.php (Enhet 2: global BCC → post@bimverdi.no, prod-gated via ny bimverdi_resend_er_prod() + dedupe + filtre)"
+  - "mu-plugins/bimverdi-custom-roles.php (Enhet 4: Navn/Nyhetsbrev sorterbar; ny pre_get_users meta-orderby via egen LEFT JOIN)"
+  - "mu-plugins/bimverdi-user-modified-column.php (Enhet 4: Sist oppdatert sorterbar via delt orderby-kart)"
+  - "docs/plans/2026-06-29-001-feat-synk-juni-batch2-plan.md (NY plan, IKKE i wp-content-repo)"
+  - "commit 9f9c93a (6 filer, +176/-15) — pushet origin/main, Servebolt autodeploy, prod-verifisert"
+summary: "Implementerte + deployet batch 2 fra Bård-synk 29.06 (~/Desktop/synk-bimverdi-.json, fulllest av agent + krysset mot WORKLOG). EFFORT: xhigh på e-post (rører all utgående prod-e-post). 3 parallelle Explore-agenter kartla kode, deretter seriell implementering, så 16-agent adversariell review (Workflow) FØR deploy. ENHET 1 (verktøy): /verktoy/ «Kilde»-dropdown erstattet av to alltid-synlige toggle-pills «Deltakerregistrerte verktøy»/«AEC AI Hub» (begge av som default = viser alle, gjenbruker eksisterende .filter-kilde-JS; delt filter-bar.php urørt i struktur). Rename «Medlemsregistrert»→«Deltakerregistrerte verktøy» (Bård-regel: aldri «medlem» på web). ENHET 2 (BCC): global BCC av transaksjonell bruker-e-post → post@bimverdi.no i bimverdi_resend_send_via_api(), KUN på prod (ny bimverdi_resend_er_prod() speiler avlyst/nyhetsbrev-gatene), med dedupe (ikke dobbel kopi på admin-varsler) + filtre bimverdi_resend_global_bcc_aktiv/_adresse. Localhost lekker aldri (er_prod=false). Masse-nyhetsbrev (direkte API) fanges bevisst ikke. ENHET 3 (reg.varsel): ALLEREDE oppfylt — både direkte-reg og invitert-varselet har navn/e-post/kontotype/tidspunkt/admin-lenke; ingen kode (BCC dekker råkopien). ENHET 4 (sortkolonner): Navn (native display_name) + Nyhetsbrev + Sist oppdatert klikk-sorterbare via ny pre_get_users-handler med samme $pagenow-vakt; Kontakttype/Deltakernivå bevisst usorterbare (computed). ADVERSARIELL REVIEW fanget 2 reelle bugs: (HIGH) meta-sortering sorterte på FEIL meta — EXISTS-klausul ga nøkkelløs LEFT JOIN → orderby på vilkårlig meta-rad (nickname); byttet til EGEN LEFT JOIN på meta-nøkkelen (bevarer 598 brukere OG sorterer riktig, verifisert: DESC gir 1,1,1,1,0,0,0,tom,tom). (MEDIUM) pills visuelt døde — peer-checked:bg-[#111827] finnes ikke i precompiled Tailwind → la til ekte CSS i functions.php inline-blokk. Pluss MEDIUM mobil-badge teller nå pills, LOW ærlig BCC-kommentar. Akseptert m/ begrunnelse: fallback-mail()-BCC (kun ved manglende Resend-nøkkel = feilkonfig), sist-oppdatert-backfill (LEFT JOIN holder; 0 brukere har meta i dag → grupperes NULL, bevarer «aldri endret»-visning). 6 funn avvist (working-as-designed/faktuelt feil). Alle 6 PHP/theme-filer php -l rene. DEPLOY-VERIFISERT: SSH bekreftet 4 distinktive strenger landet + er_prod=true; BCC ende-til-ende via Resend MCP (test-e-post ID 90028736…, BCC: post@bimverdi.no, delivered); /verktoy/ prod HTTP 200 m/ pill+CSS. Massesend-nyhetsbrev BESLUTTET låst i sommer (Andreas), egen go-live august."
+status: closed
+detail: |
+  **DEPLOYET + PROD-VERIFISERT 29.06** (commit 9f9c93a → Servebolt autodeploy).
+
+  **⚠️ BCC-SCOPE ER BRED (bevisst):** global BCC fanger ALT via wp_mail() på prod —
+  ikke bare BIM Verdi-transaksjonelle, men også WP-core-varsler + tredjeparts
+  (Gravity Forms-skjema, Duplicator/AI1WM backup-sammendrag). Matcher synk-29.06
+  («BCC alt, test verdien»). Snevres/skrus av UTEN redeploy via filteret
+  bimverdi_resend_global_bcc_aktiv hvis post@ blir for støyete. Se memory
+  feedback_email_utsending_lock_egen_adresse (localhost forblir låst — er_prod-gate).
+
+  **ÅPNE OPPFØLGERE (egne saker):**
+  - Enhet 4 v1.5: Deltakernivå/Kontakttype-sortering — krever denormalisert rang-nøkkel
+    (bv_nivaa ligger på FORETAK, ikke bruker). Bård kalte #4 lavprioritet.
+  - §6 massesend-nyhetsbrev: veiledet go-live i august (Unit 5 prod-verifisering aldri
+    kjørt, Resend-tak ~500/døgn vs 592, ingen utvikler i beredskap i juli). LÅST nå.
+  - Bård-handlinger fra synk 29.06 (ikke kode): tagge gamle arrangement m/ temagruppe
+    (ressurs-rigg-mekanikk allerede live), rydde nyhetsbrev-mottakerliste <500.
+
+  **Plan m/ full sporbarhet:** docs/plans/2026-06-29-001-feat-synk-juni-batch2-plan.md
+  (ligger UTENFOR wp-content-repoet — ikke deployet, lokalt planartefakt).
+
+---
 date: 2026-06-23
 action: avlyst-gate-åpnet-LIVE-på-prod-miljøstyrt + localhost-demodata-ryddet
 files:
