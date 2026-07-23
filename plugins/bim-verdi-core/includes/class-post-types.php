@@ -251,19 +251,23 @@ class BIM_Verdi_Post_Types {
             'add_new_item'          => __('Legg til nytt prosjekt', 'bim-verdi-core'),
         );
         
+        // Deaktivert 2026-07-23: CPT-en har 0 innlegg og ingen maler (archive-/single-prosjekt.php
+        // finnes ikke). Arkivet med slug 'prosjekter' kapret /prosjekter/ og skjulte Bårds side.
+        // Slår av front-end-ruting (public/has_archive/rewrite) så siden får URL-en tilbake.
+        // show_ui beholdes slik at en evt. framtidig pilotprosjekt-funksjon kan bygges videre her.
         $args = array(
             'label'                 => __('Prosjekt', 'bim-verdi-core'),
             'labels'                => $labels,
             'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
-            'public'                => true,
+            'public'                => false,
             'show_ui'               => true,
             'show_in_menu'          => true,
             'menu_position'         => 9,
             'menu_icon'             => 'dashicons-portfolio',
-            'has_archive'           => true,
-            'rewrite'               => array('slug' => 'prosjekter'),
+            'has_archive'           => false,
+            'rewrite'               => false,
             'capability_type'       => 'post',
-            'show_in_rest'          => true,
+            'show_in_rest'          => false,
         );
         
         register_post_type('prosjekt', $args);
