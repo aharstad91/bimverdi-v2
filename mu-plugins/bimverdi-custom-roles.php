@@ -212,9 +212,11 @@ function bimverdi_get_newsletter_status($user_id) {
  *   - Kontakttype   — Gratisbruker / Hovedkontakt / Tilleggskontakt (computed)
  *   - Deltakernivå  — Gratisforetak / Deltaker / Prosjektdeltaker / Partner
  *
- * Sortering på Kontakttype + Deltakernivå er ikke trivielt (computed på tvers
- * av meta-tabeller) og er bevisst utelatt i v1. Bruk filter-dropdown for å
- * isolere hovedkontakter (krav 24-v4 forberedelse).
+ * Alle tre er sorterbare (kort #317). Fordi verdiene er computed på tvers av
+ * meta-tabeller finnes det ingen user-meta å sortere på — join-kjeden som
+ * gjenskaper oppslaget i SQL ligger i bimverdi_handle_user_derived_orderby().
+ * Endrer du utledningen i helperne under, må CASE-uttrykkene der oppdateres i
+ * samme slengen, ellers sorterer kolonnen annerledes enn den viser.
  */
 add_filter('manage_users_columns', 'bimverdi_add_user_columns');
 function bimverdi_add_user_columns($columns) {
@@ -463,14 +465,18 @@ function bimverdi_make_registered_column_sortable($columns) {
  * kolonneheadere). «Navn» bruker native display_name-orderby; «Nyhetsbrev» er
  * meta-basert og oversettes i pre_get_users under.
  *
- * Kontakttype + Deltakernivå forblir bevisst USORTERBARE — de er computed på
- * tvers av foretak-meta uten en enkelt user-meta-nøkkel (se kommentar v/linje 215).
- * Sortering der krever en denormalisert rang-nøkkel (egen oppfølger, v1.5).
+ * Foretak + Kontakttype + Deltakernivå er også sorterbare (kort #317, Bårds
+ * prio 1 i synk 04.08). De har ingen egen user-meta-nøkkel — verdiene utledes
+ * fra foretaket brukeren er koblet til — så de sorteres via en join-kjede i
+ * bimverdi_handle_user_derived_orderby() lenger ned, ikke via meta-kartet.
  */
 add_filter('manage_users_sortable_columns', 'bimverdi_user_sortable_columns');
 function bimverdi_user_sortable_columns($columns) {
-    $columns['name']                = 'display_name';          // native WP_User_Query-orderby
-    $columns['bimverdi_newsletter'] = 'bv_orderby_newsletter'; // token → meta, se kart under
+    $columns['name']                   = 'display_name';           // native WP_User_Query-orderby
+    $columns['bimverdi_newsletter']    = 'bv_orderby_newsletter';  // token → meta, se kart under
+    $columns['bimverdi_foretak']       = 'bv_orderby_foretak';     // utledet, se join-kjeden
+    $columns['bimverdi_kontakttype']   = 'bv_orderby_kontakttype';
+    $columns['bimverdi_deltakernivaa'] = 'bv_orderby_deltakernivaa';
     return $columns;
 }
 
@@ -526,6 +532,109 @@ function bimverdi_handle_user_meta_orderby($query) {
             $dir,
             $wpdb->users
         );
+        remove_action('pre_user_query', $rewrite);
+    };
+    add_action('pre_user_query', $rewrite);
+}
+
+/**
+ * Sortering av Foretak / Kontakttype / Deltakernivå (kort #317, synk 04.08).
+ *
+ * Disse tre kolonnene har ingen egen user-meta å sortere på — de UTLEDES av
+ * foretaket brukeren er koblet til. Vi løser det ved å bygge samme oppslag i
+ * SQL som PHP-helperne gjør, i stedet for å denormalisere en rang-nøkkel ned
+ * på hver bruker. Da slipper vi backfill og synk-hooks som kan drifte, og
+ * sorteringen kan aldri vise noe annet enn kolonnen selv viser.
+ *
+ * Join-kjeden speiler bimverdi_resolve_user_foretak_id():
+ *   bimverdi_company_id → bim_verdi_company_id → tilknyttet_foretak (ACF)
+ * i den rekkefølgen, via COALESCE. Alle tre nøklene er i aktiv bruk i basen.
+ *
+ * VIKTIG PARITETSDETALJ: bimverdi_get_foretakstype() defaulter til
+ * 'gratisforetak' når bv_foretakstype mangler eller er ugyldig. CASE-uttrykkene
+ * under må derfor behandle «ikke 'foretak'» som gratisforetak — ikke som ukjent.
+ *
+ * Brukere uten foretak (viser «—») sorteres alltid sist, uansett retning.
+ * Samme $pagenow-vakt som de andre handlerne (memory: pre_get_users uten
+ * $pagenow-sjekk krasjer WP sine interne user-fetches).
+ */
+add_action('pre_get_users', 'bimverdi_handle_user_derived_orderby');
+function bimverdi_handle_user_derived_orderby($query) {
+    global $pagenow, $wpdb;
+    if ($pagenow !== 'users.php' || !is_admin()) {
+        return;
+    }
+    $orderby = $query->get('orderby');
+    if (!is_string($orderby) || strpos($orderby, 'bv_orderby_') !== 0) {
+        return;
+    }
+
+    $users = $wpdb->users;
+
+    // Selve foretak-koblingen, uavhengig av om posten fortsatt finnes.
+    // PHP-helperen returnerer den rå ID-en her og sjekker ALDRI at posten
+    // eksisterer — en bruker som peker på et slettet foretak vises derfor som
+    // «Gratisbruker»/«Gratisforetak» (get_foretakstype() defaulter dit), ikke
+    // som «—». Vi må speile det, ellers sorterer raden et annet sted enn
+    // etiketten tilsier. Gjelder 3 brukere i dag (peker på foretak 143).
+    $link = "COALESCE(NULLIF(bv_fk1.meta_value, ''), NULLIF(bv_fk2.meta_value, ''), NULLIF(bv_fk3.meta_value, ''))";
+
+    // Rang-uttrykk per kolonne. NULL = «—» (ingen foretak-kobling i det hele tatt).
+    $foretak_expr = "CASE WHEN {$link} IS NULL THEN NULL ELSE COALESCE(bv_f.post_title, '') END";
+    $kontakttype_rank = "CASE
+            WHEN {$link} IS NULL THEN NULL
+            WHEN bv_ftype.meta_value = 'foretak' AND bv_fhk.meta_value = CAST({$users}.ID AS CHAR) THEN 1
+            WHEN bv_ftype.meta_value = 'foretak' THEN 2
+            ELSE 3
+        END";
+    $deltakernivaa_rank = "CASE
+            WHEN {$link} IS NULL THEN NULL
+            WHEN bv_ftype.meta_value <> 'foretak' OR bv_ftype.meta_value IS NULL THEN 1
+            WHEN bv_fniv.meta_value = 'deltaker' THEN 2
+            WHEN bv_fniv.meta_value = 'prosjektdeltaker' THEN 3
+            WHEN bv_fniv.meta_value = 'partner' THEN 4
+            ELSE NULL
+        END";
+
+    $specs = [
+        'bv_orderby_foretak'       => ['expr' => $foretak_expr, 'foretak_meta' => false],
+        'bv_orderby_kontakttype'   => ['expr' => $kontakttype_rank, 'foretak_meta' => true],
+        'bv_orderby_deltakernivaa' => ['expr' => $deltakernivaa_rank, 'foretak_meta' => true],
+    ];
+    if (!isset($specs[$orderby])) {
+        return;
+    }
+    $expr         = $specs[$orderby]['expr'];
+    $foretak_meta = $specs[$orderby]['foretak_meta'];
+    $dir = (strtoupper((string) $query->get('order')) === 'ASC') ? 'ASC' : 'DESC';
+
+    // Engangs, query-scopet pre_user_query — samme mønster som meta-sorteringen.
+    $rewrite = function ($uq) use ($expr, $foretak_meta, $dir, $users, &$rewrite) {
+        global $wpdb;
+
+        // Foretak-kobling: tre kandidat-nøkler, første ikke-tomme vinner.
+        $join = " LEFT JOIN {$wpdb->usermeta} AS bv_fk1 ON (bv_fk1.user_id = {$users}.ID AND bv_fk1.meta_key = 'bimverdi_company_id')"
+              . " LEFT JOIN {$wpdb->usermeta} AS bv_fk2 ON (bv_fk2.user_id = {$users}.ID AND bv_fk2.meta_key = 'bim_verdi_company_id')"
+              . " LEFT JOIN {$wpdb->usermeta} AS bv_fk3 ON (bv_fk3.user_id = {$users}.ID AND bv_fk3.meta_key = 'tilknyttet_foretak')"
+              . " LEFT JOIN {$wpdb->posts} AS bv_f ON (bv_f.post_type = 'foretak' AND bv_f.ID = COALESCE("
+              . "NULLIF(bv_fk1.meta_value, ''), NULLIF(bv_fk2.meta_value, ''), NULLIF(bv_fk3.meta_value, '')))";
+
+        if ($foretak_meta) {
+            $join .= " LEFT JOIN {$wpdb->postmeta} AS bv_ftype ON (bv_ftype.post_id = bv_f.ID AND bv_ftype.meta_key = 'bv_foretakstype')"
+                   . " LEFT JOIN {$wpdb->postmeta} AS bv_fhk ON (bv_fhk.post_id = bv_f.ID AND bv_fhk.meta_key = 'hovedkontaktperson')"
+                   . " LEFT JOIN {$wpdb->postmeta} AS bv_fniv ON (bv_fniv.post_id = bv_f.ID AND bv_fniv.meta_key = 'bv_nivaa')";
+        }
+
+        $uq->query_from .= $join;
+
+        // «—» alltid sist: NULL-nøkkelen sorteres stigende uansett $dir.
+        $uq->query_orderby = sprintf(
+            'ORDER BY (%1$s) IS NULL ASC, (%1$s) %2$s, %3$s.ID ASC',
+            $expr,
+            $dir,
+            $users
+        );
+
         remove_action('pre_user_query', $rewrite);
     };
     add_action('pre_user_query', $rewrite);
