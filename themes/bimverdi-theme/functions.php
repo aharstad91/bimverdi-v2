@@ -258,6 +258,12 @@ require_once get_template_directory() . '/inc/admin-helpers.php';
 require_once get_template_directory() . '/inc/ressurs-rig.php';
 
 /**
+ * Load Redigerbar topp (admin-styrt Gutenberg-blokk øverst på CPT-sider)
+ * Provides bv_redigerbar_topp() / bv_redigerbar_topp_html()
+ */
+require_once get_template_directory() . '/inc/redigerbar-topp.php';
+
+/**
  * Load ACF Field Groups (with graceful fallback if file missing)
  */
 $acf_temagruppe_fields = get_template_directory() . '/inc/acf/temagruppe-fields.php';

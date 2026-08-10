@@ -208,12 +208,15 @@ $tool_updated = get_the_modified_date('d.m.Y');
             <?php endif; ?>
         </div>
 
+        <!-- Redigerbar topp (Gutenberg, admin) -->
+        <?php bv_redigerbar_topp(get_the_ID(), ['detaljert_beskrivelse', 'kort_beskrivelse']); ?>
+
         <!-- Two-Column Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            
+
             <!-- Left Column: Main Content -->
             <div class="lg:col-span-2 space-y-10">
-                
+
                 <!-- Oversikt Section -->
                 <section>
                     <h2 class="text-lg font-bold text-[#111827] mb-4">Oversikt</h2>

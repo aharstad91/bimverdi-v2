@@ -151,6 +151,10 @@ $kilde_created = get_the_date('d.m.Y');
             </div>
         </div>
 
+        <!-- Redigerbar topp (Gutenberg, admin) -->
+        <?php // kunnskapskilde_navn er H1 på denne malen, ikke post_title.
+        bv_redigerbar_topp(get_the_ID(), ['detaljert_beskrivelse', 'kort_beskrivelse', 'kunnskapskilde_navn']); ?>
+
         <!-- Two-Column Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
 

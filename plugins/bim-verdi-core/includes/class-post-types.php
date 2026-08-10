@@ -109,7 +109,10 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Verktøy', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'thumbnail', 'custom-fields'),
+            // 'editor' = redigerbar topp i wp-admin (Bård, synk 06.08). Selve
+            // verktøybeskrivelsen ligger i ACF og eies av deltakeren; dette er
+            // en redaksjonell blokk på toppen, se inc/redigerbar-topp.php.
+            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -143,7 +146,10 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Kunnskapskilde', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'thumbnail', 'custom-fields'),
+            // 'editor' = redigerbar topp i wp-admin (Bård, synk 06.08). Kildens
+            // egen beskrivelse ligger i ACF og eies av den som registrerte den;
+            // dette er en redaksjonell blokk på toppen.
+            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
