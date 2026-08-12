@@ -282,7 +282,13 @@ function bimverdi_diskusjon_varsel_html($type, $mottaker, $avsender_navn, $comme
                             <p style="margin: 0; color: #9B9B9B; font-size: 11px; line-height: 1.6;">
                                 <?php echo $grunn; ?><br>
                                 Varselet er sendt til e-postadressen som er registrert på brukerkontoen din.
-                                Les mer i vår <a href="<?php echo esc_url(home_url('/personvern/')); ?>" style="color: #6B6B6B;">personvernerklæring</a>.
+                                Les mer i vår <a href="<?php echo esc_url(home_url('/personvern/')); ?>" style="color: #6B6B6B;">personvernerklæring</a>.<br>
+                                <?php // GDPR art. 21(4): varslene sendes på legitim interesse, som krever en
+                                      // reell innsigelsesmulighet. Avsender er noreply@, så ruten er den
+                                      // bemannede postkassen — inntil profil-toggelen (fase 2) finnes. ?>
+                                Vil du ikke motta slike varsler? Gi beskjed til
+                                <a href="mailto:post@bimverdi.no?subject=<?php echo rawurlencode('Avmelding: varsler om diskusjoner'); ?>" style="color: #6B6B6B;">post@bimverdi.no</a>,
+                                så skrur vi dem av for deg.
                             </p>
                         </td>
                     </tr>
