@@ -4,6 +4,24 @@
 
 ---
 date: 2026-08-12
+action: kort-2-statusoppgjor-hva-gjenstar (enhet 7)
+files:
+  - "docs/plans/2026-08-11-001-feat-diskusjonstrad-byggchat-plan.md (enhet 7 fått Status-blokk m/ avhuking per delpunkt — ligger utenfor wp-content-repoet)"
+summary: "Gjennomgang av leveransen mot Requirements Trace. All kode (R1–R11, R15–R17) er live på prod og verifisert; enhet 1–6 avhuket. Enhet 7 er operasjonell og delvis levert: R12b (gate-test 19/19), R16 (Bårds ekte åpningsinnlegg, kommentar 657, m/ fungerende mention av Anstein Skinnarland) og R14 uformelt (Bård har testet selv) er i boks. VIKTIGSTE FUNN: gaten er fortsatt låst, så Bårds mention av Anstein sendte INGEN e-post — bindingen ligger korrekt i _bv_mention_user_ids (bruker 46, registrert deltaker m/ gyldig e-post), men mottakeren er utenfor allowlisten [andreas@aharstad.no]. Varselhalvdelen er altså bevist, men ikke i drift. R13 (B-011-overstyring) er skrevet men ucommittet i bimverdi-context. R18 mangler navneliste fra Bård."
+status: waiting
+detail: |
+  GJENSTÅR — alt eies av Andreas/Bård, ingen kodearbeid:
+  1. Bårds eksplisitte go via Teams → åpne gaten på prod:
+     define('BIMVERDI_DISKUSJON_VARSLER_APEN', true); i wp-config.php.
+     Henger på GDPR-avklaringen (art. 21(4): pilotgruppe-begrensning ELLER
+     minimal én-klikks avmelding i v1).
+  2. R13: klarsignal for push av B-011-overstyringen til BV-2.0-main.
+  3. R18: styringsgruppe-navneliste fra Bård → verifiser som registrerte brukere.
+  4. R14: strukturert Teams-overlevering sammen med kort 3-leveransen.
+  Merk for kommunikasjon m/ Bård: han bør vite at taggede folk ikke får e-post
+  ennå — ellers tror han varslene virker fordi taggingen ser riktig ut i UI.
+---
+date: 2026-08-12
 action: diskusjon-feedbackrunde-1-fra-live-test (kort 2, oppfølging)
 files:
   - "themes/bimverdi-theme/comments.php (3-linjers klipp m/ «Vis mer»/«Vis mindre» per innlegg — klasse settes av JS så no-JS alltid ser alt; deep-link ?bvk/#comment-N auto-utvider målinnlegget; aria-expanded/aria-controls)"
