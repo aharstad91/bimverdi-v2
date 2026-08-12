@@ -4,6 +4,22 @@
 
 ---
 date: 2026-08-12
+action: diskusjonstrad-deployet-til-prod+R12b-gate-verifisert (kort 2, enhet 7)
+files:
+  - "commit 4e9e4d0 (8 filer, +1300) — pushet origin/main, Servebolt autodeploy, alle 7 kodefiler hash-verifisert identiske lokal↔prod"
+  - "KUN kort 2-filene committet — etterslepet (kort 3 arkivsider, nyhetsbrev-nudge, minside/foretak-endringer, single-artikkel/kunnskapskilde) står fortsatt ucommittet lokalt"
+summary: "Andreas ga klarsignal («få pushet dette live»). Deploy verifisert på prod: forside+byggchat HTTP 200, Diskusjon-seksjon rendres utlogget m/ logg-inn-CTA, REST /wp/v2/comments 401, kommentar-feed 403. SIKKERHET: wp-config har IKKE BIMVERDI_DISKUSJON_VARSLER_APEN (gate LÅST), allowlist=[andreas@aharstad.no], diskusjonssider=[byggchat], _local-email-blocker finnes ikke på prod. R12b GATE-TEST PÅ PROD (wp eval-file, 19/19 PASS): to midlertidige testbrukere (adresser på aharstad.no — aldri reelt medlem) + én kommentar m/ mention av bruker 1 OG skip-bruker → SENDT-varsel kun til andreas@aharstad.no (Resend-ID d367e220-2b9b-4257-8e72-f5fb05629314), GATE LÅST-skipp logget for ikke-allowlist, nøyaktig ÉN Resend-utsending, INGEN bcc i payload (global prod-BCC undertrykt for gatede varsler), testkopi-banner + fullt dokumentskjelett i utgående HTML. All testdata slettet i samme kjøring (kommentar, begge brukere, skript, logg). LÆRDOM: første kjøring feilet fordi testkommentaren manglet «@Navn» i selve teksten — mention-bindingens integritetssjekk (c) forkastet kandidatene korrekt (fail-safe som designet)."
+status: waiting
+detail: |
+  LIVE PÅ PROD, GATE LÅST. Gjenstår i go-løypa:
+  1. Andreas/Bård tester tråden manuelt på https://bimverdi.no/prosjekter/byggchat/
+     (varsler når kun andreas@aharstad.no til gaten åpnes).
+  2. Bårds eksplisitte go via Teams → åpning: define('BIMVERDI_DISKUSJON_VARSLER_APEN', true);
+     i wp-config.php PÅ PROD. Global BCC gjenopptas automatisk.
+  3. R14: Teams-melding til Bård (utkast klart — inkl. styringsgruppe-navneliste for R18).
+  4. R13: B-011-overstyring i bimverdi-context — push venter på klarsignal.
+---
+date: 2026-08-12
 action: diskusjon-varsel-mal-ombygd-til-husets-epostskjelett (kort 2, oppfølging enhet 6)
 files:
   - "mu-plugins/bimverdi-diskusjon-varsler.php (bimverdi_diskusjon_varsel_html omskrevet: fullt HTML-dokument m/ tabell-layout, hvitt kort på #F5F3EE, sentrert CTA-knapp 14px/32px, «Fungerer ikke knappen?»-fallback — speiler get_verification_email_html i bimverdi-email-verification.php)"
