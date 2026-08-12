@@ -85,6 +85,23 @@ function bimverdi_enqueue_assets() {
         '1.1.0',
         true
     );
+    // @-mentions i diskusjonstråden — kun aktive diskusjonssider og kun
+    // innloggede (utloggede har verken skjema eller autocomplete-tilgang).
+    if (is_user_logged_in() && is_singular()
+        && function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()) {
+        wp_enqueue_script(
+            'bv-mentions',
+            get_template_directory_uri() . '/assets/js/bv-mentions.js',
+            array(),
+            filemtime(get_template_directory() . '/assets/js/bv-mentions.js'),
+            true
+        );
+        wp_localize_script('bv-mentions', 'bvMentions', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('bv_mentions'),
+        ));
+    }
+
     // Add missing Tailwind utilities not in compiled CSS
     wp_add_inline_style('bimverdi-styles', '
         @media (min-width: 768px) {

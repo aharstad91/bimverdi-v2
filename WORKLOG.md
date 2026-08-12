@@ -3,6 +3,139 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-08-12
+action: diskusjon-varsel-mal-ombygd-til-husets-epostskjelett (kort 2, oppfølging enhet 6)
+files:
+  - "mu-plugins/bimverdi-diskusjon-varsler.php (bimverdi_diskusjon_varsel_html omskrevet: fullt HTML-dokument m/ tabell-layout, hvitt kort på #F5F3EE, sentrert CTA-knapp 14px/32px, «Fungerer ikke knappen?»-fallback — speiler get_verification_email_html i bimverdi-email-verification.php)"
+summary: "Andreas meldte at CTA-knappen så ut som markert tekst i Spark. Feilsøkt empirisk: payload mot Resend fanget via http_api_debug og e-posten hentet tilbake fra Resend-API — HTML intakt i begge ender, altså rendering-problem. Rotårsak: malen var et nakent <div>-fragment; Spark rendrer fragmenter som «personlig post» med egen typografi og stripper boks-/knappestyling. Husets medlems-e-poster (verifisering/registrering) er fulle dokumenter og rendrer fint. Mal ombygd på det skjelettet — bekreftet OK i Spark av Andreas 12.08. 18 assertions grønne etter ombygging (struktur, XSS, gate, logg)."
+status: done
+detail: |
+  FUNN FOR SENERE: bimverdi-arrangement-avlyst.php, bimverdi-company-invitations.php
+  og bimverdi-foretak-oppgradering.php sender også e-post som <div>-fragmenter uten
+  DOCTYPE — samme flate rendering i Spark (og trolig andre klienter med samme
+  heuristikk). Kandidat for egen liten harmoniseringsjobb: løft alle på skjelettet
+  fra bimverdi-email-verification.php. IKKE gjort nå (utenfor kort 2-scope).
+---
+date: 2026-08-11
+action: diskusjonstrad-byggchat-lokalt-verifisert (kort 2, enhet 1-6 av 7)
+files:
+  - "mu-plugins/bimverdi-still-sporsmal.php (OMSKREVET v2.0.0: motor for sider via bimverdi_diskusjon_sider() [byggchat], CPT-aktivering gatet AV (R17), REST /wp/v2/comments krever innlogging, kommentar-feeds 403, posting-rate 15/t)"
+  - "themes/bimverdi-theme/comments.php (OMSKREVET: «Diskusjon»-reframing, zero-state, utlogget server-side skeleton-blur + teller + CTA, ?bvk-deep-link m/ kontekstboks og :target-highlight, gratis-notis)"
+  - "themes/bimverdi-theme/page.php (betinget comments_template() kun for diskusjonssider)"
+  - "mu-plugins/bimverdi-diskusjon-mentions.php (NY: wp_ajax-autocomplete [aldri e-post, 50/dag, min 2 tegn, maks 8], server-validert ID-binding m/ navn↔display_name-integritet, render-tid @-markering kun innlogget)"
+  - "themes/bimverdi-theme/assets/js/bv-mentions.js (NY: autocomplete m/ ARIA combobox/listbox, debounce, dedupe-binding i skjult felt bv_mentions)"
+  - "themes/bimverdi-theme/functions.php (enqueue bv-mentions kun innlogget på diskusjonssider)"
+  - "mu-plugins/bimverdi-diskusjon-varsler.php (NY: mention-/svar-varsler via Resend BAK HARD FAIL-CLOSED GATE — kun andreas@aharstad.no til Bårds go; BCC-undertrykking via kontekst-flagg; timetak 30 mottakere/t; GDPR-footer; varselfeil blokkerer aldri publisering)"
+  - "docs/plans/2026-08-11-001-feat-diskusjonstrad-byggchat-plan.md (enhet 1-6 avhuket)"
+  - "ALT LOKALT — INGENTING COMMITTET/PUSHET (deploy samlet, venter på Andreas)"
+summary: "Kort 2 fra synk 11.08: diskusjonstråd på /prosjekter/byggchat/ (pilot). Full CE-løype (brainstorm → plan m/ doc-review → work). Enhet 1-6 bygget og verifisert lokalt: motor/gating, UI, utlogget blur, mentions, varsler bak gate. GATE-BEVIS via varselfilens egen [bv-varsler]-logg (46 assertions grønne, 2 testskript i scratchpad) — IKKE via leveransefravær, siden _local-email-blocker.php maskerer lokalt. To ekte gated testvarsler (mention + svar) levert til andreas@aharstad.no. R18 pre-flight prod (read-only SSH): side 3354 publisert m/ comment_status open, 0 kommentarer alle statuser (ingen spam); styringsgruppe-navneliste finnes ikke i repoene → må innhentes fra Bård."
+status: waiting
+detail: |
+  **VENTER / GO-LØYPE (R12b):**
+  1. DEPLOY: ingenting committet — venter på Andreas. Minimum for fredagsmålet:
+     motor-gatingen (R17) + diskusjonstråd-filene; resten av etterslepet kan følge separat.
+  2. Gate-verifisering PÅ PROD før noe annet: gated mention-test mot kontrollert
+     sekundæradresse (aldri reelt medlem) → bevis via [bv-varsler]-logg + Resend-dashbord
+     (kun allowlist-leveranser, ingen global BCC på varsler).
+  3. Bårds eksplisitte go via Teams → åpning = énlinjes endring i wp-config.php PÅ PROD:
+     define('BIMVERDI_DISKUSJON_VARSLER_APEN', true); (konstant, IKKE option — DB kopieres
+     mellom miljøer). Global BCC gjenopptas automatisk når gaten åpnes.
+  4. R13: B-011-overstyring forberedt i bimverdi-context (push venter på klarsignal).
+  5. R14: Teams-melding til Bård utkastet — sendes med kort 3-leveransen etter klarsignal.
+  6. R18-rest: be Bård om navneliste for styringsgruppa → verifiser registrering/e-post.
+---
+date: 2026-08-11
+action: arkivside-cpt-gutenberg-topp-pa-arkivsider+options-side-slettet (kort 3)
+files:
+  - "plugins/bim-verdi-core/includes/class-post-types.php (register_arkivside: ikke-offentlig CPT, show_in_rest, create_posts sperret, meny under Innstillinger → Arkivsider)"
+  - "mu-plugins/bimverdi-arkivsider.php (NY: bv_arkivside_definisjoner()/bv_arkivside_post() + engangs-seeding fra wp_options, flagg bimverdi_arkivsider_seeded)"
+  - "mu-plugins/bimverdi-archive-options.php (SLETTET — deprecated ACF options-side, Andreas 11.08)"
+  - "themes/bimverdi-theme/parts/components/archive-intro.php (omskrevet: H1 fra arkivside-post, Gutenberg-innhold full bredde via bv_redigerbar_topp_html; options-verdier kun som overgangs-fallback)"
+  - "localhost DB: 6 arkivside-poster seedet (ID 3258–3263) + option bimverdi_arkivsider_seeded=1"
+  - "ALT LOKALT — INGENTING COMMITTET/PUSHET (bevisst: deploy samlet etter kort 2, Andreas 11.08)"
+summary: "Kort 3 fra synk 11.08 (~/Desktop/bimverdi-synk-11aug.json): «samme redigerbare topp-mal i verktøy og kunnskapskilder som i temagrupper». Bårds krav via Andreas: full Gutenberg-frihet (the_content), IKKE ACF-tekstfelt. LØSNING (valgt av Andreas via AskUserQuestion, over alternativet ekte Pages+page-ID-mapping): ny ikke-offentlig CPT 'arkivside' — én post per offentlig arkiv (deltakere, verktoy, kunnskapskilder, arrangement, artikler, temagrupper), slug = acf_prefix malene alt sender. Ingen offentlig URL (public=false), Gutenberg via show_in_rest, 'Add New' sperret (create_posts=do_not_allow) så lista alltid er de seks faste. Seeding leser gamle options-verdier rått fra wp_options (options_{slug}_tittel/_ingress — trenger ikke ACF) og bevarte REDIGERTE verdier, verifisert: «Verktøy og digitale tjenester» (ikke fallback «Verktøykatalog») + Bårds ingresser fulgte med. archive-intro.php: H1 = postens tittel, innhold rendres i FULL BREDDE under tittel/tag-cloud-raden via bv_redigerbar_topp_html() (gjenbruk av 10.08-helperen inkl. legacy-vakt); count + tag cloud fortsatt malstyrt. VERIFISERT: php -l rent (3 filer), alle 6 arkiver HTTP 200 m/ ny topp og riktig innhold (NB: temagruppe-arkivet ligger på /temagruppe/, ikke /temagrupper/), Chrome-verifisert admin-liste (6 poster, ingen Add New, meny under Innstillinger) + Gutenberg-editor åpner m/ migrert innhold + front /verktoy/ ser riktig ut."
+status: waiting
+detail: |
+  **VENTER / MERK:**
+  1. DEPLOY: bevisst utsatt — commits samlet etter at kort 2 (diskusjonstråd) er
+     bygget. På prod kjører seedingen ved første wp-admin-besøk (editor+) og leser
+     PRODS options-verdier — innhold redigert på prod overlever altså flyttingen.
+  2. Gutenberg-«Preview» finnes ikke for CPT-en (ikke-offentlig) — Bård lagrer og
+     laster arkivsiden på nytt for å se endringer. Si det i Teams-meldingen.
+  3. Scope-beslutning: H1, antall-teller og tag cloud er fortsatt malstyrt; kun
+     brødinnholdet er Gutenberg. Full seksjonsovertakelse = ev. senere sak.
+  4. Minirydding senere: ACF field group for den gamle options-siden ligger igjen
+     (usynlig/foreldreløs) — kan slettes manuelt i ACF-admin, lokalt + prod.
+  5. Kort 2 (diskusjonstråd på /prosjekter/byggchat) er NESTE: full CE-løype
+     (ce-brainstorm → ce-plan → ce-work) per Andreas 11.08. Seeding av fake
+     spørsmål DROPPET — Bård aktiverer styringsgruppa selv.
+
+---
+date: 2026-08-11
+action: still-sporsmal-prototype+nyhetsbrev-nudge+post_content-frigjort+trello-317-lukket+krav20-22-v4-oppfolging
+files:
+  - "mu-plugins/bimverdi-still-sporsmal.php (NY: comments-support på kunnskapskilde/artikkel/verktoy/arrangement, kun innloggede, auto-godkjenning, ingen e-postvarsler, tråding dybde 3)"
+  - "themes/bimverdi-theme/comments.php (NY: «Still spørsmål»-seksjon, UI Contract Variant B, scoped CSS pga prekompilert Tailwind, BIM Verdi-badge på admin-svar, login-CTA for utloggede)"
+  - "themes/bimverdi-theme/single-kunnskapskilde.php + single-artikkel.php (comments_template() koblet inn)"
+  - "mu-plugins/bimverdi-nyhetsbrev-nudge.php (NY: dashboard-nudge for ikke-påmeldte, PRG-handler pamelding/lukk, respekterer GDPR-avmeldte + krav 22)"
+  - "themes/bimverdi-theme/parts/minside/nyhetsbrev-nudge.php (NY) + parts/minside/dashboard.php (nudge + suksessbanner)"
+  - "mu-plugins/bimverdi-foretak-registration.php (beskrivelse → ACF, post_content tom ved opprettelse)"
+  - "mu-plugins/bimverdi-foretak-edit.php (rører ikke post_content lenger — kun ACF; wp_update_post beholdt for post_modified)"
+  - "themes/bimverdi-theme/parts/minside/foretak-rediger.php (post_content-fallback fjernet)"
+  - "ALT LOKALT — INGENTING COMMITTET/PUSHET (94f4ede fra 10.08 også fortsatt upushet)"
+  - "Trello: #317 lukket m/ kommentar + arkivert; statusnotat på #337 (kommentarer); #345 opprettet 10.08 (krav 20 fase 2)"
+  - "bimverdi-context: krav 20 v4 + 22 v4 pushet 10.08 (commit 60f93e0) — implementasjonsstatus per 10.08, kravtekst uendret"
+summary: "Møtedag (synk flyttet 09:45→11:00, bekreftet i transcript ~/Desktop/bimverdi-mote.json). (1) STILL SPØRSMÅL-PROTOTYPE (kort #337): WP innebygd kommentarmotor per avtale m/ Bård 03.08 — kun innloggede (gjest-POST → 403, tetter spam-hullet), direkte publisering u/ godkjenning, ingen varsler fase 1, mentions fase 2. Demo-URL: /kunnskapskilder/kommuneveilederen-for-klima-og-miljo/#still-sporsmal m/ seed-spørsmål (Test Bruker id 15) + BIM Verdi-svar (Claude AI id 2, kommentar 347/348). LÆRDOM: style=div i wp_list_comments lager INGEN .children-wrapper (barn nestes rett i forelder-div) + arbitrary Tailwind-varianter finnes ikke i prekompilert CSS → scoped <style>-blokk. login_text måtte oversettes («Log in to Reply»). (2) NYHETSBREV-NUDGE (Min side): vises når bimverdi_newsletter_subscribed != '1' && !avmeldt && !lukket && can_access(subscribe_newsletter) — begge flyter browser-testet, demo-state nullstilt (nudge synlig på Claude AI). MERK: massesend-lista (bimverdi_nyhetsbrev_mottakere) leser IKKE subscribed-meta (alle brukere minus avmeldte) — nudgen dokumenterer eksplisitt opt-in. (3) POST_CONTENT PÅ FORETAK FRIGJORT (kode): kartlagt lokal+prod (97 foretak prod, 10 m/ post_content, ALLE 10 har ACF-beskrivelse = ren duplikat; registrering skrev KUN post_content, rediger skrev BEGGE). Fikset: registrering → ACF + tom post_content; rediger-handler dropper post_content (vaktpost-testet: overlever lagring, ACF oppdateres, post_modified bumpes); legacy-fallback fjernet. (4) TRELLO: #317 lukket (sortering bekreftet live). (5) KRAV 20/22-OPPFØLGING (10.08, kort #344): v4-dokumenter m/ implementasjonsstatus pushet til bimverdi-context, kort #345 opprettet, svar lagt på #344 — designvalg hard gate vs blokk-vegg+koblingskrav ligger hos Bård, diskusjonspunkt i dagens møte."
+status: waiting
+detail: |
+  **VENTER / NESTE SESJON:**
+  1. DEPLOY: Alt ligger lokalt uten commit. Etter Bård-demo: commit i logiske
+     enheter (still-spørsmål / nudge / post_content-fiks) + push samlet
+     (husk upushet 94f4ede redigerbar topp fra 10.08).
+  2. MIGRERING (/effort xhigh): tøm post_content på de 10 prod-foretakene som
+     duplikerer ACF-beskrivelsen. TA BACKUP av post-ID + innhold FØRST.
+     Deretter kan redigerbar topp (bv_redigerbar_topp) aktiveres på single-foretak.
+  3. DB-SYNK localhost ← prod (task #7): bevisst utsatt — sletter demo-spørsmål
+     (kommentar 347/348 på post 2013) og nudge-state. Kjør etter at demoene er vist.
+  4. BÅRD-BESLUTNINGER fra møtet: (a) hard gate vs blokk-vegg (kort #345/krav 20 v4),
+     (b) skal still-spørsmål også på verktøy/arrangement-maler, (c) go for deploy.
+  5. Teams-varsel til Bård om krav 20/22 v4 (repo-regel) hvis ikke tatt muntlig i møtet.
+  6. Spam-kommentarene Bård nevnte (343 stk lokalt/prod, kort #253): still-spørsmål-
+     løsningen stopper NYE (innlogging kreves), men gamle bør ryddes — egen jobb.
+  7. HOPPET OVER (Andreas 11.08): #4 GitHub-feilsøk CoWork, #6 slette gammelt kontekst-repo.
+
+---
+date: 2026-08-03
+action: felles-kontekstrepo-bimverdi-kontekst-opprettet+pushet+baard-invitert
+files:
+  - "NYTT REPO: github.com/andreasharstad91/bimverdi-kontekst (privat, lokalt /Applications/MAMP/htdocs/bimverdi-kontekst)"
+  - "bimverdi-kontekst/README.md (nyskrevet for delt bruk: roller, commit+pull-flyt, versjonsstrategi, LLM-bruk)"
+  - "bimverdi-kontekst/KOM-I-GANG-BAARD.md (onboarding: GitHub-connector i Claude.ai Project, web-editor for skriving)"
+summary: "Etter møte Andreas–Bård: opprettet delt privat GitHub-repo bimverdi-kontekst som felles kontekstbase (menneske + LLM) for hva BIM Verdi skal være. VIKTIG KILDE-VALG: seedet fra docs/krav/ (nyeste versjoner — 02-ROLLER v5, beslutningslogg v4 m/ B-001…B-031), IKKE fra claude/bard-context/ (mai-pakka på 9+5 filer er foreldede forfedre til docs/krav — Bård reviderte dem videre i sitt Claude.ai Project). Flat filstruktur m/ nummer-prefiks beholdt (00–08 KONTEKST, 20–24 KRAV, 99, prototype-rapporter) fordi det er Bårds vokabular og enklest i Claude.ai Projects. To commits pushet (739abde initial import, 8019405 kom-i-gang-guide). Bård invitert som collaborator via e-post baard@skroghus.no (web-UI — ingen søkbar GitHub-konto på e-posten, API krever brukernavn); invitasjon bekreftet registrert. Plan for Bårds Claude Desktop-kobling (verifisert mot 2026-dok via agent): trinn 1 GitHub-connector i hans Claude.ai Project (les, manuell «Sync now», alle betalte planer, private repoer OK); trinn 2 senere GitHub MCP (remote api.githubcopilot.com/mcp m/ OAuth først, PAT-fallback) for Claude-drevne commits — settes opp live i møte. Skrivevei uten git: GitHub web-editor (dekket i guiden). Memory-fil project_bimverdi_kontekst_repo.md opprettet."
+status: waiting
+detail: |
+  **VENTER PÅ BÅRD:**
+  1. Akseptere collaborator-invitasjonen (må ev. opprette GitHub-konto først —
+     e-posten hans hadde ingen søkbar konto per 03.08)
+  2. Koble GitHub-connectoren i sitt BIM Verdi-Project (KOM-I-GANG-BAARD.md
+     dekker stegene; regn med kjapp skjermdeling)
+  Sjekk aksept-status: gh api repos/andreasharstad91/bimverdi-kontekst/collaborators
+  (da får vi også brukernavnet hans).
+
+  **VENTER PÅ OSS (egen liten jobb når Bård er på og flyten bekreftet):**
+  - Avgjøre docs/krav/ i bimverdi-v2 vs kontekst-repoet: enkleste er synk-script
+    fra kontekst-repo → docs/krav/ + CLAUDE.md-oppdatering som peker på
+    kontekst-repoet som master. Til det er gjort er docs/krav/ en kopi som KAN
+    drifte — kontekst-repoet er master fra nå.
+  - Senere: sette opp GitHub MCC/MCP i Bårds Claude Desktop (trinn 2) i møte.
+
+  **Rammer fra møtet:** Bård fortsetter å lage plugins og laste opp på WP-nettstedet;
+  Andreas+Claude jobber som før med full tilgang (Servebolt MCP, DB, prod+lokalt) —
+  begge får i tillegg den felles kontekstbasen.
+
+---
+
+---
 date: 2026-06-29
 action: synk-29.06-batch2-deployet-verktoy-kildefilter+global-bcc-prod+sorterbare-brukerkolonner
 files:

@@ -33,6 +33,15 @@ get_header(); ?>
                     <div class="bv-prose">
                         <?php the_content(); ?>
                     </div>
+                    <?php
+                    // Diskusjonstråd (pilot: Byggchat, synk 11.08) — kun på sider i
+                    // bimverdi_diskusjon_sider(); alle andre sider er uberørt.
+                    if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
+                        && (comments_open() || get_comments_number() > 0)) : ?>
+                        <div style="margin-top: 48px;">
+                            <?php comments_template(); ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </article>
 
