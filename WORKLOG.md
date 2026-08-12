@@ -4,6 +4,28 @@
 
 ---
 date: 2026-08-12
+action: VARSELGATEN AAPNET PAA PROD — varsler er i drift (kort 2, R12/enhet 7)
+files:
+  - "PROD wp-config.php (IKKE i repoet): define('BIMVERDI_DISKUSJON_VARSLER_APEN', true); lagt inn etter BIMVERDI-blokken. Backup: home/wp-config.php.bak-2026-08-12-pre-gate (md5 5b75893a4ab4550a13a64096c0e76af8)"
+  - "mu-plugins/bimverdi-diskusjon-varsler.php (commit df21dc1: reell avmeldingsvei i footeren — mailto post@bimverdi.no m/ emnefelt)"
+summary: "Andreas ga klarsignal («la oss fjerne den gaten nå, så bård får brukt dette»). Rekkefølge med vilje: avmeldingsveien deployet og hash-verifisert på prod FØR gaten åpnet, så ingen ekte varsel har gått ut uten innsigelsesmulighet (GDPR art. 21(4) — varslene sendes på legitim interesse, avsender er noreply@ så ruten er den bemannede postkassen inntil profil-toggelen i fase 2). wp-config endret trygt: backup utenfor public → ny versjon bygget i /tmp → php -l på kopien → fornuftssjekk på wp-settings-linjen → først deretter flyttet inn. Forside+byggchat 200 etterpå. VERIFISERT ende-til-ende på prod (16/16 PASS): midlertidig mottaker UTENFOR allowlisten (gateapen-mottaker@aharstad.no, aldri ekte medlem) fikk faktisk varsel, ingen GATE LÅST-linjer, nøyaktig én Resend-utsending (ID ce102c80-0a52-40c6-b82b-bd10a334903d), testkopi-banneret borte, avmeldingsveien til stede, global BCC gjenopptatt (bcc=[post@bimverdi.no] som designet). All testdata slettet — 3354 har igjen kun Bårds kommentar 657, ingen gateapen-brukere, ingen restfiler i home."
+status: done
+detail: |
+  VIKTIG, IKKE-RETROAKTIVT: varsler fyrer på comment_post ved publisering.
+  Bårds mention av Anstein Skinnarland (kommentar 657, publisert 12.08 17:54
+  mens gaten var låst) sender IKKE e-post nå i etterkant. Anstein har fortsatt
+  ikke fått noe. Skal han varsles må Bård tagge ham i et nytt innlegg/svar.
+  Manuell etter-sending til ham er bevisst IKKE gjort — det ville vært utgående
+  e-post til et ekte medlem utenfor normal flyt, og krever egen beslutning.
+
+  GJENSTÅR (eies av Andreas/Bård):
+  - R13: push av B-011-overstyringen til BV-2.0-main (ucommittet i bimverdi-context).
+  - R18: styringsgruppe-navneliste fra Bård.
+  - Fase 2: avmeldings-toggel på profilen erstatter mailto-ruten når volum vokser.
+  - Rullebakk om nødvendig: fjern define-linjen i prod wp-config (eller gjenopprett
+    backupen) — gaten er fail-closed, så alt annet enn boolsk true låser igjen.
+---
+date: 2026-08-12
 action: kort-2-statusoppgjor-hva-gjenstar (enhet 7)
 files:
   - "docs/plans/2026-08-11-001-feat-diskusjonstrad-byggchat-plan.md (enhet 7 fått Status-blokk m/ avhuking per delpunkt — ligger utenfor wp-content-repoet)"
