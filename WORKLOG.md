@@ -4,6 +4,19 @@
 
 ---
 date: 2026-08-12
+action: diskusjon-feedbackrunde-1-fra-live-test (kort 2, oppfølging)
+files:
+  - "themes/bimverdi-theme/comments.php (3-linjers klipp m/ «Vis mer»/«Vis mindre» per innlegg — klasse settes av JS så no-JS alltid ser alt; deep-link ?bvk/#comment-N auto-utvider målinnlegget; aria-expanded/aria-controls)"
+  - "themes/bimverdi-theme/assets/js/bv-mentions.js (dropdown åpnes ALDRI uten reelle treff; tom-prefiks-sperre mot kvotesløsing [LIKE er monotont]; skriving etter fullført mention re-trigger ikke søk; @ må stå først/etter blank så e-poster/URL-er i tekst ikke trigger)"
+summary: "Andreas' feedback fra live-test m/ Bård (som publiserte første ekte innlegg m/ fungerende @-mention): (1) innlegg skal klippes til 3 linjer m/ Vis mer, (2) Publiser-knappen «forsvant». Rotårsak (2) reprodusert på prod m/ testbruker: token-regexen tillater mellomrom, så vanlig skriving etter en fullført mention («@Bård Krogshus dette blir…») holdt dropdownen åpen i «Ingen treff»-tilstand — absolutt-posisjonert med hvit bakgrunn NØYAKTIG oppå Publiser-knappen (overlapp verifisert med getBoundingClientRect). Samtidig brant hvert tastetrykk av søkekvoten (50/dag). Fiks: ingen treff → lukk; «Søker …» vises kun når lista alt er åpen; husk tomme prefikser (display_name LIKE er monotont — lengre streng gir aldri treff der kortere ga null); skip tokens som fortsetter forbi valgt mention; ordgrense før @. Alt verifisert lokalt i browser (klipp/toggle/deep-link-utvidelse/mention-scenarioene) — ekte søk gir fortsatt dropdown m/ 8 treff."
+status: done
+detail: |
+  LÆRDOM: autocomplete-dropdowns som legger seg over innhold under feltet må
+  være tomme-tilstands-frie — «Ingen treff»/«Søker …» som blir stående er i
+  praksis en usynlig vegg foran alt under (her: submit-knappen). Åpne kun med
+  reelle, klikkbare treff.
+---
+date: 2026-08-12
 action: diskusjonstrad-deployet-til-prod+R12b-gate-verifisert (kort 2, enhet 7)
 files:
   - "commit 4e9e4d0 (8 filer, +1300) — pushet origin/main, Servebolt autodeploy, alle 7 kodefiler hash-verifisert identiske lokal↔prod"

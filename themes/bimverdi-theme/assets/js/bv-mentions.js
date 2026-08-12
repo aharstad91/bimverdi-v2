@@ -54,6 +54,10 @@
     var tokenStart = -1;
     var debounceTimer = null;
     var reqSeq = 0;
+    // Søket er display_name LIKE — en lengre streng kan aldri gi treff der
+    // en kortere ga null. Husk siste tomme søk så videre skriving på samme
+    // prefiks ikke brenner dagsgrensen (50 søk/dag per konto).
+    var tomPrefiks = null;
 
     function si(melding) {
         live.textContent = melding;
@@ -81,7 +85,21 @@
         if (!m) {
             return null;
         }
-        return { start: caret - m[0].length, tekst: m[1], caret: caret };
+        var start = caret - m[0].length;
+        // «@» må stå først eller etter blank/«(» — e-postadresser og
+        // URL-fragmenter midt i teksten skal aldri trigge søk.
+        if (start > 0 && !/[\s(]/.test(foran.charAt(start - 1))) {
+            return null;
+        }
+        return { start: start, tekst: m[1], caret: caret };
+    }
+
+    /** Tekst som fortsetter forbi en allerede tagget person er vanlig skriving. */
+    function erFerdigMention(tekst) {
+        var lower = tekst.toLowerCase();
+        return valgte.some(function (v) {
+            return lower.indexOf(v.navn.toLowerCase() + ' ') === 0;
+        });
     }
 
     function visRad(tekst, klasse) {
@@ -132,11 +150,6 @@
     function visTreff(data, token) {
         treff = data;
         list.innerHTML = '';
-        if (!treff.length) {
-            visRad('Ingen treff', 'bv-mentions-tom');
-            si('Ingen treff.');
-            return;
-        }
         treff.forEach(function (person, i) {
             var li = document.createElement('li');
             li.className = 'bv-mentions-rad';
@@ -173,8 +186,12 @@
 
     function sok(token) {
         var seq = ++reqSeq;
-        visRad('Søker …', 'bv-mentions-laster');
-        si('Søker …');
+        // Dropdownen dekker innholdet under tekstfeltet (bl.a. Publiser-
+        // knappen), så den åpnes ALDRI uten reelle treff — lastestatus vises
+        // kun når lista allerede er åpen og et treffsett raffineres.
+        if (!list.hidden) {
+            visRad('Søker …', 'bv-mentions-laster');
+        }
         var url = cfg.ajaxUrl
             + '?action=bimverdi_mention_sok'
             + '&nonce=' + encodeURIComponent(cfg.nonce)
@@ -190,8 +207,15 @@
                     lukk(); // Rate-limit/feil → stille fallback til ren tekst.
                     return;
                 }
+                var data = svar.data || [];
+                if (!data.length) {
+                    tomPrefiks = token.tekst.toLowerCase();
+                    lukk();
+                    si('Ingen treff.');
+                    return;
+                }
                 tokenStart = token.start;
-                visTreff(svar.data || [], token);
+                visTreff(data, token);
             })
             .catch(function () {
                 if (seq === reqSeq) {
@@ -203,7 +227,10 @@
     textarea.addEventListener('input', function () {
         clearTimeout(debounceTimer);
         var token = finnToken();
-        if (!token || token.tekst.length < 2) {
+        if (!token
+            || token.tekst.length < 2
+            || erFerdigMention(token.tekst)
+            || (tomPrefiks && token.tekst.toLowerCase().indexOf(tomPrefiks) === 0)) {
             lukk();
             return;
         }

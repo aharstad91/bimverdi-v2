@@ -111,6 +111,11 @@ $login_url = function ($fragment_url) {
 #diskusjon .bv-diskusjon-content { font-size: 14px; color: #57534E; line-height: 1.6; }
 #diskusjon .bv-diskusjon-content p { margin-bottom: 8px; }
 #diskusjon .bv-diskusjon-content p:last-child { margin-bottom: 0; }
+/* Lange innlegg klippes til tre linjer med «Vis mer» — klassen settes av JS,
+   så uten JS vises alltid hele innlegget */
+#diskusjon .bv-diskusjon-content.bv-diskusjon-klipp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+#diskusjon .bv-diskusjon-vis-mer { display: block; margin-top: 6px; padding: 0; border: 0; background: none; font-size: 12px; font-weight: 500; color: #111827; cursor: pointer; transition: color .15s; }
+#diskusjon .bv-diskusjon-vis-mer:hover { color: #F97316; }
 #diskusjon .comment-reply-link { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 500; color: #111827; transition: color .15s; }
 #diskusjon .comment-reply-link:hover { color: #F97316; }
 /* Blurret placeholder for utloggede — pynt over tomme elementer, aldri ekte tekst */
@@ -227,15 +232,44 @@ $login_url = function ($fragment_url) {
 
 <?php if ($innlogget && $comment_count > 0): ?>
 <script>
-/* Deep-link-fokus: :target gir visuell highlight; dette gir tastatur-/
-   skjermleserbrukere samme signal ved å flytte fokus til kommentaren. */
 (function () {
+    /* Lange innlegg klippes til tre linjer med «Vis mer»/«Vis mindre».
+       Klipp-klassen settes her (ikke i PHP) så innlegg aldri kan bli
+       utilgjengelige uten JS. */
+    document.querySelectorAll('#diskusjon .bv-diskusjon-content').forEach(function (innhold, i) {
+        innhold.classList.add('bv-diskusjon-klipp');
+        if (innhold.scrollHeight <= innhold.clientHeight + 2) {
+            innhold.classList.remove('bv-diskusjon-klipp'); // Får plass — ingen knapp.
+            return;
+        }
+        innhold.id = innhold.id || 'bv-diskusjon-innhold-' + i;
+        var knapp = document.createElement('button');
+        knapp.type = 'button';
+        knapp.className = 'bv-diskusjon-vis-mer';
+        knapp.textContent = 'Vis mer';
+        knapp.setAttribute('aria-expanded', 'false');
+        knapp.setAttribute('aria-controls', innhold.id);
+        knapp.addEventListener('click', function () {
+            var klippes = innhold.classList.toggle('bv-diskusjon-klipp');
+            knapp.textContent = klippes ? 'Vis mer' : 'Vis mindre';
+            knapp.setAttribute('aria-expanded', klippes ? 'false' : 'true');
+        });
+        innhold.insertAdjacentElement('afterend', knapp);
+    });
+
+    /* Deep-link-fokus: :target gir visuell highlight; dette gir tastatur-/
+       skjermleserbrukere samme signal ved å flytte fokus til kommentaren —
+       og folder ut innlegget lenken peker på. */
     var m = window.location.hash.match(/^#comment-\d+$/);
     if (!m) return;
     var el = document.getElementById(window.location.hash.slice(1));
     if (!el) return;
     el.setAttribute('tabindex', '-1');
     el.focus({ preventScroll: true });
+    var klippet = el.querySelector(':scope > .bv-diskusjon-content.bv-diskusjon-klipp');
+    if (klippet && klippet.nextElementSibling && klippet.nextElementSibling.classList.contains('bv-diskusjon-vis-mer')) {
+        klippet.nextElementSibling.click();
+    }
 })();
 </script>
 <?php endif; ?>
