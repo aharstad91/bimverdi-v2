@@ -4,6 +4,25 @@
 
 ---
 date: 2026-08-12
+action: R13 (B-011-overstyring) PARKERT paa Andreas' beslutning — kort 2 avsluttet
+files:
+  - "bimverdi-context/bedrift/07-KONTEKST-BESLUTNINGSLOGG-v4.md — overstyringsteksten er SKREVET men blir staaende UCOMMITTET. Ikke reversert, kan plukkes opp naar som helst."
+summary: "Andreas: «okei dropp dette» — pushen av B-011-overstyringen til BV-2.0-main droppes. Teksten er ikke slettet, kun ikke committet. Kort 2 (diskusjonstråd på ByggChat) regnes som levert og avsluttet: all kode live og verifisert på prod, varselgaten åpen og bevist ende-til-ende, feedbackrunde 1 fra Bårds live-test fikset og deployet."
+status: done
+detail: |
+  KONSEKVENS Å VÆRE KLAR OVER (grunnen til at oppføringen ble skrevet i det hele tatt):
+  beslutningsloggen sier fortsatt at BIM Verdi ikke har kommentarer (B-011), mens
+  prod nå faktisk har det på /prosjekter/byggchat/. Loggen leses av Claude.ai i
+  kravspesifiserings-prosjektet, så et fremtidig spørsmål om kommentarfelt vil få
+  svaret «nei, se B-011» — som ikke lenger stemmer. Rettes ved å committe den
+  ferdigskrevne overstyringen når Andreas vil.
+
+  ØVRIG GJENSTÅENDE (uendret): R18 styringsgruppe-navneliste fra Bård; fase 2
+  avmeldings-toggel på profilen (mailto-ruten dekker GDPR-kravet i mellomtiden);
+  etterslepet (kort 3 arkivsider, nyhetsbrev-nudge, minside-endringer) står
+  fortsatt ucommittet lokalt og venter på egen deploy-økt.
+---
+date: 2026-08-12
 action: VARSELGATEN AAPNET PAA PROD — varsler er i drift (kort 2, R12/enhet 7)
 files:
   - "PROD wp-config.php (IKKE i repoet): define('BIMVERDI_DISKUSJON_VARSLER_APEN', true); lagt inn etter BIMVERDI-blokken. Backup: home/wp-config.php.bak-2026-08-12-pre-gate (md5 5b75893a4ab4550a13a64096c0e76af8)"
