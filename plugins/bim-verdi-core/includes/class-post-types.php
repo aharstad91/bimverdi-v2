@@ -54,6 +54,7 @@ class BIM_Verdi_Post_Types {
         $this->register_theme_group();
         $this->register_artikkel();
         $this->register_demo();
+        $this->register_arkivside();
     }
     
     /**
@@ -389,6 +390,59 @@ class BIM_Verdi_Post_Types {
         );
 
         register_post_type('demo', $args);
+    }
+
+    /**
+     * Register Arkivside CPT (Gutenberg-redigerbar topp på arkivsider)
+     *
+     * Erstatter ACF options-siden «Arkivsider» (Bård, synk 11.08: full
+     * Gutenberg-frihet i toppen, som på temagruppe-sidene). Én post per
+     * offentlig arkiv, mappet på slug — se mu-plugins/bimverdi-arkivsider.php
+     * for seeding og visning via parts/components/archive-intro.php.
+     *
+     * Ikke offentlig: postene har ingen egen URL og kan ikke havne i søk —
+     * innholdet vises kun som topp på arkivet de tilhører. 'create_posts'
+     * er sperret slik at lista alltid er de seks faste arkivene; slettes en
+     * post ved uhell faller arkivet tilbake til malens standardtekst.
+     */
+    private function register_arkivside() {
+        $labels = array(
+            'name'                  => _x('Arkivsider', 'Post Type General Name', 'bim-verdi-core'),
+            'singular_name'         => _x('Arkivside', 'Post Type Singular Name', 'bim-verdi-core'),
+            'menu_name'             => __('Arkivsider', 'bim-verdi-core'),
+            // Undermeny-etiketten under Innstillinger — samme navn som den
+            // gamle options-siden, så Bård finner den der han er vant til.
+            'all_items'             => __('Arkivsider', 'bim-verdi-core'),
+            'edit_item'             => __('Rediger arkivside', 'bim-verdi-core'),
+            'search_items'          => __('Søk arkivsider', 'bim-verdi-core'),
+            'not_found'             => __('Ingen arkivsider funnet', 'bim-verdi-core'),
+        );
+
+        $args = array(
+            'label'                 => __('Arkivside', 'bim-verdi-core'),
+            'labels'                => $labels,
+            'supports'              => array('title', 'editor', 'revisions'),
+            'public'                => false,
+            'show_ui'               => true,
+            // Samme sted som den gamle options-siden lå: Innstillinger → Arkivsider.
+            'show_in_menu'          => 'options-general.php',
+            'show_in_admin_bar'     => false,
+            'show_in_nav_menus'     => false,
+            'exclude_from_search'   => true,
+            'publicly_queryable'    => false,
+            'has_archive'           => false,
+            'rewrite'               => false,
+            'capability_type'       => 'post',
+            'map_meta_cap'          => true,
+            'capabilities'          => array(
+                'create_posts' => 'do_not_allow',
+            ),
+            // Gutenberg krever REST-eksponering; postene forblir utilgjengelige
+            // for uinnloggede (REST-tilgang følger edit_posts-capabilities).
+            'show_in_rest'          => true,
+        );
+
+        register_post_type('arkivside', $args);
     }
 
     /**
