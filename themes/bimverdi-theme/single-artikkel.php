@@ -281,57 +281,19 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
     endif;
     ?>
 
-    <!-- Related articles from same temagruppe(s) -->
+    <!-- Ressurs-rigg: fast fot m/ samme tema (erstatter tidligere «Relaterte artikler»-seksjon, jf. møte m/ Bård 18.08.2026) -->
     <?php
-    if ($temagrupper && !is_wp_error($temagrupper)) :
-        $exclude_ids = array(get_the_ID());
-        // Collect IDs already shown from company section
-        if (isset($related_articles) && $related_articles->have_posts()) {
-            $exclude_ids = array_merge($exclude_ids, wp_list_pluck($related_articles->posts, 'ID'));
-        }
-
-        $temagruppe_articles = new WP_Query(array(
-            'post_type' => 'artikkel',
-            'post_status' => 'publish',
-            'posts_per_page' => 3,
-            'post__not_in' => $exclude_ids,
-            'tax_query' => array(array(
-                'taxonomy' => 'temagruppe',
-                'field' => 'term_id',
-                'terms' => wp_list_pluck($temagrupper, 'term_id'),
-            )),
-        ));
-
-        if ($temagruppe_articles->have_posts()) :
+    if ($temagrupper && !is_wp_error($temagrupper) && function_exists('bv_ressurs_rig_render')) :
     ?>
-    <div class="container mx-auto px-4 py-8 lg:py-12 border-t border-[#E5E0D8]">
+    <div class="container mx-auto px-4 pb-12">
         <div class="max-w-5xl mx-auto">
-            <h2 class="text-xl font-bold text-[#1A1A1A] mb-6">
-                Relaterte artikler
-            </h2>
-            <div class="grid md:grid-cols-3 gap-6">
-                <?php while ($temagruppe_articles->have_posts()) : $temagruppe_articles->the_post(); ?>
-                    <div class="bg-white rounded-lg border border-[#E5E0D8] overflow-hidden">
-                        <div class="p-5">
-                            <h3 class="font-semibold text-[#1A1A1A] mb-2">
-                                <a href="<?php the_permalink(); ?>" class="hover:text-[#FF8B5E] transition-colors">
-                                    <?php the_title(); ?>
-                                </a>
-                            </h3>
-                            <?php if (has_excerpt() || get_field('artikkel_ingress')) : ?>
-                                <p class="text-sm text-[#5A5A5A] mb-3"><?php echo wp_trim_words(get_field('artikkel_ingress') ?: get_the_excerpt(), 20); ?></p>
-                            <?php endif; ?>
-                            <span class="text-xs text-[#78716C]"><?php echo bimverdi_format_date(); ?></span>
-                        </div>
-                    </div>
-                <?php endwhile; wp_reset_postdata(); ?>
-            </div>
+            <?php bv_ressurs_rig_render($temagrupper, [
+                'exclude_ids' => ['artikkel' => [get_the_ID()]],
+                'kontekst'    => 'denne artikkelen',
+            ]); ?>
         </div>
     </div>
-    <?php
-        endif;
-    endif;
-    ?>
+    <?php endif; ?>
 
 </article>
 

@@ -118,7 +118,10 @@ class BIM_Verdi_Taxonomies {
             'show_in_rest'      => true,
         );
 
-        register_taxonomy('temagruppe', array('foretak', 'arrangement', 'prosjekt', 'kunnskapskilde', 'artikkel', 'verktoy'), $args);
+        // 'page' lagt til 18.08.2026: prosjekt-sidene (vanlige sider under /prosjekter/,
+        // f.eks. ByggChat) tagges med temagruppe for å drive ressurs-riggen i bunnen.
+        // Prosjekt-CPT-en er deaktivert, så sidene er eneste prosjekt-flate.
+        register_taxonomy('temagruppe', array('foretak', 'arrangement', 'prosjekt', 'kunnskapskilde', 'artikkel', 'verktoy', 'page'), $args);
     }
     
     /**

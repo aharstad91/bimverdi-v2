@@ -44,6 +44,41 @@ if (!function_exists('bv_rr_initials')) {
     }
 }
 
+/**
+ * Meta-benet i verktøyenes dual-source: ACF `formaalstema` lagrer KORTNØKLER
+ * ('prosjekt', 'byggesak', …) som serialisert array — IKKE term-navn. Mappingen
+ * speiler $formaal_meta_map i archive-verktoy.php (fasit for fasetten der).
+ * Tidligere spurte riggen på term-navn og traff aldri (fikset 18.08.2026).
+ *
+ * @param string[] $slugs Temagruppe-slugs.
+ * @return array meta_query-array (OR), eller [] hvis ingen slugs har kortnøkkel.
+ */
+if (!function_exists('bv_rr_formaalstema_meta_query')) {
+    function bv_rr_formaalstema_meta_query(array $slugs) {
+        static $map = [
+            'byggesaksbim' => ['byggesak'],
+            'prosjektbim'  => ['prosjekt', 'prosjektutvikling'],
+            'eiendomsbim'  => ['eiendom'],
+            'miljobim'     => ['miljo'],
+            'sirkbim'      => ['sirk'],
+        ];
+        $clauses = [];
+        foreach ($slugs as $slug) {
+            foreach ($map[$slug] ?? [] as $key) {
+                // Serialisert array-verdi: s:N:"key" — anførselstegnene hindrer
+                // at "prosjekt" matcher "prosjektutvikling". Plain streng dekkes av '='.
+                $clauses[] = ['key' => 'formaalstema', 'value' => '"' . $key . '"', 'compare' => 'LIKE'];
+                $clauses[] = ['key' => 'formaalstema', 'value' => $key, 'compare' => '='];
+            }
+        }
+        if (empty($clauses)) {
+            return [];
+        }
+        $clauses['relation'] = 'OR';
+        return $clauses;
+    }
+}
+
 /** Formater arrangement-dato (ACF-felt arrangement_dato, lagret som Ymd). */
 if (!function_exists('bv_rr_format_dato')) {
     function bv_rr_format_dato($event_id) {
@@ -60,10 +95,60 @@ if (!function_exists('bv_rr_format_dato')) {
 }
 
 /**
+ * Bygg ett verktøy-kort fra en ferdig partisjonert id-liste.
+ * Deler item-markupen mellom «Verktøy fra deltakerne» og «Verktøy fra AEC AI Hub».
+ *
+ * @param int[]  $ids     Verktøy-post-IDer for dette kortet.
+ * @param string $key     Blokk-nøkkel (data-block).
+ * @param string $heading Kortoverskrift.
+ * @param array  $slugs   Temagruppe-slugs (for arkiv-URL).
+ * @param string $kilde   Arkivets kilde-fasettverdi: 'medlem' | 'aec_ai_hub'.
+ * @return array|null Blokk-array, eller null hvis tomt (P4: vis kun det som finnes).
+ */
+if (!function_exists('bv_rr_verktoy_blokk')) {
+    function bv_rr_verktoy_blokk(array $ids, $key, $heading, array $slugs, $kilde) {
+        if (empty($ids)) {
+            return null;
+        }
+        $q = new WP_Query([
+            'post_type' => 'verktoy', 'post__in' => $ids, 'posts_per_page' => 3,
+            'orderby' => 'date', 'order' => 'DESC',
+        ]);
+        $items = [];
+        foreach ($q->posts as $vt) {
+            $logo = get_field('verktoy_logo', $vt->ID);
+            $logo_url = $logo ? (is_array($logo) ? ($logo['url'] ?? '') : wp_get_attachment_url($logo)) : '';
+            if (!$logo_url) { $logo_url = get_post_meta($vt->ID, 'verktoy_logo_url', true); }
+            $cats = wp_get_post_terms($vt->ID, 'verktoykategori', ['fields' => 'names']);
+            $items[] = [
+                'title'  => get_the_title($vt->ID),
+                'href'   => get_permalink($vt->ID),
+                'meta'   => !empty($cats) && !is_wp_error($cats) ? $cats[0] : '',
+                'avatar' => ['src' => $logo_url, 'initials' => bv_rr_initials(get_the_title($vt->ID))],
+            ];
+        }
+        wp_reset_postdata();
+
+        $arkiv_url = bv_rr_arkiv_url('verktoy', $slugs);
+        if ($arkiv_url) {
+            $arkiv_url = add_query_arg('kilde', [$kilde], $arkiv_url);
+        }
+
+        return [
+            'key' => $key, 'heading' => $heading, 'icon' => 'wrench',
+            'total' => count($ids), 'items' => $items,
+            'arkiv_url' => $arkiv_url,
+        ];
+    }
+}
+
+/**
  * Bygg matrise-blokkene for et sett temagruppe-termer (union).
  *
  * @param array $terms WP_Term-objekter (f.eks. fra wp_get_post_terms).
- * @param array $opts  ['exclude_event_id' => int]  ekskluder dette arrangementet fra arrangementer-blokken.
+ * @param array $opts  ['exclude_event_id' => int]   ekskluder dette arrangementet fra arrangementer-blokken (legacy-alias).
+ *                     ['exclude_ids' => array]      map post_type => int[] som ekskluderes fra tilhørende blokk,
+ *                                                   f.eks. ['artikkel' => [123]] på artikkelsider.
  * @return array ['blocks' => array, 'total' => int, 'slugs' => array]
  */
 if (!function_exists('bv_ressurs_rig_build')) {
@@ -77,9 +162,15 @@ if (!function_exists('bv_ressurs_rig_build')) {
 
         $term_ids = array_map(function ($t) { return (int) $t->term_id; }, $terms);
         $slugs    = array_map(function ($t) { return $t->slug; }, $terms);
-        $names    = array_map(function ($t) { return $t->name; }, $terms);
-        $exclude  = (int) ($opts['exclude_event_id'] ?? 0);
-        $not_in   = $exclude ? [$exclude] : [];
+        $exclude_map = [];
+        foreach ((array) ($opts['exclude_ids'] ?? []) as $pt => $ids) {
+            $exclude_map[$pt] = array_filter(array_map('intval', (array) $ids));
+        }
+        $exclude = (int) ($opts['exclude_event_id'] ?? 0);
+        if ($exclude) {
+            $exclude_map['arrangement'][] = $exclude;
+        }
+        $not_in = $exclude_map['arrangement'] ?? [];
 
         $tax = [[
             'taxonomy' => 'temagruppe',
@@ -116,49 +207,48 @@ if (!function_exists('bv_ressurs_rig_build')) {
         }
         wp_reset_postdata();
 
-        // ── Verktøy (dual-source: taxonomy ∪ ACF formaalstema (NAVN)) ──
+        // ── Verktøy (dual-source: taxonomy ∪ ACF formaalstema (kortnøkler)) ──
+        // Splittet i to kort (møte m/ Bård 18.08.2026): deltakerregistrerte verktøy
+        // først, AEC AI Hub-synkede som eget kort — hub-verktøyene skal ikke
+        // drukne deltakernes. Skille-kriterium = meta `_bv_aec_source` EXISTS,
+        // samme kilde til sannhet som kilde-fasetten i archive-verktoy.php.
         $q = new WP_Query([
             'post_type' => 'verktoy', 'posts_per_page' => -1, 'fields' => 'ids', 'tax_query' => $tax,
         ]);
         $verktoy_ids = $q->posts;
         wp_reset_postdata();
 
-        $q = new WP_Query([
-            'post_type' => 'verktoy', 'posts_per_page' => -1, 'fields' => 'ids',
-            'meta_query' => [['key' => 'formaalstema', 'value' => $names, 'compare' => 'IN']],
-        ]);
-        $verktoy_ids = array_values(array_unique(array_merge($verktoy_ids, $q->posts)));
-        wp_reset_postdata();
-
-        if (!empty($verktoy_ids)) {
+        $formaal_mq = bv_rr_formaalstema_meta_query($slugs);
+        if (!empty($formaal_mq)) {
             $q = new WP_Query([
-                'post_type' => 'verktoy', 'post__in' => $verktoy_ids, 'posts_per_page' => 3,
-                'orderby' => 'date', 'order' => 'DESC',
+                'post_type' => 'verktoy', 'posts_per_page' => -1, 'fields' => 'ids',
+                'meta_query' => $formaal_mq,
             ]);
-            $items = [];
-            foreach ($q->posts as $vt) {
-                $logo = get_field('verktoy_logo', $vt->ID);
-                $logo_url = $logo ? (is_array($logo) ? ($logo['url'] ?? '') : wp_get_attachment_url($logo)) : '';
-                if (!$logo_url) { $logo_url = get_post_meta($vt->ID, 'verktoy_logo_url', true); }
-                $cats = wp_get_post_terms($vt->ID, 'verktoykategori', ['fields' => 'names']);
-                $items[] = [
-                    'title'  => get_the_title($vt->ID),
-                    'href'   => get_permalink($vt->ID),
-                    'meta'   => !empty($cats) && !is_wp_error($cats) ? $cats[0] : '',
-                    'avatar' => ['src' => $logo_url, 'initials' => bv_rr_initials(get_the_title($vt->ID))],
-                ];
-            }
-            $blocks[] = [
-                'key' => 'verktoy', 'heading' => 'Verktøy', 'icon' => 'wrench',
-                'total' => count($verktoy_ids), 'items' => $items,
-                'arkiv_url' => bv_rr_arkiv_url('verktoy', $slugs),
-            ];
+            $verktoy_ids = array_values(array_unique(array_merge($verktoy_ids, $q->posts)));
             wp_reset_postdata();
         }
+
+        $aec_ids = [];
+        if (!empty($verktoy_ids)) {
+            $q = new WP_Query([
+                'post_type' => 'verktoy', 'post__in' => $verktoy_ids, 'posts_per_page' => -1,
+                'fields' => 'ids',
+                'meta_query' => [['key' => '_bv_aec_source', 'compare' => 'EXISTS']],
+            ]);
+            $aec_ids = $q->posts;
+            wp_reset_postdata();
+        }
+        $deltaker_ids = array_values(array_diff($verktoy_ids, $aec_ids));
+
+        $blokk = bv_rr_verktoy_blokk($deltaker_ids, 'verktoy_deltakere', 'Verktøy fra deltakerne', $slugs, 'medlem');
+        if ($blokk) { $blocks[] = $blokk; }
+        $blokk = bv_rr_verktoy_blokk($aec_ids, 'verktoy_aec', 'Verktøy fra AEC AI Hub', $slugs, 'aec_ai_hub');
+        if ($blokk) { $blocks[] = $blokk; }
 
         // ── Artikler ──
         $q = new WP_Query([
             'post_type' => 'artikkel', 'posts_per_page' => 3,
+            'post__not_in' => $exclude_map['artikkel'] ?? [0],
             'orderby' => 'date', 'order' => 'DESC', 'tax_query' => $tax,
         ]);
         if ($q->found_posts > 0) {
@@ -269,7 +359,9 @@ if (!function_exists('bv_ressurs_rig_build')) {
  * Tom hvis ingen temagruppe / ingen innhold.
  *
  * @param array $terms WP_Term-objekter.
- * @param array $opts  ['exclude_event_id' => int, 'heading' => string|null]
+ * @param array $opts  ['exclude_event_id' => int, 'exclude_ids' => array, 'heading' => string|null,
+ *                      'kontekst' => string]  'kontekst' = «dette arrangementet» (default) /
+ *                      «denne artikkelen» / «dette prosjektet» — brukes i standard-overskriften.
  */
 if (!function_exists('bv_ressurs_rig_render')) {
     function bv_ressurs_rig_render(array $terms, array $opts = []) {
@@ -280,9 +372,10 @@ if (!function_exists('bv_ressurs_rig_render')) {
             return; // P4: vis kun det som finnes
         }
 
-        $total   = (int) $data['total'];
-        $heading = $opts['heading']
-            ?? sprintf('%d ressurser som er kategorisert med samme tema som dette arrangementet', $total);
+        $total    = (int) $data['total'];
+        $kontekst = $opts['kontekst'] ?? 'dette arrangementet';
+        $heading  = $opts['heading']
+            ?? sprintf('%d ressurser som er kategorisert med samme tema som %s', $total, $kontekst);
 
         // CSS kun én gang per request.
         static $css_printed = false;

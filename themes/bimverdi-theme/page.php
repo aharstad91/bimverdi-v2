@@ -42,6 +42,20 @@ get_header(); ?>
                             <?php comments_template(); ?>
                         </div>
                     <?php endif; ?>
+                    <?php
+                    // Ressurs-rigg på prosjekt-sider (undersider av /prosjekter/, møte m/
+                    // Bård 18.08.2026). Vises kun når siden er tagget med temagruppe —
+                    // utagget side og alle sider utenfor /prosjekter/ er uendret.
+                    $bv_prosjekter_side = get_page_by_path('prosjekter');
+                    if ($bv_prosjekter_side
+                        && in_array($bv_prosjekter_side->ID, get_post_ancestors(get_the_ID()), true)
+                        && function_exists('bv_ressurs_rig_render')) {
+                        $bv_side_temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
+                        if ($bv_side_temagrupper && !is_wp_error($bv_side_temagrupper)) {
+                            bv_ressurs_rig_render($bv_side_temagrupper, ['kontekst' => 'dette prosjektet']);
+                        }
+                    }
+                    ?>
                 </div>
             </article>
 

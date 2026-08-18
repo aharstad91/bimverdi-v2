@@ -137,16 +137,45 @@ if ($tg_tax) {
     $verktoy_ids = $q->posts;
     wp_reset_postdata();
 }
-$q = new WP_Query([
-    'post_type' => 'verktoy', 'posts_per_page' => -1, 'fields' => 'ids',
-    'meta_query' => [['key' => 'formaalstema', 'value' => $temagruppe_navn, 'compare' => '=']],
-]);
-$verktoy_ids = array_unique(array_merge($verktoy_ids, $q->posts));
-wp_reset_postdata();
+// formaalstema lagrer KORTNØKLER (serialisert array), ikke term-navn — den gamle
+// '='-spørringen på navn traff aldri. Bruker delt helper fra inc/ressurs-rig.php
+// (samme mapping som kilde-fasetten i archive-verktoy.php). Fikset 18.08.2026.
+$formaal_mq = function_exists('bv_rr_formaalstema_meta_query')
+    ? bv_rr_formaalstema_meta_query([$temagruppe_slug]) : [];
+if (!empty($formaal_mq)) {
+    $q = new WP_Query([
+        'post_type' => 'verktoy', 'posts_per_page' => -1, 'fields' => 'ids',
+        'meta_query' => $formaal_mq,
+    ]);
+    $verktoy_ids = array_unique(array_merge($verktoy_ids, $q->posts));
+    wp_reset_postdata();
+}
 
+// Splittet i to kort (møte m/ Bård 18.08.2026): deltakerregistrerte verktøy først,
+// AEC AI Hub-synkede som eget kort. Skille = meta `_bv_aec_source` EXISTS (samme
+// kriterium som kilde-fasetten i archive-verktoy.php og bv_rr_verktoy_blokk()).
+// Bevisst duplisert fra inc/ressurs-rig.php — denne siden er frikoblet fra riggen.
+$verktoy_aec_ids = [];
 if (!empty($verktoy_ids)) {
     $q = new WP_Query([
-        'post_type' => 'verktoy', 'post__in' => $verktoy_ids, 'posts_per_page' => 3,
+        'post_type' => 'verktoy', 'post__in' => $verktoy_ids, 'posts_per_page' => -1,
+        'fields' => 'ids',
+        'meta_query' => [['key' => '_bv_aec_source', 'compare' => 'EXISTS']],
+    ]);
+    $verktoy_aec_ids = $q->posts;
+    wp_reset_postdata();
+}
+$verktoy_deltaker_ids = array_values(array_diff($verktoy_ids, $verktoy_aec_ids));
+
+foreach ([
+    ['ids' => $verktoy_deltaker_ids, 'key' => 'verktoy_deltakere', 'heading' => 'Verktøy fra deltakerne', 'kilde' => 'medlem'],
+    ['ids' => $verktoy_aec_ids,      'key' => 'verktoy_aec',       'heading' => 'Verktøy fra AEC AI Hub', 'kilde' => 'aec_ai_hub'],
+] as $vgruppe) {
+    if (empty($vgruppe['ids'])) {
+        continue;
+    }
+    $q = new WP_Query([
+        'post_type' => 'verktoy', 'post__in' => $vgruppe['ids'], 'posts_per_page' => 3,
         'orderby' => 'date', 'order' => 'DESC',
     ]);
     $items = [];
@@ -162,10 +191,14 @@ if (!empty($verktoy_ids)) {
             'avatar'  => ['src' => $logo_url, 'initials' => bv_tg_initials(get_the_title($vt->ID))],
         ];
     }
+    $vgruppe_url = bv_tg_arkiv_url('verktoy', $temagruppe_slug);
+    if ($vgruppe_url) {
+        $vgruppe_url = add_query_arg('kilde', [$vgruppe['kilde']], $vgruppe_url);
+    }
     $blocks[] = [
-        'key' => 'verktoy', 'heading' => 'Verktøy', 'icon' => 'wrench',
-        'total' => count($verktoy_ids), 'items' => $items,
-        'arkiv_url' => bv_tg_arkiv_url('verktoy', $temagruppe_slug),
+        'key' => $vgruppe['key'], 'heading' => $vgruppe['heading'], 'icon' => 'wrench',
+        'total' => count($vgruppe['ids']), 'items' => $items,
+        'arkiv_url' => $vgruppe_url,
     ];
     wp_reset_postdata();
 }
