@@ -47,6 +47,9 @@ function bimverdi_pagination($args = []) {
         'show_all'  => false,
         'mid_size'  => 1,
         'class'     => '',
+        // Query-args som skal følge med på hver side-lenke (f.eks. aktive arkivfiltre).
+        // Uten dette mister «side 2» filtrene brukeren står i.
+        'add_args'  => [],
     ];
 
     $args = wp_parse_args($args, $defaults);
@@ -69,6 +72,9 @@ function bimverdi_pagination($args = []) {
     if ($args['base']) {
         $paginate_args['base'] = $args['base'];
     }
+    if (!empty($args['add_args']) && is_array($args['add_args'])) {
+        $paginate_args['add_args'] = $args['add_args'];
+    }
 
     $links = paginate_links($paginate_args);
 
@@ -77,6 +83,7 @@ function bimverdi_pagination($args = []) {
     $wrapper_class = 'bv-pagination';
     if ($args['class']) $wrapper_class .= ' ' . $args['class'];
 
+    // get_pagenum_link() bygger fra gjeldende URL og tar dermed vare på query-args selv.
     $prev_url = ($current > 1) ? get_pagenum_link($current - 1) : '';
     $next_url = ($current < $total) ? get_pagenum_link($current + 1) : '';
 

@@ -281,6 +281,12 @@ require_once get_template_directory() . '/inc/ressurs-rig.php';
 require_once get_template_directory() . '/inc/redigerbar-topp.php';
 
 /**
+ * Load Verktøykatalog (server-side filtrering/paginering + AJAX for archive-verktoy.php)
+ * Provides bv_verktoy_katalog_page() / _render() / _counts() og wp_ajax_bv_verktoy_filter
+ */
+require_once get_template_directory() . '/inc/verktoy-katalog.php';
+
+/**
  * Load ACF Field Groups (with graceful fallback if file missing)
  */
 $acf_temagruppe_fields = get_template_directory() . '/inc/acf/temagruppe-fields.php';
