@@ -46,23 +46,31 @@ class BV_AIHUB_Tool_Upserter {
     }
 
     /**
-     * Champion-filter (behold `champion=true`) + deterministisk dedup-collapse på source_key.
+     * Champion-filter (valgfritt) + deterministisk dedup-collapse på source_key.
      *
-     * Dedup-regel (Decision 7), ETTER champion-filter:
+     * CHAMPION-GATEN ER KILDEAVHENGIG. Fixturen (juni 2026) har en `Champion`-kolonne der
+     * 238 av 475 var import-kandidater — der er gaten PÅ. Stefan fjernet kolonnen fra den
+     * live hub-en i august 2026, og Bård godkjente import av hele basen — der er gaten AV,
+     * og alle rader slipper gjennom til dedup. Kilden bestemmer via `champion_gate` i
+     * Tool_Source-kontrakten; orkestratoren videresender den hit. Default = PÅ, slik at
+     * eksisterende kall (selftest, adminrapport) er uendret.
+     *
+     * Dedup-regel (Decision 7), ETTER evt. champion-filter:
      *   - gruppestørrelse 1 → uendret.
      *   - identiske rader (superhuman) → stille tap-fri collapse, INGEN warning.
      *   - navnekonflikt (youai) → behold lengste navn (deterministisk), OR-union kategorier,
      *     OR ai_driven, og LOGG warning (redaksjonell avgjørelse — kan overstyres).
      *   - dronedeploy kolliderer IKKE etter filter (kun én Champion-rad) → ingen collapse.
      *
-     * @param array $tools Alle validerte rader fra Tool_Source (475).
-     * @return array{tools:array,warnings:array,dropped:int} unike champions (236) + dedup-warnings.
+     * @param array $tools           Alle validerte rader fra Tool_Source.
+     * @param bool  $require_champion Krev `champion=true` for å slippe gjennom (default true).
+     * @return array{tools:array,warnings:array,dropped:int} unike rader + dedup-warnings.
      */
-    public static function champion_filter_and_dedup(array $tools) {
+    public static function champion_filter_and_dedup(array $tools, $require_champion = true) {
         $groups = array();
         foreach ($tools as $t) {
-            if (empty($t['champion'])) {
-                continue; // ikke-Champion → hopp over (237 av 475)
+            if ($require_champion && empty($t['champion'])) {
+                continue; // ikke-Champion → hopp over (237 av 475 i fixturen)
             }
             $key = isset($t['identity_key']) ? (string) $t['identity_key'] : '';
             if ($key === '') {
@@ -93,6 +101,7 @@ class BV_AIHUB_Tool_Upserter {
 
             $cats  = array();
             $ai    = false;
+            $champ = false;
             $names = array();
             foreach ($rows as $r) {
                 foreach ((array) $r['categories'] as $c) {
@@ -101,13 +110,15 @@ class BV_AIHUB_Tool_Upserter {
                     }
                 }
                 $ai      = $ai || !empty($r['ai_driven']);
+                $champ   = $champ || !empty($r['champion']);
                 $names[] = (string) $r['name'];
             }
 
             $merged               = $winner;
             $merged['categories'] = $cats;
             $merged['ai_driven']  = $ai;
-            $merged['champion']   = true;
+            // OR (ikke hardkodet true): med gaten AV kan ingen av radene være champion.
+            $merged['champion']   = $champ;
             $unique[]             = $merged;
 
             // Warning KUN ved reell navnekonflikt (youai) — identiske rader (superhuman) er stille.
@@ -241,6 +252,9 @@ class BV_AIHUB_Tool_Upserter {
         $ai_flag  = !empty($row['ai_driven']) ? '1' : '0';
         $name_key = function_exists('bv_aec_name_key') ? bv_aec_name_key($name) : '';
         $raw_cat  = self::raw_category_str(isset($map['raw_categories']) ? $map['raw_categories'] : array());
+        // Notion page-id fra live-kilden: lagres KUN som sekundær korrelasjon (sporbarhet,
+        // manuell feilsøking). Slår aldri opp poster og blir aldri primæridentitet.
+        $notion_id = isset($row['notion_id']) && is_string($row['notion_id']) ? sanitize_text_field($row['notion_id']) : '';
 
         $multi   = false;
         $post_id = self::find_managed_post_id($source_key, $multi);
@@ -272,6 +286,9 @@ class BV_AIHUB_Tool_Upserter {
             update_post_meta($post_id, '_bv_unmapped', $result['unmapped'] ? '1' : '0');
             update_post_meta($post_id, '_bv_orphaned', '0'); // re-treff: tøm evt. orphan-flagg
             update_post_meta($post_id, '_bv_aec_synced_at', current_time('mysql'));
+            if ($notion_id !== '') {
+                update_post_meta($post_id, '_bv_aec_notion_id', $notion_id);
+            }
             // NB: `_bv_aec_last_sync_status` settes ALDRI på update (kun ved insert) — ellers ville
             // synken «adoptere» en menneske-publisering og senere kunne avpublisere den ved orphan.
             self::set_kilde($post_id);
@@ -319,6 +336,9 @@ class BV_AIHUB_Tool_Upserter {
         update_post_meta($new_id, '_bv_orphaned', '0');
         update_post_meta($new_id, '_bv_aec_last_sync_status', 'draft'); // KUN ved insert
         update_post_meta($new_id, '_bv_aec_synced_at', current_time('mysql'));
+        if ($notion_id !== '') {
+            update_post_meta($new_id, '_bv_aec_notion_id', $notion_id);
+        }
 
         // Innholdsfelt + termer + kilde + (valgfri) eier-foretak.
         self::write_content_fields($new_id, $title, $kort, $lang, $lenke, $logo, $term_names);

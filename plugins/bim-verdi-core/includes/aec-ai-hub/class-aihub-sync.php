@@ -77,8 +77,16 @@ class BV_AIHUB_Sync {
                 $stats['warnings']['fetch'] = $fetch['warnings'];
             }
 
-            // 3) Champion-filter + dedup-collapse.
-            $dd        = BV_AIHUB_Tool_Upserter::champion_filter_and_dedup($fetch['tools']);
+            $stats['source'] = isset($fetch['source']) ? (string) $fetch['source'] : 'ukjent';
+
+            // 3) Champion-filter (kildeavhengig gate) + dedup-collapse.
+            // Fixturen har Champion-kolonne → gate PÅ (238 av 475). Live-hub-en har den
+            // ikke lenger (Stefan fjernet den; Bård godkjente full import) → gate AV, alle
+            // rader går videre. Mangler nøkkelen (filter-injisert fetch i selftest) → PÅ.
+            $gate = array_key_exists('champion_gate', $fetch) ? (bool) $fetch['champion_gate'] : true;
+            $stats['champion_gate'] = $gate;
+
+            $dd        = BV_AIHUB_Tool_Upserter::champion_filter_and_dedup($fetch['tools'], $gate);
             $champions = $dd['tools'];
 
             $stats['warnings']['dedup']             = $dd['warnings'];
@@ -174,13 +182,15 @@ class BV_AIHUB_Sync {
      */
     private static function base_stats($dry_run) {
         return array(
-            'ok'           => false,
-            'error'        => null,
-            'dry_run'      => (bool) $dry_run,
-            'aborted'      => false,
-            'mutex_bailed' => false,
-            'floor'        => false,
-            'counts'       => array(
+            'ok'            => false,
+            'error'         => null,
+            'dry_run'       => (bool) $dry_run,
+            'aborted'       => false,
+            'mutex_bailed'  => false,
+            'floor'         => false,
+            'source'        => '',    // 'fixture' | 'live'
+            'champion_gate' => true,  // false = hele kilden importeres (live)
+            'counts'        => array(
                 'fetched_total'           => 0,
                 'champions'               => 0,
                 'unique_champions'        => 0,
@@ -192,13 +202,13 @@ class BV_AIHUB_Sync {
                 'orphaned'                => 0,
                 'orphan_skipped_override' => 0,
             ),
-            'warnings'     => array(
+            'warnings'      => array(
                 'fetch'             => array(),
                 'dedup'             => array(),
                 'rows'              => array(),
                 'status_divergence' => array(),
             ),
-            'source_meta'  => array(),
+            'source_meta'   => array(),
         );
     }
 }

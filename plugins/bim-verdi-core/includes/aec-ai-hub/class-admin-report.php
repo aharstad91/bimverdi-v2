@@ -121,6 +121,18 @@ class BV_AIHUB_Admin_Report {
         if (!class_exists('BV_AIHUB_Tool_Source') || !class_exists('BV_AIHUB_Tool_Upserter')) {
             return null;
         }
+
+        // Live-kilden er 16 HTTP-kall mot Notion — den skal IKKE hentes på nytt hver gang
+        // noen åpner rapportsiden. Cache forhåndsvisningen i en time.
+        $is_live    = BV_AIHUB_Tool_Source::is_live();
+        $cache_key  = 'bv_aihub_preview_live';
+        if ($is_live) {
+            $cached = get_transient($cache_key);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
         try {
             $fetch = BV_AIHUB_Tool_Source::fetch_tools();
         } catch (\Throwable $e) {
@@ -134,7 +146,9 @@ class BV_AIHUB_Admin_Report {
             );
         }
 
-        $dd       = BV_AIHUB_Tool_Upserter::champion_filter_and_dedup($fetch['tools']);
+        // Champion-gaten følger kilden (fixture = på, live = av; se Tool_Source).
+        $gate     = array_key_exists('champion_gate', $fetch) ? (bool) $fetch['champion_gate'] : true;
+        $dd       = BV_AIHUB_Tool_Upserter::champion_filter_and_dedup($fetch['tools'], $gate);
         $unique   = $dd['tools'];
         $unmapped = 0;
         if (class_exists('BV_AIHUB_Category_Mapper')) {
@@ -146,16 +160,24 @@ class BV_AIHUB_Admin_Report {
                 }
             }
         }
-        return array(
-            'ok'          => true,
-            'meta'        => isset($fetch['meta']) ? $fetch['meta'] : array(),
-            'counts'      => isset($fetch['counts']) ? $fetch['counts'] : array(),
-            'fetch_warn'  => isset($fetch['warnings']) ? $fetch['warnings'] : array(),
-            'unique'      => count($unique),
-            'dropped'     => (int) $dd['dropped'],
-            'dedup_warn'  => $dd['warnings'],
-            'unmapped'    => $unmapped,
+        $preview = array(
+            'ok'            => true,
+            'source'        => isset($fetch['source']) ? (string) $fetch['source'] : 'fixture',
+            'champion_gate' => $gate,
+            'meta'          => isset($fetch['meta']) ? $fetch['meta'] : array(),
+            'counts'        => isset($fetch['counts']) ? $fetch['counts'] : array(),
+            'fetch_warn'    => isset($fetch['warnings']) ? $fetch['warnings'] : array(),
+            'unique'        => count($unique),
+            'dropped'       => (int) $dd['dropped'],
+            'dedup_warn'    => $dd['warnings'],
+            'unmapped'      => $unmapped,
         );
+
+        if ($is_live) {
+            set_transient($cache_key, $preview, HOUR_IN_SECONDS);
+        }
+
+        return $preview;
     }
 
     /** Render-callback. */
@@ -277,14 +299,24 @@ class BV_AIHUB_Admin_Report {
             return;
         }
 
-        $counts = $preview['counts'];
+        $counts   = $preview['counts'];
+        $is_live  = isset($preview['source']) && $preview['source'] === 'live';
         echo '<table class="widefat striped" style="max-width:640px;"><tbody>';
-        echo '<tr><td>' . esc_html('Rader totalt i fixturen') . '</td><td>' . (int) ($counts['total'] ?? 0) . '</td></tr>';
-        echo '<tr><td>' . esc_html('Champions (import-kandidater)') . '</td><td>' . (int) ($counts['champion'] ?? 0) . '</td></tr>';
+        echo '<tr><td>' . esc_html('Kilde') . '</td><td>' . esc_html($is_live ? 'live hub (notion.site)' : 'committet fixture') . '</td></tr>';
+        echo '<tr><td>' . esc_html($is_live ? 'Rader totalt i hub-en' : 'Rader totalt i fixturen') . '</td><td>' . (int) ($counts['total'] ?? 0) . '</td></tr>';
+        if (empty($preview['champion_gate'])) {
+            echo '<tr><td>' . esc_html('Champion-filter') . '</td><td>' . esc_html('AV — hele kilden er import-kandidat') . '</td></tr>';
+        } else {
+            echo '<tr><td>' . esc_html('Champions (import-kandidater)') . '</td><td>' . (int) ($counts['champion'] ?? 0) . '</td></tr>';
+        }
         echo '<tr><td>' . esc_html('— droppet i dedup (kolliderende URL-er)') . '</td><td>' . (int) $preview['dropped'] . '</td></tr>';
         echo '<tr><td><strong>' . esc_html('= Unike etter dedup (det som importeres)') . '</strong></td><td><strong>' . (int) $preview['unique'] . '</strong></td></tr>';
         echo '<tr><td style="color:#996800;">' . esc_html('— hvorav umappbare → «Ukategorisert» (draft)') . '</td><td><strong>' . (int) $preview['unmapped'] . '</strong></td></tr>';
-        echo '<tr><td>' . esc_html('AI-drevet blant champions') . '</td><td>' . (int) ($counts['champion_and_ai'] ?? $counts['ai_driven'] ?? 0) . '</td></tr>';
+        if (empty($preview['champion_gate'])) {
+            echo '<tr><td>' . esc_html('AI-drevet (badge)') . '</td><td>' . (int) ($counts['ai_driven'] ?? 0) . '</td></tr>';
+        } else {
+            echo '<tr><td>' . esc_html('AI-drevet blant champions') . '</td><td>' . (int) ($counts['champion_and_ai'] ?? $counts['ai_driven'] ?? 0) . '</td></tr>';
+        }
         echo '</tbody></table>';
 
         if ($floor_risk) {

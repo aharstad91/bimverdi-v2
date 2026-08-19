@@ -2833,21 +2833,32 @@ class BIM_Verdi_CLI_Commands {
     }
 
     /**
-     * Synk AEC AI Hub-verktøy (Trinn 1: committet fixture → managed draft-verktøy).
+     * Synk AEC AI Hub-verktøy (kilde → managed draft-verktøy).
      *
      * Idempotent, deltaker-trygg upsert mot URL-nøkkel. Publiserer ALDRI selv —
-     * 236 utkast godkjennes via `aihub-publish-batch` (Decision 6). Trinn 1 leser
-     * den committede fixturen (BV_AIHUB_LIVE=false); live-Notion er Trinn 2.
+     * utkast godkjennes via `aihub-publish-batch` (Decision 6).
+     *
+     * To kilder: den committede fixturen (juni 2026: 475 rader, Champion-filter → 236)
+     * eller live hub-databasen på notion.site (1921 rader, ingen Champion-kolonne → alt
+     * importeres). Kildevalg: `--live` / `--fixture` for én kjøring, eller varig med
+     * `wp bimverdi aihub-source live`.
      *
      * ## OPTIONS
      *
      * [--dry-run]
      * : Beregn alt (filter/dedup/mapping/insert-vs-update) uten å skrive.
      *
+     * [--live]
+     * : Tvang: les live Notion-kilden for denne kjøringen.
+     *
+     * [--fixture]
+     * : Tvang: les den committede fixturen for denne kjøringen.
+     *
      * ## EXAMPLES
      *
      *     wp bimverdi aihub-sync --dry-run
-     *     wp bimverdi aihub-sync
+     *     wp bimverdi aihub-sync --live --dry-run
+     *     wp bimverdi aihub-sync --live
      *
      * @subcommand aihub-sync
      * @param array $args
@@ -2856,8 +2867,20 @@ class BIM_Verdi_CLI_Commands {
     public function aihub_sync($args, $assoc_args) {
         $dry_run = isset($assoc_args['dry-run']);
 
+        if (isset($assoc_args['live']) && isset($assoc_args['fixture'])) {
+            WP_CLI::error('--live og --fixture kan ikke kombineres.');
+        }
+        if (isset($assoc_args['live'])) {
+            add_filter('bimverdi_aihub_live', '__return_true', 99);
+        }
+        if (isset($assoc_args['fixture'])) {
+            add_filter('bimverdi_aihub_live', '__return_false', 99);
+        }
+
+        $is_live = BV_AIHUB_Tool_Source::is_live();
+
         WP_CLI::log('=== AEC AI Hub Sync ===');
-        WP_CLI::log('Kilde: ' . ((defined('BV_AIHUB_LIVE') && BV_AIHUB_LIVE) ? 'LIVE (Trinn 2)' : 'committet fixture (Trinn 1)'));
+        WP_CLI::log('Kilde: ' . ($is_live ? 'LIVE (notion.site — hele basen)' : 'committet fixture (Champion-filtrert)'));
         WP_CLI::log('Modus: ' . ($dry_run ? 'DRY RUN' : 'LIVE SKRIV'));
         WP_CLI::log('');
 
@@ -2870,9 +2893,31 @@ class BIM_Verdi_CLI_Commands {
             WP_CLI::error('Fase 1-abort (ingen poster rørt): ' . $s['error']);
         }
 
+        if (!empty($s['source_meta']['partition_counts'])) {
+            $parts = $s['source_meta']['partition_counts'];
+            WP_CLI::log('Partisjoner (Notion-kategori → rader):');
+            foreach ($parts as $label => $n) {
+                if ($n > 0) {
+                    WP_CLI::log(sprintf('  %-22s %d', $label, $n));
+                }
+            }
+            WP_CLI::log('');
+        }
+        foreach (array('schema', 'partition', 'skipped_rows') as $wkey) {
+            if (!empty($s['warnings']['fetch'][$wkey])) {
+                foreach ((array) $s['warnings']['fetch'][$wkey] as $w) {
+                    WP_CLI::warning($w);
+                }
+            }
+        }
+
         $c = $s['counts'];
         WP_CLI::log("Hentet (totalt):     {$c['fetched_total']}");
-        WP_CLI::log("Champions:           {$c['champions']}");
+        if (!empty($s['champion_gate'])) {
+            WP_CLI::log("Champions:           {$c['champions']}  (champion-gate PÅ)");
+        } else {
+            WP_CLI::log('Champion-gate:       AV — hele kilden importeres');
+        }
         WP_CLI::log("Unike (etter dedup): {$c['unique_champions']}  (droppet {$c['dedup_dropped']})");
         WP_CLI::log("Insert:              {$c['inserted']}");
         WP_CLI::log("Update:              {$c['updated']}");
@@ -2930,6 +2975,103 @@ class BIM_Verdi_CLI_Commands {
             WP_CLI::error("{$res['fail']} selftest-assertion(er) feilet.");
         }
         WP_CLI::success('Alle selftest-assertions bestått.');
+    }
+
+    /**
+     * Vis eller sett hvilken AEC AI Hub-kilde synken leser (fixture eller live Notion).
+     *
+     * Uten argument: vis nåværende valg. Med `live`/`fixture`: sett option-en varig for
+     * dette miljøet (localhost kan stå på live mens produksjon fortsatt står på fixture).
+     *
+     * ## OPTIONS
+     *
+     * [<mode>]
+     * : `live` eller `fixture`. Utelat for å bare vise status.
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi aihub-source
+     *     wp bimverdi aihub-source live
+     *
+     * @subcommand aihub-source
+     * @param array $args
+     * @param array $assoc_args
+     */
+    public function aihub_source($args, $assoc_args) {
+        $option = BV_AIHUB_Tool_Source::OPTION_LIVE;
+
+        if (!empty($args[0])) {
+            $mode = strtolower(trim($args[0]));
+            if (!in_array($mode, array('live', 'fixture'), true)) {
+                WP_CLI::error('Ukjent modus «' . $args[0] . '». Bruk `live` eller `fixture`.');
+            }
+            update_option($option, $mode === 'live' ? 1 : 0, false);
+            WP_CLI::success('Kilde satt til ' . $mode . '.');
+        }
+
+        WP_CLI::log('Konstant BV_AIHUB_LIVE: ' . ((defined('BV_AIHUB_LIVE') && BV_AIHUB_LIVE) ? 'true' : 'false'));
+        WP_CLI::log('Option ' . $option . ': ' . (get_option($option, 0) ? '1 (live)' : '0 (fixture)'));
+        WP_CLI::log('Effektiv kilde: ' . (BV_AIHUB_Tool_Source::is_live() ? 'LIVE (notion.site)' : 'committet fixture'));
+    }
+
+    /**
+     * Styr den ukentlige AEC AI Hub-synken (WP-Cron). AV som standard.
+     *
+     * `status` viser om den er på og når den kjører neste gang. `enable`/`disable` slår
+     * den på/av. `run` kjører den nå (samme kodevei som cron, inkl. rapport-e-post) —
+     * nyttig for å verifisere oppsettet én gang før man overlater det til planleggeren.
+     *
+     * ## OPTIONS
+     *
+     * [<action>]
+     * : `status` (default), `enable`, `disable` eller `run`.
+     *
+     * ## EXAMPLES
+     *
+     *     wp bimverdi aihub-cron status
+     *     wp bimverdi aihub-cron enable
+     *     wp bimverdi aihub-cron run
+     *
+     * @subcommand aihub-cron
+     * @param array $args
+     * @param array $assoc_args
+     */
+    public function aihub_cron($args, $assoc_args) {
+        $action = !empty($args[0]) ? strtolower(trim($args[0])) : 'status';
+
+        if (!in_array($action, array('status', 'enable', 'disable', 'run'), true)) {
+            WP_CLI::error('Ukjent handling «' . $args[0] . '». Bruk status, enable, disable eller run.');
+        }
+
+        if ($action === 'enable' || $action === 'disable') {
+            $res = BV_AIHUB_Cron::set_enabled($action === 'enable');
+            WP_CLI::success('Ukentlig synk er nå ' . ($res['enabled'] ? 'PÅ' : 'AV') . '.');
+        }
+
+        if ($action === 'run') {
+            WP_CLI::log('Kjører synken nå via cron-kodeveien (skriver til databasen)…');
+            $s = BV_AIHUB_Cron::run();
+            if (empty($s['ok'])) {
+                WP_CLI::error('Synken feilet: ' . (isset($s['error']) ? $s['error'] : 'ukjent'));
+            }
+            $c = $s['counts'];
+            WP_CLI::success(sprintf('Ferdig: %d nye, %d oppdatert, %d hoppet over.', $c['inserted'], $c['updated'], $c['skipped']));
+        }
+
+        $st = BV_AIHUB_Cron::status();
+        WP_CLI::log('Ukentlig synk: ' . ($st['enabled'] ? 'PÅ' : 'AV'));
+        WP_CLI::log('Neste kjøring: ' . ($st['next_run'] ? get_date_from_gmt(gmdate('Y-m-d H:i:s', $st['next_run']), 'Y-m-d H:i') : 'ikke planlagt'));
+        WP_CLI::log('Rapport til:   ' . (defined('BV_AIHUB_REPORT_EMAIL') ? BV_AIHUB_REPORT_EMAIL : '(ikke satt)'));
+
+        if (!empty($st['last_run'])) {
+            $l = $st['last_run'];
+            WP_CLI::log(sprintf(
+                'Siste kjøring: %s (%s, kilde=%s)',
+                isset($l['at']) ? $l['at'] : '?',
+                !empty($l['ok']) ? 'OK' : 'FEILET',
+                isset($l['source']) ? $l['source'] : '?'
+            ));
+        }
     }
 
     /**
@@ -2992,7 +3134,12 @@ class BIM_Verdi_CLI_Commands {
             $label     = $t->name;
         }
 
-        // Managed + draft + IKKE umappbar.
+        // Managed + draft + IKKE umappbar + IKKE forsvunnet fra kilden.
+        // Orphan-vakten er nødvendig: et verktøy som er borte fra hub-en er avpublisert av
+        // orphan-rekonsilieringen og ligger som utkast med mappet temagruppe. Uten dette
+        // filteret ville batch-publiseringen sende det ut igjen, og neste synk avpublisere
+        // det på nytt — en evig vipp. Alle managed poster har `_bv_orphaned` satt ('0'/'1'),
+        // så `!=` er trygt her.
         $q = new WP_Query(array(
             'post_type'      => defined('BV_CPT_TOOL') ? BV_CPT_TOOL : 'verktoy',
             'post_status'    => 'draft',
@@ -3003,6 +3150,7 @@ class BIM_Verdi_CLI_Commands {
                 'relation' => 'AND',
                 array('key' => '_bv_aec_managed', 'value' => '1'),
                 array('key' => '_bv_unmapped', 'value' => '1', 'compare' => '!='),
+                array('key' => '_bv_orphaned', 'value' => '1', 'compare' => '!='),
             ),
             'tax_query'      => $tax_query,
         ));
@@ -3041,7 +3189,10 @@ class BIM_Verdi_CLI_Commands {
                 WP_CLI::warning("Kunne ikke publisere {$pid}: " . $res->get_error_message());
                 continue;
             }
-            // Synken «adopterer» den nye statusen så den ikke avpubliseres senere ved orphan.
+            // Synken «adopterer» statusen: publiseringen er dermed SYNKENS egen handling.
+            // Konsekvens (Decision 8): forsvinner verktøyet fra kilden, avpubliserer
+            // orphan-rekonsilieringen det igjen — nettopp fordi den bare angrer eget arbeid.
+            // Skal et verktøy være publisert uavhengig av kilden, sett `_bv_aec_manual_override=1`.
             update_post_meta($pid, '_bv_aec_last_sync_status', 'publish');
             $published++;
         }

@@ -25,12 +25,27 @@ define('BIM_VERDI_CORE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BIM_VERDI_CORE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BIM_VERDI_CORE_PLUGIN_FILE', __FILE__);
 
-// --- AEC AI Hub-synk (Trinn 1) ----------------------------------------------
+// --- AEC AI Hub-synk ---------------------------------------------------------
 // Se includes/aec-ai-hub/README.md + docs/plans/2026-06-03-002-…-plan.md.
-// Trinn 1 kjører UTEN live Notion-tilgang, mot en committet JSON-fixture, og
-// publiserer ALDRI automatisk (godkjenning er en separat bulk/batch-handling).
+// Kilden er enten den committede JSON-fixturen (juni 2026, 475 rader / 238 Champions)
+// eller den live hub-databasen på notion.site (1921 rader, ingen Champion-kolonne).
+// Importen publiserer ALDRI automatisk — godkjenning er en separat bulk/batch-handling.
 if (!defined('BV_AIHUB_LIVE')) {
-    define('BV_AIHUB_LIVE', false);          // false = les committet fixture; true = Trinn 2 live-stub (kaster)
+    // Default = fixture. Live slås på per miljø med `wp bimverdi aihub-source live`
+    // (option), én kjøring med CLI-flagget `--live`, eller denne konstanten i wp-config.
+    define('BV_AIHUB_LIVE', false);
+}
+// Live-kilden: Stjepan Mikulić' offentlige AEC AI Hub-side. Ingen token — siden er
+// publisert, og notion.site sine v3-endepunkter svarer uautentisert.
+if (!defined('BV_AIHUB_NOTION_BASE')) {
+    define('BV_AIHUB_NOTION_BASE', 'https://aiinaec.notion.site');
+}
+if (!defined('BV_AIHUB_NOTION_PAGE_ID')) {
+    define('BV_AIHUB_NOTION_PAGE_ID', 'b6e6eebe-8809-4e0e-9b49-95da38e96768');
+}
+// Mottaker for ukentlig synk-rapport. Må stå i BV_AIHUB_Cron::ALLOWED_RECIPIENTS.
+if (!defined('BV_AIHUB_REPORT_EMAIL')) {
+    define('BV_AIHUB_REPORT_EMAIL', 'andreas@aharstad.no');
 }
 if (!defined('BV_AIHUB_AUTOPUBLISH')) {
     define('BV_AIHUB_AUTOPUBLISH', false);   // hard sikring: importeren setter ALDRI 'publish' selv
@@ -125,7 +140,10 @@ class BIM_Verdi_Core {
         // Load AEC AI Hub-synk delte hjelpefunksjoner (bv_aec_normalize_url, bv_aec_name_key).
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/helpers.php';
 
-        // Load AEC AI Hub-datakilde (fixture-leser + Trinn 2 live-stub). Ren klassedefinisjon,
+        // Load AEC AI Hub Notion-klient (Trinn 2 live-kilde: notion.site v3-endepunkter).
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-notion-client.php';
+
+        // Load AEC AI Hub-datakilde (fixture-leser + live Notion-henting). Ren klassedefinisjon,
         // ingen side-effekter — instansieres/kalles av orkestratoren i senere units (Fase C+).
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-tool-source.php';
 
@@ -141,6 +159,11 @@ class BIM_Verdi_Core {
 
         // Load AEC AI Hub-selftest (committet, self-cleaning; drives av `wp bimverdi aihub-selftest`).
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-selftest.php';
+
+        // Load AEC AI Hub ukentlig synk (WP-Cron). AV som standard — slås på med
+        // `wp bimverdi aihub-cron enable` etter en overvåket førstegangskjøring.
+        require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/class-aihub-cron.php';
+        BV_AIHUB_Cron::init();
 
         // Load AEC AI Hub-frontend-hjelpere (AI-badge, attribusjon, Kilde-verdi) brukt av temaets maler.
         require_once BIM_VERDI_CORE_PLUGIN_DIR . 'includes/aec-ai-hub/frontend.php';
