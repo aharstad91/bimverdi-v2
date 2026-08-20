@@ -78,9 +78,10 @@ function bv_verktoy_temagruppe_options() {
 /**
  * Type-fasetten. Verdiene er ACF-etiketter; nøkkelen brukes i URL-en.
  *
- * NB: praktisk sett et deltakerverktøy-filter — hub-verktøyene har ingen Type-verdi og
- * faller derfor ut av treffene når fasetten brukes. Avgjort 19.08.2026 at det skal
- * synliggjøres i UI-et; se docs/plans/2026-08-19-001-…-plan.md punkt 6.
+ * Gjelder hele katalogen. Hub-verktøyene hadde ingen Type-verdi fram til 20.08.2026, da
+ * Bård bestemte at alle skal stå som «Programvare» — se BV_AIHUB_Tool_Upserter::set_type_ressurs().
+ * Det opphever avgjørelsen 19.08 om å avgrense fasetten til deltakerverktøy
+ * (docs/plans/2026-08-19-001-…-plan.md punkt 6).
  *
  * @return array key => label
  */

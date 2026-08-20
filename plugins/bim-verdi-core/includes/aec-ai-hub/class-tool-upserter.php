@@ -36,6 +36,9 @@ class BV_AIHUB_Tool_Upserter {
     /** ACF `kilde`-select-verdi for synkede verktøy. */
     const KILDE_VALUE = 'aec_ai_hub';
 
+    /** ACF `type_ressurs`-verdi for alle hub-verktøy (Bård 20.08.2026). Se set_type_ressurs(). */
+    const TYPE_RESSURS_VALUE = 'Programvare';
+
     /** Statuser som teller som «eksisterende managed post» ved oppslag (alt unntatt trash/auto-draft). */
     private static function lookup_statuses() {
         return array('draft', 'pending', 'publish', 'future', 'private');
@@ -292,6 +295,7 @@ class BV_AIHUB_Tool_Upserter {
             // NB: `_bv_aec_last_sync_status` settes ALDRI på update (kun ved insert) — ellers ville
             // synken «adoptere» en menneske-publisering og senere kunne avpublisere den ved orphan.
             self::set_kilde($post_id);
+            self::set_type_ressurs($post_id);
 
             $result['action']  = 'update';
             $result['post_id'] = $post_id;
@@ -343,6 +347,7 @@ class BV_AIHUB_Tool_Upserter {
         // Innholdsfelt + termer + kilde + (valgfri) eier-foretak.
         self::write_content_fields($new_id, $title, $kort, $lang, $lenke, $logo, $term_names);
         self::set_kilde($new_id);
+        self::set_type_ressurs($new_id);
         self::set_owner_foretak($new_id);
 
         $result['action']  = 'insert';
@@ -457,6 +462,44 @@ class BV_AIHUB_Tool_Upserter {
             update_field('kilde', self::KILDE_VALUE, $post_id);
         } else {
             update_post_meta($post_id, 'kilde', self::KILDE_VALUE);
+        }
+    }
+
+    /**
+     * ACF `type_ressurs` → «Programvare» — men KUN når feltet er tomt.
+     *
+     * Bårds beslutning i synk 20.08.2026: «Alt er programvare sånn som jeg ser det. Jeg ville
+     * ha satt alt til programvare.» Dette overstyrer avgjørelsen 19.08 om å gjøre Type til et
+     * rent deltakerverktøy-filter (plan 2026-08-19-001, punkt 6) — hub-verktøyene får nå en
+     * Type-verdi, så fasetten dekker hele katalogen igjen.
+     *
+     * Verdien kommer IKKE fra kilden; den er en beslutning vi påfører. Derfor fyll-hvis-tom
+     * i stedet for overskriv (samme resonnement som set_owner_foretak): retter Bård et enkelt
+     * verktøy til «Nettside», skal ikke neste ukentlige synk sette det tilbake. At kallet
+     * også står i UPDATE-grenen er med vilje — det etterfyller verktøy som ble importert før
+     * denne beslutningen, uten et eget migreringsskript.
+     *
+     * `Programvare` er nøkkelen i ACF-feltets choices (radio, return_format=value), altså
+     * samme streng som skjemaet i Min side skriver.
+     */
+    private static function set_type_ressurs($post_id) {
+        $current = function_exists('get_field')
+            ? get_field('type_ressurs', $post_id)
+            : get_post_meta($post_id, 'type_ressurs', true);
+
+        // Radio i dag, men eldre poster bærer serialiserte arrays fra en tidligere
+        // checkbox-konfigurasjon — tom-sjekken må tåle begge.
+        if (is_array($current)) {
+            $current = implode('', array_map('strval', $current));
+        }
+        if (trim((string) $current) !== '') {
+            return;
+        }
+
+        if (function_exists('update_field')) {
+            update_field('type_ressurs', self::TYPE_RESSURS_VALUE, $post_id);
+        } else {
+            update_post_meta($post_id, 'type_ressurs', self::TYPE_RESSURS_VALUE);
         }
     }
 
