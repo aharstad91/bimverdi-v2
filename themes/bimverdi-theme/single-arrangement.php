@@ -318,6 +318,18 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                 </section>
                 <?php endif; ?>
 
+                <?php
+                // Diskusjon: kommentartråd under arrangementet (synk m/ Bård 20.08).
+                // Gjelder alle arrangementer, også avholdte — folk skal kunne stille
+                // spørsmål før, under og etter. Aktivering styres av
+                // bimverdi_diskusjon_aktiv() i mu-plugins/bimverdi-still-sporsmal.php;
+                // comments.php har samme vakt og rendrer ingenting uten den.
+                if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
+                    && (comments_open() || get_comments_number() > 0)) {
+                    comments_template();
+                }
+                ?>
+
             </div>
 
             <!-- Sidebar -->

@@ -82,6 +82,13 @@ $comment_count = (int) get_comments_number();
 $innlogget     = is_user_logged_in();
 $permalink     = get_permalink();
 
+// Ingressen tilpasses konteksten. På arrangementer er formålet Bård beskrev
+// 20.08 spørsmål før, under og etter — teksten sier det, så deltakerne skjønner
+// at tråden lever gjennom hele arrangementet og ikke bare i etterkant.
+$bv_diskusjon_ingress = get_post_type() === 'arrangement'
+    ? 'Har du spørsmål eller innspill til arrangementet? Still dem her &mdash; før, underveis eller i etterkant. Tagg gjerne inn folk med <span class="font-medium">@navn</span>.'
+    : 'Del tanker, meninger og spørsmål med andre i nettverket &mdash; og tagg gjerne inn folk med <span class="font-medium">@navn</span>.';
+
 // Deep-link-mål fra e-postlenke (?bvk={comment_id}) — alltid absint,
 // og godtas kun hvis kommentaren finnes, er godkjent og hører til denne siden.
 $bvk_id      = absint($_GET['bvk'] ?? 0);
@@ -140,8 +147,7 @@ $login_url = function ($fragment_url) {
 <section id="diskusjon" class="border-t border-[#E7E5E4] pt-10">
     <h2 class="text-lg font-bold text-[#111827] mb-2">Diskusjon</h2>
     <p class="text-sm text-[#57534E] mb-1 max-w-prose">
-        Del tanker, meninger og spørsmål med andre i nettverket &mdash;
-        og tagg gjerne inn folk med <span class="font-medium">@navn</span>.
+        <?php echo wp_kses($bv_diskusjon_ingress, ['span' => ['class' => []]]); ?>
     </p>
     <p class="text-xs text-[#78716C] mb-8 max-w-prose">
         Inntil videre er dette en tjeneste for gratisbrukere og deltakere.

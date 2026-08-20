@@ -2,16 +2,21 @@
 /**
  * Plugin Name: BIM Verdi - Diskusjon (kommentarer)
  * Description: WordPress-kommentarer som diskusjonstråd mellom aktørene i nettverket. Pilot: kun Byggchat-siden. Kun innloggede kan delta, innlegg publiseres direkte, tråding dybde 3.
- * Version: 2.0.0
+ * Version: 2.1.0
  *
  * Historikk:
  * - 03.08 (synk m/ Bård): innebygd kommentarmotor rammet inn som «Still spørsmål»
  *   på fire CPT-er (kunnskapskilde, artikkel, verktoy, arrangement).
  * - 11.08 (synk m/ Bård): reframet til aktør-til-aktør-diskusjon, pilotert på
- *   /prosjekter/byggchat/. CPT-aktiveringen er gatet AV (R17 i
- *   docs/plans/2026-08-11-001) — reaktivering er en egen, senere beslutning
- *   etter pilot-evalueringen (~1. sept, ødemark-risikoen styrer). Koden og
- *   filteret står klare.
+ *   /prosjekter/byggchat/. CPT-aktiveringen gatet AV (R17 i
+ *   docs/plans/2026-08-11-001) i påvente av pilot-evalueringen.
+ * - 20.08 (synk m/ Bård): arrangement slått PÅ — «legg ut kommentarfeltet under
+ *   de to arrangementene og også under alle nye arrangement som opprettes […]
+ *   alt som heter arrangement». Formålet er spørsmål før, under og etter
+ *   demoene 27.08 og 03.09. Artikler holdes bevisst utenfor inntil videre
+ *   (Bård: «vi venter litt med artikler»). Abonnér-på-tråd (Arnstein
+ *   Skinnarlands ønske om varsel på alle innlegg, ikke bare mentions) er
+ *   vurdert og nedprioritert i samme møte.
  */
 
 if (!defined('ABSPATH')) {
@@ -19,12 +24,14 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * CPT-er der kommentarer er aktive. Tom i piloten (R17) — prototypens fire
- * typer reaktiveres eventuelt via filteret når evalueringen sier utvid.
+ * CPT-er der kommentarer er aktive. «arrangement» gjelder ALLE arrangementer,
+ * også avholdte — comments_open-filteret under overstyrer lagret comment_status,
+ * så ingen masse-oppdatering av de 136 publiserte postene er nødvendig.
+ * Kunnskapskilde, artikkel og verktoy står fortsatt av (R17).
  * Filter: bimverdi_sporsmal_post_types
  */
 function bimverdi_sporsmal_post_types() {
-    return apply_filters('bimverdi_sporsmal_post_types', []);
+    return apply_filters('bimverdi_sporsmal_post_types', ['arrangement']);
 }
 
 /**
