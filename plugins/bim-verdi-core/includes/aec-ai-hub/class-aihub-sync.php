@@ -109,7 +109,7 @@ class BV_AIHUB_Sync {
                 ));
             }
 
-            // Sørg for at «Ukategorisert»-holdetermen finnes (idempotent, sen hekting).
+            // Sørg for at «Andre kategorier»-termen finnes (idempotent, sen hekting).
             if (!$dry_run) {
                 BV_AIHUB_Category_Mapper::ensure_unmapped_term();
             }

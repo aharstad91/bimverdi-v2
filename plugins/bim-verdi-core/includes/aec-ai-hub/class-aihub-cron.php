@@ -174,7 +174,7 @@ class BV_AIHUB_Cron {
             $lines[] = sprintf('Nye utkast:            %d', $get('inserted'));
             $lines[] = sprintf('Oppdatert:             %d', $get('updated'));
             $lines[] = sprintf('Hoppet over:           %d', $get('skipped'));
-            $lines[] = sprintf('Umappet kategori:      %d  (ligger som utkast under «Ukategorisert»)', $get('unmapped'));
+            $lines[] = sprintf('Utenfor matrisen:      %d  (ligger som utkast under «Andre kategorier»)', $get('unmapped'));
             $lines[] = sprintf('Forsvunnet fra kilden: %d', $get('orphaned'));
 
             if (!empty($stats['floor'])) {

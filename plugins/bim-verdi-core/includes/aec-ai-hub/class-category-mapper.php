@@ -4,13 +4,14 @@
  *
  * Deterministisk mapping fra kildens AEC-kategori til BIM Verdis temagruppe-termer
  * (de 6 faste: ByggesaksBIM, ProsjektBIM, EiendomsBIM, MiljøBIM, SirkBIM, BIMtech).
- * Umappbare kategorier → en egen «Ukategorisert»-holdeterm + unmapped=true (ALDRI termløse) —
- * verktøyene holdes som draft til remapping til en ekte temagruppe.
+ * Kategorier utenfor matrisen → temagruppen «Andre kategorier» + unmapped=true (ALDRI termløse).
+ * Bård besluttet 20.08.2026 at disse skal være en synlig, publiserbar gruppe på linje med de
+ * seks — ikke en holdekategori som ventet på remapping (som var ordningen fram til da).
  *
  * ── MAPPING: Bårds bekreftede matrise (2026-06-09) ────────────────────────────
  * Kilde: Bårds CSV «BIM-AEC - Ark 1» (kategori → BIM Verdi-temagruppe, med eksplisitt
- * «Ukategorisert»-kolonne for catch-all). De 11 radene under er matrisen eksakt.
- * Kategorier UTENFOR matrisen → «Ukategorisert». Juster `$map` (eller hekt
+ * catch-all-kolonne). De 11 radene under er matrisen eksakt.
+ * Kategorier UTENFOR matrisen → «Andre kategorier». Juster `$map` (eller hekt
  * `bimverdi_aec_category_map`-filteret) ved senere endringer — ingen annen kode trenger det.
  *
  * Naming-avvik mellom matrise og faktiske kildedata (FLAGG til Bård):
@@ -18,7 +19,7 @@
  *     (de 15 reelle kategoriene). Tatt med for fullstendighet — uskadelig (matcher ingenting).
  *   - Dataene har «Structural Design» (4 Champions), men den finnes IKKE i matrisen. Behandlet
  *     som data-ekvivalent av «Engineering» → mappet til ProsjektBIM (Andreas-godkjent 2026-06-09).
- *     Bekreft med Bård ved anledning; fjern raden fra $map hvis han vil ha den i «Ukategorisert».
+ *     Bekreft med Bård ved anledning; fjern raden fra $map hvis han vil ha den i «Andre kategorier».
  *
  * Multi-mapping er Bårds INTENSJON (matrisen gir selv Data Analysis → 5 termer, AEC
  * Hackathon → 5, Robotics → 4). Med `append=false` får et slikt verktøy alle termene og
@@ -33,13 +34,16 @@ if (!defined('ABSPATH')) {
 
 class BV_AIHUB_Category_Mapper {
 
-    /** Holdeterm-navn for umappbare kategorier (Bårds catch-all-navn; egen temagruppe-term, ikke termløs). */
-    const UNMAPPED_TERM = 'Ukategorisert';
+    /**
+     * Termnavn for kategorier utenfor Bårds matrise. Bårds ordvalg 20.08.2026 —
+     * en ekte, synlig temagruppe, ikke en holdekategori.
+     */
+    const UNMAPPED_TERM = 'Andre kategorier';
 
     /**
      * AEC-kategori → temagruppe-termnavn (kun MAPPBARE rader).
      *
-     * Kategorier som IKKE finnes her behandles som umappbare → «Ukategorisert». De kjente
+     * Kategorier som IKKE finnes her behandles som umappbare → «Andre kategorier». De kjente
      * umappbare (se known_unmappable()) er bevisst utelatt her av nettopp den grunn.
      *
      * @return array<string,string[]>
@@ -47,7 +51,7 @@ class BV_AIHUB_Category_Mapper {
     public static function map() {
         // Bårds matrise «BIM-AEC - Ark 1» (2026-06-09), eksakt. Termnavn må matche taksonomiens
         // 6 faste termer EKSAKT (inkl. «MiljøBIM» med ø) — ellers lager wp_set_object_terms
-        // dupliserte termer. Kategorier som IKKE står her → «Ukategorisert» (catch-all).
+        // dupliserte termer. Kategorier som IKKE står her → «Andre kategorier» (catch-all).
         $map = array(
             // AEC-kategori (kildenavn)  =>  temagruppe-termer (Bårds x-er per rad)
             'Design Development'   => array('ByggesaksBIM', 'ProsjektBIM'),
@@ -117,7 +121,8 @@ class BV_AIHUB_Category_Mapper {
         $term_names = array_values(array_unique($term_names));
 
         if (empty($term_names)) {
-            // Umappbar (kjent umappbar ELLER ukjent kategori) → Ukategorisert, draft, raw bevart.
+            // Utenfor matrisen (kjent umappbar ELLER ukjent kategori) → «Andre kategorier»,
+            // draft ved import, raw bevart. Publiseres eksplisitt per gruppe, som de mappede.
             return array(
                 'term_names'     => array(self::UNMAPPED_TERM),
                 'unmapped'       => true,
@@ -133,7 +138,7 @@ class BV_AIHUB_Category_Mapper {
     }
 
     /**
-     * Sørg for at «Ukategorisert»-termen finnes i temagruppe-taksonomien (idempotent, guardet).
+     * Sørg for at «Andre kategorier»-termen finnes i temagruppe-taksonomien (idempotent, guardet).
      *
      * Må kalles sent (etter at taksonomien er registrert) — typisk fra upserteren rett før
      * term-tildeling. Returnerer term_id, eller false hvis taksonomien mangler / insert feiler.
@@ -155,12 +160,12 @@ class BV_AIHUB_Category_Mapper {
             self::UNMAPPED_TERM,
             'temagruppe',
             array(
-                'description' => 'Holdekategori (Bårds «Ukategorisert») for eksternt synkede verktøy med umappbar kildekategori. Holdes som draft og ekskluderes fra offentlig temagruppe-nav/filter til verktøyet remappes til en ekte temagruppe.',
+                'description' => 'Samlegruppe for eksternt synkede verktøy hvis kildekategori ikke finnes i Bårds temagruppe-matrise (Assistant, Learning, AR/VR/MR, News m.fl.). Bårds beslutning 20.08.2026: skal vises og kunne publiseres som en egen gruppe.',
             )
         );
 
         if (is_wp_error($res)) {
-            error_log('[BV_AIHUB] kunne ikke opprette «Ukategorisert»-term: ' . $res->get_error_message());
+            error_log('[BV_AIHUB] kunne ikke opprette «' . self::UNMAPPED_TERM . '»-term: ' . $res->get_error_message());
             return false;
         }
 

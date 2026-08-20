@@ -237,7 +237,7 @@ class BV_AIHUB_Tool_Upserter {
         }
         $result['source_key'] = $source_key;
 
-        // Kategori → temagruppe-termer (umappbar → «Ukategorisert» + unmapped=true).
+        // Kategori → temagruppe-termer (utenfor matrisen → «Andre kategorier» + unmapped=true).
         $cats = isset($row['categories']) ? $row['categories'] : array();
         $map  = BV_AIHUB_Category_Mapper::map_tool_categories($cats);
         $result['unmapped'] = !empty($map['unmapped']);

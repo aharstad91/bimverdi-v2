@@ -40,8 +40,13 @@ if (!defined('BV_VERKTOY_PER_PAGE')) {
 }
 
 /**
- * Temagruppe-fasetten: de 6 offisielle termene i fast merkevare-rekkefølge.
- * Navn hentes fra taksonomien (ett sannhetspunkt); «Ukategorisert» holdes utenfor.
+ * Temagruppe-fasetten: Bårds 6 offisielle termer i fast merkevare-rekkefølge, med
+ * «Andre kategorier» sist. Navn hentes fra taksonomien (ett sannhetspunkt).
+ *
+ * «Andre kategorier» samler AEC AI Hub-verktøy hvis kildekategori ikke finnes i
+ * matrisen (Assistant, Learning, AR/VR/MR, News). Bård besluttet 20.08.2026 at de
+ * skal være en synlig gruppe; sist i rekkefølgen fordi den ikke er en merkevare-
+ * temagruppe. Fasetten faller stille bort hvis termen ikke finnes i miljøet.
  *
  * @return array slug => visningsnavn
  */
@@ -51,7 +56,7 @@ function bv_verktoy_temagruppe_options() {
         return $options;
     }
 
-    $order   = array('byggesaksbim', 'prosjektbim', 'eiendomsbim', 'miljobim', 'sirkbim', 'bimtech');
+    $order   = array('byggesaksbim', 'prosjektbim', 'eiendomsbim', 'miljobim', 'sirkbim', 'bimtech', 'andre-kategorier');
     $by_slug = array();
     $terms   = get_terms(array('taxonomy' => 'temagruppe', 'hide_empty' => false));
     if (!is_wp_error($terms)) {

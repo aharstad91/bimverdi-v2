@@ -132,7 +132,7 @@ gir ingen synk-eierskap.
 | `_bv_aec_raw_category` | Rå kategoristreng fra kilden (enkeltverdi i denne eksporten). |
 | `_bv_aec_synced_at` | Tidsstempel siste synk. |
 | `_bv_aec_last_sync_status` | Statusen synken sist satte — synk auto-transisjonerer status KUN når nåværende status == denne (angrer bare egen handling). |
-| `_bv_unmapped` | `1` når kategorien er umappbar (→ «Ukategorisert»-term, holdes som draft). |
+| `_bv_unmapped` | `1` når kildekategorien ikke finnes i Bårds matrise (→ «Andre kategorier»-term). Fortsatt et nyttig datafaktum for rapportering, men ikke lenger en sperre mot publisering. |
 | `_bv_orphaned` | `1` når et tidligere managed verktøy ikke lenger finnes i kilden (soft-unpublish til draft, aldri hard-delete). |
 | `_bv_aec_manual_override` | Fryser både felt OG status mot videre synk. |
 
@@ -169,16 +169,20 @@ alle dup-er her er løsbare av regelen.
 
 ---
 
-## Kategorisering → temagruppe (umappbare → «Ukategorisert»)
+## Kategorisering → temagruppe (utenfor matrisen → «Andre kategorier»)
 
 `wp_set_object_terms('temagruppe', …, append=false)` (gated på `_bv_aec_managed`) er
 autoritativ. De 6 gyldige termene: ByggesaksBIM, ProsjektBIM, EiendomsBIM, MiljøBIM,
 SirkBIM, BIMtech. **Ingen `formaalstema`-mirror** (det filteret er allerede ødelagt).
 
-Umappbare etter Bårds matrise (55: Assistant 38, AR/VR/MR 6, Structural Design 4, News 4,
-Learning 3 — AEC Hackathon er nå MAPPET) er **aldri termløse** — de får en egen
-**«Ukategorisert»**-temagruppe-term + `_bv_unmapped=1`,
-holdes som draft, og ekskluderes fra offentlig temagruppe-nav/filter til de remappes.
+Kategorier utenfor Bårds matrise (Assistant, AR/VR/MR, News, Learning) er **aldri termløse**
+— de får temagruppe-termen **«Andre kategorier»** + `_bv_unmapped=1` og opprettes som draft.
+
+**Bårds beslutning 20.08.2026:** «Andre kategorier» er en ekte, synlig temagruppe på linje
+med de seks, ikke en holdekategori. Den vises som sjuende valg i verktøy-arkivets
+temagruppe-fasett (sist, siden den ikke er en merkevare-temagruppe), og utkastene kan
+publiseres med `aihub-publish-batch "Andre kategorier" --confirm`. `--alle-mappede` holder
+den fortsatt utenfor, så en bred publisering aldri sveiper den med seg utilsiktet.
 
 ---
 
@@ -264,7 +268,7 @@ Resultat av førstegangskjøringen på localhost:
 | Nye utkast | 1677 |
 | Oppdatert (traff juni-importen) | 230 |
 | Forsvunnet fra kilden (orphan) | 6 (4 av dem var publisert → avpublisert) |
-| Umappbar kategori → «Ukategorisert» | 381 (Assistant 324, Learning 32, AR/VR/MR 15, News 10) |
+| Utenfor matrisen → «Andre kategorier» | 381 (Assistant 324, Learning 32, AR/VR/MR 15, News 10) |
 | Deltakerverktøy rørt | 0 |
 
 Servebolt kan kjøre WP-Cron via UNIX-cron (`wp cron event run --due-now`, B-005) — men det er en

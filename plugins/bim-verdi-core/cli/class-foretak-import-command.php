@@ -3075,8 +3075,12 @@ class BIM_Verdi_CLI_Commands {
     }
 
     /**
-     * Bulk/batch-godkjenn AEC AI Hub-utkast (Decision 6). Publiserer ALDRI umappbare
-     * («Ukategorisert») og krever eksplisitt --confirm. Uten --confirm = stikkprøve-visning.
+     * Bulk/batch-godkjenn AEC AI Hub-utkast (Decision 6). Krever eksplisitt --confirm;
+     * uten flagget vises kun stikkprøve + totaler (ingen skriv).
+     *
+     * «Andre kategorier» (kategorier utenfor Bårds matrise) publiseres kun når gruppen
+     * navngis eksplisitt — --alle-mappede holder den fortsatt utenfor, så en bred
+     * publisering aldri sveiper den med seg ved et uhell.
      *
      * ## OPTIONS
      *
@@ -3084,7 +3088,7 @@ class BIM_Verdi_CLI_Commands {
      * : Temagruppe-term (navn eller slug) å publisere utkast for. Utelat ved --alle-mappede.
      *
      * [--alle-mappede]
-     * : Publiser alle mappede utkast (alle temagrupper unntatt «Ukategorisert»).
+     * : Publiser alle utkast med temagruppe fra Bårds matrise (alt unntatt «Andre kategorier»).
      *
      * [--confirm]
      * : Faktisk publiser. Uten dette flagget vises kun stikkprøve + totaler (ingen skriv).
@@ -3097,6 +3101,7 @@ class BIM_Verdi_CLI_Commands {
      *     wp bimverdi aihub-publish-batch ProsjektBIM
      *     wp bimverdi aihub-publish-batch ProsjektBIM --confirm
      *     wp bimverdi aihub-publish-batch --alle-mappede --confirm
+     *     wp bimverdi aihub-publish-batch "Andre kategorier" --confirm
      *
      * @subcommand aihub-publish-batch
      * @param array $args
@@ -3112,57 +3117,63 @@ class BIM_Verdi_CLI_Commands {
             WP_CLI::error('Oppgi en temagruppe, eller bruk --alle-mappede.');
         }
 
-        // Bygg tax_query: enten én temagruppe, eller alle UNNTATT «Ukategorisert».
+        // Bygg tax_query: enten én temagruppe, eller alle UNNTATT «Andre kategorier».
+        // $er_andre styrer også meta-filteret under — utkastene i den gruppen bærer
+        // _bv_unmapped=1, så uten unntaket ville spørringen alltid gitt null treff.
+        $er_andre = false;
         if ($all) {
-            $midlertidig = get_term_by('name', BV_AIHUB_Category_Mapper::UNMAPPED_TERM, 'temagruppe');
-            $tax_query   = array(array(
+            $andre     = get_term_by('name', BV_AIHUB_Category_Mapper::UNMAPPED_TERM, 'temagruppe');
+            $tax_query = array(array(
                 'taxonomy' => 'temagruppe',
                 'field'    => 'term_id',
-                'terms'    => $midlertidig ? array((int) $midlertidig->term_id) : array(0),
+                'terms'    => $andre ? array((int) $andre->term_id) : array(0),
                 'operator' => 'NOT IN',
             ));
-            $label = 'alle mappede temagrupper';
+            $label = 'alle temagrupper fra matrisen';
         } else {
-            if (strcasecmp($term, BV_AIHUB_Category_Mapper::UNMAPPED_TERM) === 0) {
-                WP_CLI::error('«' . BV_AIHUB_Category_Mapper::UNMAPPED_TERM . '» er umappbar og kan ikke publiseres — remap til en ekte temagruppe først.');
-            }
             $t = get_term_by('name', $term, 'temagruppe') ?: get_term_by('slug', sanitize_title($term), 'temagruppe');
             if (!$t) {
                 WP_CLI::error("Fant ingen temagruppe «{$term}».");
             }
+            $er_andre  = strcasecmp($t->name, BV_AIHUB_Category_Mapper::UNMAPPED_TERM) === 0;
             $tax_query = array(array('taxonomy' => 'temagruppe', 'field' => 'term_id', 'terms' => array((int) $t->term_id)));
             $label     = $t->name;
         }
 
-        // Managed + draft + IKKE umappbar + IKKE forsvunnet fra kilden.
+        // Managed + draft + IKKE forsvunnet fra kilden. Umappbar-filteret gjelder alle
+        // kjøringer unntatt eksplisitt publisering av «Andre kategorier».
         // Orphan-vakten er nødvendig: et verktøy som er borte fra hub-en er avpublisert av
         // orphan-rekonsilieringen og ligger som utkast med mappet temagruppe. Uten dette
         // filteret ville batch-publiseringen sende det ut igjen, og neste synk avpublisere
         // det på nytt — en evig vipp. Alle managed poster har `_bv_orphaned` satt ('0'/'1'),
         // så `!=` er trygt her.
+        $meta_query = array(
+            'relation' => 'AND',
+            array('key' => '_bv_aec_managed', 'value' => '1'),
+            array('key' => '_bv_orphaned', 'value' => '1', 'compare' => '!='),
+        );
+        if (!$er_andre) {
+            $meta_query[] = array('key' => '_bv_unmapped', 'value' => '1', 'compare' => '!=');
+        }
+
         $q = new WP_Query(array(
             'post_type'      => defined('BV_CPT_TOOL') ? BV_CPT_TOOL : 'verktoy',
             'post_status'    => 'draft',
             'posts_per_page' => -1,
             'fields'         => 'ids',
             'no_found_rows'  => true,
-            'meta_query'     => array(
-                'relation' => 'AND',
-                array('key' => '_bv_aec_managed', 'value' => '1'),
-                array('key' => '_bv_unmapped', 'value' => '1', 'compare' => '!='),
-                array('key' => '_bv_orphaned', 'value' => '1', 'compare' => '!='),
-            ),
+            'meta_query'     => $meta_query,
             'tax_query'      => $tax_query,
         ));
         $ids = $q->posts;
 
         WP_CLI::log('=== AEC AI Hub Publish Batch ===');
         WP_CLI::log("Mål:            {$label}");
-        WP_CLI::log('Mappede utkast: ' . count($ids));
+        WP_CLI::log('Utkast:         ' . count($ids));
         WP_CLI::log('');
 
         if (empty($ids)) {
-            WP_CLI::warning('Ingen mappede utkast å publisere.');
+            WP_CLI::warning('Ingen utkast å publisere.');
             return;
         }
 
