@@ -17,6 +17,12 @@
  *   (Bård: «vi venter litt med artikler»). Abonnér-på-tråd (Arnstein
  *   Skinnarlands ønske om varsel på alle innlegg, ikke bare mentions) er
  *   vurdert og nedprioritert i samme møte.
+ * - 25.08 (synk m/ Bård + Teams): ventetiden på artikler opphevet — «kan du
+ *   også legge kommentarfeltet nederst i alle artikler, slik de ligger i alle
+ *   arrangement?». Verktøy kom på i samme runde (Teams 24.08: «kan du legge inn
+ *   kommentarfeltet — også i hvert verktøy — både verktøy fra deltakere og
+ *   AIinAEC hub»). Hub-verktøyene er samme CPT som deltakernes, så én oppføring
+ *   i lista dekker begge. Kunnskapskilde står fortsatt av (R17).
  */
 
 if (!defined('ABSPATH')) {
@@ -24,14 +30,14 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * CPT-er der kommentarer er aktive. «arrangement» gjelder ALLE arrangementer,
- * også avholdte — comments_open-filteret under overstyrer lagret comment_status,
- * så ingen masse-oppdatering av de 136 publiserte postene er nødvendig.
- * Kunnskapskilde, artikkel og verktoy står fortsatt av (R17).
+ * CPT-er der kommentarer er aktive. Gjelder ALLE poster i typen, også gamle —
+ * comments_open-filteret under overstyrer lagret comment_status, så ingen
+ * masse-oppdatering av de publiserte postene er nødvendig.
+ * Kunnskapskilde står fortsatt av (R17).
  * Filter: bimverdi_sporsmal_post_types
  */
 function bimverdi_sporsmal_post_types() {
-    return apply_filters('bimverdi_sporsmal_post_types', ['arrangement']);
+    return apply_filters('bimverdi_sporsmal_post_types', ['arrangement', 'artikkel', 'verktoy']);
 }
 
 /**

@@ -1,8 +1,13 @@
 <?php
 /**
  * Plugin Name: BIM Verdi - Diskusjon: e-postvarsler
- * Description: Mention- og svar-varsler for diskusjonstråden (pilot: Byggchat, plan docs/plans/2026-08-11-001). Sendes via Resend (wp_mail) bak en hard, fail-closed sikkerhetsgate.
- * Version: 1.0.0
+ * Description: Mention-, svar- og abonnementsvarsler for diskusjonstråden (plan docs/plans/2026-08-11-001). Sendes via Resend (wp_mail) bak harde, fail-closed sikkerhetsgater.
+ * Version: 1.1.0
+ *
+ * 1.1.0 (26.08): abonnementsvarsel lagt til — varsel på ALLE nye innlegg i en
+ * tråd man følger, ikke bare @-mention og direkte svar (Bård, kort #337).
+ * Abonnentlista og avmeldingsveien eies av
+ * mu-plugins/bimverdi-diskusjon-abonnement.php; denne filen sender.
  *
  * 🔒 SIKKERHETSGATE (R12, synk 11.08): I MOTSETNING til avlyst-gaten
  * (bimverdi-arrangement-avlyst.php, miljøstyrt) er denne gaten LÅST OVERALT
@@ -51,11 +56,31 @@ function bimverdi_diskusjon_varsler_gate_apen() {
 }
 
 /**
+ * Er gaten for denne varseltypen åpen? Abonnementsvarsler har en gate til,
+ * i tillegg til hovedgaten: de går én-til-mange og treffer folk som ikke er
+ * nevnt ved navn, så de skal Bård se før de slippes løs. Se
+ * bimverdi_diskusjon_abonnement_gate_apen() i abonnements-pluginen.
+ */
+function bimverdi_diskusjon_varsel_gate_apen_for($type) {
+    if (!bimverdi_diskusjon_varsler_gate_apen()) {
+        return false;
+    }
+    if ('abonnement' === $type) {
+        return function_exists('bimverdi_diskusjon_abonnement_gate_apen')
+            && bimverdi_diskusjon_abonnement_gate_apen();
+    }
+    return true;
+}
+
+/**
  * Kan denne adressen motta varsel akkurat nå? Åpen gate → alle; låst gate →
  * kun allowlisten. All utsending MÅ gjennom denne.
+ *
+ * @param string $type 'mention' | 'svar' | 'abonnement' — styrer hvilken gate
+ *                     som gjelder. Utelatt = hovedgaten alene (bakoverkompatibelt).
  */
-function bimverdi_diskusjon_varsel_mottaker_tillatt($epost) {
-    if (bimverdi_diskusjon_varsler_gate_apen()) {
+function bimverdi_diskusjon_varsel_mottaker_tillatt($epost, $type = '') {
+    if ($type ? bimverdi_diskusjon_varsel_gate_apen_for($type) : bimverdi_diskusjon_varsler_gate_apen()) {
         return true;
     }
     return in_array(strtolower(trim((string) $epost)), bimverdi_diskusjon_varsler_allowlist(), true);
@@ -88,9 +113,15 @@ function bimverdi_diskusjon_varsle($comment_id, $approved) {
         $avsender      = $avsender_id ? get_userdata($avsender_id) : false;
         $avsender_navn = $avsender ? $avsender->display_name : $comment->comment_author;
 
-        // Mottaker-oppløsning (R10): map user_id → varseltype, der mention
-        // overskriver svar — én e-post per person, mention-malen vinner.
+        // Mottaker-oppløsning (R10): map user_id → varseltype, i stigende
+        // prioritet — én e-post per person, og den mest personlige malen vinner.
+        // Abonnement legges derfor FØRST, så svar, så mention øverst.
         $mottakere = [];
+        if (function_exists('bimverdi_diskusjon_abonnenter')) {
+            foreach (bimverdi_diskusjon_abonnenter($post->ID) as $uid) {
+                $mottakere[$uid] = 'abonnement';
+            }
+        }
         if ($comment->comment_parent) {
             $forelder = get_comment($comment->comment_parent);
             if ($forelder && (int) $forelder->user_id > 0) {
@@ -111,10 +142,21 @@ function bimverdi_diskusjon_varsle($comment_id, $approved) {
             return;
         }
 
-        // R15b: tak på varselmottakere per time per avsender. Sjekkes ETTER
-        // gaten, så gate-skipp ikke spiser av kvoten.
-        $timetak  = (int) apply_filters('bimverdi_diskusjon_varsel_timetak', 30);
-        $rate_key = 'bv_diskusjon_varsel_rate_' . $avsender_id;
+        // To tak, med vilje adskilt (R15b utvidet 26.08):
+        //
+        // - mention-taket rammer den ene misbruksveien der AVSENDER velger
+        //   mottakerne, og står urørt på 30/t.
+        // - totaltaket er bare en sikring mot løpsk utsending. Abonnenter har
+        //   selv bedt om e-posten, så de skal ikke falle ut fordi en tråd er
+        //   populær — det ville vært en stille bug, ikke et vern. Kommentar-
+        //   rate-limiten (15/t i bimverdi-still-sporsmal.php) begrenser uansett
+        //   hvor mange runder én konto kan utløse.
+        //
+        // Begge sjekkes ETTER gaten, så gate-skipp ikke spiser av kvoten.
+        $mention_tak = (int) apply_filters('bimverdi_diskusjon_varsel_timetak', 30);
+        $total_tak   = (int) apply_filters('bimverdi_diskusjon_varsel_totaltak', 300);
+        $mention_key = 'bv_diskusjon_varsel_rate_' . $avsender_id;
+        $total_key   = 'bv_diskusjon_varsel_total_' . $avsender_id;
 
         foreach ($mottakere as $uid => $type) {
             $mottaker = get_userdata($uid);
@@ -123,19 +165,36 @@ function bimverdi_diskusjon_varsle($comment_id, $approved) {
                 continue;
             }
 
+            // Global av-bryter: brukeren har meldt seg av alle diskusjonsvarsler
+            // (GDPR art. 21 — innsigelsen gjelder alle typer, ikke bare den ene).
+            if (function_exists('bimverdi_diskusjon_varsler_av_globalt')
+                && bimverdi_diskusjon_varsler_av_globalt($uid)) {
+                error_log(sprintf('[bv-varsler] AVMELDT — hoppet over %s-varsel til bruker %d for kommentar %d.', $type, $uid, $comment_id));
+                continue;
+            }
+
             // GATE (R12) — hard, fail-closed. Denne logglinjen er selve
             // beviset i gated test (leveransefravær beviser ingenting lokalt).
-            if (!bimverdi_diskusjon_varsel_mottaker_tillatt($mottaker->user_email)) {
+            if (!bimverdi_diskusjon_varsel_mottaker_tillatt($mottaker->user_email, $type)) {
                 error_log(sprintf('[bv-varsler] GATE LÅST — hoppet over %s-varsel til bruker %d (%s) for kommentar %d.', $type, $uid, $mottaker->user_email, $comment_id));
                 continue;
             }
 
-            $antall = (int) get_transient($rate_key);
-            if ($antall >= $timetak) {
-                error_log(sprintf('[bv-varsler] TIMETAK (%d/t) — hoppet over %s-varsel til bruker %d for kommentar %d (avsender %d).', $timetak, $type, $uid, $comment_id, $avsender_id));
+            if ('mention' === $type) {
+                $antall = (int) get_transient($mention_key);
+                if ($antall >= $mention_tak) {
+                    error_log(sprintf('[bv-varsler] MENTION-TAK (%d/t) — hoppet over %s-varsel til bruker %d for kommentar %d (avsender %d).', $mention_tak, $type, $uid, $comment_id, $avsender_id));
+                    continue;
+                }
+                set_transient($mention_key, $antall + 1, HOUR_IN_SECONDS);
+            }
+
+            $totalt = (int) get_transient($total_key);
+            if ($totalt >= $total_tak) {
+                error_log(sprintf('[bv-varsler] TOTALTAK (%d/t) — hoppet over %s-varsel til bruker %d for kommentar %d (avsender %d).', $total_tak, $type, $uid, $comment_id, $avsender_id));
                 continue;
             }
-            set_transient($rate_key, $antall + 1, HOUR_IN_SECONDS);
+            set_transient($total_key, $totalt + 1, HOUR_IN_SECONDS);
 
             bimverdi_diskusjon_varsel_send($type, $mottaker, $avsender_navn, $comment, $post);
         }
@@ -151,9 +210,11 @@ function bimverdi_diskusjon_varsle($comment_id, $approved) {
  * kan endres under pussing (R12c).
  */
 function bimverdi_diskusjon_varsel_kontekst($sett = null) {
-    static $pagar = false;
+    static $pagar = '';
     if (null !== $sett) {
-        $pagar = (bool) $sett;
+        // Bærer varseltypen, ikke bare en boolsk — BCC-regelen under skiller
+        // på type. Tom streng = ingen utsending pågår, og er fortsatt falsy.
+        $pagar = is_string($sett) ? $sett : ($sett ? 'ukjent' : '');
     }
     return $pagar;
 }
@@ -163,9 +224,18 @@ function bimverdi_diskusjon_varsel_kontekst($sett = null) {
  * globale prod-BCC-en til post@bimverdi.no (bimverdi-resend-mail.php)
  * undertrykkes for varselutsendinger. Når gaten åpnes etter go, gjenopptas
  * global BCC automatisk (betingelsen faller bort av seg selv).
+ *
+ * Abonnementsvarsler BCC-es aldri, heller ikke med åpen gate (26.08). Grunnen
+ * er mengde, ikke konfidensialitet: mention/svar går til én-to personer, mens
+ * ett innlegg i en tråd med 50 abonnenter ville lagt 50 identiske kopier i
+ * post@bimverdi.no. Postkassen ser uansett alle kommentarene i wp-admin.
  */
 add_filter('bimverdi_resend_global_bcc_aktiv', function ($aktiv, $to = null, $subject = null) {
-    if (bimverdi_diskusjon_varsel_kontekst() && !bimverdi_diskusjon_varsler_gate_apen()) {
+    $type = bimverdi_diskusjon_varsel_kontekst();
+    if (!$type) {
+        return $aktiv;
+    }
+    if ('abonnement' === $type || !bimverdi_diskusjon_varsler_gate_apen()) {
         return false;
     }
     return $aktiv;
@@ -174,7 +244,7 @@ add_filter('bimverdi_resend_global_bcc_aktiv', function ($aktiv, $to = null, $su
 /**
  * Bygg HTML-innholdet i varselet (mønster: bimverdi_avlyst_email_html).
  *
- * @param string     $type          'mention' | 'svar'
+ * @param string     $type          'mention' | 'svar' | 'abonnement'
  * @param WP_User    $mottaker
  * @param string     $avsender_navn
  * @param WP_Comment $comment
@@ -188,13 +258,42 @@ function bimverdi_diskusjon_varsel_html($type, $mottaker, $avsender_navn, $comme
     if ('mention' === $type) {
         $lead   = sprintf('<strong>%s</strong> nevnte deg i en kommentar i diskusjonen på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
         $grunn  = sprintf('Du mottar denne e-posten fordi %s nevnte deg med @navn i en diskusjon på bimverdi.no.', esc_html($avsender_navn));
+    } elseif ('abonnement' === $type) {
+        $lead   = sprintf('<strong>%s</strong> skrev et nytt innlegg i diskusjonen på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
+        $grunn  = sprintf('Du mottar denne e-posten fordi du abonnerer på diskusjonen på «%s».', esc_html($tittel));
     } else {
         $lead   = sprintf('<strong>%s</strong> svarte på kommentaren din i diskusjonen på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
         $grunn  = 'Du mottar denne e-posten fordi noen svarte på kommentaren din i en diskusjon på bimverdi.no.';
     }
 
+    // Avmeldingsvei. Erstatter mailto-omveien til post@bimverdi.no som sto her
+    // før 26.08: GDPR art. 21(4) krever en reell innsigelsesmulighet, og en
+    // e-post noen må lese og behandle manuelt er ikke det.
+    $avmelding = '';
+    if (function_exists('bimverdi_diskusjon_avmeldingslenke')) {
+        $lenke_alle = bimverdi_diskusjon_avmeldingslenke($mottaker->ID, $post->ID, 'alle');
+        if ('abonnement' === $type) {
+            $lenke_trad = bimverdi_diskusjon_avmeldingslenke($mottaker->ID, $post->ID, 'trad');
+            $avmelding  = sprintf(
+                '<a href="%s" style="color: #6B6B6B;">Slutt å følge denne diskusjonen</a> &nbsp;·&nbsp; <a href="%s" style="color: #6B6B6B;">Slå av alle diskusjonsvarsler</a>',
+                esc_url($lenke_trad),
+                esc_url($lenke_alle)
+            );
+        } else {
+            $avmelding = sprintf(
+                'Vil du ikke motta slike varsler? <a href="%s" style="color: #6B6B6B;">Slå av alle diskusjonsvarsler</a>.',
+                esc_url($lenke_alle)
+            );
+        }
+    } else {
+        $avmelding = sprintf(
+            'Vil du ikke motta slike varsler? Gi beskjed til <a href="mailto:post@bimverdi.no?subject=%s" style="color: #6B6B6B;">post@bimverdi.no</a>, så skrur vi dem av for deg.',
+            rawurlencode('Avmelding: varsler om diskusjoner')
+        );
+    }
+
     $test_banner = '';
-    if (!bimverdi_diskusjon_varsler_gate_apen()) {
+    if (!bimverdi_diskusjon_varsel_gate_apen_for($type)) {
         $test_banner =
             '<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 16px;margin:0 0 20px;font-size:13px;color:#92400E;">'
             . '<strong>Testkopi — sikkerhetsgate aktiv.</strong> Varsler går kun til allowlisten; ingen andre mottakere er varslet.'
@@ -284,11 +383,9 @@ function bimverdi_diskusjon_varsel_html($type, $mottaker, $avsender_navn, $comme
                                 Varselet er sendt til e-postadressen som er registrert på brukerkontoen din.
                                 Les mer i vår <a href="<?php echo esc_url(home_url('/personvern/')); ?>" style="color: #6B6B6B;">personvernerklæring</a>.<br>
                                 <?php // GDPR art. 21(4): varslene sendes på legitim interesse, som krever en
-                                      // reell innsigelsesmulighet. Avsender er noreply@, så ruten er den
-                                      // bemannede postkassen — inntil profil-toggelen (fase 2) finnes. ?>
-                                Vil du ikke motta slike varsler? Gi beskjed til
-                                <a href="mailto:post@bimverdi.no?subject=<?php echo rawurlencode('Avmelding: varsler om diskusjoner'); ?>" style="color: #6B6B6B;">post@bimverdi.no</a>,
-                                så skrur vi dem av for deg.
+                                      // reell innsigelsesmulighet. Lenkene under er den veien — ett klikk,
+                                      // uten innlogging og uten at noen må behandle en henvendelse manuelt. ?>
+                                <?php echo $avmelding; ?>
                             </p>
                         </td>
                     </tr>
@@ -319,15 +416,33 @@ function bimverdi_diskusjon_varsel_send($type, $mottaker, $avsender_navn, $comme
     };
     if ('mention' === $type) {
         $emne = sprintf('Du ble nevnt av %s på BIM Verdi', $ren($avsender_navn));
+    } elseif ('abonnement' === $type) {
+        $emne = sprintf('Nytt innlegg fra %s i «%s»', $ren($avsender_navn), $ren(get_the_title($post)));
     } else {
         $emne = sprintf('%s svarte på kommentaren din på BIM Verdi', $ren($avsender_navn));
     }
 
     $html = bimverdi_diskusjon_varsel_html($type, $mottaker, $avsender_navn, $comment, $post, $lenke);
 
-    bimverdi_diskusjon_varsel_kontekst(true);
-    $ok = wp_mail($mottaker->user_email, $emne, $html, ['Content-Type: text/html; charset=UTF-8']);
-    bimverdi_diskusjon_varsel_kontekst(false);
+    $headers = ['Content-Type: text/html; charset=UTF-8'];
+
+    // RFC 8058: gir Gmail/Apple Mail sin egen «meld av»-knapp øverst i e-posten.
+    // Klienten POSTer til lenken, så den treffer utfør-grenen direkte og slipper
+    // bekreftelsessiden — og fordi den POSTer, kan ingen lenkeskanner utløse den.
+    // Peker på det mest presise omfanget: tråden for abonnement, alt for de andre.
+    if (function_exists('bimverdi_diskusjon_avmeldingslenke')) {
+        $avmeld_url = bimverdi_diskusjon_avmeldingslenke(
+            $mottaker->ID,
+            $post->ID,
+            'abonnement' === $type ? 'trad' : 'alle'
+        );
+        $headers[] = 'List-Unsubscribe: <' . $avmeld_url . '>';
+        $headers[] = 'List-Unsubscribe-Post: List-Unsubscribe=One-Click';
+    }
+
+    bimverdi_diskusjon_varsel_kontekst($type);
+    $ok = wp_mail($mottaker->user_email, $emne, $html, $headers);
+    bimverdi_diskusjon_varsel_kontekst('');
 
     if ($ok) {
         error_log(sprintf('[bv-varsler] SENDT %s-varsel til bruker %d (%s) for kommentar %d.', $type, $mottaker->ID, $mottaker->user_email, $comment->comment_ID));

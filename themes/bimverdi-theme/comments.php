@@ -102,6 +102,17 @@ if (!$bvk_comment
 $login_url = function ($fragment_url) {
     return home_url('/logg-inn/?redirect_to=' . rawurlencode($fragment_url));
 };
+
+// Abonnement på tråden (mu-plugins/bimverdi-diskusjon-abonnement.php). Hele
+// blokken er function_exists-gatet så malen fortsatt rendrer hvis mu-pluginen
+// mangler — da vises bare tråden uten abonnements-UI.
+$bv_abonnement    = function_exists('bimverdi_diskusjon_abonnerer');
+$bv_post_id       = get_the_ID();
+$bv_abonnerer     = $bv_abonnement && $innlogget && bimverdi_diskusjon_abonnerer($bv_post_id, get_current_user_id());
+$bv_abonner_hukes = $bv_abonnement && $innlogget && bimverdi_diskusjon_avkrysning_default($bv_post_id, get_current_user_id());
+
+// Kvittering etter av-/påmelding via knappen (redirect fra admin-post).
+$bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab'])) : '';
 ?>
 
 <style>
@@ -134,6 +145,13 @@ $login_url = function ($fragment_url) {
 #diskusjon .bv-diskusjon-item:focus { outline: none; }
 /* Bundet mention i publisert innlegg (rendres av bimverdi-diskusjon-mentions.php) */
 #diskusjon .bv-mention { background: #FFF1E9; color: #9A3412; font-weight: 500; padding: 1px 5px; border-radius: 4px; }
+/* Abonnér-knapp og avkrysning */
+#diskusjon .bv-abonner-knapp { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border: 1px solid #D6D3D1; border-radius: 8px; background: #fff; font-size: 13px; font-weight: 500; color: #111827; cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s; }
+#diskusjon .bv-abonner-knapp:hover { border-color: #A8A29E; background: #FAFAF9; }
+#diskusjon .bv-abonner-knapp[aria-pressed="true"] { border-color: #FED7AA; background: #FFF7ED; color: #9A3412; }
+#diskusjon .bv-abonner-kvittering { font-size: 13px; color: #57534E; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; }
+#diskusjon .bv-abonner-valg { display: flex; align-items: flex-start; gap: 9px; max-width: 720px; margin: 0 0 16px; font-size: 13px; color: #57534E; line-height: 1.5; cursor: pointer; }
+#diskusjon .bv-abonner-valg input { margin: 2px 0 0; width: 15px; height: 15px; accent-color: #F97316; flex: none; }
 /* Mention-autocomplete (bv-mentions.js) */
 #diskusjon .bv-mentions-wrap { position: relative; max-width: 720px; }
 #diskusjon .bv-mentions-list { position: absolute; top: 2px; left: 0; right: 0; z-index: 30; margin: 0; padding: 4px; list-style: none; background: #fff; border: 1px solid #D6D3D1; border-radius: 8px; box-shadow: 0 8px 24px rgba(17, 24, 39, .10); max-height: 260px; overflow-y: auto; }
@@ -145,13 +163,53 @@ $login_url = function ($fragment_url) {
 </style>
 
 <section id="diskusjon" class="border-t border-[#E7E5E4] pt-10">
-    <h2 class="text-lg font-bold text-[#111827] mb-2">Diskusjon</h2>
+    <div class="flex items-center justify-between gap-6 mb-2">
+        <h2 class="text-lg font-bold text-[#111827]">Diskusjon</h2>
+        <?php if ($bv_abonnement && $innlogget): ?>
+            <?php // Bårds «abonnér på aktivitet her» (kort #337). Vanlig POST-skjema,
+                  // ikke JS: knappen må virke like godt for de som leser med
+                  // skjermleser eller har JS av. ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="flex-none">
+                <input type="hidden" name="action" value="bv_diskusjon_abonnement">
+                <input type="hidden" name="post_id" value="<?php echo esc_attr($bv_post_id); ?>">
+                <?php wp_nonce_field('bv_diskusjon_abonnement_' . $bv_post_id); ?>
+                <button type="submit" class="bv-abonner-knapp" aria-pressed="<?php echo $bv_abonnerer ? 'true' : 'false'; ?>"
+                        title="<?php echo $bv_abonnerer
+                            ? 'Du får e-post når noen skriver et nytt innlegg her. Klikk for å slå av.'
+                            : 'Få e-post når noen skriver et nytt innlegg her.'; ?>">
+                    <?php if ($bv_abonnerer): ?>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M22 8c0-2.3-.8-4.3-2-6"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/></svg>
+                        Abonnerer
+                    <?php else: ?>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+                        Abonnér på tråden
+                    <?php endif; ?>
+                </button>
+            </form>
+        <?php endif; ?>
+    </div>
     <p class="text-sm text-[#57534E] mb-1 max-w-prose">
         <?php echo wp_kses($bv_diskusjon_ingress, ['span' => ['class' => []]]); ?>
     </p>
     <p class="text-xs text-[#78716C] mb-8 max-w-prose">
         Inntil videre er dette en tjeneste for gratisbrukere og deltakere.
     </p>
+
+    <?php if (in_array($bv_ab_kvittering, ['pa', 'pa_alle', 'av'], true)): ?>
+        <p class="bv-abonner-kvittering" role="status">
+            <?php
+            if ($bv_ab_kvittering === 'pa') {
+                echo 'Du abonnerer nå på denne tråden og får e-post når noen skriver et nytt innlegg.';
+            } elseif ($bv_ab_kvittering === 'pa_alle') {
+                // Brukeren hadde slått av alle diskusjonsvarsler; påmeldingen slo dem
+                // på igjen. Det sies eksplisitt — endringen er større enn knappeteksten.
+                echo 'Du abonnerer nå på denne tråden. Du hadde slått av alle diskusjonsvarsler, så de er skrudd på igjen.';
+            } else {
+                echo 'Abonnementet er slått av. Du får fortsatt varsel hvis noen nevner deg med @navn eller svarer deg.';
+            }
+            ?>
+        </p>
+    <?php endif; ?>
 
     <?php if (!$innlogget && $bvk_comment): ?>
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 p-4 bg-[#FFF7ED] border border-[#FED7AA] rounded-lg">
@@ -194,6 +252,23 @@ $login_url = function ($fragment_url) {
     <?php if (comments_open()): ?>
         <?php if ($innlogget): ?>
             <?php
+            // Avkrysning over Publiser-knappen. Forhåndshuket for den som ikke har
+            // tatt stilling (se mu-plugins/bimverdi-diskusjon-abonnement.php for
+            // hvorfor), men alltid synlig — valget skal være aktivt og informert,
+            // ikke stille. Det skjulte «sendt»-feltet skiller «huket av» fra «dette
+            // skjemaet hadde ikke feltet i det hele tatt».
+            $bv_abonner_felt = '';
+            if ($bv_abonnement) {
+                $bv_abonner_felt = sprintf(
+                    '<input type="hidden" name="bv_abonner_sendt" value="1">'
+                    . '<label class="bv-abonner-valg" for="bv_abonner">'
+                    . '<input type="checkbox" name="bv_abonner" id="bv_abonner" value="1"%s>'
+                    . '<span>Varsle meg på e-post når noen skriver et nytt innlegg i denne tråden</span>'
+                    . '</label>',
+                    $bv_abonner_hukes ? ' checked' : ''
+                );
+            }
+
             comment_form([
                 'title_reply'         => $comment_count === 0 ? 'Vær den første til å dele en tanke eller et spørsmål' : 'Del en tanke eller et spørsmål',
                 'title_reply_to'      => 'Svar til %s',
@@ -205,7 +280,7 @@ $login_url = function ($fragment_url) {
                 'comment_field'       => '<p class="comment-form-comment mb-4"><label for="comment" class="screen-reader-text">Innlegg</label><textarea id="comment" name="comment" rows="4" required placeholder="Skriv innlegget ditt her&hellip;" class="w-full max-w-[720px] border border-[#D6D3D1] rounded-lg px-4 py-3 text-sm text-[#111827] placeholder-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#F97316]/40 focus:border-[#F97316] bg-white"></textarea></p>',
                 'logged_in_as'        => '',
                 'comment_notes_before' => '',
-                'comment_notes_after' => '',
+                'comment_notes_after' => $bv_abonner_felt,
                 'submit_button'       => '<button type="submit" name="%1$s" id="%2$s" class="%3$s bv-btn bv-btn--primary bv-btn--medium">%4$s</button>',
                 'submit_field'        => '<p class="form-submit">%1$s %2$s</p>',
                 'label_submit'        => 'Publiser innlegg',

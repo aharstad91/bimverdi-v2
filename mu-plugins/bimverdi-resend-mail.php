@@ -108,6 +108,27 @@ function bimverdi_resend_send_via_api($to, $subject, $message, $headers = '') {
             : array_map('trim', explode(',', $parsed_headers['bcc']));
     }
 
+    // Gjennomslipp av egendefinerte headere til Resend — STRENGT allowlistet.
+    // Bare avmeldings-headerne (RFC 8058), som gir Gmail/Apple Mail sin egen
+    // «meld av»-knapp øverst i e-posten. Allowlisten er poenget: $headers kommer
+    // fra kallende kode, og en åpen gjennomslipp ville latt hvilken som helst
+    // wp_mail-kaller sette From-, Return-Path- eller autentiseringsheadere.
+    // Nyverdier skrives med kanonisk store bokstaver; parseren lowercaser alt.
+    $tillatte_headere = [
+        'list-unsubscribe'      => 'List-Unsubscribe',
+        'list-unsubscribe-post' => 'List-Unsubscribe-Post',
+    ];
+    foreach ($tillatte_headere as $nokkel => $kanonisk) {
+        if (empty($parsed_headers[$nokkel]) || !is_string($parsed_headers[$nokkel])) {
+            continue;
+        }
+        // CR/LF strippes som barriere mot header-injection.
+        $verdi = trim(preg_replace('/[\r\n]+/', ' ', $parsed_headers[$nokkel]));
+        if ('' !== $verdi) {
+            $payload['headers'][$kanonisk] = $verdi;
+        }
+    }
+
     // Global BCC til post@bimverdi.no — KUN på prod (synk 29.06: «BCC alt utgående,
     // test verdien»). Localhost/dev sender ekte e-post via Resend, så vi gater på
     // er_prod() for å aldri lekke kopier dit.

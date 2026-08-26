@@ -333,6 +333,18 @@ $kilde_created = get_the_date('d.m.Y');
                     </dl>
                 </section>
 
+                <?php
+                // Diskusjon: forberedt, men kunnskapskilde står AV i
+                // bimverdi_sporsmal_post_types() (R17) — vakten gjør at det ikke
+                // rendres noe før typen eventuelt slås på.
+                if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
+                    && (comments_open() || get_comments_number() > 0)) {
+                    echo '<div class="border-t border-[#E7E5E4] pt-10">';
+                    comments_template();
+                    echo '</div>';
+                }
+                ?>
+
             </div>
 
             <!-- Right Column: Sidebar -->

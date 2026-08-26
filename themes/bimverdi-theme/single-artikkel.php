@@ -185,6 +185,20 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                 </div>
             </div>
 
+            <?php
+            // Diskusjon: kommentartråd under artikkelen (Bård, kort #337 24.08).
+            // Aktivering styres av bimverdi_diskusjon_aktiv() i
+            // mu-plugins/bimverdi-still-sporsmal.php; comments.php har samme vakt
+            // og rendrer ingenting uten den — vakten her holder wrapper-diven unna
+            // når diskusjonen er av.
+            if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
+                && (comments_open() || get_comments_number() > 0)) {
+                echo '<div class="mt-8">';
+                comments_template();
+                echo '</div>';
+            }
+            ?>
+
         </div>
     </div>
 

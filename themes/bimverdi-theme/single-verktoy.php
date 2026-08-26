@@ -397,6 +397,21 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 </section>
                 <?php endif; ?>
 
+                <?php
+                // Diskusjon: kommentartråd under verktøyet (Bård, Teams 24.08).
+                // Gjelder både deltakernes egne verktøy og de synkroniserte
+                // AIinAEC Hub-verktøyene — begge er CPT «verktoy». Aktivering
+                // styres av bimverdi_diskusjon_aktiv() i
+                // mu-plugins/bimverdi-still-sporsmal.php; comments.php har samme
+                // vakt og rendrer ingenting uten den.
+                if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
+                    && (comments_open() || get_comments_number() > 0)) {
+                    echo '<div class="border-t border-[#E7E5E4] pt-10">';
+                    comments_template();
+                    echo '</div>';
+                }
+                ?>
+
             </div>
 
             <!-- Right Column: Sidebar -->
