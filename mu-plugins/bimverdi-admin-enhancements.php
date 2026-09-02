@@ -755,12 +755,18 @@ function bimverdi_page_status_orderby($orderby, $query) {
     }
 
     $rekkefolge = array_keys(bimverdi_page_status_config());
-    $liste = implode(', ', array_map(function ($s) use ($wpdb) {
-        return $wpdb->prepare('%s', $s);
-    }, $rekkefolge));
+
+    // Ett prepare-kall med like mange plassholdere som verdier, ikke ett kall
+    // per verdi. $dir settes utenfor prepare fordi den ikke er en verdi men et
+    // SQL-nøkkelord — derfor er den validert til to mulige strenger over.
+    $plassholdere = implode(', ', array_fill(0, count($rekkefolge), '%s'));
+    $felt = $wpdb->prepare(
+        "FIELD({$wpdb->posts}.post_status, {$plassholdere})",
+        $rekkefolge
+    );
 
     $dir = strtoupper((string) $query->get('order')) === 'DESC' ? 'DESC' : 'ASC';
 
     // Sekundærsortering på tittel så rader med samme status ligger stabilt
-    return "FIELD({$wpdb->posts}.post_status, {$liste}) {$dir}, {$wpdb->posts}.post_title ASC";
+    return "{$felt} {$dir}, {$wpdb->posts}.post_title ASC";
 }
