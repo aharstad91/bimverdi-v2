@@ -632,3 +632,135 @@ function bimverdi_foretak_pending_oppgradering_filter_query($query) {
     ];
     $query->set('meta_query', $meta_query);
 }
+
+/**
+ * =============================================================================
+ * 4. STATUS-KOLONNE FOR SIDER
+ * =============================================================================
+ * Trello #347 punkt 6 (Bård, 02.09.2026): «Pages: legg til status-kolonne i
+ * screen option som viser om siden er publisert eller ikke».
+ *
+ * WordPress viser status inline etter tittelen («— Kladd»), men bare for
+ * ikke-publiserte sider, og den kan ikke skrus av/på eller sorteres. En egen
+ * kolonne gir samme svar for alle rader og havner automatisk i Screen options.
+ *
+ * Farger gjenbruker paletten fra deltakernivå-kolonnen over. Merk at «pending»
+ * får oransje og ikke grå: kladd er forfatterens eget uferdige arbeid, mens
+ * «til godkjenning» venter på at NOEN skal gjøre noe. Det skillet er hele
+ * grunnen til å se på kolonnen.
+ */
+
+add_filter('manage_pages_columns', 'bimverdi_page_add_status_column');
+add_action('manage_pages_custom_column', 'bimverdi_page_show_status_column', 10, 2);
+add_filter('manage_edit-page_sortable_columns', 'bimverdi_page_status_sortable');
+add_filter('posts_orderby', 'bimverdi_page_status_orderby', 10, 2);
+
+/**
+ * Statuser i den rekkefølgen de sorteres, med etikett, ikon og farge.
+ *
+ * Egne korte etiketter framfor get_post_status_object()->label fordi kjernens
+ * nb_NO-tekster er for lange for en kolonne («Venter på gjennomgang»).
+ * Ukjente/egendefinerte statuser faller tilbake til kjernens etikett.
+ */
+function bimverdi_page_status_config() {
+    return array(
+        'publish' => array('label' => 'Publisert',       'icon' => '●', 'color' => '#10B981'),
+        'future'  => array('label' => 'Planlagt',        'icon' => '◔', 'color' => '#3B82F6'),
+        'pending' => array('label' => 'Til godkjenning', 'icon' => '◐', 'color' => '#F97316'),
+        'draft'   => array('label' => 'Kladd',           'icon' => '○', 'color' => '#9CA3AF'),
+        'private' => array('label' => 'Privat',          'icon' => '◆', 'color' => '#7C3AED'),
+        'trash'   => array('label' => 'I søppelbøtta',   'icon' => '✕', 'color' => '#DC2626'),
+    );
+}
+
+/**
+ * Legg Status-kolonnen rett etter tittelen.
+ */
+function bimverdi_page_add_status_column($columns) {
+    $new_columns = array();
+    foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        if ($key === 'title') {
+            $new_columns['bv_status'] = __('Status', 'bimverdi');
+        }
+    }
+    // Fallback hvis tittel-kolonnen er skrudd av av et annet plugin
+    if (!isset($new_columns['bv_status'])) {
+        $new_columns['bv_status'] = __('Status', 'bimverdi');
+    }
+    return $new_columns;
+}
+
+function bimverdi_page_show_status_column($column, $post_id) {
+    if ($column !== 'bv_status') {
+        return;
+    }
+
+    $status = get_post_status($post_id);
+    $config = bimverdi_page_status_config();
+
+    if (isset($config[$status])) {
+        $c = $config[$status];
+        printf(
+            '<span style="color: %s; font-weight: 500;">%s %s</span>',
+            esc_attr($c['color']),
+            esc_html($c['icon']),
+            esc_html($c['label'])
+        );
+        return;
+    }
+
+    // Egendefinert status fra et plugin — bruk kjernens etikett
+    $obj = get_post_status_object($status);
+    printf(
+        '<span style="color: #9CA3AF; font-weight: 500;">○ %s</span>',
+        esc_html($obj && !empty($obj->label) ? $obj->label : $status)
+    );
+}
+
+function bimverdi_page_status_sortable($columns) {
+    $columns['bv_status'] = 'bv_status';
+    return $columns;
+}
+
+/**
+ * Sortering på status.
+ *
+ * WP_Query tillater ikke 'post_status' som orderby (se allowed_keys i
+ * WP_Query::parse_orderby) — verdien blir stille forkastet og lista faller
+ * tilbake til standardsortering. Derfor et eget posts_orderby-filter.
+ *
+ * FIELD() gir en bevisst rekkefølge i stedet for alfabetisk på slug, som ville
+ * gitt «draft, future, pending, private, publish» — meningsløst for en som
+ * leter etter hva som ikke er live. ASC = mest ferdig først.
+ *
+ * Vakten er stram med vilje: filteret treffer ALLE post-spørringer, så uten
+ * pagenow- og post_type-sjekk kunne det påvirket spørringer WordPress kjører
+ * internt et helt annet sted.
+ */
+function bimverdi_page_status_orderby($orderby, $query) {
+    global $pagenow, $wpdb;
+
+    if (!is_admin() || $pagenow !== 'edit.php') {
+        return $orderby;
+    }
+    if (!$query instanceof WP_Query || !$query->is_main_query()) {
+        return $orderby;
+    }
+    if ($query->get('post_type') !== 'page') {
+        return $orderby;
+    }
+    if ($query->get('orderby') !== 'bv_status') {
+        return $orderby;
+    }
+
+    $rekkefolge = array_keys(bimverdi_page_status_config());
+    $liste = implode(', ', array_map(function ($s) use ($wpdb) {
+        return $wpdb->prepare('%s', $s);
+    }, $rekkefolge));
+
+    $dir = strtoupper((string) $query->get('order')) === 'DESC' ? 'DESC' : 'ASC';
+
+    // Sekundærsortering på tittel så rader med samme status ligger stabilt
+    return "FIELD({$wpdb->posts}.post_status, {$liste}) {$dir}, {$wpdb->posts}.post_title ASC";
+}
