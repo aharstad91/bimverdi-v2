@@ -29,15 +29,12 @@ $medforfattere_ids = get_field('artikkel_medforfattere');
 $artikkel_kategorier = wp_get_post_terms(get_the_ID(), 'artikkelkategori');
 $artikkel_kategori_name = !empty($artikkel_kategorier) ? $artikkel_kategorier[0]->name : '';
 
-// If no explicit company on article, derive from author's user meta
-if (empty($artikkel_bedrift) && $author_id) {
-    $artikkel_bedrift = get_user_meta($author_id, 'bimverdi_company_id', true);
-    if (empty($artikkel_bedrift)) {
-        $artikkel_bedrift = get_user_meta($author_id, 'bim_verdi_company_id', true);
-    }
-    if (empty($artikkel_bedrift)) {
-        $artikkel_bedrift = get_field('tilknyttet_foretak', 'user_' . $author_id);
-    }
+// Foretak for bylinen: feltet på artikkelen, ellers forfatterens foretak.
+// Kjeden bor nå i bimverdi_artikkel_foretak_id() (mu-plugins/bimverdi-artikkel-helpers.php)
+// så den ikke er duplisert her og i klassifiseringen. Samme rekkefølge og
+// samme resultat som den innlinjede varianten dette erstattet.
+if (function_exists('bimverdi_artikkel_foretak_id')) {
+    $artikkel_bedrift = bimverdi_artikkel_foretak_id(get_the_ID()) ?: '';
 }
 
 // Get company info
