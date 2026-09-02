@@ -4,6 +4,80 @@
 
 ---
 date: 2026-09-02
+action: TRELLO #347 — ENHET 5, 6, 7, 8 OG 9 BYGGET OG VERIFISERT LOKALT (ikke deployet)
+files:
+  - "c8a5f25 feat(foretak): beskrivelsen bor i ACF, post_content reservert Gutenberg (etterslep fra 11.08)"
+  - "8f24f50 feat(nyhetsbrev): nudge paa Min side (etterslep, Trello #343)"
+  - "040c792 docs(worklog): #347 byggeplan + fem avklaringer til Baard"
+  - "c6a6f71 feat(admin): status-kolonne paa Sider (Enhet 6) — mu-plugins/bimverdi-admin-enhancements.php"
+  - "72a2167 feat(demoer): kun deltakerverktoey i grafene + rett eierfelt (Enhet 5) — mu-plugins/bimverdi-aec-filter.php (ny), 6 filer i parts/demos/"
+  - "ada53aa feat(artikkel): deltakerartikkel som avledet begrep (Enhet 7) — mu-plugins/bimverdi-artikkel-helpers.php (ny), single-artikkel.php"
+  - "9cee9f0 feat(nyhetsbrev): to artikkelseksjoner + kun deltakerverktoey (Enhet 9) — mu-plugins/bimverdi-nyhetsbrev-content.php"
+  - "a46f288 feat(foretak): nytt felt Nettside for egne arrangement (Enhet 8) — acf-json/group_foretak_info.json, foretak-edit.php, foretak-rediger.php, foretak-detail.php, single-foretak.php"
+  - "6c31dd6 refactor(admin): ett prepare-kall for status-sorteringen"
+summary: "Fem av ni enheter fra Trello #347, valgt fordi de ikke avhenger av Baards svar paa de fem spoersmaalene fra 02.09. Enhet 1, 2, 3 og 4 (del-knapp med logg, diskusjonsbanner, skjul kontaktinfo utlogget, paaminnelse kl 10 dagen foer) er IKKE roert. Alt verifisert lokalt mot ekte data og i nettleser, innlogget og utlogget. INGENTING ER PUSHET — venter paa Andreas' go for deploy."
+status: waiting
+waiting_on: "Andreas — go for push til main (autodeploy Servebolt). Baard — svar paa de fem spoersmaalene, samt to nye funn (se detail)."
+detail: |
+  TO FUNN SOM ENDRET LEVERANSEN:
+
+  1. FEIL EIERFELT I DEMO-GRAFENE (rettet). Alle fire demoer som kobler foretak
+     til verktoey leste ACF-feltet `tilknyttet_foretak`. Det feltet finnes ikke
+     paa verktoey-CPT-en — det er navnet paa bruker→foretak-koblingen.
+     Eierfeltet heter `eier_leverandor`. Konsekvens: 0 av 1944 verktoey hadde
+     en eier, matrise-demoen fjernet alle 82 foretak som «uten koblinger» og
+     falt tilbake til hardkodet demo-data. Feilen er ELDRE enn denne
+     leveransen — verifisert ved aa telle koblinger paa det gamle feltet foer
+     noe ble roert. Etter fiksen: 34 av 37 deltakerverktoey har eier, 32 peker
+     paa et publisert foretak, og matrisen viser ekte data.
+
+  2. «DELTAKERARTIKKEL» KAN IKKE AVLEDES FRA FORFATTERENS FORETAK. Jeg bygget
+     foerst kjeden slik single-artikkel.php gjoer for bylinen (feltet paa
+     artikkelen, ellers forfatterens foretak). Maalt mot data ble ALLE 34
+     publiserte artikler deltakerartikler og «Andre artikler» tom. Aarsak: 32
+     av 34 er skrevet av Baard, hvis konto er koblet til Verdinettverk AS —
+     som selv er registrert som Deltaker-foretak. Andreas' opprinnelige
+     avgjoerelse (A1: krev at `artikkel_bedrift` er eksplisitt satt) er derfor
+     den riktige, og gir 2 deltaker / 32 andre. Undersoekelsen bekreftet
+     beslutningen istedenfor aa velte den.
+
+  TRE SPOERSMAAL TIL BAARD SOM KOM UT AV BYGGINGEN:
+  - Artikler Baard har tilskrevet sitt eget foretak (Verdinettverk AS) havner
+    naa under «fra deltaker» (én artikkel). Skal BIM Verdis egne over i
+    «andre»? Filteret bimverdi_deltakerartikkel_unntatte_foretak loeser det
+    med én foretak-ID; tomt som standard.
+  - Nyhetsbrevets topp-header sier fortsatt «1944 verktoey … utvalgt fra 2285
+    ressurser», mens verktoeyseksjonen lenger ned sier «Se alle 37». Tallet
+    oeverst er Baards eget krav fra 09.06 (ressurs-oversikt som
+    publiseringsstimulering) og gjelder hele oekosystemet. Aa sette det til 37
+    ville fatt nettverket til aa se 50 ganger mindre ut, saa det staar urort —
+    men inkonsistensen er synlig i samme e-post og boer avgjoeres av ham.
+  - Eksisterende nyhetsbrev-utkast viser sitt LAGREDE oeyeblikksbilde i
+    forhaandsvisningen (bevisst, saa preview og send ikke drifter). De to
+    artikkelseksjonene kommer inn foerst naar et nyhetsbrev lagres paa nytt.
+
+  IKKE BYGGET, BEVISST: «Fra deltaker»-badge paa artikkelsiden (planen skisserte
+  den). Bylinen viser allerede foretaket, og badgen ville i dag statt paa én av
+  to Baard-artikler som begge viser «Verdinettverk AS» — mer forvirrende enn
+  opplysende. Tas naar Baard har svart paa spoersmaalet over.
+
+  FORHAANDSEKSISTERENDE FEIL SETT UNDER SVEIPET, IKKE ROERT (utenfor scope):
+  - header-minside.php:96 — udefinert $account_sections + foreach paa null,
+    fyrer paa hver Min side-visning.
+  - wpdb::prepare-notis «query only expected one placeholder» fra en Min
+    side-visning. Isolert bort fra Enhet 6: sidelista med bv_status-sortering
+    skriver 0 bytes til debug.log.
+  - archive-foretak.php:198,281 og archive-kunnskapskilde.php:280,367 —
+    mb_strtolower/strtolower paa null.
+  - Verktoey-arkivet viser «1944 verktoey» som statisk total ogsaa naar
+    kilde-facetten filtrerer til 37.
+
+  ACF: group_foretak_info finnes bare som JSON og lastes direkte av ACF —
+  verifisert at den ikke ogsaa ligger som acf-field-group i databasen, saa
+  ingen «Sync available» kreves paa prod.
+
+---
+date: 2026-09-02
 action: TRELLO #347 GJENNOMGAATT — byggeplan skrevet, 5 avklaringer sendt til Baard
 files:
   - "docs/plans/2026-09-02-001-feat-trello-347-diverse-endringer-plan.md (ny, 9 enheter)"
