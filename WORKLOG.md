@@ -3,6 +3,135 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-09-02
+action: TRELLO #347 GJENNOMGAATT — byggeplan skrevet, 5 avklaringer sendt til Baard
+files:
+  - "docs/plans/2026-09-02-001-feat-trello-347-diverse-endringer-plan.md (ny, 9 enheter)"
+summary: "Bårds samlekort med ni punkter (del-knapp m/logg, diskusjonsbanner, skjul kontaktinfo utlogget, påminnelse kl 10 dagen før, AEC ut av demo-grafer, status-kolonne på Sider, deltakerartikkel, nytt foretaksfelt arrangement_nettside, nyhetsbrev to artikkelseksjoner + kun deltakerverktøy). Plan med fil:linje, akseptkriterier og rekkefølge. DATAFUNN: artikkel 5700 står på bruker 131 = Dag Fjeld Edvardsens konto med visningsnavn omdøpt til «Einar Gudmundsson»; ekte Einar er bruker 217. Ikke rørt. Kommentar på kortet med fem spørsmål (kontoen, redigering etter publisering, deltakerartikkel som avledning, diskusjon på foretak/temagruppe, hva som skjules utlogget)."
+status: waiting
+waiting_on: Bård — svar på Trello #347-kommentaren. Pkt 5, 6, 8 og 9.2 kan bygges uavhengig av svarene.
+
+---
+date: 2026-08-26
+action: ABONNEMENTSGATEN VENTER PAA BAARDS GO — varsler gaar foreloepig kun til allowlisten
+files: []
+summary: "BIMVERDI_DISKUSJON_ABONNEMENT_APEN er IKKE definert i wp-config.php på Servebolt (verifisert med grep etter deploy). Abonnementsvarsler går derfor kun til andreas@aharstad.no. Knapp, avkrysning og avmelding virker for alle uansett — det er bare utsendingen til andre enn allowlisten gaten holder igjen. Åpnes med én linje på prod når Bård har sett en varsel-e-post med egne øyne: define('BIMVERDI_DISKUSJON_ABONNEMENT_APEN', true);"
+status: waiting
+waiting_on: Bård — se en abonnementsvarsel-e-post og gi go (planlagt i synken 27.08)
+---
+date: 2026-08-26
+action: STATUSSIDE BYGGET — felles fremdriftsoversikt paa /status/<token>/
+files:
+  - "commit b5bf77a (wp-content, pushet til main → autodeploy): mu-plugins/bimverdi-statusside.php (ny), mu-plugins/statusside/data.php (ny), mu-plugins/statusside/lib.php (ny)"
+  - "docs/statusside.md (ny — utenfor git, docs/ er ikke et repo)"
+  - "wp-config.php LOKALT: BIMVERDI_STATUS_TOKEN lagt inn (linje 101, før «That's all»). Prod mangler den fortsatt."
+summary: "Andreas' ønske fra synken 25.08 om «en felles logg […] og en to do ut ifra det» som HTML-side. Bygget med statusside-skillet (konsept fra minsponsor-v2) portet fra Next.js til WordPress — datamodell og layout er identisk på tvers av prosjekter, kun teknologien byttet. Sju user journeys, 41 akseptkriterier, førstegangs-audit der hvert done-punkt er slått opp i koden med fil:linje som bevis. Landet på 67 %. Semantikk: delvis teller null i prosenten, grønn journey krever eksplisitt menneskelig godkjenning i møte (settes aldri av agent), baren skal kunne gå NED. Hvert kriterium og hver journey har kopier-/goal-knapp som gir autonome Claude Code-løp mot en målbar sluttbetingelse; promptene har kvalitetsrutinen bakt inn, tilpasset dette prosjektet (php -l og nettleserverifisering i stedet for tsc/eslint, pluss husregelen om at e-post bygges låst til egen adresse først). Tilgang er hemmelig lenke uten innlogging, token som konstant i wp-config (ikke option — DB kopieres mellom prod og localhost, wp-config gjør ikke det), fail-closed 404, konstant-tids sammenligning, noindex + no-store. VERIFISERT lokalt: riktig token 200, feil og tomt token 404, headere satt, begge /goal-knappene gir riktig prompt (clipboard hooket i nettleseren), Escape og overlegg lukker panelet."
+status: done
+detail: |
+  BUG FUNNET OG FIKSET UNDERVEIS: display:flex på .panel overstyrte
+  hidden-attributtet, så alle sju detaljpanelene lå oppå hverandre og det siste i
+  DOM vant — klikk på journey 5 viste journey 7. Fikset med .panel[hidden]{display:none}.
+
+  GJENSTÅR FØR BÅRD KAN SE DEN: BIMVERDI_STATUS_TOKEN må legges inn manuelt i
+  wp-config.php på Servebolt. wp-config følger ikke autodeployen, så ruta er død
+  (vanlig 404) på prod til det er gjort. Prod og localhost skal ha HVER SIN token.
+
+  FUNN FRA AUDITEN som hører hjemme i synken med Bård:
+  - Tilleggskontakt kommer ikke gjennom oppgraderingsforespørselen.
+    bimverdi_user_can_request_oppgradering krever hovedkontakt (linje 182), og
+    bimverdi_is_hovedkontakt sammenligner mot ACF-feltet hovedkontaktperson
+    (custom-roles.php:121). Plan finnes: docs/plans/2026-05-22-001.
+  - Nyhetsbrev-nudgen (Trello #343) ligger fortsatt ukommittert lokalt og er
+    aldri deployet.
+  - Fri tekstsøk mot Brønnøysund (Trello #270) og lenke til opptak på
+    arrangement (Trello #292) er ikke bygget.
+
+  AVGRENSNING: siden svarer på «hvor langt er vi», ikke «hva sa vi». Møteloggen
+  bor fortsatt i denne fila.
+---
+date: 2026-08-26
+action: DISKUSJON PAA ARTIKLER OG VERKTOEY + ABONNEMENT MED EKTE AVMELDINGSVEI — deployet
+files:
+  - "commit 3d3b0d0 (wp-content, pushet til main → autodeploy): mu-plugins/bimverdi-diskusjon-abonnement.php (ny), mu-plugins/bimverdi-diskusjon-varsler.php (v1.1.0), mu-plugins/bimverdi-still-sporsmal.php, mu-plugins/bimverdi-resend-mail.php, themes/bimverdi-theme/comments.php, single-artikkel.php, single-verktoy.php, single-kunnskapskilde.php"
+  - "docs/plans/2026-08-26-001-feat-diskusjon-artikler-verktoy-abonnement-plan.md (ny)"
+summary: "Bård på Trello #337 (24.08) og i Teams (24.08 + 26.08): kommentarfeltet nederst i alle artikler slik det ligger i alle arrangement, i hvert verktøy — både deltakernes og AIinAEC Hub sine — og en knapp for «abonnér på aktivitet her» med mulighet til å slå av. Skulle stå i drift til demoen 27.08. Artikkel og verktøy lagt til i bimverdi_sporsmal_post_types(); hub-verktøyene er samme CPT som deltakernes, så én oppføring dekker begge. single-verktoy manglet comments_template() helt; single-artikkel og single-kunnskapskilde kalte det uten vakt, så wrapper-diven ble rendret tom når diskusjonen er av. Abonnementet er opt-in, men med avkrysningen synlig og forhåndshuket i skjemaet — ren opt-in bak knappen alene gir døde tråder, stille påmelding av alle som kommenterer er noe Bård ikke ba om. Tre tilstander, ikke to: «aldri tatt stilling» skilles fra «meldt seg av», ellers ville boksen kommet forhåndshuket tilbake til noen som nettopp trykket meld-meg-av. Én meta-rad per abonnent (ikke serialisert array) så samtidige påmeldinger ikke overskriver hverandre. VERIFISERT PÅ PROD: tråd rendrer på /artikler/byggchat-fp/, /verktoy/dokkio/ og /verktoy/revit-pure/ (hub); arrangement upåvirket; utlogget får teller og login-CTA, aldri brødtekst."
+status: done
+detail: |
+  AVMELDINGSVEIEN er den delen med mest omtanke, og den lukker R11 fra
+  11.08-planen («opt-out er fase 2»). HMAC over (bruker, post, omfang) med
+  wp_salt('auth'); omfanget signeres MED, så en trådtoken ikke kan spilles av
+  som «skru av alt». GET AVMELDER ALDRI — e-postklienter og sikkerhetsskannere
+  (Outlook Safe Links, antivirus-proxyer) forhåndshenter lenker, og en
+  GET-avmelding ville meldt folk av i det stille uten at de rørte noe. GET viser
+  bekreftelsesside, POST utfører. List-Unsubscribe + List-Unsubscribe-Post
+  (RFC 8058) gir Gmail og Apple Mail sin egen knapp, som POSTer og derfor ikke
+  kan utløses av en skanner. Erstatter mailto-omveien til post@bimverdi.no, som
+  ikke var en reell innsigelsesmulighet (GDPR art. 21(4)).
+
+  bimverdi-resend-mail.php fikk et STRENGT ALLOWLISTET gjennomslipp for nettopp
+  de to headerne. En åpen gjennomslipp ville latt hvilken som helst wp_mail-kaller
+  sette From- eller autentiseringsheadere.
+
+  RATE-TAK: mention-taket (30/t per avsender) står urørt — det rammer den ene
+  veien der AVSENDER velger mottakerne. Abonnenter har selv bedt om e-posten og
+  skal ikke falle ut fordi en tråd er populær, så de går på et eget totaltak
+  (300/t) som bare er en sikring mot løpsk utsending. Kommentar-rate-limiten
+  (15/t) begrenser uansett hvor mange runder én konto kan utløse.
+
+  BCC: abonnementsvarsler BCC-es ALDRI til post@bimverdi.no, heller ikke med åpen
+  gate. Ikke av konfidensialitetshensyn (R12c), men mengde — ett innlegg i en tråd
+  med 50 abonnenter ville lagt 50 identiske kopier i den delte postkassen.
+  Postkassen ser uansett alle kommentarene i wp-admin.
+
+  TESTET LOKALT (bevis i debug.log, prefiks [bv-varsler]): abonnent på allowlisten
+  fikk e-post (levert via Resend, «Nytt innlegg fra Claude AI i «ExplainThis»»);
+  abonnent utenfor stoppet av gaten; den som både abonnerer og nevnes fikk ÉN
+  e-post med mention-malen; avsender fikk ingen; global av-bryter respektert; GET
+  lot abonnementet stå, POST meldte av; tuklet token og byttet omfang ga 400;
+  avkrysningen uhuket etter avmelding; mobil 390 px uten overflow. Alle
+  testkommentarer og testabonnement er ryddet bort igjen.
+
+  KUNNSKAPSKILDE står fortsatt bevisst AV (R17).
+
+  ÅPENT: flere innlegg på rad i samme tråd gir én e-post per innlegg — akseptert
+  i v1, samle-forsinkelse er neste steg hvis Bård melder om støy. Ingen
+  abonnementsoversikt på Min side; avmelding skjer per tråd fra e-posten eller
+  knappen på siden.
+---
+date: 2026-08-13
+action: KORT 3 ARKIVSIDER DEPLOYET OG SEEDET PAA PROD — Gutenberg-topp live paa alle 6 arkiver
+files:
+  - "commit 213bd0e (wp-content, pushet til main → autodeploy): mu-plugins/bimverdi-arkivsider.php (ny), mu-plugins/bimverdi-archive-options.php (slettet — slettingen propagerte faktisk til prod), plugins/bim-verdi-core/includes/class-post-types.php (register_arkivside), themes/bimverdi-theme/parts/components/archive-intro.php"
+  - "PROD DB: 6 arkivside-poster opprettet, ID 3804 deltakere / 3805 verktoy / 3806 kunnskapskilder / 3807 arrangement / 3808 artikler / 3809 temagrupper. Forfatter = bruker 1. Flagg bimverdi_arkivsider_seeded=1"
+  - "Backup av alle 226 options-rader fra prod: scratchpad/prod-arkivside-options-backup-2026-08-13.json (sesjonsbasert — flyttes hvis den skal vare)"
+summary: "Etterslepet fra 11.08 (kort 3) er nå live. Deployet er filer alene, så ingen DB-risiko der; risikoen lå i seeding-rutinen som leser Bårds redigerte tekster fra wp_options og oppretter postene. Backup av options-radene ble tatt FØR alt annet, og avdekket en reell datafelle: prod-ingressen for `arrangement` har to avsnitt skilt med \\r\\n\\r\\n, mens seedingen pakket hele verdien i én <p> — avsnittsbruddet ville forsvunnet i migreringen. Fikset med bv_arkivside_ingress_til_blokker() (én wp:paragraph-blokk per avsnitt, enkelt linjeskift → <br>), testet mot Bårds faktiske prod-streng lokalt før deploy. Seedingen ble samtidig refaktorert til navngitt funksjon bv_arkivsider_seed() så den kan trigges fra CLI (`wp --user=1 eval 'bv_arkivsider_seed();'`) istedenfor å vente på at noen logger inn i wp-admin; admin_init-hooken beholder gatingen (flagg + edit_posts). VERIFISERT: alle 6 arkiv HTTP 200 med Gutenberg-topp og uten gammel ingress-<p>; postinnholdet maskinelt sammenlignet mot backupen og tekstlig identisk for alle seks (arrangement fikk 2 blokker, resten 1); de gamle options_*_ingress-radene ligger urørt; ingen PHP-feil i debug.log. Prod var også verifisert frisk MELLOM deploy og seeding — archive-intro.php faller tilbake til options-verdiene så lenge posten mangler."
+status: done
+detail: |
+  ROLLBACK: slett arkivside-posten → archive-intro.php faller automatisk tilbake
+  til options-verdien (som fortsatt ligger i prod-DB). Ingen kodeendring nødvendig.
+
+  DB-FELLE Å HUSKE VED NESTE SYNK: localhost har sine EGNE seks arkivside-poster
+  (ID 3258–3263, seedet 11.08 fra localhost-options) med kortere/eldre tekst enn
+  prod (3804–3809, Bårds redigerte). En DB-push localhost → prod ville derfor
+  overskrive Bårds tekster. Synk skal gå prod → localhost, som vanlig.
+
+  TIL BÅRD (Teams): ingen «Forhåndsvis»-knapp i editoren — CPT-en er public=false,
+  så is_post_type_viewable() er false og Gutenberg skjuler preview-UI-et. Han må
+  lagre og laste arkivsiden på nytt. «Oppdater» går altså rett live; revisjoner er
+  på hvis noe må rulles tilbake. Oversikt: /wp-admin/edit.php?post_type=arkivside
+  (ligger under Innstillinger → Arkivsider). Andreas valgte bevisst å IKKE bygge
+  preview nå — tas hvis Bård savner det (skisse finnes: filtrer preview_post_link
+  til arkiv-URL + autosave-innhold i archive-intro, ~1–2 t).
+
+  FORTSATT UCOMMITTET LOKALT (rørt ikke, venter på egen økt): nyhetsbrev-nudge
+  (mu-plugins/bimverdi-nyhetsbrev-nudge.php + parts/minside/nyhetsbrev-nudge.php),
+  minside/foretak-endringer (parts/minside/dashboard.php, parts/minside/foretak-rediger.php,
+  mu-plugins/bimverdi-foretak-edit.php, mu-plugins/bimverdi-foretak-registration.php),
+  single-artikkel.php, single-kunnskapskilde.php.
+
+  ØVRIG GJENSTÅENDE (uendret fra 12.08): R13 B-011-overstyring ucommittet i
+  bimverdi-context; R18 styringsgruppe-navneliste fra Bård; fase 2 avmeldings-toggel.
+---
 date: 2026-08-12
 action: R13 (B-011-overstyring) PARKERT paa Andreas' beslutning — kort 2 avsluttet
 files:
