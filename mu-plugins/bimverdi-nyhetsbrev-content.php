@@ -252,23 +252,45 @@ function bimverdi_nyhetsbrev_totaler() {
 
 /**
  * 1. Siste N publiserte artikler.
+ *
+ * @param int         $limit      Antall artikler.
+ * @param string|null $gruppe     'deltaker' eller 'andre' for å begrense til én
+ *                                gruppe (Trello #347 pkt 9.1), null = alle.
+ * @param bool        $med_hero   Om første artikkel skal rendres som hero.
+ *                                Bare ÉN seksjon i nyhetsbrevet kan ha hero.
  */
-function bimverdi_nyhetsbrev_artikler($limit = 3) {
-    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('artikkel', $limit);
+function bimverdi_nyhetsbrev_artikler($limit = 3, $gruppe = null, $med_hero = true) {
+    if ($gruppe !== null) {
+        if (!function_exists('bimverdi_artikler_gruppert')) {
+            return [];
+        }
+        $ids = bimverdi_artikler_gruppert($limit)[$gruppe] ?? [];
+
+        // Tom gruppe MÅ kortsluttes: 'post__in' => [] blir ignorert av
+        // WP_Query, og spørringen ville da returnert alle artiklene.
+        if (empty($ids)) {
+            return [];
+        }
+
+        $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('artikkel', $limit, [
+            'post__in' => $ids,
+            'orderby'  => 'post__in',
+        ]);
+    } else {
+        $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('artikkel', $limit);
+    }
 
     $items = [];
     foreach ($poster as $idx => $post) {
         $id = $post->ID;
-        $is_hero = ($idx === 0); // Toppartikkel = hero (stort bilde øverst).
+        $is_hero = ($med_hero && $idx === 0); // Toppartikkel = hero (stort bilde øverst).
 
         // Foretak: eksplisitt felt, ellers utledet fra forfatterens user meta.
-        $bedrift = get_field('artikkel_bedrift', $id);
+        // Kjeden bor i bimverdi_artikkel_foretak_id() (#347 pkt 7.1).
         $author_id = (int) $post->post_author;
-        if (empty($bedrift) && $author_id) {
-            $bedrift = get_user_meta($author_id, 'bimverdi_company_id', true)
-                ?: get_user_meta($author_id, 'bim_verdi_company_id', true)
-                ?: get_field('tilknyttet_foretak', 'user_' . $author_id);
-        }
+        $bedrift = function_exists('bimverdi_artikkel_foretak_id')
+            ? bimverdi_artikkel_foretak_id($id)
+            : get_field('artikkel_bedrift', $id);
         $foretak = bimverdi_nyhetsbrev_foretak($bedrift);
 
         $ingress = get_field('artikkel_ingress', $id);
@@ -369,7 +391,15 @@ function bimverdi_nyhetsbrev_neste_arrangement() {
  * 3. Siste N verktøy/tjenester.
  */
 function bimverdi_nyhetsbrev_verktoy($limit = 3) {
-    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('verktoy', $limit);
+    // Kun deltakernes egne verktøy — Bård, Trello #347 pkt 9.2: «Fjerne
+    // AIinAEC-verktøy - ta kun med deltakerverktøy». Uten filteret dominerte
+    // de ~1900 synkroniserte hub-verktøyene seksjonen, siden den sorterer på
+    // sist endret og synken rører alle sine hver uke.
+    $extra = function_exists('bimverdi_query_args_uten_aec')
+        ? bimverdi_query_args_uten_aec([])
+        : [];
+
+    $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('verktoy', $limit, $extra);
 
     $items = [];
     foreach ($poster as $post) {
@@ -487,24 +517,63 @@ function bimverdi_nyhetsbrev_collect() {
     // «Se alle»-lenker per seksjon (Bård-krav 09.06: «dette er nyeste — se også
     // våre X andre [posttype]»). Arkivlenke + totalantall publiserte.
     $arkiv = function ($cpt, $enhet) {
+        if ($cpt === 'foretak') {
+            $total = bimverdi_nyhetsbrev_antall_deltakere();
+        } elseif ($cpt === 'verktoy' && function_exists('bimverdi_antall_deltakerverktoy')) {
+            // Kun deltakerverktøy, ellers ville «Se alle 1944 verktøy» stått
+            // ved siden av tre deltakerverktøy og lovet noe annet enn lenken
+            // faktisk viser (#347 pkt 9.2).
+            $total = bimverdi_antall_deltakerverktoy();
+        } else {
+            $total = (int) wp_count_posts($cpt)->publish;
+        }
+
+        $url = get_post_type_archive_link($cpt) ?: '';
+        if ($cpt === 'verktoy' && $url) {
+            // Lenken skal lande på det samme utvalget tallet gjelder.
+            // Facetten leses server-side av bv_verktoy_katalog_filters().
+            $url = add_query_arg(['kilde' => ['medlem']], $url);
+        }
+
         return [
-            'total'     => ($cpt === 'foretak')
-                ? bimverdi_nyhetsbrev_antall_deltakere()
-                : (int) wp_count_posts($cpt)->publish,
-            'arkiv_url' => get_post_type_archive_link($cpt) ?: '',
+            'total'     => $total,
+            'arkiv_url' => $url,
             'enhet'     => $enhet,
         ];
     };
+
+    // Artikler deles i to seksjoner (#347 pkt 9.1). Hero — den store
+    // toppartikkelen — kan bare finnes én gang i nyhetsbrevet, og den skal
+    // ligge i den seksjonen som faktisk har innhold øverst.
+    $artikler_deltaker = bimverdi_nyhetsbrev_artikler(3, 'deltaker', true);
+    $artikler_andre    = bimverdi_nyhetsbrev_artikler(3, 'andre', empty($artikler_deltaker));
+
+    $artikkel_antall = function_exists('bimverdi_artikler_antall_per_gruppe')
+        ? bimverdi_artikler_antall_per_gruppe()
+        : ['deltaker' => count($artikler_deltaker), 'andre' => count($artikler_andre)];
+
+    $artikkel_arkiv = get_post_type_archive_link('artikkel') ?: '';
 
     return [
         'generert'  => bimverdi_nyhetsbrev_dato_nb(),
         'totaler'   => bimverdi_nyhetsbrev_totaler(),
         'seksjoner' => [
-            array_merge([
-                'noekkel' => 'artikler',
-                'tittel'  => 'Siste artikler',
-                'items'   => bimverdi_nyhetsbrev_artikler(3),
-            ], $arkiv('artikkel', 'artikler')),
+            [
+                'noekkel'   => 'artikler_deltaker',
+                'tittel'    => 'Artikler fra deltakere',
+                'items'     => $artikler_deltaker,
+                'total'     => $artikkel_antall['deltaker'],
+                'arkiv_url' => $artikkel_arkiv,
+                'enhet'     => 'artikler fra deltakere',
+            ],
+            [
+                'noekkel'   => 'artikler_andre',
+                'tittel'    => 'Andre artikler',
+                'items'     => $artikler_andre,
+                'total'     => $artikkel_antall['andre'],
+                'arkiv_url' => $artikkel_arkiv,
+                'enhet'     => 'artikler',
+            ],
             array_merge([
                 'noekkel' => 'arrangement',
                 'tittel'  => 'Neste arrangement',
