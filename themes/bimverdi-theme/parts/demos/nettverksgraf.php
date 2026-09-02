@@ -91,13 +91,13 @@ if ($term && !is_wp_error($term)) {
     }
     wp_reset_postdata();
 
-    // Query connected verktoy (via taxonomy)
-    $verktoy_query = new WP_Query([
+    // Query connected verktoy (via taxonomy) — kun deltakernes egne (#347 pkt 5)
+    $verktoy_query = new WP_Query(bimverdi_query_args_uten_aec([
         'post_type'      => 'verktoy',
         'posts_per_page' => -1,
         'post_status'    => 'publish',
         'tax_query'      => [['taxonomy' => 'temagruppe', 'field' => 'term_id', 'terms' => $term->term_id]],
-    ]);
+    ]));
     if ($verktoy_query->have_posts()) {
         $has_real_data = true;
         while ($verktoy_query->have_posts()) {
@@ -118,12 +118,12 @@ if ($term && !is_wp_error($term)) {
 
     // Also try ACF field "formaalstema" for verktoy
     if ($stats['verktoy'] === 0) {
-        $verktoy_acf_query = new WP_Query([
+        $verktoy_acf_query = new WP_Query(bimverdi_query_args_uten_aec([
             'post_type'      => 'verktoy',
             'posts_per_page' => -1,
             'post_status'    => 'publish',
             'meta_query'     => [['key' => 'formaalstema', 'value' => $tg_name, 'compare' => 'LIKE']],
-        ]);
+        ]));
         if ($verktoy_acf_query->have_posts()) {
             $has_real_data = true;
             while ($verktoy_acf_query->have_posts()) {

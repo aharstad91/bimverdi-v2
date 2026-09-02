@@ -37,10 +37,11 @@ if (!empty($theme_groups)) {
             'post_type' => 'foretak', 'posts_per_page' => 20, 'post_status' => 'publish',
             'tax_query' => [['taxonomy' => 'temagruppe', 'field' => 'term_id', 'terms' => $term->term_id]],
         ]);
-        $verktoy_posts = get_posts([
+        // Kun deltakernes egne verktøy (#347 pkt 5)
+        $verktoy_posts = get_posts(bimverdi_query_args_uten_aec([
             'post_type' => 'verktoy', 'posts_per_page' => 30, 'post_status' => 'publish',
             'tax_query' => [['taxonomy' => 'temagruppe', 'field' => 'term_id', 'terms' => $term->term_id]],
-        ]);
+        ]));
         $kunnskap_posts = get_posts([
             'post_type' => 'kunnskapskilde', 'posts_per_page' => 15, 'post_status' => 'publish',
             'tax_query' => [['taxonomy' => 'temagruppe', 'field' => 'term_id', 'terms' => $term->term_id]],

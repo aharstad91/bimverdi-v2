@@ -71,7 +71,8 @@ if ($selected_tg) {
         }
 
         // Query verktoy - try taxonomy first, then fallback to ACF meta
-        $verktoy_posts = get_posts([
+        // Kun deltakernes egne verktøy (#347 pkt 5)
+        $verktoy_posts = get_posts(bimverdi_query_args_uten_aec([
             'post_type'      => 'verktoy',
             'posts_per_page' => -1,
             'post_status'    => 'publish',
@@ -82,11 +83,11 @@ if ($selected_tg) {
                     'terms'    => $term_id,
                 ],
             ],
-        ]);
+        ]));
 
         // Also try ACF field 'formaalstema' as fallback
         if (empty($verktoy_posts)) {
-            $verktoy_posts = get_posts([
+            $verktoy_posts = get_posts(bimverdi_query_args_uten_aec([
                 'post_type'      => 'verktoy',
                 'posts_per_page' => -1,
                 'post_status'    => 'publish',
@@ -97,7 +98,7 @@ if ($selected_tg) {
                         'compare' => 'LIKE',
                     ],
                 ],
-            ]);
+            ]));
         }
 
         foreach ($verktoy_posts as $p) {
@@ -133,11 +134,11 @@ if ($selected_tg) {
             $connection_map[$id] = array_filter($all_ids, fn($other) => $other !== $id);
         }
 
-        // Foretak <-> Verktoy: check ACF 'tilknyttet_foretak' on verktoy
+        // Foretak <-> Verktoy: eierfeltet er eier_leverandor (#347 pkt 5)
         foreach ($entities['verktoy']['items'] as $tool) {
-            $foretak_id = get_field('tilknyttet_foretak', $tool['id']);
+            $foretak_id = bimverdi_verktoy_eier_foretak_id($tool['id']);
             if ($foretak_id) {
-                $fid = is_object($foretak_id) ? $foretak_id->ID : intval($foretak_id);
+                $fid = intval($foretak_id);
                 if (!in_array($fid, $connection_map[$tool['id']] ?? [])) {
                     $connection_map[$tool['id']][] = $fid;
                 }

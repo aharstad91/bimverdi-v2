@@ -49,8 +49,8 @@ if (!empty($theme_groups)) {
             ]],
         ]);
 
-        // Verktoy connected to this temagruppe
-        $verktoy_posts = get_posts([
+        // Verktoy connected to this temagruppe — kun deltakernes egne (#347 pkt 5)
+        $verktoy_posts = get_posts(bimverdi_query_args_uten_aec([
             'post_type'      => 'verktoy',
             'posts_per_page' => 30,
             'post_status'    => 'publish',
@@ -59,7 +59,7 @@ if (!empty($theme_groups)) {
                 'field'    => 'term_id',
                 'terms'    => $term->term_id,
             ]],
-        ]);
+        ]));
 
         // Kunnskapskilder connected to this temagruppe
         $kunnskap_posts = get_posts([
@@ -99,7 +99,8 @@ if (!empty($theme_groups)) {
         // Build verktoy array with company links
         $verktoy_data = [];
         foreach ($verktoy_posts as $v) {
-            $foretak_id = get_field('tilknyttet_foretak', $v->ID);
+            // Eierfeltet er eier_leverandor (#347 pkt 5)
+            $foretak_id = bimverdi_verktoy_eier_foretak_id($v->ID);
             $linked_foretak = null;
             if ($foretak_id) {
                 // Check if this foretak is in our list

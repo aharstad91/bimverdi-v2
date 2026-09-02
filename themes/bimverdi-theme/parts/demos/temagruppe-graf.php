@@ -95,12 +95,20 @@ if (!empty($tg_terms) && !is_wp_error($tg_terms)) {
         ];
 
         foreach ($entity_types as $etype => $conf) {
-            $query = new WP_Query([
+            $query_args = [
                 'post_type'      => $conf['post_type'],
                 'posts_per_page' => -1,
                 'post_status'    => 'publish',
                 'tax_query'      => [['taxonomy' => 'temagruppe', 'field' => 'term_id', 'terms' => $term->term_id]],
-            ]);
+            ];
+
+            // Kun deltakernes egne verktøy (#347 pkt 5) — de andre entitetstypene
+            // har ingen hub-kilde og skal ikke filtreres
+            if ($conf['post_type'] === 'verktoy') {
+                $query_args = bimverdi_query_args_uten_aec($query_args);
+            }
+
+            $query = new WP_Query($query_args);
 
             if ($query->have_posts()) {
                 $has_real_data = true;
@@ -148,13 +156,13 @@ if (!empty($tg_terms) && !is_wp_error($tg_terms)) {
             wp_reset_postdata();
         }
 
-        // Also try ACF field "formaalstema" for verktøy
-        $verktoy_acf_query = new WP_Query([
+        // Also try ACF field "formaalstema" for verktøy — kun deltakernes egne
+        $verktoy_acf_query = new WP_Query(bimverdi_query_args_uten_aec([
             'post_type'      => 'verktoy',
             'posts_per_page' => -1,
             'post_status'    => 'publish',
             'meta_query'     => [['key' => 'formaalstema', 'value' => $term->name, 'compare' => 'LIKE']],
-        ]);
+        ]));
         if ($verktoy_acf_query->have_posts()) {
             $has_real_data = true;
             while ($verktoy_acf_query->have_posts()) {
@@ -185,10 +193,10 @@ if (!empty($tg_terms) && !is_wp_error($tg_terms)) {
         wp_reset_postdata();
     }
 
-    // ── Cross-links: foretak ↔ verktøy (via tilknyttet_foretak) ──
+    // ── Cross-links: foretak ↔ verktøy (via eier_leverandor, #347 pkt 5) ──
     foreach (array_unique($all_verktoy_ids) as $vid) {
-        $foretak_id = get_field('tilknyttet_foretak', $vid);
-        if ($foretak_id && in_array($foretak_id, $all_foretak_ids)) {
+        $foretak_id = bimverdi_verktoy_eier_foretak_id($vid);
+        if ($foretak_id && in_array($foretak_id, array_map('intval', $all_foretak_ids), true)) {
             $links[] = [
                 'source' => 'foretak_' . $foretak_id,
                 'target' => 'verktoy_' . $vid,

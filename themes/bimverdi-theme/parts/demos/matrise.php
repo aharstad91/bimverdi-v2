@@ -31,14 +31,15 @@ $foretak_posts = get_posts([
     'order'          => 'ASC',
 ]);
 
-// Get all verktoy
-$verktoy_posts = get_posts([
+// Get all verktoy — kun deltakernes egne (Trello #347 pkt 5: hub-verktøyene
+// gjør matrisen uleselig, ~1900 kolonner mot ~40)
+$verktoy_posts = get_posts(bimverdi_query_args_uten_aec([
     'post_type'      => 'verktoy',
     'posts_per_page' => -1,
     'post_status'    => 'publish',
     'orderby'        => 'title',
     'order'          => 'ASC',
-]);
+]));
 
 // Build the matrix from real data
 if (!empty($foretak_posts) && !empty($verktoy_posts)) {
@@ -67,18 +68,10 @@ if (!empty($foretak_posts) && !empty($verktoy_posts)) {
             'category' => $category,
         ];
 
-        // Check ACF field 'tilknyttet_foretak' to find which company registered this tool
-        $foretak_id = null;
-        if (function_exists('get_field')) {
-            $foretak_id = get_field('tilknyttet_foretak', $v->ID);
-            // Could be a post object or an ID
-            if (is_object($foretak_id)) {
-                $foretak_id = $foretak_id->ID;
-            }
-        }
-        if (!$foretak_id) {
-            $foretak_id = get_post_meta($v->ID, 'tilknyttet_foretak', true);
-        }
+        // Hvilket foretak eier verktøyet? Feltet heter eier_leverandor —
+        // demoene leste 'tilknyttet_foretak', som ikke finnes på verktøy og
+        // derfor alltid var tomt (funnet 02.09.2026, Trello #347 pkt 5)
+        $foretak_id = bimverdi_verktoy_eier_foretak_id($v->ID);
 
         if ($foretak_id && isset($matrix[$foretak_id])) {
             $matrix[$foretak_id][$v->ID] = true;
