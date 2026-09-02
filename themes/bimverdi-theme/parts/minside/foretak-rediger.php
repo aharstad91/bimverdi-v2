@@ -41,7 +41,10 @@ if (!$is_hovedkontakt && !$is_admin) {
 // Get current field values
 $org_nummer  = get_field('organisasjonsnummer', $company_id) ?: '';
 $bedriftsnavn = $company->post_title;
-$beskrivelse_raw = get_field('beskrivelse', $company_id) ?: $company->post_content;
+// Kun ACF — post_content er reservert til Gutenberg-redigerbar topp og skal
+// ikke lekke inn i beskrivelse-feltet. (Per 11.08: alle foretak med
+// post_content har også ACF-beskrivelse, så fallbacken var død kode.)
+$beskrivelse_raw = get_field('beskrivelse', $company_id);
 $beskrivelse = wp_strip_all_tags($beskrivelse_raw);
 $kort_beskrivelse = get_field('kort_beskrivelse', $company_id) ?: '';
 $kort_beskrivelse_initial_length = mb_strlen($kort_beskrivelse, 'UTF-8');

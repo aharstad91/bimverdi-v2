@@ -371,10 +371,13 @@ add_action('init', function () {
     // --- Create foretak post (pending — venter på admin-godkjenning) ---
     // Endret 2026-05-07 (T5/D): registreringer skaper ikke lenger publisert foretak.
     // Bruker-aktivering kjøres i transition-hook ved publish.
+    // post_content holdes tomt: beskrivelsen bor i ACF-feltet 'beskrivelse'
+    // (single-foretak leser kun ACF). post_content er reservert til
+    // Gutenberg-redigerbar topp (samme mønster som temagruppe/verktøy).
     $post_data = [
         'post_type'    => defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak',
         'post_title'   => $bedriftsnavn,
-        'post_content' => $beskrivelse,
+        'post_content' => '',
         'post_status'  => 'pending',
         'post_author'  => $user_id,
     ];
@@ -398,6 +401,7 @@ add_action('init', function () {
         update_field('postnummer', $postnummer, $foretak_id);
         update_field('poststed', $poststed, $foretak_id);
         update_field('nettside', $nettside, $foretak_id);
+        update_field('beskrivelse', $beskrivelse, $foretak_id);
         update_field('bransje_rolle', array_values($bransje_rolle), $foretak_id);
         update_field('kundetyper', array_values($kundetyper), $foretak_id);
         update_field('hovedkontaktperson', $user_id, $foretak_id);

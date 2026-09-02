@@ -140,9 +140,12 @@ add_action('template_redirect', function () {
     }
 
     // --- Update foretak post ---
+    // post_content røres IKKE: beskrivelsen bor i ACF-feltet 'beskrivelse'
+    // (skrives under). post_content er reservert til Gutenberg-redigerbar topp —
+    // å skrive den her ville overskrevet redaksjonelt innhold ved hver lagring.
+    // wp_update_post kjøres likevel for å bumpe post_modified («Sist oppdatert»).
     $update_data = [
-        'ID'           => $company_id,
-        'post_content' => $beskrivelse,
+        'ID' => $company_id,
     ];
 
     $result = wp_update_post($update_data, true);
