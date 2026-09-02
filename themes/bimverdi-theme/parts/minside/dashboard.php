@@ -307,6 +307,18 @@ endif;
 ?>
 
 <?php
+// Nyhetsbrev-nudge + bekreftelse etter påmelding (mu-plugins/bimverdi-nyhetsbrev-nudge.php)
+if (isset($_GET['nb_nudge']) && $_GET['nb_nudge'] === 'pameldt'):
+    get_template_part('parts/components/success-banner', null, [
+        'title'   => __('Påmeldt!', 'bimverdi'),
+        'message' => __('Du mottar nå nyhetsbrevet fra BIM Verdi.', 'bimverdi'),
+    ]);
+elseif (!$is_welcome_state):
+    get_template_part('parts/minside/nyhetsbrev-nudge');
+endif;
+?>
+
+<?php
 // BV20: Show BRUKER-FORETAK info for users with lightweight company link
 if (!$company && $bruker_foretak) : ?>
 <div class="py-6 border-b border-[#E7E5E4] mb-6">
