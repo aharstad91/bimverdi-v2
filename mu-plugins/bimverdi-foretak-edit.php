@@ -78,7 +78,11 @@ add_action('template_redirect', function () {
     $beskrivelse = sanitize_textarea_field($_POST['beskrivelse'] ?? '');
     $telefon     = sanitize_text_field($_POST['telefon'] ?? '');
     $epost       = sanitize_email($_POST['epost'] ?? '');
-    $nettside    = esc_url_raw($_POST['nettside'] ?? '');
+    // trim() før esc_url_raw: en URL limt inn med mellomrom rundt ville ellers
+    // blitt lagret med %20 i enden og gitt en død lenke.
+    $nettside    = esc_url_raw(trim((string) ($_POST['nettside'] ?? '')));
+    // Trello #347 pkt 8 — lenke til foretakets egen arrangementsside.
+    $arrangement_nettside = esc_url_raw(trim((string) ($_POST['arrangement_nettside'] ?? '')));
 
     // --- Validate kort_beskrivelse length (grandfather: allow existing long values, block growth) ---
     $kort_len = mb_strlen($kort_beskrivelse, 'UTF-8');
@@ -164,6 +168,7 @@ add_action('template_redirect', function () {
         update_field('epost', $epost, $company_id);
         update_field('nettside', $nettside, $company_id);
         update_field('hjemmeside', $nettside, $company_id);
+        update_field('arrangement_nettside', $arrangement_nettside, $company_id);
 
         if ($logo_attachment_id) {
             update_field('logo', $logo_attachment_id, $company_id);
@@ -175,6 +180,7 @@ add_action('template_redirect', function () {
         update_post_meta($company_id, 'epost', $epost);
         update_post_meta($company_id, 'nettside', $nettside);
         update_post_meta($company_id, 'hjemmeside', $nettside);
+        update_post_meta($company_id, 'arrangement_nettside', $arrangement_nettside);
 
         if ($logo_attachment_id) {
             set_post_thumbnail($company_id, $logo_attachment_id);

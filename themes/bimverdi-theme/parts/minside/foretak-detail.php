@@ -323,6 +323,20 @@ if ($bv_error && isset($oppgradering_errors[$bv_error])):
                 </div>
                 <?php endif; ?>
 
+                <?php /* Trello #347 pkt 8: foretakets egen arrangementsside */ ?>
+                <?php $arrangement_nettside = get_field('arrangement_nettside', $company_id); ?>
+                <?php if ($arrangement_nettside): ?>
+                <div class="flex items-start gap-3 py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888888] flex-shrink-0 mt-0.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                    <div>
+                        <p class="text-xs font-medium text-[#57534E] uppercase tracking-wide mb-1"><?php _e('Nettside for egne arrangement', 'bimverdi'); ?></p>
+                        <a href="<?php echo esc_url($arrangement_nettside); ?>" target="_blank" rel="noopener" class="text-sm text-[#111827] hover:text-[#FF8B5E] transition-colors">
+                            <?php echo esc_html($arrangement_nettside); ?>
+                        </a>
+                    </div>
+                </div>
+                <?php endif; ?>
+
             </div>
         </div>
 

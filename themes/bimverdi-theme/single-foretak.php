@@ -24,6 +24,8 @@ $postnummer = get_field('postnummer', $company_id);
 $poststed = get_field('poststed', $company_id);
 $telefon = get_field('telefon', $company_id);
 $nettside = get_field('hjemmeside', $company_id);
+// Trello #347 pkt 8: foretakets egen arrangementsside.
+$arrangement_nettside = get_field('arrangement_nettside', $company_id);
 $kontakt_epost = get_field('kontakt_epost', $company_id);
 $bv_rolle = get_field('bv_rolle', $company_id);
 $er_aktiv_deltaker = $bv_rolle && $bv_rolle !== 'Ikke deltaker';
@@ -723,6 +725,18 @@ $company_kunnskapskilder = get_posts(array(
                             <dd class="text-sm">
                                 <a href="<?php echo esc_url($nettside); ?>" target="_blank" rel="noopener" class="text-[#111827] hover:underline inline-flex items-center gap-1">
                                     <?php echo esc_html(parse_url($nettside, PHP_URL_HOST) ?: 'Besøk nettside'); ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </a>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if ($arrangement_nettside): ?>
+                        <div class="py-3">
+                            <dt class="text-xs text-[#A8A29E] mb-0.5">Egne arrangement</dt>
+                            <dd class="text-sm">
+                                <a href="<?php echo esc_url($arrangement_nettside); ?>" target="_blank" rel="noopener" class="text-[#111827] hover:underline inline-flex items-center gap-1">
+                                    <?php echo esc_html(parse_url($arrangement_nettside, PHP_URL_HOST) ?: 'Se arrangementer'); ?>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 </a>
                             </dd>

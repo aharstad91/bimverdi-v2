@@ -52,6 +52,9 @@ $kort_beskrivelse_max = 500;
 $telefon     = get_field('telefon', $company_id) ?: '';
 $epost       = get_field('epost', $company_id) ?: '';
 $nettside    = get_field('hjemmeside', $company_id) ?: get_field('nettside', $company_id) ?: '';
+// Trello #347 pkt 8: egen lenke til foretakets arrangementsside, som skal mate
+// en KI-generert bransjekalender senere.
+$arrangement_nettside = get_field('arrangement_nettside', $company_id) ?: '';
 $gateadresse = get_field('gateadresse', $company_id) ?: get_field('adresse', $company_id) ?: '';
 $postnummer  = get_field('postnummer', $company_id) ?: '';
 $poststed    = get_field('poststed', $company_id) ?: '';
@@ -287,6 +290,21 @@ $error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
                                placeholder="https://"
                                autocomplete="url"
                                class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
+                    </div>
+
+                    <!-- Nettside for egne arrangement (Trello #347 pkt 8) -->
+                    <div>
+                        <label for="arrangement_nettside" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                            <?php _e('Nettside for egne arrangement', 'bimverdi'); ?>
+                        </label>
+                        <input type="url" id="arrangement_nettside" name="arrangement_nettside" value="<?php echo esc_attr($arrangement_nettside); ?>"
+                               placeholder="https://"
+                               autocomplete="url"
+                               aria-describedby="arrangement_nettside_hjelp"
+                               class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
+                        <p id="arrangement_nettside_hjelp" class="mt-2 text-sm text-[#5A5A5A]">
+                            <?php _e('Har dere en egen side for kurs, webinarer eller arrangementer? Lenken brukes til BIM Verdis bransjekalender.', 'bimverdi'); ?>
+                        </p>
                     </div>
                 </div>
             </div>

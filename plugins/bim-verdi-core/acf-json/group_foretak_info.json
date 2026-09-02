@@ -257,6 +257,15 @@
             "placeholder": "https://www.example.no"
         },
         {
+            "key": "field_foretak_arrangement_nettside",
+            "label": "Nettside for egne arrangement",
+            "name": "arrangement_nettside",
+            "type": "url",
+            "instructions": "Lenke til siden der foretaket publiserer egne kurs, webinarer og arrangementer. Brukes til BIM Verdis bransjekalender.",
+            "required": 0,
+            "placeholder": "https://www.example.no/arrangementer"
+        },
+        {
             "key": "field_foretak_land",
             "label": "Land",
             "name": "land",
