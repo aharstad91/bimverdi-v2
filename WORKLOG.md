@@ -3,6 +3,40 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-09-03
+action: TRELLO #347 — BAARDS SVAR FRA MOETE 03.09 INNARBEIDET I PLANEN, RUNDE 2 KLAR FOR OPUS
+files:
+  - "docs/plans/2026-09-02-001-feat-trello-347-diverse-endringer-plan.md — ny seksjon «Baards svar (moete 03.09)», Enhet 10 og 11 lagt til, A3 utvidet, rekkefoelge oppdatert"
+summary: "Baard leste Trello-kommentarene og svarte muntlig (Fireflies-transkript). Alle fem opprinnelige spoersmaal og to av tre nye er avklart. Ingenting er skrevet i Trello fra Baards side — transkriptet er kilden. Enhet 1, 2, 3, 4 kan bygges, pluss to nye: forfatterbytte i admin (10) og datarydding av artikkel 5700 paa prod (11). Runde 1 er fortsatt ikke pushet; Baard forventer det paa bimverdi.no i dag."
+status: waiting
+waiting_on: "Andreas — (a) go for push av runde 1, (b) bekreft B2: 7.3 redigering etter publisering ble ikke tydelig besvart, antar dagens regel. Baard — B5 «1944 verktoey» i nyhetsbrev-toppen, han kommer tilbake."
+detail: |
+  BAARDS SVAR (B1–B9, detaljer i planen):
+  - B1 7.2: Dag skriver, Baard bytter forfatter til Einar etterpaa. Han kan i dag
+    bare velge MEDFORFATTER i admin. Hypotese: Gutenbergs forfattervelger
+    (`/wp/v2/users?who=authors`) viser ikke deltaker-roller. → Enhet 10.
+    Artikkel 5700 → post_author 217, bruker 131 faar navnet tilbake → Enhet 11
+    (kun prod, 5700 finnes ikke lokalt).
+  - B2 7.3: ikke tydelig besvart (lyd borte). Antar dagens regel.
+  - B3: avledet deltakerartikkel OK, men skal hete «Artikler fra deltakere»,
+    aldri «deltakerartikler». Grep 03.09: ingen synlige strenger bruker ordet.
+  - B4: Verdinettverk AS (207) skal IKKE regnes som deltaker → filter [207].
+  - B5: 1944-toppen — Baard maa se paa det i ro. Uendret.
+  - B6: diskusjon paa deltakerprofiler + temagrupper: ja.
+  - B7: skjul hovedkontakt (navn, stilling) + TELEFON + e-post for utloggede.
+    Telefon er nytt i forhold til A3.
+  - B8: paaminnelse kl 10: ja, bygges.
+  - B9: del-knapp: ingen innvending, men forklar loggen med skjermbilde.
+
+  ANNET: nyhetsbrev-bredde «vi lar det staa». Baard saa fortsatt Stefans
+  KI-verktoey i nyhetsbrev og temagruppe-graf paa prod — det er runde 1 som
+  ikke er deployet. GTM/SEO-rapportering er Andreas' eget loep, eget kort.
+
+  BAARD SPURTE: verifiserer Andreas at ting fungerer etter at Claude har
+  bygget, eller maa han? → leveransekommentarer boer si «testet av Andreas paa
+  bimverdi.no» eksplisitt per punkt.
+
+---
 date: 2026-09-02
 action: TRELLO #347 — ENHET 5, 6, 7, 8 OG 9 BYGGET OG VERIFISERT LOKALT (ikke deployet)
 files:
