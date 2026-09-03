@@ -542,11 +542,14 @@ function bimverdi_nyhetsbrev_collect() {
         ];
     };
 
-    // Artikler deles i to seksjoner (#347 pkt 9.1). Hero — den store
-    // toppartikkelen — kan bare finnes én gang i nyhetsbrevet, og den skal
-    // ligge i den seksjonen som faktisk har innhold øverst.
-    $artikler_deltaker = bimverdi_nyhetsbrev_artikler(3, 'deltaker', true);
-    $artikler_andre    = bimverdi_nyhetsbrev_artikler(3, 'andre', empty($artikler_deltaker));
+    // Artikler deles i to seksjoner (#347 pkt 9.1). Rekkefølgen er Bårds
+    // (kommentar 03.09.2026): «Artikler» øverst, «Artikler fra deltakere»
+    // rett under. Hero — den store toppartikkelen — kan bare finnes én gang
+    // i nyhetsbrevet, og den skal ligge i den øverste seksjonen som faktisk
+    // har innhold. Rekkefølgen på disse to kallene styrer altså hvem som får
+    // hero, og må følge rekkefølgen i 'seksjoner' under.
+    $artikler_andre    = bimverdi_nyhetsbrev_artikler(3, 'andre', true);
+    $artikler_deltaker = bimverdi_nyhetsbrev_artikler(3, 'deltaker', empty($artikler_andre));
 
     $artikkel_antall = function_exists('bimverdi_artikler_antall_per_gruppe')
         ? bimverdi_artikler_antall_per_gruppe()
@@ -559,20 +562,25 @@ function bimverdi_nyhetsbrev_collect() {
         'totaler'   => bimverdi_nyhetsbrev_totaler(),
         'seksjoner' => [
             [
+                // Het «Andre artikler» til 03.09.2026. Bård ville ha den til
+                // «Artikler», og da må «Se alle N» love det lenken faktisk
+                // viser: artikkelarkivet har ingen deltaker-facet, så lenken
+                // lander på ALLE artikler, og tallet er derfor totalen — ikke
+                // antallet i denne gruppa (samme regel som #347 pkt 9.2).
+                'noekkel'   => 'artikler_andre',
+                'tittel'    => 'Artikler',
+                'items'     => $artikler_andre,
+                'total'     => $artikkel_antall['deltaker'] + $artikkel_antall['andre'],
+                'arkiv_url' => $artikkel_arkiv,
+                'enhet'     => 'artikler',
+            ],
+            [
                 'noekkel'   => 'artikler_deltaker',
                 'tittel'    => 'Artikler fra deltakere',
                 'items'     => $artikler_deltaker,
                 'total'     => $artikkel_antall['deltaker'],
                 'arkiv_url' => $artikkel_arkiv,
                 'enhet'     => 'artikler fra deltakere',
-            ],
-            [
-                'noekkel'   => 'artikler_andre',
-                'tittel'    => 'Andre artikler',
-                'items'     => $artikler_andre,
-                'total'     => $artikkel_antall['andre'],
-                'arkiv_url' => $artikkel_arkiv,
-                'enhet'     => 'artikler',
             ],
             array_merge([
                 'noekkel' => 'arrangement',
@@ -581,7 +589,7 @@ function bimverdi_nyhetsbrev_collect() {
             ], $arkiv('arrangement', 'arrangementer')),
             array_merge([
                 'noekkel' => 'verktoy',
-                'tittel'  => 'Nye og sist oppdaterte verktøy og tjenester',
+                'tittel'  => 'Nye og sist oppdaterte verktøy og tjenester fra deltakerne',
                 'items'   => bimverdi_nyhetsbrev_verktoy(3),
             ], $arkiv('verktoy', 'verktøy')),
             array_merge([
