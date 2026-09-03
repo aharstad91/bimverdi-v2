@@ -4,6 +4,62 @@
 
 ---
 date: 2026-09-03
+action: STATUS VED DAGENS SLUTT — samlet aapen-poster-liste for Trello #347 (erstatter waiting_on i dagens tidligere entryer)
+files:
+  - "(ingen kodeendring — dette er dagens sanne status paa ett sted)"
+summary: "Trello #347 er ferdig bygget og deployet i sin helhet. Dagen produserte sju entryer i denne loggen, og de aapne postene ligger spredt i waiting_on-feltene deres — flere av dem er naa foreldet (f.eks. «go for push av runde 1», som er gjort). Denne entryen er den gjeldende lista. Les DENNE, ikke waiting_on lenger ned, for aa vite hva som staar aapent."
+status: waiting
+waiting_on: "Baard — fire avgjoerelser (se under), varslet med @baardkr paa Trello. Andreas — tre ting (se under)."
+detail: |
+  ALT SOM ER LEVERT OG LIGGER PAA bimverdi.no
+  Alle ni punkter i Trello #347. I dag i tillegg: Baards seksjonstitler i
+  nyhetsbrevet (pkt 7, kommentar 03.09), felles e-postskjelett med
+  paaminnelsen loeftet paa det, og Baard lagt i paaminnelse-allowlisten.
+  Commits: 6151eed, c1c2514, 6268cfe (+ 566b3b0, 608f6b3, add6977 logg).
+
+  VENTER PAA BAARD — FIRE AVGJOERELSER
+  Alle fire ligger som én @baardkr-kommentar paa kortet
+  (6a993a328fcf72e7276f907d, 03.09 kl. 11:13), pluss en oppfoelging om
+  testkopien (6a993b36570752ad3ca2e255, kl. 11:17).
+   1. PAAMINNELSEN — han har testkopien i innboksen sin
+      (baard@verdinettverk.no, Resend: delivered). Sier han ja, aapnes gaten.
+   2. B5 — «1944 verktoey … utvalgt fra 2285 ressurser» oeverst i
+      nyhetsbrevet, mot 37 i seksjonen lenger ned. Spurt 02.09, 03.09 og
+      03.09 igjen. Fortsatt ubesvart. Jeg lot toppen staa, fordi 37 faar
+      nettverket til aa se mindre ut enn det er.
+   3. ENGELSKE DATOER — «Friday 4. September» i stedet for «fredag 4.
+      september». Gjelder single-arrangement.php:96, :98, :452 og
+      avlyst-e-posten. Sidens locale er en_US, saa wp_date('l j. F') gir
+      engelsk. Fikset i paaminnelsen med egen norsk dato-helper; resten
+      staar. Aa bytte locale ville flyttet ALLE datoer paa siden, derfor
+      spurt foerst.
+   4. PUNKT 7.3 — skal en deltaker kunne redigere artikkelen sin etter
+      publisering? I dag kan ingen det. Forslaget: den gaar tilbake til
+      «til godkjenning» ved lagring. Ble ikke tydelig besvart i moetet 03.09,
+      og koden beholder dagens regel inntil han svarer.
+
+  BAARD MAA OGSAA GJOERE ÉN TING SELV: nyhetsbrev-utkast lagrer FROSSET HTML.
+  De seks utkastene paa prod (5729, 5705, 5698, 5692, 5691, 3008) har fortsatt
+  gamle overskrifter til han trykker «Generer nyhetsbrev naa».
+
+  VENTER PAA ANDREAS — TRE TING
+   1. Sjekk testkopien av paaminnelsen i SPARK (ikke bare nettleser) — det er
+      Spark som stripper knappestyling, og hele poenget med skjelettet er at
+      knappen naa holder. Ligger i innboksen som «Paaminnelse: 17.
+      september'26 …».
+   2. Naar Baard har sagt ja: define('BIMVERDI_PAMINNELSE_APEN', true); i
+      wp-config.php paa Servebolt, over SSH. wp-config foelger IKKE
+      autodeploy. Noedstenging uten wp-config-redigering:
+      add_filter('bimverdi_paminnelse_gate_apen', '__return_false').
+   3. Si naar de 7 gjenvaerende fragment-e-postene skal loeftes paa
+      skjelettet. Egen TODO-entry i denne loggen.
+
+  FIRE PREEKSISTERENDE BUGS SOM FORTSATT STAAR (bevisst ikke roert, utenfor
+  #347-scope): header-minside.php:96, en wpdb::prepare-notice, strtolower paa
+  null i to arkiver, og det statiske «1944 verktoey» i verktoey-arkivet.
+
+---
+date: 2026-09-03
 action: Baard lagt i paaminnelse-allowlisten og testkopi levert til ham
 files:
   - "6268cfe feat(paminnelse): Baard i allowlisten — han skal se e-posten selv"
