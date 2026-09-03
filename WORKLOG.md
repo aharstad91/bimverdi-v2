@@ -4,6 +4,60 @@
 
 ---
 date: 2026-09-03
+action: TRELLO #347 — RUNDE 1 DEPLOYET, OG ENHET 7-TILLEGG, 10, 2 OG 1 BYGGET (alt uten xhigh)
+files:
+  - "fe4b8a7…b5bf77a pushet til main — runde 1 (enhet 5, 6, 7, 8, 9) er naa live paa bimverdi.no, verifisert paa server"
+  - "Verdinettverk AS unntatt fra «Artikler fra deltakere» (B4) — havnet i 79c1956, ikke egen commit (git-kall feilet paa feil arbeidsmappe, oppdaget etterpaa; endringen er korrekt)"
+  - "d42bebf feat(artikkel): deltakerbrukere valgbare som forfatter i wp-admin (Enhet 10)"
+  - "79c1956 feat(diskusjon): banner oeverst + traad paa deltakerprofiler og temagrupper (Enhet 2)"
+  - "d03d65c feat(deling): del-knapp med brukslogg paa alle sider (Enhet 1)"
+summary: "Alt som ikke krever xhigh er bygget og verifisert lokalt. Runde 1 er deployet og bekreftet paa Servebolt. Igjen staar Enhet 3 (skjul hovedkontakt/telefon/e-post for utloggede), Enhet 4 (paaminnelse kl 10 via cron) og Enhet 11 (datarydding artikkel 5700 paa prod) — alle tre venter paa xhigh."
+status: waiting
+waiting_on: "Andreas — (a) go for push av runde 2, (b) xhigh for Enhet 3, 4 og 11. Baard — B5 «1944 verktoey» i nyhetsbrev-toppen."
+detail: |
+  FUNN SOM ENDRET ENHET 10. Hypotesen i planen var at Gutenbergs
+  forfattervelger filtrerer paa capability og derfor utelater deltakerroller.
+  Det var feil. Aarsaken er eldre og enklere: velgeren spoer etter
+  `who=authors`, som WordPress oversetter til den gamle metaverdien
+  `wp_user_level != 0` — ikke en capability-sjekk. BIM Verdis roller ble
+  laget med add_role() uten `level_N`-capabilitiene, saa alle 589
+  medlemsbrukere har wp_user_level = 0. Maalt: `who=authors` gir 3 treff
+  (kun administratorene), `capability=edit_posts` gir 192. Baade Dag (131)
+  og Einar (217) er tilleggskontakt og HAR edit_posts.
+
+  Fiksen bytter who=authors for capability=edit_posts i rest_user_query og
+  wp_dropdown_users_args, kun for innloggede med edit_others_posts. Rollene
+  roeres IKKE — aa legge level_N inn i dem ville endret oppfoersel i alt
+  annet som fortsatt leser user_level. Verifisert i blokkeditoren: soek
+  «Einar» gir naa 217. REST-brukerlista er dessuten allerede stengt for
+  utloggede i bimverdi-auth-routes.php:632, saa ingen navn lekker.
+
+  BAARD VIL SE TO IDENTISKE «Einar Gudmundsson» i velgeren til Enhet 11 er
+  kjoert (bruker 131 heter fortsatt Einar). Det gjoer Enhet 11 mer
+  presserende enn foer.
+
+  DOBBEL SKILLELINJE. comments.php:165 gir seksjonen sin egen
+  `border-t ... pt-10`, saa wrapperen rundt comments_template() ga to
+  streker. Fjernet i den nye koden (single-foretak). single-verktoy.php og
+  single-arrangement.php har fortsatt den doble streken — eldre, ikke roert
+  i denne runden.
+
+  MULIG MISFORSTAAELSE AA AVKLARE: Baard sa i moetet at «temagruppe-grafen
+  inneholder alle verktoeyene til Stefan, helt kaos». Enhet 5 fikset
+  demo-grafen (/demo/temagruppe-graf/), som er den han refererte til i
+  punkt 5. Men OGSAA single-theme_group.php viser en egen blokk «Verktoey
+  fra AEC AI Hub» med 932 treff ved siden av «Verktoey fra deltakerne» med
+  4. Den er bevisst merket og altsaa ikke kaos, men hvis det var DEN han
+  mente, er fiksen en annen. Spoer.
+
+  PRE-EKSISTERENDE FEIL, FORTSATT IKKE ROERT (uendret liste fra 02.09):
+  header-minside.php:96 udefinert $account_sections + foreach paa null;
+  wpdb::prepare «one placeholder»-notice fra en Min side-visning;
+  archive-foretak.php:198,281 og archive-kunnskapskilde.php:280,367
+  strtolower paa null; statisk «1944 verktoey» i verktoey-arkivets topp.
+
+---
+date: 2026-09-03
 action: TRELLO #347 — BAARDS SVAR FRA MOETE 03.09 INNARBEIDET I PLANEN, RUNDE 2 KLAR FOR OPUS
 files:
   - "docs/plans/2026-09-02-001-feat-trello-347-diverse-endringer-plan.md — ny seksjon «Baards svar (moete 03.09)», Enhet 10 og 11 lagt til, A3 utvidet, rekkefoelge oppdatert"
