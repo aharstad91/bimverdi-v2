@@ -53,10 +53,23 @@ const BIMVERDI_PAMINNELSE_MAKS      = 300;
 /**
  * Adresser som mottar utsendingen så lenge gaten er lukket.
  *
+ * Bård er lagt inn 03.09.2026 på Andreas' beskjed: han skal se påminnelsen
+ * med egne øyne før han godkjenner den, og en videresendt kopi viser ikke
+ * hvordan e-posten faktisk lander i innboksen hans.
+ *
+ * MERK KONSEKVENSEN: så lenge gaten er lukket, får BEGGE disse adressene en
+ * testkopi hver gang et arrangement med bekreftede påmeldte går dagen etter.
+ * Ekte påmeldte får fortsatt ingenting. Når gaten åpnes, er lista irrelevant
+ * — da går påminnelsen til de påmeldte, og Bård får den bare hvis han selv
+ * står som påmeldt.
+ *
  * @return string[] små bokstaver
  */
 function bimverdi_paminnelse_allowlist() {
-    $liste = apply_filters('bimverdi_paminnelse_allowlist', array('andreas@aharstad.no'));
+    $liste = apply_filters('bimverdi_paminnelse_allowlist', array(
+        'andreas@aharstad.no',
+        'baard@verdinettverk.no',
+    ));
     $liste = array_map(function ($e) {
         return strtolower(trim((string) $e));
     }, (array) $liste);
@@ -490,7 +503,7 @@ function bimverdi_paminnelse_html($arrangement_id, $navn, $er_testkopi, $ekte_an
     $banner = '';
     if ($er_testkopi) {
         $banner = bimverdi_epost_testbanner(
-            '<strong>Testkopi — sikkerhetsgaten er lukket.</strong> Denne påminnelsen er kun sendt til deg. '
+            '<strong>Testkopi — sikkerhetsgaten er lukket.</strong> Denne påminnelsen er kun sendt til testadressene våre. '
             . (int) $ekte_antall . ' faktiske påmeldte ble IKKE varslet.'
         );
     }
