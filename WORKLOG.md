@@ -4,6 +4,48 @@
 
 ---
 date: 2026-09-03
+action: Baard lagt i paaminnelse-allowlisten og testkopi levert til ham
+files:
+  - "6268cfe feat(paminnelse): Baard i allowlisten — han skal se e-posten selv"
+  - "mu-plugins/bimverdi-arrangement-paminnelse.php (bimverdi_paminnelse_allowlist + testbanner-ordlyd)"
+summary: "Andreas: «viktig at han ligger i den lista og at han mottar en test selv: baard@verdinettverk.no». Lagt inn i allowlisten, deployet og verifisert paa prod. Testkopi sendt fra prod til baard@verdinettverk.no — Resend bekrefter status delivered. Gaten er FORTSATT LUKKET; ekte paameldte har ikke faatt noe."
+status: waiting
+waiting_on: "Baard — se paa e-posten og gi go. Deretter Andreas: define('BIMVERDI_PAMINNELSE_APEN', true); i wp-config paa Servebolt (foelger ikke autodeploy)."
+detail: |
+  ALLOWLISTEN ERSTATTER MOTTAKERLISTA, DEN UTVIDER DEN IKKE. Naar gaten er
+  lukket bygges mottakerne UTELUKKENDE fra allowlisten
+  (bimverdi_paminnelse_send, «else»-grenen), saa Baard i lista betyr at han og
+  Andreas faar testkopien — ikke at han faar den I TILLEGG til de paameldte.
+  Naar gaten aapnes er lista irrelevant: da gaar paaminnelsen til de faktisk
+  paameldte, og Baard faar den bare hvis han selv staar paameldt.
+
+  KONSEKVENS SAA LENGE GATEN ER LUKKET: begge adressene faar en kopi hver gang
+  et arrangement med bekreftede paameldte gaar dagen etter. Prod har ett
+  kommende arrangement (3349, 17.09), saa neste automatiske testkopi kommer
+  16.09. Ikke daglig stoey.
+
+  TESTBANNERET sa «Denne paaminnelsen er kun sendt til deg». Sant med én
+  adresse, loegn med to — endret til «kun sendt til testadressene vaare».
+
+  SENDT MED BYGGER + wp_mail DIREKTE, ikke via bimverdi_paminnelse_send().
+  Grunnen: send() setter idempotens-merket _bv_paminnelse_sendt til datoen
+  paaminnelsen gjaldt. Hadde jeg brukt den, ville merket staatt paa 20260917
+  og BLOKKERT den ekte paaminnelsen 16.09. Verifisert etter begge sendinger at
+  merket IKKE er satt. Allowlist-stien er verifisert separat ved aa lese
+  bimverdi_paminnelse_allowlist() paa prod (begge adresser, gate LUKKET).
+
+  EGEN GLIPP, RETTET: foerste testkopi til Baard fikk emnefeltet
+  «[Testkopi] Paaminnelse: …» fordi min SSH-quoting ASCII-ifiserte teksten.
+  Koden er riktig — den ekte cron-utsendingen skriver «Paaminnelse» med aa-lyd
+  korrekt (se Resend-loggen 07:59 samme dag). Sendte én rettet kopi til Baard
+  alene via base64-overfoert eval-file, saa det han vurderer er identisk med
+  det de paameldte vil faa. Baard har dermed to e-poster; den nyeste er riktig.
+
+  LEVERING BEKREFTET via Resend MCP: baard@verdinettverk.no status=delivered
+  (ingen bounce, ingen suppression paa verdinettverk.no).
+
+---
+date: 2026-09-03
 action: TODO — LOEFT DE 7 GJENVAERENDE FRAGMENT-E-POSTENE PAA FELLESSKJELETTET
 files:
   - "(ingen kodeendring — dette er en bestilling, ikke en leveranse)"
