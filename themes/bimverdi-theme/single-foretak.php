@@ -49,6 +49,29 @@ $twitter_url = get_field('twitter_url', $company_id);
 $hovedkontakt_id = get_field('hovedkontaktperson', $company_id);
 $hovedkontakt = $hovedkontakt_id ? get_userdata($hovedkontakt_id) : null;
 
+/**
+ * Kontaktopplysninger bak innlogging (Baard, Trello #347 punkt 3, bekreftet
+ * muntlig 03.09.2026: «telefon kan også skjules slik at det ikke blir lett
+ * å stikke av med de kontaktpersonene eller e-poster uten at man er
+ * pålogget»).
+ *
+ * Skjules for utloggede: hovedkontaktens navn, stilling og e-post, samt
+ * foretakets telefon og e-post. Adresse, org.nummer, næringskode, nettside
+ * og arrangementsnettside forblir åpne — det er foretaksdata, ikke en vei
+ * inn til en navngitt person.
+ *
+ * Forankring: B-020 i beslutningsloggen sier at brukernavn ikke vises
+ * offentlig uten samtykke. Hovedkontaktens navn har staatt offentlig, så
+ * dette lukker også et avvik fra den beslutningen.
+ *
+ * Vi skjuler ikke raden helt når det finnes noe å vise: en låst rad sier
+ * at kontakten FINNES og at innlogging gir tilgang, som er poenget.
+ * UI-CONTRACT P4 («vis bare det som finnes») gjelder fortsatt for tomme
+ * felt — er det ingen telefon og ingen e-post, kommer ingen rad.
+ */
+$bv_vis_kontaktinfo = is_user_logged_in();
+$bv_logg_inn_url = home_url('/logg-inn/?redirect_to=' . rawurlencode(get_permalink($company_id)));
+
 // Hent BRREG-data
 $organisasjonsform = get_field('organisasjonsform', $company_id);
 $naeringskode = get_field('naeringskode', $company_id);
@@ -639,6 +662,13 @@ $company_kunnskapskilder = get_posts(array(
                 <section class="bg-[#F5F5F4] rounded-lg p-5">
                     <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-4">Hovedkontakt</h3>
 
+                    <?php if (!$bv_vis_kontaktinfo): ?>
+                    <p class="text-sm text-[#57534E] m-0">
+                        <a href="<?php echo esc_url($bv_logg_inn_url); ?>" class="text-[#FF8B5E] hover:underline">Logg inn</a>
+                        for å se kontaktperson.
+                    </p>
+                    <?php else: ?>
+
                     <div class="flex items-start gap-3">
                         <div class="w-12 h-12 bg-[#E7E5E4] rounded-full flex items-center justify-center flex-shrink-0">
                             <span class="text-base font-medium text-[#57534E]">
@@ -660,6 +690,7 @@ $company_kunnskapskilder = get_posts(array(
                             <?php endif; ?>
                         </div>
                     </div>
+                    <?php endif; ?>
                 </section>
                 <?php endif; ?>
 
@@ -725,6 +756,8 @@ $company_kunnskapskilder = get_posts(array(
                         </div>
                         <?php endif; ?>
 
+                        <?php if ($bv_vis_kontaktinfo): ?>
+
                         <?php if ($telefon): ?>
                         <div class="py-3">
                             <dt class="text-xs text-[#A8A29E] mb-0.5">Telefon</dt>
@@ -743,6 +776,27 @@ $company_kunnskapskilder = get_posts(array(
                                 <a href="mailto:<?php echo esc_attr($kontakt_epost); ?>" class="text-[#FF8B5E] hover:underline break-all">
                                     <?php echo esc_html($kontakt_epost); ?>
                                 </a>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php elseif ($telefon || $kontakt_epost): ?>
+                        <?php
+                        // Én låst rad i stedet for to nesten like. Etiketten
+                        // navngir bare det foretaket faktisk har registrert.
+                        if ($telefon && $kontakt_epost) {
+                            $bv_laast_etikett = 'Telefon og e-post';
+                        } elseif ($telefon) {
+                            $bv_laast_etikett = 'Telefon';
+                        } else {
+                            $bv_laast_etikett = 'E-post';
+                        }
+                        ?>
+                        <div class="py-3">
+                            <dt class="text-xs text-[#A8A29E] mb-0.5"><?php echo esc_html($bv_laast_etikett); ?></dt>
+                            <dd class="text-sm text-[#57534E]">
+                                <a href="<?php echo esc_url($bv_logg_inn_url); ?>" class="text-[#FF8B5E] hover:underline">Logg inn</a>
+                                for å se
                             </dd>
                         </div>
                         <?php endif; ?>
