@@ -383,6 +383,7 @@ require_once get_template_directory() . '/parts/components/button.php';
 
 /* ── Header / topp ── */
 .tg-header { background: #fff; }
+.tg-diskusjon { margin-top: 40px; }
 .tg-header-inner {
     max-width: 1280px; margin: 0 auto; padding: 32px 24px 8px;
 }
@@ -559,6 +560,13 @@ a.tg-block-more:hover { gap: 8px; text-decoration: none; color: var(--tg-accent-
             ]);
             ?>
 
+            <?php
+            // Diskusjonsbanner (Bård, Trello #347 punkt 2).
+            if (function_exists('bimverdi_diskusjon_banner')) {
+                bimverdi_diskusjon_banner();
+            }
+            ?>
+
             <h1 class="tg-hero-title"><?php the_title(); ?></h1>
 
             <?php
@@ -706,6 +714,21 @@ a.tg-block-more:hover { gap: 8px; text-decoration: none; color: var(--tg-accent-
                 <p style="margin-top: 8px;"><a href="<?php echo esc_url(home_url('/min-side/')); ?>">Bli med og bidra via Min Side</a></p>
             </div>
             <?php endif; ?>
+
+            <?php
+            // Diskusjon: kommentartråd under temagruppen (Bård, Trello #347
+            // punkt 2, 03.09.2026). Malen over kjører en rekke egne WP_Query-er
+            // med wp_reset_postdata(), men den siste sløyfa ligger et stykke
+            // opp — vi nullstiller eksplisitt så comments_template() garantert
+            // ser temagruppen og ikke en post fra en av sløyfene.
+            wp_reset_postdata();
+            if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
+                && (comments_open() || get_comments_number() > 0)) {
+                echo '<div class="tg-diskusjon">';
+                comments_template();
+                echo '</div>';
+            }
+            ?>
 
         </div>
     </div>

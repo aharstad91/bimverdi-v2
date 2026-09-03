@@ -59,6 +59,15 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
         </a>
     </div>
 
+    <!-- Diskusjonsbanner (Bård, Trello #347 punkt 2) -->
+    <div class="container mx-auto px-4 pt-6">
+        <?php
+        if (function_exists('bimverdi_diskusjon_banner')) {
+            bimverdi_diskusjon_banner(['class' => 'max-w-3xl mx-auto']);
+        }
+        ?>
+    </div>
+
     <!-- Hero section -->
     <div class="bg-gradient-to-b from-gray-50 to-white py-12 lg:py-16">
         <div class="container mx-auto px-4">

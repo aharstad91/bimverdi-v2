@@ -37,7 +37,10 @@ if (!defined('ABSPATH')) {
  * Filter: bimverdi_sporsmal_post_types
  */
 function bimverdi_sporsmal_post_types() {
-    return apply_filters('bimverdi_sporsmal_post_types', ['arrangement', 'artikkel', 'verktoy']);
+    // foretak og theme_group lagt til 03.09.2026 (Baard, Trello #347 punkt 2):
+    // diskusjonsbanneret oeverst lover en traad nederst paa deltakerprofiler og
+    // temagruppesider ogsaa, saa traaden maa finnes der.
+    return apply_filters('bimverdi_sporsmal_post_types', ['arrangement', 'artikkel', 'verktoy', 'foretak', 'theme_group']);
 }
 
 /**

@@ -235,6 +235,12 @@ require_once get_template_directory() . '/parts/components/pagination.php';
 require_once get_template_directory() . '/parts/components/avatar.php';
 
 /**
+ * Load Diskusjonsbanner Component
+ * Provides bimverdi_diskusjon_banner() — Trello #347 punkt 2
+ */
+require_once get_template_directory() . '/parts/components/diskusjon-banner.php';
+
+/**
  * Load Accordion Component
  * Provides bimverdi_accordion() function
  */

@@ -186,6 +186,14 @@ $company_kunnskapskilder = get_posts(array(
             </ol>
         </nav>
 
+        <?php
+        // Diskusjonsbanner (Baard, Trello #347 punkt 2). Rendrer ingenting naar
+        // traaden ikke er aktiv for posten.
+        if (function_exists('bimverdi_diskusjon_banner')) {
+            bimverdi_diskusjon_banner();
+        }
+        ?>
+
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
             <div class="flex items-start gap-5">
@@ -548,6 +556,20 @@ $company_kunnskapskilder = get_posts(array(
                     </p>
                     <?php endif; ?>
                 </section>
+
+                <?php
+                // Diskusjon: kommentartraad under deltakerprofilen (Baard,
+                // Trello #347 punkt 2, 03.09.2026). Samme vakt og markup som
+                // single-verktoy.php.
+                // Ingen wrapper med border-t her: comments.php gir seksjonen sin
+                // egen `border-t ... pt-10`, saa en ekstra ga to streker over
+                // hverandre. (single-verktoy.php og single-arrangement.php har
+                // fortsatt den doble streken — eldre, roeres ikke her.)
+                if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
+                    && (comments_open() || get_comments_number() > 0)) {
+                    comments_template();
+                }
+                ?>
 
             </div>
 

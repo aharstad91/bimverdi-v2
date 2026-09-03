@@ -100,11 +100,14 @@ function bimverdi_artikkel_foretak_id($post_id, $med_forfatter_fallback = true) 
  * data-lag — brukeren ER koblet uansett status — men for å PUBLISERE en
  * attribusjon er publisert riktig krav.
  *
- * ÅPENT SPØRSMÅL TIL BÅRD: artikler Bård har tilskrevet sitt eget foretak
- * (Verdinettverk AS, som selv står som Deltaker) havner i dag under «fra
- * deltaker». Skal BIM Verdis egne regnes med, eller skal de over i «andre»?
- * Ett foretak-ID i et filter løser det når svaret kommer — se
- * `bimverdi_deltakerartikkel_unntatte_foretak`.
+ * AVGJORT 03.09.2026 (Bård, møte): Verdinettverk AS er BIM Verdis egen
+ * redaksjon — «det er jo jeg som redaktør, så den skal ikke havne under
+ * artikler fra deltakerne». Foretaket er unntatt via
+ * `bimverdi_deltakerartikkel_unntatte_foretak`, se filteret nederst i fila.
+ *
+ * MERK NAVNGIVINGEN: overfor brukeren heter dette «Artikler fra deltakere»,
+ * aldri «deltakerartikler» — Bård 03.09: det siste kan leses som artikler
+ * OM deltakere, ikke FRA dem. Funksjonsnavnene her er interne og kan stå.
  *
  * @param int $post_id
  * @return bool
@@ -258,3 +261,30 @@ function bimverdi_artikler_antall_per_gruppe() {
         'andre'    => count($alle['andre']),
     );
 }
+
+/**
+ * Verdinettverk AS er BIM Verdis egen redaksjon, ikke en deltaker.
+ *
+ * Slås opp på slug, ikke hardkodet ID: ID-en er 207 både lokalt og på prod
+ * (verifisert 03.09.2026), men et oppslag som følger slugen tåler at
+ * foretaket en gang blir opprettet på nytt. Memoisert per request — én
+ * get_page_by_path() per prosess, og WP cacher den selv i tillegg.
+ *
+ * @param int[] $ids
+ * @return int[]
+ */
+add_filter('bimverdi_deltakerartikkel_unntatte_foretak', function ($ids) {
+    static $eget_foretak = null;
+
+    if ($eget_foretak === null) {
+        $cpt   = defined('BV_CPT_COMPANY') ? BV_CPT_COMPANY : 'foretak';
+        $post  = get_page_by_path('verdinettverk-as', OBJECT, $cpt);
+        $eget_foretak = $post ? (int) $post->ID : 0;
+    }
+
+    if ($eget_foretak) {
+        $ids[] = $eget_foretak;
+    }
+
+    return $ids;
+});

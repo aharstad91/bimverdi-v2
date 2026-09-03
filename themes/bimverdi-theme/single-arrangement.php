@@ -129,6 +129,13 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
             </ol>
         </nav>
 
+        <?php
+        // Diskusjonsbanner (Bård, Trello #347 punkt 2).
+        if (function_exists('bimverdi_diskusjon_banner')) {
+            bimverdi_diskusjon_banner();
+        }
+        ?>
+
         <!-- Status Banner -->
         <?php if ($status === 'avlyst'): ?>
         <div class="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">

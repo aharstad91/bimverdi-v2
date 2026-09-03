@@ -176,6 +176,13 @@ $tool_updated = get_the_modified_date('d.m.Y');
             </ol>
         </nav>
 
+        <?php
+        // Diskusjonsbanner (Bård, Trello #347 punkt 2).
+        if (function_exists('bimverdi_diskusjon_banner')) {
+            bimverdi_diskusjon_banner();
+        }
+        ?>
+
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
             <div class="flex items-start gap-5 flex-1">
