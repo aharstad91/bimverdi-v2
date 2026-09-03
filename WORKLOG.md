@@ -4,6 +4,101 @@
 
 ---
 date: 2026-09-03
+action: Baards nyhetsbrev-titler (#347 pkt 7) + FELLES E-POSTSKJELETT etter tredje runde med kollapset CTA-knapp
+files:
+  - "6151eed feat(nyhetsbrev): Baards seksjonstitler og rekkefoelge (#347 pkt 7)"
+  - "c1c2514 fix(epost): felles skjelett — knappen kollapset i Spark igjen"
+  - "mu-plugins/bimverdi-epost-skjelett.php (NY: bimverdi_epost_dokument, _knapp, _avsnitt, _testbanner)"
+  - "mu-plugins/bimverdi-arrangement-paminnelse.php (bimverdi_paminnelse_html bygget om paa skjelettet)"
+  - "mu-plugins/bimverdi-nyhetsbrev-content.php (titler + rekkefoelge + hero-flytting)"
+summary: "To saker. (1) Baards kommentar paa Trello #347 pkt 7: «Andre artikler» → «Artikler», «Artikler fra deltakere» flyttet UNDER den, og verktoey-seksjonen fikk «... fra deltakerne». Hero fulgte med til ny toppseksjon. (2) Andreas meldte at CTA-knappen i paaminnelsen saa ut som markert tekst i Spark — TREDJE gang samme feil (12.08 var runde to). Rotaarsaken laa alt i WORKLOG: e-post uten DOCTYPE behandles som «personlig post» og knappestyling strippes. Grunnen til at det gjentar seg: hver e-post er haandskrevet — 12 kopier av samme fragment-knapp i 7 filer. Bygget felles skjelett-plugin og loeftet paaminnelsen paa den."
+status: waiting
+waiting_on: "Andreas — sjekk testkopien i Spark (sendt fra prod 03.09 til andreas@aharstad.no, arrangement 3349) og gi go for aa loefte de 7 gjenvaerende fragment-e-postene paa skjelettet. Baard — nyhetsbrev-utkast maa regenereres for aa faa de nye titlene, og B5 staar fortsatt ubesvart."
+detail: |
+  (1) NYHETSBREV — BAARDS TITLER OG REKKEFOELGE (#347 pkt 7)
+  Baards kommentar 03.09: «Endre 'Andre artikler' til 'Artikler'. Sett
+  'Artikler fra deltakere' under 'Artikler'. Endre 'Nye og sist oppdaterte
+  verktoey og tjenester' til '... fra deltakerne'.»
+
+  HERO MAATTE FLYTTE MED. Toppartikkelen med stort bilde kan bare finnes ett
+  sted i brevet, og den skal ligge i den oeverste seksjonen som har innhold.
+  Rekkefoelgen paa de to bimverdi_nyhetsbrev_artikler()-kallene styrer hvem som
+  faar hero, saa de er byttet om og maa foelge rekkefoelgen i 'seksjoner'.
+  Fallbacken gaar naa andre veien: er «Artikler» tom, arver deltakerseksjonen
+  hero. Verifisert prod: hero=1 i artikler_andre, hero=0 i artikler_deltaker.
+  (Arrangement-seksjonen har ogsaa hero=1 — det er tilsiktet og fra foer,
+  ikke en dublett fra denne endringen.)
+
+  «SE ALLE N» UNDER «ARTIKLER» viser naa totalen (prod: 37), ikke antallet i
+  gruppa. Artikkelarkivet har ingen deltaker-facet, saa lenken lander paa ALLE
+  artikler — tallet maa love det lenken faktisk viser. Samme regel som pkt 9.2
+  (verktoey-seksjonen). «Artikler fra deltakere» beholder gruppetallet; den har
+  1 element paa prod, saa «Se alle» skjules uansett.
+
+  Seksjonsnoeklene ('artikler_andre', 'artikler_deltaker') er IKKE doept om —
+  malen special-caser paa noekkel, og et navnebytte ville bare gitt risiko uten
+  gevinst. Verifisert prod: rekkefoelge, titler og totaler som bestilt.
+
+  MERK: nyhetsbrev-utkast lagrer FROSSET HTML. De seks utkastene paa prod
+  (5729, 5705, 5698, 5692, 5691, 3008) har fortsatt gamle titler til Baard
+  trykker «Generer nyhetsbrev naa» paa nytt.
+
+  (2) FELLES E-POSTSKJELETT — TREDJE RUNDE MED SAMME KNAPP
+  Andreas sendte skjermbilde fra Spark: «Se arrangementet» rendret som markert
+  tekst uten knappeflate, og spurte om WORKLOG sa hvorfor det skjer hver gang.
+  Det gjorde den — entry 2026-08-12:
+
+    Rotaarsak: en e-post uten <!DOCTYPE>/<html>/<body> behandles som
+    «personlig post» av flere klienter (bl.a. Spark). Klienten legger paa egen
+    typografi og stripper boks- og knappestyling, saa et <a> med padding og
+    bakgrunn kollapser til farget tekst. Fastslaatt empirisk den gangen:
+    HTML-en var intakt baade i payloaden mot Resend og hentet tilbake fra
+    Resend-API-et, saa det er ikke sending eller escaping.
+
+  Samme entry hadde en FUNN FOR SENERE-liste med tre filer som ogsaa var
+  fragmenter, og som ble utsatt som «egen liten harmoniseringsjobb». Den ble
+  aldri gjort, og paaminnelsen fra 03.09 arvet formen fra nabofilen sin.
+
+  DERFOR GJENTAR DET SEG: ingen delt mal. Telling 03.09 fant 12 kopier av den
+  samme fragment-knappen fordelt paa 7 filer (foretak-oppgradering,
+  email-verification, company-invitations x3, kunnskapskilde-registration x2,
+  artikkel-submission, foretak-registration x3) pluss avlyst og paaminnelsen
+  med egne varianter. Hver ny e-post kopierte naboen, og arvet feilen.
+
+  NY mu-plugin bimverdi-epost-skjelett.php:
+   - bimverdi_epost_dokument()  — fullt HTML-dokument, tabell-layout, hvitt
+     kort paa #F5F3EE, logo, valgfritt banner, CTA, «Fungerer ikke knappen?»
+     og footer. Speiler get_verification_email_html og varselmalen som ble
+     bekreftet OK i Spark 12.08.
+   - bimverdi_epost_knapp()     — knappen ligger i en <td align>, ikke loest i
+     broedteksten. Tabellen er ikke pynt: Outlooks Word-motor ignorerer padding
+     paa <a>, og en klient som stripper inline-block ville ellers etterlatt
+     knappen som en lenke midt i teksten.
+   - bimverdi_epost_avsnitt(), bimverdi_epost_testbanner() — saa style-
+     attributtene ikke gjentas i hver kallende fil. Det er gjentakelsen som
+     over tid gir avvikende e-poster.
+
+  Paaminnelsen er loeftet paa skjelettet. Innholdet er uendret. HTML-entiteter
+  byttet til UTF-8: 'tittel' esc_html()-es inne i dokumentet, saa &aring; ville
+  blitt dobbeltescapet til &amp;aring;.
+
+  Verifisert lokalt: DOCTYPE foerst, </html> sist, knapp i <td align="center">,
+  fallback-lenke present, ingen dobbeltescaping, norsk dato intakt, visuelt OK
+  i nettleser. Verifisert prod etter deploy: samme fire assertions groenne,
+  gate fortsatt LUKKET, allowlist fortsatt andreas@aharstad.no.
+
+  EN TESTKOPI SENDT FRA PROD til andreas@aharstad.no (arrangement 3349,
+  emne prefikset [Testkopi]). Kalt bimverdi_paminnelse_html() + wp_mail
+  direkte, IKKE bimverdi_paminnelse_send() — saa ingen idempotens-meta,
+  ingen logg-rad og ingen paavirkning paa den ekte utsendingen.
+
+  GJENSTAAR (venter paa go): de 7 filene over sender fortsatt fragmenter.
+  Det er mekanisk arbeid, men det er LIVE e-postloeyper (avlyst gaar til ekte
+  paameldte, invitasjoner og verifisering til nye brukere), og malene er
+  Andreas' designflate — derfor ikke gjort uten klarering.
+
+---
+date: 2026-09-03
 action: TRELLO #347 FERDIG — ENHET 3, 4 OG 11 LEVERT (xhigh). Alle ni punkter er naa bygget.
 files:
   - "c5e7168 feat(foretak): hovedkontakt, telefon og e-post bak innlogging (Enhet 3)"
