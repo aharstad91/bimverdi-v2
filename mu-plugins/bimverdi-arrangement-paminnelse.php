@@ -485,57 +485,56 @@ function bimverdi_paminnelse_html($arrangement_id, $navn, $er_testkopi, $ekte_an
 
     $hilsen = $navn !== '' ? ('Hei ' . esc_html($navn) . ',') : 'Hei,';
 
+    // Testbanneret er det eneste som skiller en testkopi fra den ekte
+    // e-posten — gaten kan være lukket uten at mottakeren ser det ellers.
     $banner = '';
     if ($er_testkopi) {
-        $banner =
-            '<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 16px;margin:0 0 20px;font-size:13px;color:#92400E;">'
-            . '<strong>Testkopi — sikkerhetsgaten er lukket.</strong> Denne påminnelsen er kun sendt til deg. '
+        $banner = bimverdi_epost_testbanner(
+            '<strong>Testkopi — sikkerhetsgaten er lukket.</strong> Denne påminnelsen er kun sendt til deg. '
             . (int) $ekte_antall . ' faktiske påmeldte ble IKKE varslet.'
-            . '</div>';
+        );
     }
 
-    ob_start();
-    ?>
-    <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1A1A1A;line-height:1.6;">
-        <?php echo $banner; ?>
-        <p style="font-size:15px;"><?php echo $hilsen; ?></p>
-        <p style="font-size:15px;">
-            Dette er en påminnelse om at du er påmeldt
-            <strong><?php echo esc_html($tittel); ?></strong> i morgen<?php
-            echo $dato_str !== '' ? ', ' . esc_html($dato_str) : '';
-            echo $tid !== '' ? ' kl. ' . esc_html($tid) : '';
-            ?>.
-        </p>
+    $innhold  = bimverdi_epost_avsnitt($hilsen);
+    $innhold .= bimverdi_epost_avsnitt(sprintf(
+        'Dette er en påminnelse om at du er påmeldt <strong>%s</strong> i morgen%s%s.',
+        esc_html($tittel),
+        $dato_str !== '' ? ', ' . esc_html($dato_str) : '',
+        $tid !== '' ? ' kl. ' . esc_html($tid) : ''
+    ));
 
-        <?php if ($sted_linje !== '') : ?>
-        <p style="font-size:15px;margin:0 0 4px;"><strong>Sted:</strong> <?php echo $sted_linje; ?></p>
-        <?php endif; ?>
+    if ($sted_linje !== '') {
+        // $sted_linje inneholder allerede escapet tekst og evt. en <a>.
+        $innhold .= bimverdi_epost_avsnitt('<strong>Sted:</strong> ' . $sted_linje, array('margin' => '0 0 8px 0'));
+    }
 
-        <p style="font-size:15px;margin-top:24px;">
-            <a href="<?php echo esc_url($url); ?>" style="display:inline-block;background:#FF8B5E;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;">
-                Se arrangementet
-            </a>
-        </p>
+    $etter = '';
+    if ($ics !== '') {
+        $etter .= bimverdi_epost_avsnitt(
+            sprintf('<a href="%s" style="color:#FF8B5E;">Legg i kalenderen</a>', esc_url($ics)),
+            array('storrelse' => '14px', 'margin' => '16px 0 0 0')
+        );
+    }
 
-        <?php if ($ics !== '') : ?>
-        <p style="font-size:14px;">
-            <a href="<?php echo esc_url($ics); ?>" style="color:#FF8B5E;">Legg i kalenderen</a>
-        </p>
-        <?php endif; ?>
+    if ($kan_melde_av) {
+        $etter .= bimverdi_epost_avsnitt(
+            sprintf(
+                'Passer det ikke likevel? Du kan melde deg av under <a href="%s" style="color:#FF8B5E;">Mine arrangementer</a>.',
+                esc_url(home_url('/min-side/arrangementer/'))
+            ),
+            array('storrelse' => '14px', 'farge' => '#5A5A5A', 'margin' => '8px 0 0 0')
+        );
+    }
 
-        <?php if ($kan_melde_av) : ?>
-        <p style="font-size:14px;color:#5A5A5A;">
-            Passer det ikke likevel? Du kan melde deg av under
-            <a href="<?php echo esc_url(home_url('/min-side/arrangementer/')); ?>" style="color:#FF8B5E;">Mine arrangementer</a>.
-        </p>
-        <?php endif; ?>
+    $etter .= bimverdi_epost_avsnitt('Vi ses!<br>BIM Verdi', array('margin' => '28px 0 0 0'));
 
-        <p style="font-size:15px;margin-top:24px;">Vi ses!<br>BIM Verdi</p>
-        <p style="font-size:12px;color:#9B9B9B;margin-top:28px;border-top:1px solid #E8E8E8;padding-top:12px;">
-            Du får denne e-posten fordi du er påmeldt arrangementet.
-        </p>
-    </div>
-    <?php
-
-    return trim(ob_get_clean());
+    return bimverdi_epost_dokument(array(
+        'tittel'    => 'Påminnelse: ' . $tittel,
+        'banner'    => $banner,
+        'innhold'   => $innhold,
+        'cta_url'   => $url,
+        'cta_tekst' => 'Se arrangementet',
+        'etter_cta' => $etter,
+        'footer'    => 'Du får denne e-posten fordi du er påmeldt arrangementet.',
+    ));
 }
