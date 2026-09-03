@@ -4,6 +4,83 @@
 
 ---
 date: 2026-09-03
+action: TODO — LOEFT DE 7 GJENVAERENDE FRAGMENT-E-POSTENE PAA FELLESSKJELETTET
+files:
+  - "(ingen kodeendring — dette er en bestilling, ikke en leveranse)"
+summary: "Alle e-poster utenom arrangement-paaminnelsen og diskusjonsvarslene er fortsatt nakne div-fragmenter uten DOCTYPE, og CTA-knappen deres kollapser til markert tekst i Spark. Skjelettet finnes naa (bimverdi-epost-skjelett.php, levert 03.09) — jobben er aa loefte de gjenvaerende malene paa det. Andreas besluttet 03.09 aa utsette: skal tas som egen jobb, ikke naa."
+status: todo
+waiting_on: "Andreas — si naar. Ingen andre avhengigheter; skjelettet er deployet og i bruk."
+detail: |
+  BAKGRUNN — LES FOERST
+  Rotaarsak og hvorfor det gjentok seg tre ganger staar i entryene 2026-08-12
+  og 2026-09-03 (felles e-postskjelett) lenger ned. Kort: e-post uten
+  <!DOCTYPE>/<html>/<body> behandles som «personlig post» av bl.a. Spark, som
+  legger paa egen typografi og stripper knappestyling. Fastslaatt empirisk
+  12.08 — HTML-en er intakt baade i payloaden mot Resend og hentet tilbake fra
+  Resend-API-et, saa det er ikke sending eller escaping.
+
+  SENDER DETTE E-POST TIL NOEN? NEI.
+  Andreas spurte eksplisitt 03.09. En kodeendring sender ingenting. Malene
+  rendres kun naar noe trigger en utsending, og ALLE de sju er menneske-trigget
+  (registrering, invitasjon, avlysning i admin, oppgraderingsforespoersel).
+  Ingen cron beroerer dem. Skjelettfilen ligger allerede paa prod, saa det er
+  heller ikke noe deploy-vindu der en mal kan lande foer hjelperen den kaller.
+
+  DEN REELLE RISIKOEN er neste EKTE trigger: den e-posten bruker ny markup.
+  Malene baerer handlingslenker — verifiseringstoken, godta/avslaa-invitasjon.
+  Mister man en lenke i ombyggingen, er konsekvensen ikke stygg formatering,
+  men en person som ikke faar aktivert kontoen sin. Derfor: rendre HVER mal
+  lokalt med testdata og se paa den foer push. Ingen utsending noedvendig.
+
+  REKKEFOELGE — ADMIN-MALENE FOERST (null risiko, beviser moensteret)
+  Disse gaar til BV_NOTIFY_EMAIL, altsaa BIM Verdis egen innboks, og baerer
+  ingen handlingslenker for medlemmer. De sendes via den delte senderen
+  bimverdi_send_admin_notification_email() (bimverdi-shared-helpers.php:155),
+  men BODYEN bygges paa hvert kallested — det er den som skal erstattes.
+   - bimverdi-kunnskapskilde-registration.php:293, :296
+   - bimverdi-artikkel-submission.php:288
+   - bimverdi-company-invitations.php:1012, :1057, :1060
+     (notify_admin_invitation_sent, linje 994)
+   - bimverdi-foretak-registration.php:228, :470
+   - bimverdi-foretak-konvertering.php, bimverdi-newsletter.php (kallesteder
+     uten fragment-knapp — sjekk om de trenger skjelettet i det hele tatt)
+
+  DERETTER MEDLEMSMALENE (baerer handlingslenker — verifiser lenkene)
+   - bimverdi-email-verification.php:614 get_verification_email_html()
+     ER alt et fullt dokument. Men :304 (admin-varsel) og :725
+     send_already_registered_email() er fragmenter.
+   - bimverdi-company-invitations.php:408 send_invitation_email() —
+     HTML bygges INNE i send-metoden. Godta-lenken maa overleve.
+   - bimverdi-foretak-oppgradering.php:340/:635/:688 — tre send-funksjoner,
+     HTML bygges inline, bruker-e-post paa :378/:659/:717 og admin-kopi paa
+     :422/:682/:741. Fragment-knapper paa :401 og :647.
+   - bimverdi-foretak-registration.php:568
+     bimverdi_get_foretak_registered_email_html() — ren bygger, enkel.
+     Fragment-knapp ogsaa paa :548.
+   - bimverdi-arrangement-avlyst.php:133 bimverdi_avlyst_email_html() — ren
+     bygger, men GAAR LIVE TIL EKTE PAAMELDTE (gaten ble aapnet 23.06).
+     Denne skal tas SIST og med testkopi verifisert i Spark foerst.
+
+  ARBEIDSMAATE
+  1. Der HTML-en bygges inne i en send-funksjon: splitt bygger fra sender
+     foerst, som ren refaktorering med identisk output. Ellers kan malen ikke
+     rendres uten aa trigge en utsending.
+  2. Bytt fragmentet mot bimverdi_epost_dokument() + bimverdi_epost_knapp().
+     Bruk ekte UTF-8-tegn, ikke HTML-entiteter: 'tittel' esc_html()-es inne i
+     dokumentet, saa &aring; blir dobbeltescapet til &amp;aring;.
+  3. Rendre lokalt, assert DOCTYPE foerst / </html> sist / knapp i <td align> /
+     alle handlingslenker fortsatt present, og se paa den i nettleser.
+  4. Til slutt EN testkopi per mal fra prod til andreas@aharstad.no, sjekket i
+     Spark. Kall byggeren + wp_mail direkte, ikke send-funksjonen — da roeres
+     ingen idempotens-meta og ingen logg-rader.
+  5. php -l paa alt foer push.
+
+  MERK: e-post testes IKKE via pre_wp_mail — det filteret kjoerer aldri her
+  (wp_mail er redefinert som pluggable av _local-email-blocker.php og
+  bimverdi-resend-mail.php:212). Bruk wp-content/debug.log.
+
+---
+date: 2026-09-03
 action: Baards nyhetsbrev-titler (#347 pkt 7) + FELLES E-POSTSKJELETT etter tredje runde med kollapset CTA-knapp
 files:
   - "6151eed feat(nyhetsbrev): Baards seksjonstitler og rekkefoelge (#347 pkt 7)"
@@ -13,7 +90,7 @@ files:
   - "mu-plugins/bimverdi-nyhetsbrev-content.php (titler + rekkefoelge + hero-flytting)"
 summary: "To saker. (1) Baards kommentar paa Trello #347 pkt 7: «Andre artikler» → «Artikler», «Artikler fra deltakere» flyttet UNDER den, og verktoey-seksjonen fikk «... fra deltakerne». Hero fulgte med til ny toppseksjon. (2) Andreas meldte at CTA-knappen i paaminnelsen saa ut som markert tekst i Spark — TREDJE gang samme feil (12.08 var runde to). Rotaarsaken laa alt i WORKLOG: e-post uten DOCTYPE behandles som «personlig post» og knappestyling strippes. Grunnen til at det gjentar seg: hver e-post er haandskrevet — 12 kopier av samme fragment-knapp i 7 filer. Bygget felles skjelett-plugin og loeftet paaminnelsen paa den."
 status: waiting
-waiting_on: "Andreas — sjekk testkopien i Spark (sendt fra prod 03.09 til andreas@aharstad.no, arrangement 3349) og gi go for aa loefte de 7 gjenvaerende fragment-e-postene paa skjelettet. Baard — nyhetsbrev-utkast maa regenereres for aa faa de nye titlene, og B5 staar fortsatt ubesvart."
+waiting_on: "Andreas — sjekk testkopien i Spark (sendt fra prod 03.09 til andreas@aharstad.no, arrangement 3349). De 7 gjenvaerende fragment-e-postene er BESLUTTET UTSATT 03.09 og ligger som egen TODO-entry oeverst i denne loggen. Baard — nyhetsbrev-utkast maa regenereres for aa faa de nye titlene, og B5 staar fortsatt ubesvart."
 detail: |
   (1) NYHETSBREV — BAARDS TITLER OG REKKEFOELGE (#347 pkt 7)
   Baards kommentar 03.09: «Endre 'Andre artikler' til 'Artikler'. Sett
