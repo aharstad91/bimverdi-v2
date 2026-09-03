@@ -584,13 +584,12 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                             'icon'    => 'link',
                             'onclick' => "navigator.clipboard.writeText(window.location.href); alert('Lenke kopiert!');",
                         ]); ?>
-                        <?php bimverdi_button([
-                            'text'    => 'E-post',
-                            'variant' => 'secondary',
-                            'size'    => 'small',
-                            'icon'    => 'mail',
-                            'href'    => 'mailto:?subject=' . rawurlencode(get_the_title()) . '&body=' . rawurlencode(get_permalink()),
-                        ]); ?>
+                        <?php
+                        // Del-knapp med brukslogg (Bård, Trello #347 punkt 1).
+                        // Erstatter den gamle rene mailto-lenken, som ikke
+                        // kunne logges.
+                        bimverdi_del_knapp(['text' => 'E-post']);
+                        ?>
                     </div>
                 </div>
 

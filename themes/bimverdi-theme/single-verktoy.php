@@ -404,6 +404,12 @@ $tool_updated = get_the_modified_date('d.m.Y');
                 </section>
                 <?php endif; ?>
 
+                <!-- Del siden (Bård, Trello #347 punkt 1) -->
+                <div class="border-t border-[#E7E5E4] pt-6 flex flex-wrap items-center gap-3">
+                    <span class="text-sm text-[#5A5A5A]">Del denne siden:</span>
+                    <?php bimverdi_del_knapp(); ?>
+                </div>
+
                 <?php
                 // Diskusjon: kommentartråd under verktøyet (Bård, Teams 24.08).
                 // Gjelder både deltakernes egne verktøy og de synkroniserte

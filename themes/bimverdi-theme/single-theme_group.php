@@ -384,6 +384,11 @@ require_once get_template_directory() . '/parts/components/button.php';
 /* ── Header / topp ── */
 .tg-header { background: #fff; }
 .tg-diskusjon { margin-top: 40px; }
+.tg-del {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    margin-top: 40px; padding-top: 24px; border-top: 1px solid #E7E5E4;
+}
+.tg-del > span { font-size: 14px; color: #5A5A5A; }
 .tg-header-inner {
     max-width: 1280px; margin: 0 auto; padding: 32px 24px 8px;
 }
@@ -714,6 +719,12 @@ a.tg-block-more:hover { gap: 8px; text-decoration: none; color: var(--tg-accent-
                 <p style="margin-top: 8px;"><a href="<?php echo esc_url(home_url('/min-side/')); ?>">Bli med og bidra via Min Side</a></p>
             </div>
             <?php endif; ?>
+
+            <!-- Del siden (Bård, Trello #347 punkt 1) -->
+            <div class="tg-del">
+                <span>Del denne siden:</span>
+                <?php bimverdi_del_knapp(); ?>
+            </div>
 
             <?php
             // Diskusjon: kommentartråd under temagruppen (Bård, Trello #347

@@ -33,6 +33,12 @@ get_header(); ?>
                     <div class="bv-prose">
                         <?php the_content(); ?>
                     </div>
+                    <!-- Del siden (Bård, Trello #347 punkt 1): «alle sider» -->
+                    <div style="margin-top:40px;padding-top:24px;border-top:1px solid #E7E5E4;display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
+                        <span style="font-size:14px;color:#5A5A5A;">Del denne siden:</span>
+                        <?php bimverdi_del_knapp(); ?>
+                    </div>
+
                     <?php
                     // Diskusjonstråd (pilot: Byggchat, synk 11.08) — kun på sider i
                     // bimverdi_diskusjon_sider(); alle andre sider er uberørt.

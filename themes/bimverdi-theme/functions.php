@@ -241,6 +241,12 @@ require_once get_template_directory() . '/parts/components/avatar.php';
 require_once get_template_directory() . '/parts/components/diskusjon-banner.php';
 
 /**
+ * Load Del-knapp Component
+ * Provides bimverdi_del_knapp() — Trello #347 punkt 1
+ */
+require_once get_template_directory() . '/parts/components/del-knapp.php';
+
+/**
  * Load Accordion Component
  * Provides bimverdi_accordion() function
  */

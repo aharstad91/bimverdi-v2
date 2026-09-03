@@ -557,6 +557,12 @@ $company_kunnskapskilder = get_posts(array(
                     <?php endif; ?>
                 </section>
 
+                <!-- Del siden (Bård, Trello #347 punkt 1) -->
+                <div class="border-t border-[#E7E5E4] pt-6 flex flex-wrap items-center gap-3">
+                    <span class="text-sm text-[#5A5A5A]">Del denne siden:</span>
+                    <?php bimverdi_del_knapp(); ?>
+                </div>
+
                 <?php
                 // Diskusjon: kommentartraad under deltakerprofilen (Baard,
                 // Trello #347 punkt 2, 03.09.2026). Samme vakt og markup som
