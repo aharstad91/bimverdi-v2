@@ -4,6 +4,84 @@
 
 ---
 date: 2026-09-03
+action: TRELLO #347 FERDIG — ENHET 3, 4 OG 11 LEVERT (xhigh). Alle ni punkter er naa bygget.
+files:
+  - "c5e7168 feat(foretak): hovedkontakt, telefon og e-post bak innlogging (Enhet 3)"
+  - "3215874 feat(arrangement): paaminnelse kl. 10 dagen foer, laast til allowlist (Enhet 4)"
+  - "Enhet 11: prod-data via WP-CLI — bruker 131 omdoept tilbake til Dag Fjeld Edvardsen, artikkel 5700 satt til forfatter 217 (Einar). Foer-tilstanden ligger i scratchpad/for-enhet11.json"
+summary: "Alle ni punkter fra Trello #347 er bygget og deployet. Enhet 4 er FAIL-CLOSED og sender til andreas@aharstad.no til define('BIMVERDI_PAMINNELSE_APEN', true) legges i wp-config paa prod — det er ikke gjort, og skal ikke gjoeres foer Baard har sett en e-post og gitt go."
+status: waiting
+waiting_on: "Baard — (a) se paaminnelses-e-posten og gi go for aa aapne gaten, (b) B5 «1944 verktoey» i nyhetsbrev-toppen. Andreas — legg define-en i wp-config paa prod naar (a) er klarert."
+detail: |
+  ENHET 3 — kontaktinfo bak innlogging.
+  Skjult for utloggede: hovedkontaktens navn, stilling og e-post, samt
+  foretakets telefon og kontakt-e-post. Telefon kom i tillegg til det som var
+  avklart 02.09 — Baard ba om det muntlig 03.09. Adresse, org.nummer,
+  organisasjonsform, stiftelsesdato, naeringskode, nettside og
+  arrangementsnettside er fortsatt aapne.
+
+  Lekkasjesoek over hele temaet foer endring: single-foretak.php var ENESTE
+  offentlige flate. cards.php:21 leser kontakt_epost men bruker den aldri
+  (doed variabel, ikke roert), single-verktoy.php:52 leser hovedkontaktperson
+  kun til en rettighetssjekk, admin-badgene er gated paa manage_options.
+  ACF er IKKE eksponert i REST (acf: [] paa /wp-json/wp/v2/foretak, testet med
+  et foretak som HAR e-post satt), og REST-brukerlista er stengt for utloggede
+  i bimverdi-auth-routes.php:632.
+
+  Verifisert paa prod utlogget: 0 tel:-lenker, 0 mailto med adresse, 0
+  e-postadresser i HTML-kilden. Prod har INGEN page-cache paa denne ruten
+  (x-backend-delay i svaret, ingen x-cache-header), saa innloggingssjekken
+  evalueres per forespoersel — ingen fare for at en cachet utlogget versjon
+  vises til innloggede.
+
+  ENHET 4 — paaminnelse kl. 10.
+  Gaten er fail-closed og med vilje IKKE miljoestyrt, i motsetning til
+  arrangement-avlyst.php: avlyst-varselet utloeses av et menneske i admin,
+  dette av en klokke, saa prod skal ikke vaere live bare fordi den er prod.
+  I tillegg hard allowlist-sjekk rett foer wp_mail som siste skanse.
+  Verifisert paa prod: gate LUKKET, allowlist = andreas@aharstad.no, cron
+  planlagt 2026-09-04 10:00 CEST (08:00 UTC).
+
+  FUNN 1: bimverdi-resend-mail.php:212 og _local-email-blocker.php
+  REDEFINERER wp_mail() som pluggable funksjon. Filteret pre_wp_mail kjoerer
+  derfor ALDRI i dette prosjektet — et testoppsett som avskjaerer der er
+  virkningsloest. Riktig testflate er debug.log, der blockeren logger
+  TILLATT/BLOKKERT per adresse. Under testen gikk det derfor to ekte e-poster
+  til andreas@aharstad.no (innenfor allowlisten, som gaten skal sikre).
+
+  FUNN 2: sidens locale er en_US. wp_date('l j. F') gir «Friday 4. September»
+  midt i en norsk setning. Paaminnelsen slaar derfor opp norske dato- og
+  ukedagsnavn selv. SAMME ENGELSKE DATOER VISES I DAG paa arrangementssider
+  (single-arrangement.php:96, :98, :452) og i avlyst-varselet. Ikke roert —
+  egen sak, men verdt en Trello-post.
+
+  Testet mot ekte data, alle veier: mottakeroppslag tar kun 'bekreftet' (ikke
+  venteliste, ikke avmeldt) og dedupliserer paa e-post; avlyst gir 0; ingen
+  paameldte gir 0 UTEN aa sette sendt-merket (de kan melde seg paa senere
+  samme dag); andre kjoering gir 0 (idempotent); flyttet dato gir ny
+  paaminnelse fordi merket er datoen, ikke et flagg. Gate aapnet i test:
+  begge ekte deltakere naadde wp_mail og ble stoppet av localhost-blockeren —
+  to uavhengige lag, begge verifisert. Testdata slettet etterpaa.
+
+  ENHET 11 — prod-data.
+  Foer: bruker 131 (login dag.fjeld.edvardsen, e-post
+  dag.fjeld.edvardsen@catenda.no) hadde display_name, first_name OG last_name
+  overskrevet til «Einar Gudmundsson» — altsaa mer enn bare visningsnavnet.
+  Artikkel 5700 (pending, «Bruk din egen AI til aa jobbe effektivt i ditt
+  byggeprosjekt», artikkel_bedrift 149 = Catenda AS) stod paa 131.
+  Etter: 131 = Dag Fjeld Edvardsen, 5700 = forfatter 217 (Einar Gudmundsson).
+  Forfattervelgeren gir naa ett treff paa «Einar Gudmundsson» (217), og Dag er
+  soekbar paa sitt eget navn.
+
+  AVVIK FRA PLANEN, AVKLART MED ANDREAS: transkriptet sier at Baard ville
+  sette forfatter til Einar SELV etter at Dag hadde skrevet. Jeg foreslo
+  derfor bare navnefiksen. Andreas valgte planens variant — begge deler.
+  KONSEKVENS: Dag (131) kan ikke lenger redigere 5700 mens den er pending
+  (parts/minside/artikler-rediger.php:39 sjekker post_author). Er artikkelen
+  ikke ferdigskrevet, maa Baard sette forfatter tilbake til Dag midlertidig.
+
+---
+date: 2026-09-03
 action: TRELLO #347 — RUNDE 1 DEPLOYET, OG ENHET 7-TILLEGG, 10, 2 OG 1 BYGGET (alt uten xhigh)
 files:
   - "fe4b8a7…b5bf77a pushet til main — runde 1 (enhet 5, 6, 7, 8, 9) er naa live paa bimverdi.no, verifisert paa server"
