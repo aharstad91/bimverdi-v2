@@ -46,11 +46,17 @@ $members_query = new WP_Query($args);
 $total_foretak = $members_query->found_posts;
 
 /**
- * Get membership level for a foretak
- * Returns 'Partner', 'Prosjektdeltaker', 'Deltaker', or empty string
+ * Deltakernivå for et foretak — 'Partner', 'Prosjektdeltaker', 'Deltaker' eller ''.
+ *
+ * Het tidligere bimverdi_get_membership_level(), men det navnet er allerede
+ * tatt av mu-plugins/bimverdi-custom-roles.php (tar BRUKER-id og returnerer
+ * brukerrollen). function_exists-vakten gjorde at vår versjon aldri ble
+ * definert, og post-id ble tolket som bruker-id — derfor fikk kortene
+ * data-medlemskap="medlem"/"tilleggskontakt"/"" og deltakernivå-filteret
+ * traff ingenting (Bård, Trello #348 punkt 1).
  */
-if (!function_exists('bimverdi_get_membership_level')) {
-    function bimverdi_get_membership_level($post_id) {
+if (!function_exists('bimverdi_foretak_deltakernivaa')) {
+    function bimverdi_foretak_deltakernivaa($post_id) {
         $bv_rolle = get_field('bv_rolle', $post_id);
 
         if ($bv_rolle && $bv_rolle !== 'Ikke deltaker') {
@@ -106,7 +112,7 @@ if (!function_exists('bimverdi_get_initials')) {
             $poststed = get_field('poststed');
             $adresse = get_field('adresse');
             $postnummer = get_field('postnummer');
-            $membership_level = bimverdi_get_membership_level(get_the_ID());
+            $membership_level = bimverdi_foretak_deltakernivaa(get_the_ID());
             $initials = bimverdi_get_initials(get_the_title());
             $bransje_display = !empty($bransjekategorier_terms) ? $bransjekategorier_terms[0] : '';
             $map_query_parts = array_filter([$adresse, $postnummer, $poststed, 'Norge']);
@@ -467,11 +473,11 @@ document.addEventListener('DOMContentLoaded', function() {
         allCards.forEach(function(card) {
             var title = card.dataset.title || '';
             var poststed = card.dataset.poststed || '';
-            var bransje = card.dataset.bransje || '';
+            var bransjer = (card.dataset.bransje || '').split(',').filter(Boolean);
             var medlemskap = card.dataset.medlemskap || '';
 
             var matchesSearch = !searchTerm || title.includes(searchTerm) || poststed.includes(searchTerm);
-            var matchesBransje = selectedBransje.length === 0 || selectedBransje.some(function(b) { return bransje.includes(b); });
+            var matchesBransje = selectedBransje.length === 0 || selectedBransje.some(function(b) { return bransjer.indexOf(b) !== -1; });
             var matchesMedlemskap = selectedMedlemskap.length === 0 || selectedMedlemskap.includes(medlemskap);
 
             card.style.display = (matchesSearch && matchesBransje && matchesMedlemskap) ? '' : 'none';

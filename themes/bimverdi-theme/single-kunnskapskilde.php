@@ -121,6 +121,13 @@ $kilde_created = get_the_date('d.m.Y');
             </ol>
         </nav>
 
+        <?php
+        // Diskusjonsbanner (Bård, Trello #348 punkt 3.2) — infoboks om tråden nederst.
+        if (function_exists('bimverdi_diskusjon_banner')) {
+            bimverdi_diskusjon_banner();
+        }
+        ?>
+
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
             <div class="flex-1">
@@ -340,9 +347,8 @@ $kilde_created = get_the_date('d.m.Y');
                 </div>
 
                 <?php
-                // Diskusjon: forberedt, men kunnskapskilde står AV i
-                // bimverdi_sporsmal_post_types() (R17) — vakten gjør at det ikke
-                // rendres noe før typen eventuelt slås på.
+                // Diskusjon (Bård, Trello #348 punkt 3.1). Vakten står, så tråden
+                // forsvinner igjen om typen tas ut av bimverdi_sporsmal_post_types().
                 if (function_exists('bimverdi_diskusjon_aktiv') && bimverdi_diskusjon_aktiv()
                     && (comments_open() || get_comments_number() > 0)) {
                     echo '<div class="border-t border-[#E7E5E4] pt-10">';

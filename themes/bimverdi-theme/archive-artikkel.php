@@ -92,6 +92,18 @@ while ($articles->have_posts()): $articles->the_post();
     $ingress = get_field('artikkel_ingress', get_the_ID());
     $bedrift_id = get_field('artikkel_bedrift', get_the_ID());
 
+    // Deltakerartikkel (Bård, Trello #348 punkt 2): artikkelen tilhører et
+    // foretak med bv_rolle Deltaker/Prosjektdeltaker/Partner. Foretaket hentes
+    // via samme kjede som bylinen på single-artikkel (felt, ellers forfatterens
+    // foretak), så merket og bylinen aldri peker på ulike foretak.
+    $deltaker_foretak_id = 0;
+    if (function_exists('bimverdi_artikkel_foretak_id')) {
+        $kandidat = bimverdi_artikkel_foretak_id(get_the_ID());
+        if ($kandidat && in_array((string) get_field('bv_rolle', $kandidat), ['Deltaker', 'Prosjektdeltaker', 'Partner'], true)) {
+            $deltaker_foretak_id = (int) $kandidat;
+        }
+    }
+
     $items[] = [
         'id'               => get_the_ID(),
         'title'            => get_the_title(),
@@ -104,6 +116,8 @@ while ($articles->have_posts()): $articles->the_post();
         'author_avatar'    => get_avatar_url(get_the_author_meta('ID'), ['size' => 64]),
         'bedrift_name'     => $bedrift_id ? get_the_title($bedrift_id) : '',
         'bedrift_url'      => $bedrift_id ? get_permalink($bedrift_id) : '',
+        'deltaker_navn'    => $deltaker_foretak_id ? get_the_title($deltaker_foretak_id) : '',
+        'deltaker_url'     => $deltaker_foretak_id ? get_permalink($deltaker_foretak_id) : '',
         'temagruppe_terms' => $temagruppe_post_terms,
         'temagruppe_slugs' => !empty($temagruppe_post_terms) ? implode(' ', wp_list_pluck($temagruppe_post_terms, 'slug')) : '',
         'kategori_terms'   => $kategori_post_terms,
@@ -113,6 +127,25 @@ endwhile; wp_reset_postdata();
 
 $featured = !empty($items) ? $items[0] : null;
 $rest_items = array_slice($items, 1);
+
+/**
+ * Merke «Artikkel fra deltakerforetaket <navn>» med lenke til foretaksprofilen.
+ * Skrives ut over overskriften på deltakerartikler (Bård, Trello #348 punkt 2).
+ */
+$bv_deltaker_merke = function (array $item, string $class = '') {
+    if (empty($item['deltaker_navn'])) {
+        return;
+    }
+    ?>
+    <p class="bv-deltakermerke text-xs font-medium text-[#1D4ED8] <?php echo esc_attr($class); ?>">
+        Artikkel fra deltakerforetaket
+        <a href="<?php echo esc_url($item['deltaker_url']); ?>" class="text-[#1D4ED8] underline hover:text-[#1E40AF]"><?php echo esc_html($item['deltaker_navn']); ?></a>
+    </p>
+    <?php
+};
+$bv_deltaker_ramme = function (array $item, string $ellers = 'border border-[#E7E5E4]') {
+    return !empty($item['deltaker_navn']) ? 'border-2 border-[#3B82F6]' : $ellers;
+};
 ?>
 
 <div class="min-h-screen bg-white">
@@ -179,8 +212,10 @@ $rest_items = array_slice($items, 1);
              data-bedrift="<?php echo esc_attr(strtolower($featured['bedrift_name'])); ?>"
              data-temagruppe="<?php echo esc_attr($featured['temagruppe_slugs']); ?>"
              data-kategori="<?php echo esc_attr($featured['kategori_slugs']); ?>">
+            <div class="bg-white rounded-xl <?php echo $bv_deltaker_ramme($featured); ?> overflow-hidden hover:shadow-lg transition-all">
+                <?php $bv_deltaker_merke($featured, 'px-8 pt-4 pb-3 border-b border-[#DBEAFE]'); ?>
             <a href="<?php echo esc_url($featured['permalink']); ?>" class="group block">
-                <div class="bg-white rounded-xl border border-[#E7E5E4] overflow-hidden hover:shadow-lg hover:border-[#D6D3D1] transition-all">
+                <div>
                     <div class="grid md:grid-cols-2">
                         <!-- Image -->
                         <div class="aspect-[4/3] md:aspect-auto bg-[#FAFAF9] overflow-hidden">
@@ -234,6 +269,7 @@ $rest_items = array_slice($items, 1);
                     </div>
                 </div>
             </a>
+            </div>
         </div>
         <?php endif; ?>
 
@@ -241,7 +277,7 @@ $rest_items = array_slice($items, 1);
         <div id="artikkel-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <?php foreach ($rest_items as $item): ?>
 
-            <div class="artikkel-card bg-white rounded-xl border border-[#E7E5E4] shadow-sm overflow-hidden hover:shadow-md hover:border-[#D6D3D1] transition-all group flex flex-col"
+            <div class="artikkel-card bg-white rounded-xl <?php echo $bv_deltaker_ramme($item); ?> shadow-sm overflow-hidden hover:shadow-md transition-all group flex flex-col"
                  data-title="<?php echo esc_attr(strtolower($item['title'])); ?>"
                  data-author="<?php echo esc_attr(strtolower($item['author_name'])); ?>"
                  data-bedrift="<?php echo esc_attr(strtolower($item['bedrift_name'])); ?>"
@@ -280,6 +316,7 @@ $rest_items = array_slice($items, 1);
                         <?php endforeach; ?>
                     </div>
 
+                    <?php $bv_deltaker_merke($item, 'mb-1.5'); ?>
                     <h3 class="text-lg font-bold text-[#111827] mb-2 group-hover:text-[#57534E] transition-colors line-clamp-2 leading-snug">
                         <a href="<?php echo esc_url($item['permalink']); ?>" class="hover:text-[#57534E]">
                             <?php echo esc_html($item['title']); ?>
@@ -324,13 +361,14 @@ $rest_items = array_slice($items, 1);
                     </thead>
                     <tbody class="divide-y divide-[#E7E5E4]">
                         <?php foreach ($items as $item): ?>
-                        <tr class="artikkel-card hover:bg-[#FAFAF9] transition-colors"
+                        <tr class="artikkel-card hover:bg-[#FAFAF9] transition-colors<?php echo !empty($item['deltaker_navn']) ? ' border-l-4 border-l-[#3B82F6]' : ''; ?>"
                             data-title="<?php echo esc_attr(strtolower($item['title'])); ?>"
                             data-author="<?php echo esc_attr(strtolower($item['author_name'])); ?>"
                             data-bedrift="<?php echo esc_attr(strtolower($item['bedrift_name'])); ?>"
                             data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
                             data-kategori="<?php echo esc_attr($item['kategori_slugs']); ?>">
                             <td class="px-4 py-3">
+                                <?php $bv_deltaker_merke($item, 'mb-0.5'); ?>
                                 <div class="font-medium text-[#111827]"><?php echo esc_html($item['title']); ?></div>
                                 <?php if ($item['ingress']): ?>
                                 <div class="text-xs text-[#57534E] mt-0.5 line-clamp-1"><?php echo esc_html(wp_trim_words($item['ingress'], 12)); ?></div>

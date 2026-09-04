@@ -350,13 +350,22 @@ foreach (array_keys($kategori_options) as $slug) {
         <!-- List View (hidden by default) -->
         <div id="kunnskapskilde-list" style="display:none" class="mb-8">
             <div class="bg-white rounded-xl border border-[#E7E5E4] overflow-hidden">
-                <table class="w-full text-sm text-left">
+                <!-- Sorterbare kolonneoverskrifter (Bård, Trello #348 punkt 3.4) -->
+                <table id="kunnskapskilde-table" class="w-full text-sm text-left">
                     <thead class="bg-[#FAFAF9] border-b border-[#E7E5E4]">
                         <tr>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Navn</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Type</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E]">Utgiver</th>
-                            <th class="px-4 py-3 font-medium text-[#57534E] w-20">År</th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="navn">
+                                <span class="inline-flex items-center gap-1">Navn <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="type">
+                                <span class="inline-flex items-center gap-1">Type <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="utgiver">
+                                <span class="inline-flex items-center gap-1">Utgiver <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
+                            <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none w-20" data-sort="aar">
+                                <span class="inline-flex items-center gap-1">År <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                            </th>
                             <th class="px-4 py-3 font-medium text-[#57534E] w-28">Lenker</th>
                         </tr>
                     </thead>
@@ -367,9 +376,12 @@ foreach (array_keys($kategori_options) as $slug) {
                             data-utgiver="<?php echo esc_attr(strtolower($item['utgiver'])); ?>"
                             data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
                             data-kildetype="<?php echo esc_attr($item['kildetype']); ?>"
+                            data-kildetype-label="<?php echo esc_attr(mb_strtolower($item['kildetype'] && isset($kildetype_options[$item['kildetype']]) ? $kildetype_options[$item['kildetype']] : '')); ?>"
+                            data-aar="<?php echo esc_attr($item['utgivelsesaar'] === 'eldre' ? '0' : (string) (int) $item['utgivelsesaar']); ?>"
                             data-kategori="<?php echo esc_attr($item['kategori_slugs']); ?>">
                             <td class="px-4 py-3">
-                                <div class="font-medium text-[#111827]"><?php echo esc_html($item['navn']); ?></div>
+                                <!-- Navnet lenker til detaljsiden (Bård, Trello #348 punkt 3.3) -->
+                                <a href="<?php echo esc_url($item['permalink']); ?>" class="font-medium text-[#111827] hover:underline"><?php echo esc_html($item['navn']); ?></a>
                                 <?php if ($item['kort_beskrivelse']): ?>
                                 <div class="text-xs text-[#57534E] mt-0.5 line-clamp-1"><?php echo esc_html(wp_trim_words($item['kort_beskrivelse'], 12)); ?></div>
                                 <?php endif; ?>
@@ -471,6 +483,11 @@ document.addEventListener('DOMContentLoaded', function() {
             var checked = document.querySelectorAll('[data-multiselect] ' + filterMap[key]);
             checked.forEach(function(cb) { params.append(key, cb.value); });
         });
+
+        if (typeof currentSort !== 'undefined' && currentSort) {
+            params.set('sort', currentSort);
+            params.set('order', currentOrder);
+        }
 
         var newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
         history.replaceState(null, '', newURL);
@@ -583,8 +600,72 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // --- Sortering i listevisning (Bård, Trello #348 punkt 3.4) ---
+    var currentSort = '';
+    var currentOrder = 'asc';
+
+    function sortValue(row, column) {
+        switch (column) {
+            case 'navn':    return row.dataset.title || '';
+            case 'type':    return row.dataset.kildetypeLabel || '';
+            case 'utgiver': return row.dataset.utgiver || '';
+            case 'aar':     return parseInt(row.dataset.aar || '0', 10);
+        }
+        return '';
+    }
+
+    function sortTable(column, keepOrder) {
+        if (!keepOrder) {
+            if (currentSort === column) {
+                currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = column;
+                currentOrder = 'asc';
+            }
+        }
+
+        var table = document.getElementById('kunnskapskilde-table');
+        if (!table) return;
+        var tbody = table.querySelector('tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+        var dir = currentOrder === 'asc' ? 1 : -1;
+
+        rows.sort(function(a, b) {
+            var av = sortValue(a, currentSort);
+            var bv = sortValue(b, currentSort);
+            // Tomme verdier nederst uansett retning
+            var aEmpty = av === '' || av === 0;
+            var bEmpty = bv === '' || bv === 0;
+            if (aEmpty !== bEmpty) return aEmpty ? 1 : -1;
+            if (typeof av === 'number') return (av - bv) * dir;
+            return av.localeCompare(bv, 'nb') * dir;
+        });
+        rows.forEach(function(row) { tbody.appendChild(row); });
+
+        table.querySelectorAll('th[data-sort]').forEach(function(th) {
+            var svg = th.querySelector('svg');
+            if (!svg) return;
+            var active = th.dataset.sort === currentSort;
+            svg.style.opacity = active ? '1' : '0.4';
+            svg.style.transform = (active && currentOrder === 'desc') ? 'rotate(180deg)' : '';
+            th.setAttribute('aria-sort', active ? (currentOrder === 'asc' ? 'ascending' : 'descending') : 'none');
+        });
+
+        updateURL();
+    }
+
+    document.querySelectorAll('#kunnskapskilde-table th[data-sort]').forEach(function(th) {
+        th.addEventListener('click', function() { sortTable(this.dataset.sort); });
+    });
+
     // Restore filters from URL and apply
     restoreFromURL();
+    var initParams = new URLSearchParams(window.location.search);
+    if (initParams.get('sort')) {
+        currentSort = initParams.get('sort');
+        currentOrder = initParams.get('order') === 'desc' ? 'desc' : 'asc';
+        sortTable(currentSort, true);
+    }
     applyFilters();
 });
 </script>

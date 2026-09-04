@@ -23,6 +23,8 @@
  *   kommentarfeltet — også i hvert verktøy — både verktøy fra deltakere og
  *   AIinAEC hub»). Hub-verktøyene er samme CPT som deltakernes, så én oppføring
  *   i lista dekker begge. Kunnskapskilde står fortsatt av (R17).
+ * - 04.09 (Trello #348 punkt 3): kunnskapskilde slått PÅ — «Legg inn
+ *   Diskusjonsfeltet i bunn av hver kunnskapskilde». Alle CPT-ene er dermed på.
  */
 
 if (!defined('ABSPATH')) {
@@ -33,14 +35,16 @@ if (!defined('ABSPATH')) {
  * CPT-er der kommentarer er aktive. Gjelder ALLE poster i typen, også gamle —
  * comments_open-filteret under overstyrer lagret comment_status, så ingen
  * masse-oppdatering av de publiserte postene er nødvendig.
- * Kunnskapskilde står fortsatt av (R17).
  * Filter: bimverdi_sporsmal_post_types
  */
 function bimverdi_sporsmal_post_types() {
     // foretak og theme_group lagt til 03.09.2026 (Baard, Trello #347 punkt 2):
     // diskusjonsbanneret oeverst lover en traad nederst paa deltakerprofiler og
     // temagruppesider ogsaa, saa traaden maa finnes der.
-    return apply_filters('bimverdi_sporsmal_post_types', ['arrangement', 'artikkel', 'verktoy', 'foretak', 'theme_group']);
+    // kunnskapskilde lagt til 04.09.2026 (Baard, Trello #348 punkt 3): «Legg inn
+    // Diskusjonsfeltet i bunn av hver kunnskapskilde» + infoboks oeverst. R17-gaten
+    // er dermed opphevet for den siste CPT-en.
+    return apply_filters('bimverdi_sporsmal_post_types', ['arrangement', 'artikkel', 'verktoy', 'foretak', 'theme_group', 'kunnskapskilde']);
 }
 
 /**
