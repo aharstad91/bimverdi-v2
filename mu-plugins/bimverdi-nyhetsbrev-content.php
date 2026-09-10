@@ -38,6 +38,11 @@ if (!defined('ABSPATH')) {
 function bimverdi_nyhetsbrev_dato_nb($timestamp = null, $med_tid = false) {
     if ($timestamp === null) {
         $timestamp = current_time('timestamp');
+    } elseif (preg_match('/^\d{8}$/', (string) $timestamp)) {
+        // ACF lagrer datoer som «Ymd» (20260918). Uten dette hadde is_numeric
+        // lest tallet som et Unix-tidsstempel og gitt «23. august 1970».
+        $dt = DateTime::createFromFormat('Ymd', (string) $timestamp);
+        $timestamp = $dt ? $dt->getTimestamp() : 0;
     } elseif (!is_numeric($timestamp)) {
         $timestamp = strtotime((string) $timestamp);
     }
@@ -321,15 +326,23 @@ function bimverdi_nyhetsbrev_artikler($limit = 3, $gruppe = null, $med_hero = tr
 }
 
 /**
- * 2. Neste (kommende) arrangement — nærmeste fremtidige dato.
+ * 2. De N neste (kommende) arrangementene — nærmeste dato først.
+ *
+ * Bård 10.09.2026 (Trello #348 pkt 1.2/5.2): arrangement er den viktigste
+ * ressursen i brevet, og ETT arrangement var for lite — finnes det flere
+ * kommende skal de tre nærmeste vises, like store, under hverandre i
+ * datorekkefølge. Ingen av dem er hero (hero = ett stort oppslag): når alle
+ * tre er like store, leses de som én liste.
+ *
+ * @param int $limit Maks antall arrangementer (1–3 i praksis).
  */
-function bimverdi_nyhetsbrev_neste_arrangement() {
+function bimverdi_nyhetsbrev_neste_arrangement($limit = 3) {
     $today = current_time('Y-m-d');
 
     $q = new WP_Query([
         'post_type'      => 'arrangement',
         'post_status'    => 'publish',
-        'posts_per_page' => 1,
+        'posts_per_page' => max(1, (int) $limit),
         'meta_key'       => 'arrangement_dato',
         'orderby'        => 'meta_value',
         'order'          => 'ASC',
@@ -350,41 +363,38 @@ function bimverdi_nyhetsbrev_neste_arrangement() {
         ],
     ]);
 
-    if (empty($q->posts)) {
-        wp_reset_postdata();
-        return [];
+    $items = [];
+    foreach ($q->posts as $post) {
+        $id = $post->ID;
+
+        $dato        = get_field('arrangement_dato', $id);
+        $sted        = get_field('sted_by', $id);
+        $arrangor    = get_field('arrangor', $id);
+        $beskrivelse = get_field('formal_tema', $id) ?: $post->post_content;
+
+        $meta_deler = array_filter([
+            $dato ? bimverdi_nyhetsbrev_dato_nb($dato) : '',
+            $sted,
+        ]);
+
+        $bilde = bimverdi_nyhetsbrev_bilde($id, 'arrangement', 'medium');
+
+        $items[] = [
+            'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id)),
+            'av'         => $arrangor ? bimverdi_nyhetsbrev_plain($arrangor) : '',
+            'av_url'     => '',
+            'utdrag'     => bimverdi_nyhetsbrev_tekst($beskrivelse, 18),
+            'lenke'      => get_permalink($id),
+            'meta'       => implode(' · ', $meta_deler),
+            'bilde'      => $bilde['url'],
+            'bilde_type' => $bilde['type'],
+            // Aldri hero: alle arrangementene skal være like store.
+            'hero'       => false,
+        ];
     }
 
-    $post = $q->posts[0];
-    $id   = $post->ID;
-
-    $dato = get_field('arrangement_dato', $id);
-    $sted = get_field('sted_by', $id);
-    $arrangor = get_field('arrangor', $id);
-    $beskrivelse = get_field('formal_tema', $id) ?: $post->post_content;
-
-    $meta_deler = array_filter([
-        $dato ? bimverdi_nyhetsbrev_dato_nb($dato) : '',
-        $sted,
-    ]);
-
-    // Arrangement er noe av det viktigste i brevet — vis som hero (stort
-    // bilde + fokus) når bilde finnes. Uten bilde: kompakt rad m/ dato.
-    $bilde = bimverdi_nyhetsbrev_bilde($id, 'arrangement', 'large');
-
     wp_reset_postdata();
-
-    return [[
-        'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id)),
-        'av'         => $arrangor ? bimverdi_nyhetsbrev_plain($arrangor) : '',
-        'av_url'     => '',
-        'utdrag'     => bimverdi_nyhetsbrev_tekst($beskrivelse),
-        'lenke'      => get_permalink($id),
-        'meta'       => implode(' · ', $meta_deler),
-        'bilde'      => $bilde['url'],
-        'bilde_type' => $bilde['type'],
-        'hero'       => !empty($bilde['url']),
-    ]];
+    return $items;
 }
 
 /**
@@ -557,10 +567,19 @@ function bimverdi_nyhetsbrev_collect() {
 
     $artikkel_arkiv = get_post_type_archive_link('artikkel') ?: '';
 
+    // Arrangement ligger ØVERST (Bård 10.09.2026, Trello #348 pkt 5.1):
+    // «Neste arrangement settes øverst — dette er den viktigste ressursen.»
+    $arrangementer = bimverdi_nyhetsbrev_neste_arrangement(3);
+
     return [
         'generert'  => bimverdi_nyhetsbrev_dato_nb(),
         'totaler'   => bimverdi_nyhetsbrev_totaler(),
         'seksjoner' => [
+            array_merge([
+                'noekkel' => 'arrangement',
+                'tittel'  => count($arrangementer) > 1 ? 'Neste arrangementer' : 'Neste arrangement',
+                'items'   => $arrangementer,
+            ], $arkiv('arrangement', 'arrangementer')),
             [
                 // Het «Andre artikler» til 03.09.2026. Bård ville ha den til
                 // «Artikler», og da må «Se alle N» love det lenken faktisk
@@ -582,11 +601,6 @@ function bimverdi_nyhetsbrev_collect() {
                 'arkiv_url' => $artikkel_arkiv,
                 'enhet'     => 'artikler fra deltakere',
             ],
-            array_merge([
-                'noekkel' => 'arrangement',
-                'tittel'  => 'Neste arrangement',
-                'items'   => bimverdi_nyhetsbrev_neste_arrangement(),
-            ], $arkiv('arrangement', 'arrangementer')),
             array_merge([
                 'noekkel' => 'verktoy',
                 'tittel'  => 'Nye og sist oppdaterte verktøy og tjenester fra deltakerne',
@@ -622,6 +636,7 @@ function bimverdi_render_nyhetsbrev($data = null, $context = []) {
     }
 
     $context = wp_parse_args($context, [
+        'ingress'         => '',
         'profil_url'      => home_url('/min-side/profil/rediger/'),
         'avmelding_url'   => '#',
         'avsender_navn'   => 'Bård Krogshus',

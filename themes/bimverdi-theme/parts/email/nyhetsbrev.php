@@ -51,9 +51,15 @@ $seksjoner = array_values(array_filter($seksjoner, function ($s) {
 
 $totaler = isset($data['totaler']) ? $data['totaler'] : ['sum' => 0, 'typer' => []];
 
-// Preheader: tease toppsaken (første item i første seksjon), ellers generisk.
+// Redaktørens egen innledning (valgfri, skrives per utsendelse i admin).
+$bv_nb_ingress = isset($context['ingress']) ? trim((string) $context['ingress']) : '';
+
+// Preheader (forhåndsvisningslinja i innboksen): Bårds egen innledning hvis
+// den finnes, ellers tease toppsaken, ellers generisk.
 $preheader = 'Det ferskeste fra nettverket — artikler, arrangementer, verktøy og mer.';
-if (!empty($seksjoner[0]['items'][0]['tittel'])) {
+if ($bv_nb_ingress !== '') {
+    $preheader = wp_trim_words($bv_nb_ingress, 22, '…');
+} elseif (!empty($seksjoner[0]['items'][0]['tittel'])) {
     $preheader = 'Siste: ' . $seksjoner[0]['items'][0]['tittel'];
 }
 
@@ -122,6 +128,12 @@ $bv_nb_kort_header = function ($seksjon) {
     @media only screen and (max-width:480px) {
         .nb-pad { padding-left:16px !important; padding-right:16px !important; }
         .nb-h1 { font-size:26px !important; }
+        /* Arrangement-rader: bilde over tekst på smal skjerm (Outlook desktop
+           ignorerer media queries og beholder to kolonner — det er greit). */
+        .nb-stack, .nb-stack tbody, .nb-stack tr, .nb-stack td { display:block !important; width:100% !important; }
+        .nb-stack .nb-stack-img img { width:100% !important; height:auto !important; max-width:100% !important; }
+        .nb-stack .nb-stack-img > a { width:100% !important; }
+        .nb-stack .nb-stack-body { padding-left:0 !important; padding-top:12px !important; }
     }
     /* Dark mode: behold lesbarhet (beige er en trygg midtone) */
     @media (prefers-color-scheme: dark) {
@@ -166,6 +178,11 @@ $bv_nb_kort_header = function ($seksjon) {
                 <h1 class="nb-h1" style="margin:0;font-size:30px;line-height:1.2;font-weight:600;color:#1A1A1A;">
                     Nytt &amp; Nyttig
                 </h1>
+                <?php endif; ?>
+                <?php if ($bv_nb_ingress !== ''): ?>
+                <p class="nb-text" style="margin:16px 0 0 0;font-size:16px;line-height:1.6;color:#1A1A1A;text-align:left;">
+                    <?php echo nl2br(esc_html($bv_nb_ingress)); ?>
+                </p>
                 <?php endif; ?>
                 <p class="nb-text" style="margin:12px 0 0 0;font-size:15px;line-height:1.6;color:#5A5A5A;">
                     Det ferskeste fra nettverket — utvalgt fra
@@ -252,23 +269,43 @@ $bv_nb_kort_header = function ($seksjon) {
                         </tr>
                     </table>
 
-                    <?php elseif ($seksjon['noekkel'] === 'arrangement'): /* === ARRANGEMENT: dato-fokusert === */ ?>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+                    <?php elseif ($seksjon['noekkel'] === 'arrangement'): /* === ARRANGEMENT: like store rader, dato + bilde + knapp === */ ?>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="nb-stack" style="margin-top:16px;<?php echo $i > 0 ? 'border-top:1px solid #F3EFE7;padding-top:16px;' : ''; ?>">
                         <tr>
-                            <td width="64" valign="top"><?php echo $bv_nb_thumb($item); ?></td>
-                            <td valign="top" style="padding-left:14px;">
+                            <td width="168" valign="top" class="nb-stack-img" style="padding-top:<?php echo $i > 0 ? '16px' : '0'; ?>;">
+                                <?php if (!empty($item['bilde'])): ?>
+                                <a href="<?php echo esc_url($item['lenke']); ?>" style="display:block;">
+                                    <img src="<?php echo esc_url($item['bilde']); ?>" width="168" alt="<?php echo esc_attr($item['tittel']); ?>"
+                                         style="width:168px;max-width:168px;height:auto;display:block;border:0;border-radius:10px;background-color:#F7F5EF;">
+                                </a>
+                                <?php else: ?>
+                                <a href="<?php echo esc_url($item['lenke']); ?>" style="display:block;width:168px;height:112px;border-radius:10px;background-color:#EFE9DE;text-align:center;text-decoration:none;">
+                                    <span style="display:inline-block;font-family:Inter,Arial,sans-serif;font-size:28px;font-weight:600;color:#B3AB9B;line-height:112px;"><?php
+                                        $bv_nb_init = function_exists('mb_substr') ? mb_substr($item['tittel'], 0, 1) : substr($item['tittel'], 0, 1);
+                                        echo esc_html(function_exists('mb_strtoupper') ? mb_strtoupper($bv_nb_init) : strtoupper($bv_nb_init));
+                                    ?></span>
+                                </a>
+                                <?php endif; ?>
+                            </td>
+                            <td valign="top" class="nb-stack-body" style="padding-left:16px;padding-top:<?php echo $i > 0 ? '16px' : '0'; ?>;">
                                 <?php if (!empty($item['meta'])): ?>
                                 <div style="font-size:13px;font-weight:700;color:#FF8B5E;"><?php echo esc_html($item['meta']); ?></div>
                                 <?php endif; ?>
-                                <a href="<?php echo esc_url($item['lenke']); ?>" class="nb-title" style="display:inline-block;margin-top:4px;color:#1A1A1A;text-decoration:none;font-size:16px;font-weight:600;line-height:1.4;">
+                                <a href="<?php echo esc_url($item['lenke']); ?>" class="nb-title" style="display:inline-block;margin-top:4px;color:#1A1A1A;text-decoration:none;font-size:17px;font-weight:600;line-height:1.35;">
                                     <?php echo esc_html($item['tittel']); ?>
                                 </a>
                                 <?php if (!empty($item['av'])): ?>
                                 <div class="nb-muted" style="margin-top:3px;font-size:13px;<?php echo $muted; ?>"><?php echo esc_html($item['av']); ?></div>
                                 <?php endif; ?>
-                                <div style="margin-top:10px;">
-                                    <a href="<?php echo esc_url($item['lenke']); ?>" style="font-size:13px;font-weight:600;color:#FF8B5E;text-decoration:none;">Se arrangementet&nbsp;→</a>
-                                </div>
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
+                                    <tr>
+                                        <td bgcolor="#FF8B5E" style="background-color:#FF8B5E;border-radius:8px;">
+                                            <a href="<?php echo esc_url($item['lenke']); ?>" style="display:inline-block;padding:9px 18px;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;">
+                                                Se arrangementet&nbsp;→
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
                             </td>
                         </tr>
                     </table>

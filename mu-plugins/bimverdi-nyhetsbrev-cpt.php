@@ -105,6 +105,8 @@ function bimverdi_nyhetsbrev_snapshot($post_id, $args = array()) {
     // send-motoren (bimverdi_nyhetsbrev_send_en) bytter dem ut ved utsendelse.
     $context = wp_parse_args($context, array(
         'avmelding_url' => home_url('/?bv_nb_avmeld=%%BV_UID%%&bvt=%%BV_TOKEN%%'),
+        // Redaktørens egen innledning for DENNE utsendelsen (Trello #348 pkt 1.1).
+        'ingress'       => (string) get_post_meta($post_id, '_bv_nyhetsbrev_ingress', true),
     ));
     $html    = bimverdi_render_nyhetsbrev($data, $context);
 
@@ -165,6 +167,67 @@ function bimverdi_nyhetsbrev_er_sendt($post_id) {
     return (bool) get_post_meta($post_id, '_bv_nyhetsbrev_sent_at', true);
 }
 
+/**
+ * Skjult felt i en handlingsboks i metaboksen.
+ *
+ * Feltene bruker `data-bv-name` i stedet for `name`: boksene ligger inni
+ * WordPress sitt post-skjema, og et felt som heter «action» ville blitt sendt
+ * med «Lagre kladd» og overstyrt WordPress sin egen action-verdi. JS-en setter
+ * det ekte navnet først når den bygger handlingsskjemaet.
+ */
+function bimverdi_nyhetsbrev_felt($navn, $verdi) {
+    return '<input type="hidden" data-bv-name="' . esc_attr($navn) . '" value="' . esc_attr($verdi) . '">';
+}
+
+/** Er brevet låst for redigering (sendt, eller utsendelse startet)? */
+function bimverdi_nyhetsbrev_er_laast($post_id) {
+    if (bimverdi_nyhetsbrev_er_sendt($post_id)) {
+        return true;
+    }
+    return function_exists('bimverdi_nyhetsbrev_utsendelse_startet')
+        && bimverdi_nyhetsbrev_utsendelse_startet($post_id);
+}
+
+/**
+ * Lagre tittel (= e-postemnet) og innledning fra sidepanelets skjemaer.
+ *
+ * Bakgrunn (Bård 10.09.2026): sidepanelets knapper poster til admin-post.php,
+ * ikke til post-skjemaet. Skrev han en ny tittel og trykket «Send test» rett
+ * etterpå, gikk testen ut med den GAMLE tittelen og feltet «hoppet tilbake».
+ * Knappene sender derfor nå med de redigerte verdiene (fylles av JS-en i
+ * metaboksen), og vi lagrer dem her før handlingen utføres.
+ *
+ * @return bool True hvis noe faktisk ble endret.
+ */
+function bimverdi_nyhetsbrev_lagre_felter_fra_post($post_id) {
+    if (bimverdi_nyhetsbrev_er_laast($post_id)) {
+        return false;
+    }
+
+    $endret = false;
+
+    if (isset($_POST['bv_tittel'])) {
+        $tittel = sanitize_text_field(wp_unslash($_POST['bv_tittel']));
+        if ($tittel !== '' && $tittel !== get_post_field('post_title', $post_id)) {
+            wp_update_post(array(
+                'ID'         => $post_id,
+                'post_title' => wp_slash($tittel),
+            ));
+            $endret = true;
+        }
+    }
+
+    if (isset($_POST['bv_ingress'])) {
+        $ingress = sanitize_textarea_field(wp_unslash($_POST['bv_ingress']));
+        if ($ingress !== (string) get_post_meta($post_id, '_bv_nyhetsbrev_ingress', true)) {
+            update_post_meta($post_id, '_bv_nyhetsbrev_ingress', wp_slash($ingress));
+            $endret = true;
+        }
+    }
+
+    return $endret;
+}
+
 /* -------------------------------------------------------------------------
  * 3. admin-post-handlere: generer nytt / oppdater øyeblikksbilde.
  * ---------------------------------------------------------------------- */
@@ -214,6 +277,8 @@ add_action('admin_post_bimverdi_oppdater_nyhetsbrev', function () {
         wp_safe_redirect(add_query_arg('bv_nb_notice', 'utsendelse_laast', admin_url('post.php?post=' . $post_id . '&action=edit')));
         exit;
     }
+
+    bimverdi_nyhetsbrev_lagre_felter_fra_post($post_id);
 
     $res = bimverdi_nyhetsbrev_snapshot($post_id);
     $notice = is_wp_error($res) ? 'feil' : 'oppdatert';
@@ -351,6 +416,71 @@ add_action('add_meta_boxes_' . BV_NYHETSBREV_CPT, function () {
         'side',
         'high'
     );
+    add_meta_box(
+        'bv_nyhetsbrev_emne',
+        'Emne og innledning',
+        'bimverdi_nyhetsbrev_metaboks_ingress',
+        BV_NYHETSBREV_CPT,
+        'normal',
+        'high'
+    );
+});
+
+/**
+ * Emne + innledning: den redigerbare teksten i hver utsendelse
+ * (Bård, Trello #348 pkt 1.1). Tittelen på posten ER e-postemnet — det
+ * står forklart her, siden feltet over ikke sier det selv.
+ */
+function bimverdi_nyhetsbrev_metaboks_ingress($post) {
+    $ingress = (string) get_post_meta($post->ID, '_bv_nyhetsbrev_ingress', true);
+    $laast   = bimverdi_nyhetsbrev_er_laast($post->ID);
+
+    wp_nonce_field('bv_nyhetsbrev_ingress_' . $post->ID, 'bv_nyhetsbrev_ingress_nonce');
+
+    echo '<p style="margin:0 0 10px;font-size:13px;color:#5A5A5A;">'
+       . '<strong>Emnefeltet i e-posten er tittelen øverst på denne siden.</strong> '
+       . 'Skriv gjerne hva brevet inneholder — f.eks. «Nyhetsbrev 10. september — nytt KI-verktøy, høstmøtet, tre nye deltakere». '
+       . 'Det er det mottakeren ser i innboksen, og det avgjør om brevet blir åpnet.</p>';
+
+    echo '<p style="margin:0 0 6px;font-size:13px;"><label for="bv_nyhetsbrev_ingress"><strong>Innledning (valgfri)</strong></label></p>';
+    echo '<textarea id="bv_nyhetsbrev_ingress" name="bv_nyhetsbrev_ingress" rows="4" style="width:100%;"'
+       . ($laast ? ' disabled' : '') . ' placeholder="Noen linjer fra deg, øverst i brevet.">'
+       . esc_textarea($ingress) . '</textarea>';
+    echo '<p style="margin:6px 0 0;font-size:12px;color:#5A5A5A;">Vises øverst i brevet, rett under logoen, og brukes som forhåndsvisningstekst i innboksen. '
+       . ($laast ? 'Brevet er låst og kan ikke endres.' : 'Lagres når du trykker «Lagre kladd», «Oppdater øyeblikksbilde» eller «Send test».') . '</p>';
+}
+
+/**
+ * Lagre innledningen fra post-skjemaet, og oppdater øyeblikksbildet så
+ * forhåndsvisningen alltid viser det som faktisk vil bli sendt.
+ */
+add_action('save_post_' . BV_NYHETSBREV_CPT, function ($post_id) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (wp_is_post_revision($post_id) || !current_user_can('manage_options')) {
+        return;
+    }
+    // Kun fra post-skjemaet — sidepanelets admin-post-skjemaer har ikke denne
+    // nonce-en, og går via bimverdi_nyhetsbrev_lagre_felter_fra_post().
+    if (empty($_POST['bv_nyhetsbrev_ingress_nonce'])
+        || !wp_verify_nonce(sanitize_key($_POST['bv_nyhetsbrev_ingress_nonce']), 'bv_nyhetsbrev_ingress_' . $post_id)) {
+        return;
+    }
+    if (bimverdi_nyhetsbrev_er_laast($post_id)) {
+        return;
+    }
+
+    $ingress = isset($_POST['bv_nyhetsbrev_ingress'])
+        ? sanitize_textarea_field(wp_unslash($_POST['bv_nyhetsbrev_ingress']))
+        : '';
+    update_post_meta($post_id, '_bv_nyhetsbrev_ingress', wp_slash($ingress));
+
+    // Øyeblikksbildet er den HTML-en som sendes — regenerer så innledningen
+    // faktisk havner i brevet uten et ekstra klikk.
+    if (get_post_meta($post_id, '_bv_nyhetsbrev_html', true)) {
+        bimverdi_nyhetsbrev_snapshot($post_id);
+    }
 });
 
 function bimverdi_nyhetsbrev_metaboks($post) {
@@ -383,13 +513,13 @@ function bimverdi_nyhetsbrev_metaboks($post) {
     // — etter start er øyeblikksbildet låst mot manifestets HTML-hash).
     $utsendelse_startet = function_exists('bimverdi_nyhetsbrev_utsendelse_startet') && bimverdi_nyhetsbrev_utsendelse_startet($post->ID);
     if (!$sent_at && !$utsendelse_startet) {
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin:8px 0 0 0;">';
-        echo '<input type="hidden" name="action" value="bimverdi_oppdater_nyhetsbrev">';
-        echo '<input type="hidden" name="post_id" value="' . esc_attr($post->ID) . '">';
-        wp_nonce_field('bimverdi_oppdater_nyhetsbrev_' . $post->ID);
-        echo '<button type="submit" class="button button-secondary" style="width:100%;">Oppdater øyeblikksbilde</button>';
+        echo '<div class="bv-nb-handling" style="margin:8px 0 0 0;">';
+        echo bimverdi_nyhetsbrev_felt('action', 'bimverdi_oppdater_nyhetsbrev');
+        echo bimverdi_nyhetsbrev_felt('post_id', $post->ID);
+        echo bimverdi_nyhetsbrev_felt('_wpnonce', wp_create_nonce('bimverdi_oppdater_nyhetsbrev_' . $post->ID));
+        echo '<button type="button" class="button button-secondary" style="width:100%;">Oppdater øyeblikksbilde</button>';
         echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">Henter inn dagens ferskeste innhold på nytt.</span>';
-        echo '</form>';
+        echo '</div>';
     } elseif (!$sent_at && $utsendelse_startet) {
         echo '<p style="color:#5A5A5A;font-size:12px;margin:8px 0 0;">🔒 Øyeblikksbildet er låst — en utsendelse er startet.</p>';
     }
@@ -400,19 +530,19 @@ function bimverdi_nyhetsbrev_metaboks($post) {
         $er_prod   = function_exists('bimverdi_nyhetsbrev_er_prod') && bimverdi_nyhetsbrev_er_prod();
         echo '<hr style="margin:14px 0;border:none;border-top:1px solid #e0e0e0;">';
         echo '<p style="margin:0 0 6px 0;"><strong>Test-utsendelse</strong></p>';
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin:0;">';
-        echo '<input type="hidden" name="action" value="bimverdi_nyhetsbrev_send_test">';
-        echo '<input type="hidden" name="post_id" value="' . esc_attr($post->ID) . '">';
-        wp_nonce_field('bimverdi_nyhetsbrev_send_test_' . $post->ID);
-        echo '<input type="text" name="test_epost" value="' . esc_attr($min_epost) . '" '
+        echo '<div class="bv-nb-handling" style="margin:0;">';
+        echo bimverdi_nyhetsbrev_felt('action', 'bimverdi_nyhetsbrev_send_test');
+        echo bimverdi_nyhetsbrev_felt('post_id', $post->ID);
+        echo bimverdi_nyhetsbrev_felt('_wpnonce', wp_create_nonce('bimverdi_nyhetsbrev_send_test_' . $post->ID));
+        echo '<input type="text" data-bv-name="test_epost" value="' . esc_attr($min_epost) . '" '
            . 'style="width:100%;margin-bottom:6px;" placeholder="navn@adresse.no, navn2@adresse.no">';
-        echo '<button type="submit" class="button button-secondary" style="width:100%;">Send test</button>';
+        echo '<button type="button" class="button button-secondary" style="width:100%;">Send test</button>';
         $test_hjelp = $er_prod
             ? 'Skriv inn adressene testen skal gå til (kommaseparert, maks 5). Emnet prefikses med [TEST].'
             : 'Testmiljø: kun din egen e-post og adresser i <code>BIMVERDI_NYHETSBREV_TEST_MOTTAKERE</code> (wp-config) er tillatt. Emnet prefikses med [TEST].';
         echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">'
            . wp_kses($test_hjelp, array('code' => array())) . '</span>';
-        echo '</form>';
+        echo '</div>';
 
         // Siste testutsendelser.
         $logg = get_post_meta($post->ID, '_bv_nyhetsbrev_test_log', true);
@@ -433,6 +563,65 @@ function bimverdi_nyhetsbrev_metaboks($post) {
     bimverdi_nyhetsbrev_metaboks_massesend($post);
 
     echo '</div>';
+
+    // ⚠️ Metaboksen ligger INNI WordPress sitt post-skjema, og HTML tillater
+    // ikke skjema inni skjema: nettleseren kastet det første <form>-startet og
+    // lot </form> lukke post-skjemaet i stedet. «Oppdater øyeblikksbilde»
+    // havnet dermed i post.php (og gjorde ingenting), og felter lenger nede på
+    // siden mistet tilknytningen til post-skjemaet. Knappene er derfor vanlige
+    // knapper: her bygges et ekte skjema utenfor post-skjemaet ved klikk.
+    //
+    // Samtidig kopieres tittelen (= e-postemnet) og innledningen slik de står
+    // i editoren NÅ, så «Send test» aldri sender forrige lagrede versjon
+    // (Bård 10.09.2026).
+    ?>
+    <script>
+    (function () {
+        var url = <?php echo wp_json_encode(admin_url('admin-post.php')); ?>;
+
+        document.addEventListener('click', function (e) {
+            var knapp = e.target.closest('.bv-nb-handling button');
+            if (!knapp) { return; }
+            var boks = knapp.closest('.bv-nb-handling');
+            e.preventDefault();
+
+            var skjema = document.createElement('form');
+            skjema.method = 'post';
+            skjema.action = url;
+            skjema.style.display = 'none';
+
+            var felter = boks.querySelectorAll('[data-bv-name]');
+            Array.prototype.forEach.call(felter, function (felt) {
+                if (felt.disabled) { return; }
+                if ((felt.type === 'checkbox' || felt.type === 'radio') && !felt.checked) { return; }
+                skjema.appendChild(skjult(felt.getAttribute('data-bv-name'), felt.value));
+            });
+
+            var tittel  = document.getElementById('title');
+            var ingress = document.getElementById('bv_nyhetsbrev_ingress');
+            if (tittel)  { skjema.appendChild(skjult('bv_tittel', tittel.value)); }
+            if (ingress) { skjema.appendChild(skjult('bv_ingress', ingress.value)); }
+
+            // Verdiene tas med videre, så «du har ulagrede endringer» ville
+            // bare vært støy.
+            window.onbeforeunload = null;
+            if (window.jQuery) { window.jQuery(window).off('beforeunload.edit-post'); }
+            if (window.wp && window.wp.autosave) { window.wp.autosave.server.tempBlockSave(); }
+
+            document.body.appendChild(skjema);
+            skjema.submit();
+        });
+
+        function skjult(navn, verdi) {
+            var felt = document.createElement('input');
+            felt.type = 'hidden';
+            felt.name = navn;
+            felt.value = verdi;
+            return felt;
+        }
+    })();
+    </script>
+    <?php
 }
 
 /**
@@ -488,14 +677,14 @@ function bimverdi_nyhetsbrev_metaboks_massesend($post) {
         }
 
         // (b) Klar → rød knapp som går til bekreftelses-mellomsiden.
-        echo '<form method="post" action="' . $admin_post . '" style="margin:0;">';
-        echo '<input type="hidden" name="action" value="bimverdi_nyhetsbrev_bekreft">';
-        echo '<input type="hidden" name="post_id" value="' . esc_attr($post_id) . '">';
-        wp_nonce_field('bimverdi_nyhetsbrev_bekreft_' . $post_id);
-        echo '<button type="submit" class="button button-primary" style="width:100%;background:#FF8B5E;border-color:#FF8B5E;color:#1A1A1A;">'
+        echo '<div class="bv-nb-handling" style="margin:0;">';
+        echo bimverdi_nyhetsbrev_felt('action', 'bimverdi_nyhetsbrev_bekreft');
+        echo bimverdi_nyhetsbrev_felt('post_id', $post_id);
+        echo bimverdi_nyhetsbrev_felt('_wpnonce', wp_create_nonce('bimverdi_nyhetsbrev_bekreft_' . $post_id));
+        echo '<button type="button" class="button button-primary" style="width:100%;background:#FF8B5E;border-color:#FF8B5E;color:#1A1A1A;">'
            . 'Send til ' . (int) $antall . ' mottakere…</button>';
         echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">Du får en bekreftelsesside før noe sendes.</span>';
-        echo '</form>';
+        echo '</div>';
         return;
     }
 
@@ -542,15 +731,15 @@ function bimverdi_nyhetsbrev_metaboks_massesend($post) {
             echo '<div style="border-top:1px solid #f0e3b0;padding-top:8px;margin-top:8px;">';
             echo '<p style="margin:0 0 4px;font-size:12px;color:#5A5A5A;">Batch ' . (int) $i . ' (' . (int) $antall_b . ' mottakere)</p>';
             foreach (array('marker_sendt' => 'Marker som sendt (verifisert levert)', 'resend' => 'Re-send (verifisert IKKE levert)') as $valg => $tekst) {
-                echo '<form method="post" action="' . $admin_post . '" style="display:inline-block;margin:0 4px 4px 0;">';
-                echo '<input type="hidden" name="action" value="bimverdi_nyhetsbrev_verifiser">';
-                echo '<input type="hidden" name="post_id" value="' . esc_attr($post_id) . '">';
-                echo '<input type="hidden" name="batch_indeks" value="' . esc_attr($i) . '">';
-                echo '<input type="hidden" name="valg" value="' . esc_attr($valg) . '">';
-                wp_nonce_field('bimverdi_nyhetsbrev_verifiser_' . $post_id);
+                echo '<div class="bv-nb-handling" style="display:inline-block;margin:0 4px 4px 0;">';
+                echo bimverdi_nyhetsbrev_felt('action', 'bimverdi_nyhetsbrev_verifiser');
+                echo bimverdi_nyhetsbrev_felt('post_id', $post_id);
+                echo bimverdi_nyhetsbrev_felt('batch_indeks', $i);
+                echo bimverdi_nyhetsbrev_felt('valg', $valg);
+                echo bimverdi_nyhetsbrev_felt('_wpnonce', wp_create_nonce('bimverdi_nyhetsbrev_verifiser_' . $post_id));
                 $stil = $valg === 'resend' ? 'color:#b32d2e;' : '';
-                echo '<button type="submit" class="button button-small" style="' . $stil . '">' . esc_html($tekst) . '</button>';
-                echo '</form>';
+                echo '<button type="button" class="button button-small" style="' . $stil . '">' . esc_html($tekst) . '</button>';
+                echo '</div>';
             }
             echo '</div>';
         }
@@ -564,18 +753,18 @@ function bimverdi_nyhetsbrev_metaboks_massesend($post) {
 
     // (d) Fortsett-knapp (også for å overta en stale lås).
     $stale = $las && !$las['fersk'];
-    echo '<form method="post" action="' . $admin_post . '" style="margin:0;">';
-    echo '<input type="hidden" name="action" value="bimverdi_nyhetsbrev_fortsett">';
-    echo '<input type="hidden" name="post_id" value="' . esc_attr($post_id) . '">';
+    echo '<div class="bv-nb-handling" style="margin:0;">';
+    echo bimverdi_nyhetsbrev_felt('action', 'bimverdi_nyhetsbrev_fortsett');
+    echo bimverdi_nyhetsbrev_felt('post_id', $post_id);
     if ($stale) {
-        echo '<input type="hidden" name="overta_stale" value="1">';
+        echo bimverdi_nyhetsbrev_felt('overta_stale', '1');
     }
-    wp_nonce_field('bimverdi_nyhetsbrev_fortsett_' . $post_id);
+    echo bimverdi_nyhetsbrev_felt('_wpnonce', wp_create_nonce('bimverdi_nyhetsbrev_fortsett_' . $post_id));
     $etikett = $stale ? 'Overta stale lås og fortsett' : 'Fortsett utsendelse';
-    echo '<button type="submit" class="button button-primary" style="width:100%;">' . esc_html($etikett) . '</button>';
+    echo '<button type="button" class="button button-primary" style="width:100%;">' . esc_html($etikett) . '</button>';
     if ($stale) {
         echo '<span style="display:block;color:#b32d2e;font-size:12px;margin-top:4px;">Forrige kjøring stoppet uten å slippe låsen ('
            . (int) $las['alder'] . ' s siden).</span>';
     }
-    echo '</form>';
+    echo '</div>';
 }

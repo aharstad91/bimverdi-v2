@@ -351,6 +351,15 @@ add_action('admin_post_bimverdi_nyhetsbrev_send_test', function () {
         exit;
     }
 
+    // Lagre tittel (= emnet) og innledning slik de står i editoren akkurat nå,
+    // og bygg øyeblikksbildet på nytt hvis noe ble endret. Uten dette gikk
+    // testen ut med forrige lagrede versjon (Bård 10.09.2026, Trello #348).
+    if (function_exists('bimverdi_nyhetsbrev_lagre_felter_fra_post')
+        && bimverdi_nyhetsbrev_lagre_felter_fra_post($post_id)
+        && function_exists('bimverdi_nyhetsbrev_snapshot')) {
+        bimverdi_nyhetsbrev_snapshot($post_id);
+    }
+
     // Parse og valider oppgitte adresser.
     $raa      = isset($_POST['test_epost']) ? sanitize_text_field(wp_unslash($_POST['test_epost'])) : '';
     $adresser = array_values(array_filter(array_map('trim', preg_split('/[,\s]+/', $raa))));
@@ -1407,6 +1416,15 @@ add_action('admin_post_bimverdi_nyhetsbrev_bekreft', function () {
     if (!get_post_meta($post_id, '_bv_nyhetsbrev_html', true)) {
         wp_safe_redirect(add_query_arg('bv_nb_notice', 'massesend_mangler_snapshot', $tilbake));
         exit;
+    }
+
+    // Lagre tittel (= emnet) og innledning slik de står i editoren, og bygg
+    // øyeblikksbildet på nytt hvis noe ble endret — ellers hadde
+    // bekreftelsessiden vist et annet emne enn det Bård nettopp skrev.
+    if (function_exists('bimverdi_nyhetsbrev_lagre_felter_fra_post')
+        && bimverdi_nyhetsbrev_lagre_felter_fra_post($post_id)
+        && function_exists('bimverdi_nyhetsbrev_snapshot')) {
+        bimverdi_nyhetsbrev_snapshot($post_id);
     }
 
     // Gaten må være åpen FØR vi viser bekreftelsen — ellers er knappen død.
