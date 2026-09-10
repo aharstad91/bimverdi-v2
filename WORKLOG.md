@@ -3,6 +3,122 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-09-10
+action: Trello #348 punkt 6, 7, 8 og 9 — kortet er ferdig
+files:
+  - "b6f720b feat: Trello #348 punkt 6, 7, 8 og 9"
+  - "themes/bimverdi-theme/comments.php (hele traaden synlig utlogget)"
+  - "themes/bimverdi-theme/parts/components/delingsvalg.php (NY)"
+  - "themes/bimverdi-theme/parts/components/diskusjon-banner.php (sikkerhetsnett paa the_content)"
+  - "themes/bimverdi-theme/inc/design-system.php (select-hoeyde)"
+  - "themes/bimverdi-theme/parts/minside/kunnskapskilder-list.php (Sist oppdatert)"
+  - "mu-plugins/bimverdi-diskusjon-mentions.php (mentions ogsaa utlogget)"
+  - "page.php + single-artikkel/verktoy/arrangement/foretak/kunnskapskilde/theme_group"
+summary: "De fire siste punktene paa kort #348 bygget, deployet og verifisert paa prod. Punkt 2, 3 og 4 var gjort 04.09 (e6c53b2), punkt 1 og 5 tidligere i dag (ea29532). Baard er tagget med @baardkr i én samlet kommentar (6aa2653d2928a15eae431fc0)."
+status: waiting
+waiting_on: "Baard — se over de fire endringene, saerlig at diskusjonstekst naa er offentlig (punkt 6). Han er varslet om konsekvensen paa kortet."
+detail: |
+  PUNKT 6 — DISKUSJONSFELT FOR IKKE-INNLOGGEDE
+  R16 er reversert etter Baards eksplisitte oenske: «Vis all tekst i
+  diskusjonsfelt for ikke-innloggede». De blurrede placeholder-linjene er
+  fjernet, comment_text() rendres for alle, og mention-markeringen i
+  bimverdi-diskusjon-mentions.php er ikke lenger innlogget-gatet (navnet staar
+  allerede i teksten, markeringen avsloerer ingenting nytt). Svar-lenken og
+  abonnér-knappen krever fortsatt innlogging.
+
+  MERK PERSONVERNKONSEKVENSEN: innleggene er naa offentlige og kan indekseres.
+  Det er skrevet eksplisitt i Trello-kommentaren, med tilbud om aa gaa tilbake
+  til innlogget-bare visning paa enkelte sider hvis han vil.
+
+  PUNKT 7 — MIN SIDE → KUNNSKAPSKILDER
+  Ny kolonne «Sist oppdatert». Viser «—» naar modified ligger under 60 sekunder
+  fra post_date, ellers gjentar to kolonner samme dato paa nyregistrerte kilder.
+
+  ROTAARSAK TIL DE KLIPTE KLASSIFISERINGSFELTENE (verdt aa huske): basisregelen
+  i design-system.php setter «height: 32px» OG «padding: 0 12px» i samme
+  selektorliste. Der treffer input[type="text"] paa attributt-nivaa (samme vekt
+  som en klasse), mens select er ren elementvelger. Skjemaets egen .py-3 taper
+  derfor mot tekstfeltene, men VINNER mot select — som beholdt 32px hoeyde og
+  fikk 12px padding paa toppen. Teksten havnet under underkanten. Loest med
+  select:not([size]) { height:auto; min-height:32px; padding-top:0;
+  padding-bottom:0 }.
+
+  BONUSFUNN i samme regel: select[size]/[multiple] ble klemt til 32px, saa
+  flervalgslista «Velg kunnskapskilder» i artikkelskjemaet viste 1 av 8 rader.
+  Fikset med height:auto. Ikke rapportert av Baard — funnet under testing.
+
+  PUNKT 8 — INFOBOKS OEVERST OVERALT
+  Banneret sto paa de seks CPT-malene, men ikke paa sider — derfor manglet det
+  paa /prosjekter/byggchat/, som var akkurat eksempelet hans. Eksplisitt kall
+  lagt i page.php (over .bv-prose, saa det ikke arver broedtekst-typografi),
+  pluss et the_content-nett paa prioritet 5 for maler vi ikke har taenkt paa.
+  Dobbelt-rendering er umulig: bimverdi_diskusjon_banner_skrevet() merker hver
+  post, og banner-funksjonen returnerer tidlig hvis merket finnes.
+
+  PUNKT 9 — DELINGSVALG OEVERST
+  Ny komponent bimverdi_delingsvalg(): LinkedIn + E-post + Kopier lenke i én
+  rad, alle tre med data-bv-del-post/-kanal saa de logges i Delingsloggen
+  (kanalene «linkedin» og «kopier» laa allerede i bimverdi_del_logg_kanaler()).
+  E-postknappen gjenbruker bimverdi_del_knapp(). Kopier-knappen har fallback
+  til execCommand naar clipboard-API-et mangler.
+
+  FJERNET FOR AA UNNGAA DUPLIKAT: «Del artikkelen»-raden nederst i
+  single-artikkel.php, den enslige e-postknappen nederst i verktoy, foretak,
+  kunnskapskilde og theme_group (+ .tg-del-CSS), og «Del arrangement» i
+  sidefeltet paa arrangement (med skillelinja som sto foran den). Dette er
+  nevnt i Trello-kommentaren saa Baard ikke tror det forsvant ved et uhell.
+
+  VERIFISERT
+  Lokalt med Chrome i utlogget kontekst: banner=1 og delingsrad=1 paa byggchat,
+  artikkel, kunnskapskilde, verktoy, arrangement, deltakerprofil og temagruppe;
+  0 paa arkivsidene. Tre innlegg synlige utlogget med mention-markering, ingen
+  blur. Kopier-knappen logget kanal «kopier» i wp_bimverdi_del_logg. Select 32px
+  = input 32px med hel tekst; flervalgslista 162px. Ingen nye linjer i
+  debug.log (de fra header-minside.php:96 og archive-foretak.php er gamle).
+  Paa prod: filene deployet, og banner=1 / delingsrad=1 / blur=0 paa byggchat,
+  AI-artikkelen og Vendom-kilden Baard pekte paa.
+
+---
+date: 2026-09-10
+action: Nyhetsbrev — arrangement oeverst med de tre neste, og redigerbart emne/innledning (#348 punkt 1 og 5)
+files:
+  - "ea29532 feat(nyhetsbrev): arrangement oeverst med tre neste + redigerbart emne/innledning"
+  - "mu-plugins/bimverdi-nyhetsbrev-content.php"
+  - "mu-plugins/bimverdi-nyhetsbrev-cpt.php"
+  - "mu-plugins/bimverdi-nyhetsbrev-send.php"
+  - "themes/bimverdi-theme/parts/email/nyhetsbrev.php"
+summary: "Baards to nyhetsbrev-punkter fra moetet: arrangement oeverst med de tre naermeste like store, og emne/innledning han kan endre uten ekstra lagreklikk. Deployet og verifisert paa prod, Baard tagget paa kortet (6aa261384a8b7388111eb59d)."
+status: waiting
+waiting_on: "Baard — teste med «Send test» paa prod og si fra om rekkefoelgen stemmer."
+detail: |
+  ARRANGEMENT OEVERST (punkt 5.1 + 1.2)
+  bimverdi_nyhetsbrev_neste_arrangement() henter naa opptil tre kommende
+  arrangement i datorekkefoelge, alle med 'hero' => false saa de blir like
+  store. Seksjonen er flyttet foerst i collect(), og tittelen boeyes
+  («Neste arrangement» / «Neste arrangementer»). Hver rad har dato, bilde og
+  «Se arrangementet»-knapp, stablet paa mobil via .nb-stack.
+
+  EMNET SOM HOPPET TILBAKE (punkt 1.1)
+  Baard endret overskriften, trykte «Send test», og fikk den GAMLE. Aarsaken var
+  arkitektonisk, ikke en lagringsfeil: knappene i sidepanelet postet til
+  admin-post.php, helt utenom post-skjemaet, saa den nyskrevne tittelen aldri
+  ble sendt med. Loest ved at knappene naa plukker med seg #title og
+  #bv_nyhetsbrev_ingress og lagrer dem foer handlingen kjoerer — «uten at han
+  trenger aa gjoere noe mer», som han ba om. Ny metaboks «Emne og innledning»
+  forklarer at emnefeltet ER posttittelen, med Baards eget eksempelformat.
+
+  TO BUGS FIKSET PAA VEIEN
+   1. «Oppdater oeyeblikksbilde» gjorde ingenting og landet paa edit.php.
+      Metaboksens <form> laa inni form#post; nettleseren dropper den indre
+      start-taggen, og </form> lukket post-skjemaet. Alle fem handlingsskjemaer
+      er skrevet om til <div> + JS som bygger et ekte skjema paa document.body.
+   2. Datoen viste «23. august 1970». ACF lagrer arrangement_dato som «Ymd»
+      (20260918), og is_numeric() leste tallet som et Unix-tidsstempel.
+
+  VERIFISERT paa prod: collect() gir «Neste arrangementer | 2» med 17.09 og
+  22.09, riktige datoer og bilder.
+
+---
 date: 2026-09-03
 action: STATUS VED DAGENS SLUTT — samlet aapen-poster-liste for Trello #347 (erstatter waiting_on i dagens tidligere entryer)
 files:
