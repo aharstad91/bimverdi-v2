@@ -128,6 +128,14 @@ $kilde_created = get_the_date('d.m.Y');
         }
         ?>
 
+        <?php
+        // Delingsvalg (Bård, Trello #348 punkt 9): LinkedIn, e-post og kopier
+        // lenke øverst på siden — ikke nederst slik det lå i artiklene.
+        if (function_exists('bimverdi_delingsvalg')) {
+            bimverdi_delingsvalg(['class' => 'mb-8']);
+        }
+        ?>
+
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
             <div class="flex-1">
@@ -339,12 +347,6 @@ $kilde_created = get_the_date('d.m.Y');
 
                     </dl>
                 </section>
-
-                <!-- Del siden (Bård, Trello #347 punkt 1) -->
-                <div class="border-t border-[#E7E5E4] pt-6 flex flex-wrap items-center gap-3">
-                    <span class="text-sm text-[#5A5A5A]">Del denne siden:</span>
-                    <?php bimverdi_del_knapp(); ?>
-                </div>
 
                 <?php
                 // Diskusjon (Bård, Trello #348 punkt 3.1). Vakten står, så tråden

@@ -136,6 +136,14 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
         }
         ?>
 
+        <?php
+        // Delingsvalg (Bård, Trello #348 punkt 9): LinkedIn, e-post og kopier
+        // lenke øverst på siden — ikke nederst slik det lå i artiklene.
+        if (function_exists('bimverdi_delingsvalg')) {
+            bimverdi_delingsvalg(['class' => 'mb-8']);
+        }
+        ?>
+
         <!-- Status Banner -->
         <?php if ($status === 'avlyst'): ?>
         <div class="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
@@ -569,29 +577,11 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                     <?php endif; ?>
                 </div>
 
-                <!-- Divider -->
-                <div class="border-t border-[#E7E5E4]"></div>
                 <?php endif; ?>
 
-                <!-- Share -->
-                <div>
-                    <h4 class="font-semibold text-[#111827] mb-3">Del arrangement</h4>
-                    <div class="flex gap-2">
-                        <?php bimverdi_button([
-                            'text'    => 'Kopier lenke',
-                            'variant' => 'secondary',
-                            'size'    => 'small',
-                            'icon'    => 'link',
-                            'onclick' => "navigator.clipboard.writeText(window.location.href); alert('Lenke kopiert!');",
-                        ]); ?>
-                        <?php
-                        // Del-knapp med brukslogg (Bård, Trello #347 punkt 1).
-                        // Erstatter den gamle rene mailto-lenken, som ikke
-                        // kunne logges.
-                        bimverdi_del_knapp(['text' => 'E-post']);
-                        ?>
-                    </div>
-                </div>
+                <?php // Delingsvalgene ligger nå øverst på siden (Bård, Trello #348
+                      // punkt 9), så sidefeltet gjentar dem ikke — og skillelinja
+                      // som sto foran dem er borte med samme begrunnelse. ?>
 
             </div>
         </div>

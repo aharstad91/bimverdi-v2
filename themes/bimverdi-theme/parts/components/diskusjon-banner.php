@@ -10,6 +10,12 @@
  * (`bimverdi_diskusjon_aktiv()`). Ellers ville det lovet noe som ikke finnes
  * lenger ned på siden — f.eks. på kunnskapskilder, der tråden står av (R17).
  *
+ * Trello #348 punkt 8 (10.09.2026): banneret skal stå «øverst på ALLE nye/gamle
+ * sider og poster som har diskusjonsfelt». De seks CPT-malene kaller det
+ * eksplisitt; sider (som /prosjekter/byggchat/) og alt som måtte komme til
+ * senere fanges av the_content-nettet nederst i fila. Dobbelt-rendering er
+ * umulig fordi hvert kall merkes av per post.
+ *
  * @package BimVerdi
  */
 
@@ -39,6 +45,9 @@ function bimverdi_diskusjon_banner($args = array()) {
     $post = get_post($args['post']);
     if (!$post || !bimverdi_diskusjon_aktiv($post)) {
         return;
+    }
+    if (bimverdi_diskusjon_banner_skrevet($post->ID, true)) {
+        return; // Allerede skrevet ut av malen — nettet under skal ikke gjenta det.
     }
 
     $innlogget = is_user_logged_in();
@@ -148,3 +157,47 @@ function bimverdi_diskusjon_banner_stil() {
     </script>
     <?php
 }
+
+/**
+ * Har banneret allerede blitt skrevet ut for denne posten i denne visningen?
+ *
+ * @param int  $post_id Posten.
+ * @param bool $marker  Sett true for å markere den som skrevet ut.
+ * @return bool Statusen FØR et eventuelt merke ble satt.
+ */
+function bimverdi_diskusjon_banner_skrevet($post_id, $marker = false) {
+    static $skrevet = array();
+    $post_id = (int) $post_id;
+    $var     = isset($skrevet[$post_id]);
+    if ($marker) {
+        $skrevet[$post_id] = true;
+    }
+    return $var;
+}
+
+/**
+ * Sikkerhetsnett for punkt 8: legg banneret øverst i innholdet på enhver
+ * singelvisning med aktiv diskusjon der malen ikke allerede har gjort det.
+ *
+ * Prioritet 5 — før wpautop og resten av innholdsfiltrene, så markupen vår
+ * ikke pakkes inn i avsnittstagger. Vaktene sikrer at det bare skjer i
+ * hovedløkka på en singelside: utdrag i arkiv og lister er uberørt.
+ *
+ * @param string $innhold Innholdet.
+ * @return string
+ */
+add_filter('the_content', function ($innhold) {
+    if (is_admin() || !is_singular() || !in_the_loop() || !is_main_query()) {
+        return $innhold;
+    }
+    if (!function_exists('bimverdi_diskusjon_aktiv') || !bimverdi_diskusjon_aktiv()) {
+        return $innhold;
+    }
+    if (bimverdi_diskusjon_banner_skrevet(get_the_ID())) {
+        return $innhold;
+    }
+
+    ob_start();
+    bimverdi_diskusjon_banner();
+    return ob_get_clean() . $innhold;
+}, 5);

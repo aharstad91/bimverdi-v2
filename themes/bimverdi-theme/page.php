@@ -30,13 +30,21 @@ get_header(); ?>
             <!-- Page Content -->
             <article id="post-<?php the_ID(); ?>" <?php post_class('bv-page__content'); ?>>
                 <div class="bv-page__content-inner">
+                    <?php
+                    // Diskusjonsbanner (Bård, Trello #348 punkt 8): øverst på alle
+                    // sider som har diskusjonsfelt — /prosjekter/byggchat/ er den
+                    // som finnes i dag. Kallet står her og ikke i .bv-prose så
+                    // banneret ikke arver brødtekst-typografien.
+                    if (function_exists('bimverdi_diskusjon_banner')) {
+                        bimverdi_diskusjon_banner();
+                    }
+                    // Delingsvalg (Bård, Trello #348 punkt 9): øverst, ikke nederst.
+                    if (function_exists('bimverdi_delingsvalg')) {
+                        bimverdi_delingsvalg(['class' => 'mb-8']);
+                    }
+                    ?>
                     <div class="bv-prose">
                         <?php the_content(); ?>
-                    </div>
-                    <!-- Del siden (Bård, Trello #347 punkt 1): «alle sider» -->
-                    <div style="margin-top:40px;padding-top:24px;border-top:1px solid #E7E5E4;display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
-                        <span style="font-size:14px;color:#5A5A5A;">Del denne siden:</span>
-                        <?php bimverdi_del_knapp(); ?>
                     </div>
 
                     <?php

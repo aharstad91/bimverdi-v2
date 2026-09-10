@@ -1524,6 +1524,41 @@ class BIM_Verdi_Design_System {
                 padding-right: 32px;
             }
 
+            /*
+             * Baard, Trello #348 punkt 7.2: teksten i klassifiserings-feltene paa
+             * /min-side/kunnskapskilder/ var klippet i to.
+             *
+             * Aarsaken er en spesifisitets-ubalanse i basis-regelen over. Der
+             * staar bade «height: 32px» og «padding: 0 12px», men listen treffer
+             * tekstfelt som input[type="text"] (attributt = klasse-nivaa) og
+             * select som ren elementvelger. Et skjema som ber om mer luft med
+             * Tailwind sin .py-3 taper derfor mot tekstfeltene, men vinner mot
+             * select — som beholdt 32px hoeyde og fikk 12px padding paa toppen.
+             * Teksten havnet under underkanten.
+             *
+             * :not([size]) loefter select opp paa samme nivaa som tekstfeltene,
+             * saa nedtrekkene foelger designsystemets hoeyde slik resten av
+             * skjemaet gjoer. min-height staar igjen som gulv hvis noen setter en
+             * stoerre skriftstoerrelse.
+             */
+            select:not([size]) {
+                height: auto;
+                min-height: 32px;
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+
+            /*
+             * Flervalgslister (size/multiple) skal vise radene sine. Den faste
+             * hoeyden over klemte dem ned til én rad — «Velg kunnskapskilder» i
+             * artikkelskjemaet viste 1 av 8 synlige linjer. Funnet mens 7.2 ble
+             * rettet; samme regel, samme aarsak.
+             */
+            select[size],
+            select[multiple] {
+                height: auto;
+            }
+
             /* Description text */
             .bv-field__description {
                 font-size: 13px;

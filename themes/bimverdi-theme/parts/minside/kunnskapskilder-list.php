@@ -92,6 +92,7 @@ if (empty($user_kunnskapskilder)) {
                 <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden md:table-cell"><?php _e('Utgiver', 'bimverdi'); ?></th>
                 <th class="px-4 py-3 text-xs font-medium text-[#57534E]"><?php _e('Status', 'bimverdi'); ?></th>
                 <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden lg:table-cell"><?php _e('Registrert', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden lg:table-cell"><?php _e('Sist oppdatert', 'bimverdi'); ?></th>
                 <th class="pl-4 py-3 text-xs font-medium text-[#57534E] text-right"><?php _e('Handlinger', 'bimverdi'); ?></th>
             </tr>
         </thead>
@@ -99,7 +100,7 @@ if (empty($user_kunnskapskilder)) {
             <?php if (empty($user_kunnskapskilder)): ?>
             <!-- Empty row with message -->
             <tr>
-                <td colspan="6" class="py-8 text-center text-[#57534E]">
+                <td colspan="7" class="py-8 text-center text-[#57534E]">
                     <?php _e('Ingen kunnskapskilder registrert ennå.', 'bimverdi'); ?>
                 </td>
             </tr>
@@ -109,6 +110,14 @@ if (empty($user_kunnskapskilder)) {
                 $status_class = $kilde_status === 'publish' ? 'bg-[#DCFCE7] text-[#166534]' : ($kilde_status === 'pending' ? 'bg-[#FEF9C3] text-[#854D0E]' : 'bg-[#FEE2E2] text-[#991B1B]');
                 $status_label = $kilde_status === 'publish' ? __('Publisert', 'bimverdi') : ($kilde_status === 'pending' ? __('Venter', 'bimverdi') : __('Kladd', 'bimverdi'));
                 $created_date = get_the_date('d.m.Y', $kilde->ID);
+                // Baard, Trello #348 punkt 7.1: egen kolonne for siste endring.
+                // Nyregistrerte kilder har modified == date; da sier vi «—» i
+                // stedet for aa gjenta registreringsdatoen i to kolonner.
+                $modified_ts   = (int) get_post_modified_time('U', true, $kilde->ID);
+                $created_ts    = (int) get_post_time('U', true, $kilde->ID);
+                $modified_date = ($modified_ts - $created_ts) > 60
+                    ? get_the_modified_date('d.m.Y', $kilde->ID)
+                    : '';
 
                 // Get ACF fields
                 $kildetype = get_field('kildetype', $kilde->ID);
@@ -173,6 +182,11 @@ if (empty($user_kunnskapskilder)) {
                 <!-- Registrert -->
                 <td class="px-4 py-4 hidden lg:table-cell align-middle text-sm text-[#57534E]">
                     <?php echo $created_date; ?>
+                </td>
+
+                <!-- Sist oppdatert -->
+                <td class="px-4 py-4 hidden lg:table-cell align-middle text-sm text-[#57534E]">
+                    <?php echo $modified_date ? esc_html($modified_date) : '&mdash;'; ?>
                 </td>
 
                 <!-- Actions -->

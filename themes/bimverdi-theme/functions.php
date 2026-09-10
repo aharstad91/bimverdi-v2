@@ -247,6 +247,12 @@ require_once get_template_directory() . '/parts/components/diskusjon-banner.php'
 require_once get_template_directory() . '/parts/components/del-knapp.php';
 
 /**
+ * Load Delingsvalg Component
+ * Provides bimverdi_delingsvalg() — Trello #348 punkt 9
+ */
+require_once get_template_directory() . '/parts/components/delingsvalg.php';
+
+/**
  * Load Accordion Component
  * Provides bimverdi_accordion() function
  */

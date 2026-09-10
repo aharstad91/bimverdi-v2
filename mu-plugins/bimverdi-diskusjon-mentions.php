@@ -136,12 +136,14 @@ add_action('wp_insert_comment', function ($comment_id, $comment) {
 }, 10, 2);
 
 /**
- * 3) Marker bundne mentions ved visning. Kjører etter kses/wpautop (prio 20)
- * og kun i innlogget sti — utloggede får aldri innholdet uansett
- * (comments.php rendrer placeholder).
+ * 3) Marker bundne mentions ved visning. Kjører etter kses/wpautop (prio 20).
+ *
+ * Innlogget-vakten er fjernet 10.09.2026: fra Trello #348 punkt 6 vises hele
+ * tråden også for utloggede, og markeringen avslører ingenting nytt — navnet
+ * står allerede i innleggsteksten, vi gir det bare farge.
  */
 add_filter('comment_text', function ($text, $comment = null) {
-    if (!$comment || !is_user_logged_in()) {
+    if (!$comment) {
         return $text;
     }
     $ids = get_comment_meta($comment->comment_ID, '_bv_mention_user_ids', true);

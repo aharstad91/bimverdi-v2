@@ -7,11 +7,14 @@
  * Byggchat-siden; aktivering styres av bimverdi_diskusjon_aktiv() i
  * mu-plugins/bimverdi-still-sporsmal.php.
  *
- * Utlogget: navn/dato/badge er synlige (levende aktivitet), brødtekst og
- * mentions rendres ALDRI til DOM — placeholder-linjer med blur-styling i
- * stedet. Ved 0 kommentarer vises verken teller eller blur (R16).
- * Deep-link fra e-post: ?bvk={comment_id}#comment-{id} — utlogget gir
- * kontekstuell login-CTA, innlogget scrolles/highlightes til kommentaren.
+ * Utlogget: hele tråden er synlig. Frem til 10.09.2026 var brødteksten
+ * erstattet av blurrede placeholder-linjer (R16) — Bård snudde det på Trello
+ * #348 punkt 6: «Vis all tekst i diskusjonsfelt for ikke-innloggede og vis
+ * melding om å logge på for å delta i diskusjonen eller slå på
+ * innleggsvarsling». Innlogging kreves fortsatt for å skrive, svare og
+ * abonnere; det er dét meldingene under tråden forklarer.
+ * Deep-link fra e-post: ?bvk={comment_id}#comment-{id} — scroller og
+ * highlighter kommentaren, innlogget eller ikke.
  *
  * Design: UI Contract Variant B (dividers/whitespace, ingen bokser).
  *
@@ -52,11 +55,13 @@ if (!function_exists('bimverdi_diskusjon_comment')) {
                 <span class="bv-diskusjon-pending">Venter på godkjenning</span>
                 <?php endif; ?>
             </div>
-            <?php if ($innlogget): ?>
-                <div class="bv-diskusjon-content">
-                    <?php comment_text($comment); ?>
-                </div>
-                <?php
+            <?php // Innlegget vises for alle (Bård, #348 punkt 6). Svar-lenken
+                  // krever innlogging — den ville bare ledet til en boks
+                  // utloggede ikke kan bruke. ?>
+            <div class="bv-diskusjon-content">
+                <?php comment_text($comment); ?>
+            </div>
+            <?php if ($innlogget):
                 comment_reply_link(array_merge($args, [
                     'depth'      => $depth,
                     'max_depth'  => $args['max_depth'],
@@ -65,15 +70,7 @@ if (!function_exists('bimverdi_diskusjon_comment')) {
                     'before'     => '<div>',
                     'after'      => '</div>',
                 ]), $comment);
-                ?>
-            <?php else: ?>
-                <?php // Innholdet skrives aldri til DOM for utloggede — placeholder, ikke CSS over ekte tekst. ?>
-                <div class="bv-diskusjon-skjult" aria-hidden="true">
-                    <span class="bv-diskusjon-skjult-linje" style="width: 88%"></span>
-                    <span class="bv-diskusjon-skjult-linje" style="width: 71%"></span>
-                    <span class="bv-diskusjon-skjult-linje" style="width: 42%"></span>
-                </div>
-            <?php endif; ?>
+            endif; ?>
         <?php // </div> lukkes av wp_list_comments (style => div)
     }
 }
@@ -136,9 +133,6 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
 #diskusjon .bv-diskusjon-vis-mer:hover { color: #F97316; }
 #diskusjon .comment-reply-link { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 500; color: #111827; transition: color .15s; }
 #diskusjon .comment-reply-link:hover { color: #F97316; }
-/* Blurret placeholder for utloggede — pynt over tomme elementer, aldri ekte tekst */
-#diskusjon .bv-diskusjon-skjult { display: flex; flex-direction: column; gap: 7px; padding: 2px 0; }
-#diskusjon .bv-diskusjon-skjult-linje { display: block; height: 11px; border-radius: 6px; background: linear-gradient(90deg, #D6D3D1, #E7E5E4 60%, #D6D3D1); filter: blur(3px); opacity: .8; }
 /* Deep-link-highlight: kort fade når ankeret treffes */
 #diskusjon .bv-diskusjon-item:target { animation: bv-diskusjon-highlight 2.5s ease-out 1; }
 @keyframes bv-diskusjon-highlight { 0% { background: #FFF1E9; } 100% { background: transparent; } }
@@ -214,9 +208,9 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
     <?php if (!$innlogget && $bvk_comment): ?>
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 p-4 bg-[#FFF7ED] border border-[#FED7AA] rounded-lg">
             <p class="text-sm text-[#57534E] flex-1">
-                Du følger en lenke til en kommentar fra
+                Du følger en lenke til et innlegg fra
                 <span class="font-medium text-[#111827]"><?php echo esc_html(get_comment_author($bvk_comment)); ?></span>.
-                Logg inn for å se kommentaren.
+                Logg inn for å svare eller få varsel om nye innlegg.
             </p>
             <?php bimverdi_button([
                 'text'    => 'Logg inn',
@@ -235,7 +229,7 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
             </h3>
             <?php if (!$innlogget): ?>
                 <a class="text-xs font-medium text-[#F97316] hover:text-[#EA580C]"
-                   href="<?php echo esc_url($login_url($permalink . '#diskusjon')); ?>">Logg inn for å lese</a>
+                   href="<?php echo esc_url($login_url($permalink . '#diskusjon')); ?>">Logg inn for å delta</a>
             <?php endif; ?>
         </div>
         <div class="bv-diskusjon-list">
@@ -293,7 +287,8 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
                     <?php if ($comment_count === 0): ?>
                         Vær den første til å dele en tanke eller et spørsmål &mdash; logg inn eller registrer deg for å delta.
                     <?php else: ?>
-                        Logg inn for å lese og delta i diskusjonen.
+                        Du kan lese hele diskusjonen her. Logg inn for å delta &mdash; eller for å slå på varsel
+                        på e-post når noen skriver et nytt innlegg.
                     <?php endif; ?>
                 </p>
                 <div class="flex items-center gap-3">
@@ -311,7 +306,7 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
     <?php endif; ?>
 </section>
 
-<?php if ($innlogget && $comment_count > 0): ?>
+<?php if ($comment_count > 0): ?>
 <script>
 (function () {
     /* Lange innlegg klippes til tre linjer med «Vis mer»/«Vis mindre».
