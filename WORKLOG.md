@@ -16,6 +16,9 @@ detail: |
   Datoen over er loggføringsdato, ikke bekreftet møtedato. Fulltranskriptet er
   ikke lagret separat. Dette er et historisk referat; løpende oppfølging føres
   i beads-saken bimverdi-3lo. Ingen av tiltakene er gjennomført i denne økten.
+  Andreas opplyste også at Bård legger inn nye oppgaver på Trello-kortet
+  https://trello.com/c/uxSX7byh — referanse for senere oppfølging.
+  Kortets innhold er ikke lest eller kontrollert i denne økten.
 
   SEO-PLAN TIL DELTAKERNE (01:39–06:19, 10:25–11:48, 20:35–21:47)
   Bård trenger et konkret internnotat han kan dele med deltakerbedriftene.
