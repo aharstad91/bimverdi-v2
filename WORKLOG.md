@@ -3,6 +3,96 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-09-11
+action: documented
+files: [WORKLOG.md]
+summary: "Møtereferat — grunnlag for SEO-plan, skrivehjelp, deltakerartikler og prosjekter"
+status: done
+beads: "bimverdi-3lo"
+detail: |
+  FORMÅL OG KILDE
+  Brukeren ba om en worklog slik at møtet kan tas opp ved en senere anledning.
+  Kilde er det innlimte transkriptet mellom Andreas og Bård (00:00–26:40).
+  Datoen over er loggføringsdato, ikke bekreftet møtedato. Fulltranskriptet er
+  ikke lagret separat. Dette er et historisk referat; løpende oppfølging føres
+  i beads-saken bimverdi-3lo. Ingen av tiltakene er gjennomført i denne økten.
+
+  SEO-PLAN TIL DELTAKERNE (01:39–06:19, 10:25–11:48, 20:35–21:47)
+  Bård trenger et konkret internnotat han kan dele med deltakerbedriftene.
+  Bakgrunnen er at partneren omtalt som APX/Apex tviler på verdien av å levere
+  artikler når trafikken oppfattes som lav. Påstanden om ingen trafikk kommer
+  via Bård fra en rådgiver og er ikke verifisert mot analysedata.
+  Andreas og Bård er enige om en realistisk tolvmåneders plan for å bygge
+  synlighet over tid. Planen skal beskrive innsatsen, partnernes bidrag og
+  evaluering hver tredje måned, med målepunkter etter 3, 6, 9 og 12 måneder.
+  Ingen tallfestede trafikkmål, ressursrammer eller søkeord ble vedtatt.
+  Bård vil involvere Jan Erik hos APX/Apex og en norsk analyseekspert i Berlin.
+  Andreas skal lage skissen; levering omtales som «til uka», ikke samme dag.
+  PDF og en delbar side på BIM Verdi ble diskutert; format er ikke valgt.
+  Faglig merknad fra loggfører: mål må bygge på et målt utgangspunkt, og små
+  absolutte tall bør vises sammen med prosentvis vekst. Dette er ikke et
+  trafikk- eller rangeringsløfte fra møtet.
+
+  REDAKSJONELL SKRIVEHJELP (06:28–10:08, 11:52–14:17, 23:24–24:10)
+  Andreas viste et eksempel fra Akrylok på klarere, søketilpassede tekster
+  ved hjelp av en skriveskill. Artikler og arrangementstekster på BIM Verdi
+  ble nevnt som aktuelle bruksområder. Andreas bekreftet ved loggføringen at
+  PageSpeed Insights-målingen gjaldt bimverdi.no. I møtet beskrives resultatet
+  som svært godt («seksere over hele rekka»). Rapporten og konkrete poengsummer
+  er ikke vedlagt eller kontrollert her. Teksteksemplet gjaldt Akrylok.
+  Avklart begrensning: hjelpen må i første omgang gå via Andreas/Bård etter
+  innsendt utkast, på grunn av infrastruktur. Ingen direkte agentintegrasjon
+  i deltakernes artikkelskjema ble avtalt.
+  Bård foreslo gratis vurdering og forbedringsforslag som del av satsingen,
+  samt en kort månedlig demonstrasjon/rådgivning på omtrent 15 minutter.
+  Dette er forslag: kapasitet, omfang og vilkår er ikke fastsatt.
+  Bård ønsket læringslenker om SEO. Andreas nevnte mulig deling av én
+  skriveskill fra Compound Engineering. Nøyaktig skill ble ikke navngitt;
+  ce-noslop er en mulig kandidat å undersøke, ikke en bekreftet møtereferanse
+  eller en ferdig SEO-skill. Ingen lenkesamling eller skill ble levert nå.
+
+  LEVERANSEKONTROLL OG DELTAKERARTIKLER (00:42–01:37, 14:20–16:55)
+  Bård skal kontrollere punktene han er tagget på fra foregående leveranse,
+  og melde tilbake det som ikke fungerer i praksis.
+  Bård opplever at differensiering av deltakerartikler ikke er realisert;
+  han viser til uke 37, punkt 3. Hans opprinnelige ønske var blå markering.
+  Andreas presiserer at målet er et tydelig skille mellom deltakerartikler
+  og BIM Verdis egne artikler, og ønsker frihet til å velge en bedre visuell
+  løsning. Blå ramme er derfor ikke en fastlagt implementasjonsbeslutning.
+  Eksisterende loggoppføring 2026-09-10 for Trello #348 sier at punkt 3 var
+  gjort 04.09 (e6c53b2). Det er et mulig avvik mellom registrert leveranse og
+  Bårds opplevelse; koblingen til samme kort og faktisk visning må verifiseres.
+  Ingen kode- eller nettleserkontroll av dette er gjort i denne økten.
+
+  PROSJEKTER OG PILOTER (16:57–17:39)
+  Bård ønsker å aktivere registrering av prosjekter og piloter igjen, med
+  behov knyttet til hovedprosjekt/budsjett. Han skal beskrive behovet først.
+  Felter, roller, flyt og avgrensning ble ikke spesifisert. Dette er et behov
+  som må konkretiseres, ikke en ferdig bestilling på implementering.
+
+  PRESENTASJON OG SAMARBEID (22:07–23:24, 24:20–25:27)
+  Bård foreslo et deltakermøte 24. september kl. 14, med omtrent 15 minutter
+  fra Andreas og mulig 15 minutter fra APX/Apex om deres arbeidsmåte.
+  Bård tar hoveddelen og lager foreløpig artikkel og møteinvitasjon/placeholder.
+  Tilbudet omtales som tjenester gjennom verktøyet, ikke tilgang til selve
+  verktøyet. Årstall og endelig møtebekreftelse fremgår ikke sikkert.
+  En fast tirsdagssamtale kl. 09:45–10:15 ble også omtalt; Andreas sa han
+  sendte invitasjonen. Kalenderstatus er ikke kontrollert av loggfører.
+
+  GRUNNLAG FOR SENERE ARBEID
+  SEO-skissen er det naturlige første arbeidsområdet, ut fra Bårds behov for
+  noe konkret å dele med partnerne. Før skissen kan få realistiske måltall,
+  mangler faktisk trafikkutgangspunkt, tilgang til analyseverktøy, prioriterte
+  temaer/søkeord og tilgjengelig kapasitet. Partnernavn (APX/Apex), møtedato,
+  presentasjonsdato og omfanget av skrivehjelpen trenger avklaring.
+  Ved gjenopptakelse gir bd show bimverdi-3lo --json arbeidsstatusen.
+  Transkriptets «CEO/CO» er tolket som SEO der sammenhengen er tydelig, og
+  «tolvårsplan» som tolvmånedersplan. Gjentatte ja/overlapp er utelatt.
+  Samtalen om private økonomiforhold og generelle modellpreferanser er ikke
+  tatt med som prosjektoppgaver. Det er ikke sendt meldinger, publisert en
+  plan eller opprettet kalenderavtaler i denne økten.
+
+---
 date: 2026-09-10
 action: Trello #348 punkt 6, 7, 8 og 9 — kortet er ferdig
 files:

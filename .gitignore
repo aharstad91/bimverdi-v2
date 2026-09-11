@@ -55,3 +55,13 @@ shared-context/
 # Cached Public Suffix List for jeremykendall/php-domain-parser
 !vendor-data/
 !vendor-data/**
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db
+
+# Beads issue snapshot; runtime database remains local
+!.beads/
+.beads/*
+!.beads/issues.jsonl
+!.beads/.htaccess
