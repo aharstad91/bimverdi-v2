@@ -210,8 +210,16 @@ function bimverdi_generate_ics($arrangement_id) {
  * @return string
  */
 function bimverdi_ics_escape($text) {
+    // Rekkefølgen er hele poenget: backslash MÅ escapes først.
+    //
+    // Sto linjeskift-erstatningen først, traff backslash-erstatningen etterpå
+    // også backslashen i \n-sekvensen vi nettopp lagde, og linjeskiftet endte
+    // som \\n i fila. Kalenderklienten viser da teksten \n i stedet for å bryte
+    // linja, og Outlook drar tegnene med inn i Teams-lenka over. Det er feilen
+    // Kjell meldte i uke 38: lenken virker, men «ser veldig rart ut».
+    $text = str_replace('\\', '\\\\', $text);
+    $text = str_replace(array(',', ';'), array('\,', '\;'), $text);
     $text = str_replace(array("\r\n", "\r", "\n"), '\n', $text);
-    $text = str_replace(array(',', ';', '\\'), array('\,', '\;', '\\\\'), $text);
     return $text;
 }
 
