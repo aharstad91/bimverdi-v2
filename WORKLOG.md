@@ -16,9 +16,9 @@ files:
   - "mu-plugins/bimverdi-ics-generator.php (escape-rekkefølge)"
   - "mu-plugins/bimverdi-verktoy-admin-kolonne.php (NY)"
   - "themes/bimverdi-theme/templates/public/template-forside-forslag.php (topp, seksjonsrekkefølge, kortdesign, vertikal rytme)"
-summary: "Møtereferat + seks leveranser fra Trello uke 38 (punkt 1–6), og fire runder på forsiden etterpå (punkt 7–10). Begge de åpne spørsmålene fra 16.09 er avgjort av Bård: fylke fylles ut manuelt av ham, og kun deltakerforetak får registrere verktøy. Forsideforslaget ble godkjent som det var, og deretter omarbeidet av Andreas: arrangementet alene i toppen uten bilde, artiklene opp under logostripa som tre like kort, strammere vertikal rytme. INGENTING er pushet."
+summary: "PUSHET TIL PROD 17.09. Møtereferat + seks leveranser fra Trello uke 38 (punkt 1–6), og fire runder på forsiden etterpå (punkt 7–10). Begge de åpne spørsmålene fra 16.09 er avgjort av Bård: fylke fylles ut manuelt av ham, og kun deltakerforetak får registrere verktøy. Forsideforslaget ble godkjent som det var, og deretter omarbeidet av Andreas: arrangementet alene i toppen uten bilde, artiklene opp under logostripa som tre like kort, strammere vertikal rytme. INGENTING er pushet."
 status: waiting
-waiting_on: "Andreas — godkjenne push. Bård venter på patchen i dag."
+waiting_on: "Bård — teste de seks punktene og se på https://bimverdi.no/forside-forslag/. Tagget på Trello #350 17.09."
 detail: |
   MØTE 17.09.2026, Andreas og Bård (~30 min).
 
@@ -260,8 +260,23 @@ detail: |
   hardkodet /arrangement/, så den følger permalenke-oppsettet og ikke brekker
   om slug-en endres. home_url('/arrangement/') som fallback.
 
+  12. PUSHET TIL PROD 17.09
+  Sju commits, merget til main som fast-forward fra docs/seo-meeting-worklog.
+  Bekreftet at autodeployen landet: begge de nye mu-pluginene og forside-malen
+  ligger på serveren.
+  VERIFISERT PÅ PROD, ikke bare lokalt:
+  - ICS-endepunktet for arrangement 5826 gir nå én backslash per linjeskift.
+  - bv_fylke er registrert (acf_get_field svarer).
+  - bimverdi_verktoy_kolonne_innhold finnes, og actionen
+    bimverdi_verktoy_registrert har en lytter.
+  Forside-forslaget trengte en SIDE på prod for å være synlig — malen alene
+  holder ikke. Opprettet side 5867, https://bimverdi.no/forside-forslag/,
+  status 200 og malen renderer. front-page.php er ikke rørt.
+  Bård er tagget i en kommentar på Trello #350 med hva han skal teste, og lagt
+  til som medlem på kortet så varselet når fram.
+
   IKKE GJORT ENNÅ
-  - Forsiden: publiseringen — og avgjørelsen om forslaget skal bli den ekte
+  - Forsiden: å gjøre forslaget til den EKTE forsiden (venter på Bårds ja) — og avgjørelsen om forslaget skal bli den ekte
     forsiden (front-page.php) eller ligge som forhåndsvisning.
   - AIinAEC skrevet inn som eier i databasen på hub-verktøyene (kolonnen viser
     det, men lenkesjekken leser front-end og melder dem fortsatt eierløse).
