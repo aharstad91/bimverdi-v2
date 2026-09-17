@@ -80,10 +80,49 @@ $bv_nb_badge = function ($status) {
 
 /**
  * Thumb-celle: bilde hvis det finnes, ellers initial-bokstav-placeholder.
- * 64×64, avrundet. Returnerer ferdig escaped HTML for innholdet i cellen.
+ * 64×64-rute, avrundet. Returnerer ferdig escaped HTML for innholdet i cellen.
+ *
+ * FOTO OG LOGO BEHANDLES ULIKT (Bård, Trello uke 38 punkt 1: «logoen til
+ * verktøy blir forvrengt»). Et fremhevet foto tåler å beskjæres til
+ * kvadratet. En logo er nesten aldri kvadratisk, og skal ligge HEL inni ruta
+ * med luft rundt — derfor skaleres den ned til å passe innenfor 56×56, og får
+ * sine egne width/height-attributter regnet ut her i PHP.
+ *
+ * Attributtene er hele poenget: Outlooks Word-motor ignorerer både
+ * `object-fit` og `max-width`, så CSS alene avgjør ingenting der. Det var
+ * nettopp de faste `width:64px;height:64px` som strakk logoene ut av fasong.
+ * Er målene ukjente (bildet er lagret som naken URL, uten attachment å slå opp)
+ * settes bare bredden, og høyden får følge proporsjonene — ruta kan da bli
+ * lavere eller høyere enn 64 px, men bildet blir aldri forvrengt.
  */
 $bv_nb_thumb = function ($item) {
     if (!empty($item['bilde'])) {
+        $er_logo = (isset($item['bilde_type']) && $item['bilde_type'] === 'logo');
+        $bredde  = isset($item['bilde_w']) ? (int) $item['bilde_w'] : 0;
+        $hoyde   = isset($item['bilde_h']) ? (int) $item['bilde_h'] : 0;
+
+        if ($er_logo && $bredde > 0 && $hoyde > 0) {
+            $maks  = 56; // 64 minus 4 px luft på hver side.
+            $skala = min($maks / $bredde, $maks / $hoyde, 1);
+            $w     = max(1, (int) round($bredde * $skala));
+            $h     = max(1, (int) round($hoyde * $skala));
+
+            return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="64" style="width:64px;">'
+                 . '<tr><td width="64" height="64" align="center" valign="middle"'
+                 . ' style="width:64px;height:64px;border-radius:8px;background-color:#F7F5EF;">'
+                 . '<a href="' . esc_url($item['lenke']) . '" style="display:block;">'
+                 . '<img src="' . esc_url($item['bilde']) . '" width="' . $w . '" height="' . $h . '" alt=""'
+                 . ' style="width:' . $w . 'px;height:' . $h . 'px;display:block;margin:0 auto;border:0;">'
+                 . '</a></td></tr></table>';
+        }
+
+        if ($er_logo) {
+            return '<a href="' . esc_url($item['lenke']) . '" style="display:block;">'
+                 . '<img src="' . esc_url($item['bilde']) . '" width="64" alt=""'
+                 . ' style="width:64px;height:auto;display:block;border:0;border-radius:8px;background-color:#F7F5EF;">'
+                 . '</a>';
+        }
+
         return '<a href="' . esc_url($item['lenke']) . '" style="display:block;">'
              . '<img src="' . esc_url($item['bilde']) . '" width="64" height="64" alt=""'
              . ' style="width:64px;height:64px;display:block;border:0;border-radius:8px;background-color:#F7F5EF;object-fit:cover;">'

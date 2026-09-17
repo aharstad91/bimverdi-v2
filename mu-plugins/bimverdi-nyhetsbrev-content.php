@@ -135,27 +135,64 @@ function bimverdi_nyhetsbrev_byline($person_navn, $foretak_navn) {
 }
 
 /**
- * Normaliser en ACF-bildeverdi (array / attachment-ID / URL) til en absolutt URL.
+ * Normaliser en ACF-bildeverdi (array / attachment-ID / URL) til URL + pikselmål.
  * Tåler alle ACF return_format-varianter.
+ *
+ * Hvorfor målene: e-post kan ikke stole på CSS for å bevare proporsjoner.
+ * Outlooks Word-motor ignorerer både `object-fit` og `max-width`, så et bilde
+ * uten width/height-attributter renderes i full størrelse, mens ett med faste
+ * kvadratiske attributter blir strukket. Eneste robuste løsning er å regne ut
+ * riktige attributter her, der attachment-ID-en fortsatt finnes.
+ *
+ * @return array{url: string, w: int, h: int} w/h er 0 når målene er ukjente.
  */
-function bimverdi_nyhetsbrev_acf_bilde_url($val, $size = 'medium') {
+function bimverdi_nyhetsbrev_acf_bilde($val, $size = 'medium') {
+    $tom = ['url' => '', 'w' => 0, 'h' => 0];
+
     if (empty($val)) {
-        return '';
+        return $tom;
     }
+
     if (is_array($val)) {
         if (!empty($val['sizes'][$size])) {
-            return $val['sizes'][$size];
+            return [
+                'url' => $val['sizes'][$size],
+                'w'   => (int) ($val['sizes'][$size . '-width'] ?? 0),
+                'h'   => (int) ($val['sizes'][$size . '-height'] ?? 0),
+            ];
         }
-        return !empty($val['url']) ? $val['url'] : '';
+        if (!empty($val['url'])) {
+            return [
+                'url' => $val['url'],
+                'w'   => (int) ($val['width'] ?? 0),
+                'h'   => (int) ($val['height'] ?? 0),
+            ];
+        }
+        return $tom;
     }
+
     if (is_numeric($val)) {
-        $url = wp_get_attachment_image_url((int) $val, $size);
-        return $url ?: '';
+        $src = wp_get_attachment_image_src((int) $val, $size);
+        if (!$src || empty($src[0])) {
+            return $tom;
+        }
+        return ['url' => $src[0], 'w' => (int) $src[1], 'h' => (int) $src[2]];
     }
+
     if (is_string($val)) {
-        return $val; // Allerede en URL.
+        // Allerede en URL — da finnes ingen attachment å hente mål fra.
+        return ['url' => $val, 'w' => 0, 'h' => 0];
     }
-    return '';
+
+    return $tom;
+}
+
+/**
+ * Som bimverdi_nyhetsbrev_acf_bilde(), men kun URL-en.
+ */
+function bimverdi_nyhetsbrev_acf_bilde_url($val, $size = 'medium') {
+    $bilde = bimverdi_nyhetsbrev_acf_bilde($val, $size);
+    return $bilde['url'];
 }
 
 /**
@@ -167,34 +204,37 @@ function bimverdi_nyhetsbrev_acf_bilde_url($val, $size = 'medium') {
  */
 function bimverdi_nyhetsbrev_bilde($post_id, $cpt, $size = 'medium') {
     // 1. Fremhevet bilde (alle CPT-er).
-    $url = get_the_post_thumbnail_url($post_id, $size);
-    if ($url) {
-        return ['url' => $url, 'type' => 'featured'];
+    $thumb_id = get_post_thumbnail_id($post_id);
+    if ($thumb_id) {
+        $src = wp_get_attachment_image_src($thumb_id, $size);
+        if ($src && !empty($src[0])) {
+            return ['url' => $src[0], 'type' => 'featured', 'w' => (int) $src[1], 'h' => (int) $src[2]];
+        }
     }
 
     // 2. CPT-spesifikke fallbacks.
     if ($cpt === 'verktoy') {
-        $url = bimverdi_nyhetsbrev_acf_bilde_url(get_field('verktoy_logo', $post_id), $size);
-        if (!$url) {
+        $bilde = bimverdi_nyhetsbrev_acf_bilde(get_field('verktoy_logo', $post_id), $size);
+        if (!$bilde['url']) {
             $eier = get_field('eier_leverandor', $post_id);
             $eier_id = is_object($eier) ? ($eier->ID ?? 0) : (int) $eier;
             if ($eier_id) {
-                $url = bimverdi_nyhetsbrev_acf_bilde_url(get_field('logo', $eier_id), $size);
+                $bilde = bimverdi_nyhetsbrev_acf_bilde(get_field('logo', $eier_id), $size);
             }
         }
-        if ($url) {
-            return ['url' => $url, 'type' => 'logo'];
+        if ($bilde['url']) {
+            return ['url' => $bilde['url'], 'type' => 'logo', 'w' => $bilde['w'], 'h' => $bilde['h']];
         }
     }
 
     if ($cpt === 'foretak') {
-        $url = bimverdi_nyhetsbrev_acf_bilde_url(get_field('logo', $post_id), $size);
-        if ($url) {
-            return ['url' => $url, 'type' => 'logo'];
+        $bilde = bimverdi_nyhetsbrev_acf_bilde(get_field('logo', $post_id), $size);
+        if ($bilde['url']) {
+            return ['url' => $bilde['url'], 'type' => 'logo', 'w' => $bilde['w'], 'h' => $bilde['h']];
         }
     }
 
-    return ['url' => '', 'type' => 'none'];
+    return ['url' => '', 'type' => 'none', 'w' => 0, 'h' => 0];
 }
 
 /**
@@ -317,6 +357,8 @@ function bimverdi_nyhetsbrev_artikler($limit = 3, $gruppe = null, $med_hero = tr
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
+            'bilde_w'    => $bilde['w'],
+            'bilde_h'    => $bilde['h'],
             'hero'       => $is_hero,
             'status'     => $post->bv_nb_status ?? '',
         ];
@@ -388,6 +430,8 @@ function bimverdi_nyhetsbrev_neste_arrangement($limit = 3) {
             'meta'       => implode(' · ', $meta_deler),
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
+            'bilde_w'    => $bilde['w'],
+            'bilde_h'    => $bilde['h'],
             // Aldri hero: alle arrangementene skal være like store.
             'hero'       => false,
         ];
@@ -425,6 +469,8 @@ function bimverdi_nyhetsbrev_verktoy($limit = 3) {
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
+            'bilde_w'    => $bilde['w'],
+            'bilde_h'    => $bilde['h'],
             'hero'       => false,
             'status'     => $post->bv_nb_status ?? '',
         ];
@@ -454,6 +500,8 @@ function bimverdi_nyhetsbrev_kunnskapskilder($limit = 3) {
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
+            'bilde_w'    => $bilde['w'],
+            'bilde_h'    => $bilde['h'],
             'hero'       => false,
             'status'     => $post->bv_nb_status ?? '',
         ];
@@ -512,6 +560,8 @@ function bimverdi_nyhetsbrev_deltakere($limit = 3) {
             'meta'       => '',
             'bilde'      => $bilde['url'],
             'bilde_type' => $bilde['type'],
+            'bilde_w'    => $bilde['w'],
+            'bilde_h'    => $bilde['h'],
             'hero'       => false,
             'status'     => $post->bv_nb_status ?? '',
         ];
