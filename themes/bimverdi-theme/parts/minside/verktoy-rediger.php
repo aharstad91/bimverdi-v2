@@ -78,6 +78,7 @@ $error_messages = [
     'nonce'              => 'Skjemaet utløp. Vennligst prøv igjen.',
     'rate_limit'         => 'For mange forsøk. Vennligst vent litt.',
     'no_company'         => 'Du må ha et foretak tilknyttet kontoen din.',
+    'ikke_deltaker'      => 'Bare deltakerforetak kan registrere og redigere verktøy. Ta kontakt med post@bimverdi.no hvis dette ser feil ut.',
     'missing_name'       => 'Verktøynavn er påkrevd.',
     'missing_kort_beskrivelse' => 'Kort beskrivelse er påkrevd.',
     'missing_anvendelser'=> 'Du må velge minst én anvendelse.',

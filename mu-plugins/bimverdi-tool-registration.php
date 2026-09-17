@@ -76,6 +76,23 @@ add_action('init', function () {
         exit;
     }
 
+    // Bare deltakerforetak får registrere eller redigere verktøy
+    // (Bård, møte 17.09.2026: «det er kun deltakerne som kan registrere
+    // verktøy — det har vi snakket om før»).
+    //
+    // Regelen fantes allerede: register_tool og edit_tool ligger i
+    // ACTIVE_COMPANY_FEATURES i bimverdi-access-control.php, som krever
+    // bv_rolle != «Ikke deltaker». Men den ble bare brukt til å skjule
+    // menyvalget og til ruting — POST-handleren her sjekket kun at brukeren
+    // HADDE et foretak. En bruker fra et ikke-betalende foretak som kom til
+    // skjema-URL-en kunne dermed registrere likevel. Det er trolig slik
+    // registreringen Bård reagerte på kom inn.
+    $paakrevd_tilgang = $is_edit ? 'edit_tool' : 'register_tool';
+    if (function_exists('bimverdi_can_access') && !bimverdi_can_access($paakrevd_tilgang)) {
+        wp_redirect(add_query_arg('bv_error', 'ikke_deltaker', $redirect_error));
+        exit;
+    }
+
     // --- Sanitize inputs ---
     $tool_name       = sanitize_text_field($_POST['tool_name'] ?? '');
     $kort_beskrivelse = sanitize_text_field($_POST['kort_beskrivelse'] ?? '');
@@ -261,6 +278,15 @@ add_action('init', function () {
 
     $action = $is_edit ? 'updated' : 'registered';
     error_log("BIMVerdi: Tool {$action}: {$post_id} ({$tool_name}) by user {$user_id}");
+
+    // Varsle redaksjonen om NYE registreringer (Bård, Trello uke 38 punkt 4c).
+    // Bare ved oppretting: verktøyet opprettes som kladd og blir liggende
+    // usynlig til noen godkjenner det, og uten varsel er det ingenting som
+    // sier fra at det ligger der. Redigering av et allerede publisert verktøy
+    // beholder statusen sin og trenger ingen godkjenning — derfor ikke varsel.
+    if (!$is_edit) {
+        do_action('bimverdi_verktoy_registrert', $post_id, $user_id);
+    }
 
     $param = $is_edit ? 'updated' : 'registered';
     wp_redirect(add_query_arg($param, '1', home_url('/min-side/verktoy/')));
