@@ -22,6 +22,8 @@ $org_nummer = get_field('organisasjonsnummer', $company_id);
 $adresse = get_field('adresse', $company_id);
 $postnummer = get_field('postnummer', $company_id);
 $poststed = get_field('poststed', $company_id);
+// Fylke (Bård, uke 38): fylles ut manuelt av redaksjonen, se register-foretak-fields.php.
+$fylke = get_field('bv_fylke', $company_id);
 $telefon = get_field('telefon', $company_id);
 $nettside = get_field('hjemmeside', $company_id);
 // Trello #347 pkt 8: foretakets egen arrangementsside.
@@ -739,7 +741,7 @@ $company_kunnskapskilder = get_posts(array(
                         </div>
                         <?php endif; ?>
 
-                        <?php if ($adresse || $postnummer || $poststed || $kommune || $land): ?>
+                        <?php if ($adresse || $postnummer || $poststed || $kommune || $fylke || $land): ?>
                         <div class="py-3">
                             <dt class="text-xs text-[#A8A29E] mb-0.5">Adresse</dt>
                             <dd class="text-sm text-[#111827]">
@@ -747,7 +749,10 @@ $company_kunnskapskilder = get_posts(array(
                                 <?php
                                 $location_parts = array_filter([
                                     trim($postnummer . ' ' . $poststed),
-                                    $kommune ? $kommune . ' kommune' : null
+                                    $kommune ? $kommune . ' kommune' : null,
+                                    // Fylket står uten suffiks — «Oslo fylke» leses rart,
+                                    // og navnene er entydige i seg selv.
+                                    $fylke && $fylke !== 'Utenfor Norge' ? $fylke : null,
                                 ]);
                                 echo esc_html(implode(', ', $location_parts));
                                 ?>
