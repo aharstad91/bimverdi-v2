@@ -1,12 +1,34 @@
 <?php
 /**
- * Front Page Template - v3 Redesign
+ * Front Page Template
  *
- * GitBook-inspired: network flow motif, eyebrow labels,
- * visual feature cards, layout variation, trust bar.
+ * Erstattet 17.09.2026. Den forrige versjonen ligger i git-historikken —
+ * `git log --follow front-page.php` — hvis noe skal hentes tilbake.
+ *
+ * Bakgrunnen er Bårds innvending 15. og 17.09: forsiden endret seg ikke fra
+ * uke til uke uten at man scrollet. «Jeg ville bare lansere det der, og så
+ * får vi justere ting litt senere.» Endringene mot den gamle:
+ *
+ *  1. Heroens nettverks-SVG er byttet mot NESTE ARRANGEMENT — alene, med hele
+ *     kolonnen, og uten bilde. Arrangementsbildene er skjermbilder med egen
+ *     tekst i, og i det første man møter på siden er de støy. Kortet er dato,
+ *     tittel, formål, tidspunkt og lenke, med en dempet lenke til arkivet under.
+ *     Finnes ingen kommende arrangement, vises det siste som var.
+ *  2. ARTIKLENE er flyttet fra bunnen til rett under logostripa, som tre
+ *     likeverdige kort. Det er artiklene som faktisk kommer til fra uke til
+ *     uke — arrangementet bytter sjelden — så det er de som svarer på
+ *     innvendingen over.
+ *  3. Arrangementskortet i kortraden er borte (det står nå øverst), og plassen
+ *     er tatt av et kort for den dynamiske tema-grafen.
+ *  4. Vertikal rytme strammet inn ett hakk gjennom hele siden.
+ *
+ * Levå en periode som egen sidemal på /forside-forslag/ mens Bård så på den.
+ * Den malen og den siden er fjernet nå som dette ER forsiden — to identiske
+ * sider på samme nettsted konkurrerer med hverandre i søk.
  */
 
 if (!defined('ABSPATH')) exit;
+
 
 get_header();
 
@@ -55,13 +77,16 @@ $events = get_posts([
     'order'          => 'ASC',
 ]);
 if (empty($events)) {
+    // Ingen kommende arrangement: vis det SISTE som var, ikke det første vi har.
+    // Sorteringen må derfor snus — med ASC her ville toppen av forsiden vist
+    // det eldste arrangementet i basen, som er verre enn ingenting.
     $events = get_posts([
         'post_type'      => 'arrangement',
         'posts_per_page' => 4,
         'post_status'    => 'publish',
         'meta_key'       => 'arrangement_dato',
         'orderby'        => 'meta_value',
-        'order'          => 'ASC',
+        'order'          => 'DESC',
     ]);
 }
 
@@ -125,7 +150,11 @@ $theme_groups = [
         margin: 0 auto;
         padding: 0 2rem;
     }
-    .bv3-section { padding: 5rem 0; }
+    /* Vertikal rytme (Andreas 17.09): ett hakk strammere enn før. Mellom
+       hero-kortet og artikkeloverskriften lå det 208 px død luft — 48 under
+       heroen, 80 rundt logostripa og 80 over seksjonen. Alle verdier holder
+       seg på 8px-skalaen. */
+    .bv3-section { padding: 3.5rem 0; }
     .bv3-section--alt { background: var(--bv3-bg-section); }
 
     /* ---- EYEBROW ---- */
@@ -222,7 +251,7 @@ $theme_groups = [
 
     /* ---- HERO (merged with Connecting the Dots) ---- */
     .bv3-hero {
-        padding: 5rem 0 3rem;
+        padding: 4rem 0 2.5rem;
         position: relative;
         overflow: hidden;
         background: #fff;
@@ -280,7 +309,7 @@ $theme_groups = [
 
     /* ---- LOGO BAR ---- */
     .bv3-logobar {
-        padding: 2.5rem 0;
+        padding: 1.75rem 0;
         border-top: 1px solid var(--bv3-border);
         background: #fff;
         overflow: hidden;
@@ -295,7 +324,7 @@ $theme_groups = [
         text-align: center;
         font-size: 0.8125rem;
         color: var(--bv3-text-muted);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         font-weight: 500;
     }
     .bv3-logobar__track {
@@ -671,79 +700,104 @@ $theme_groups = [
     .bv3-event:hover .bv3-event__arrow { color: var(--bv3-dark); }
 
     /* ---- ARTICLES ---- */
+    /* Tre likeverdige kort, i samme drakt som kortraden lenger nede: samme
+       bakgrunn, samme radius, samme hover. Seksjonen står derfor på hvitt og
+       ikke på --bv3-bg-section — kortfargen ligger for nær seksjonsfargen til
+       at kortene ville lest som kort.
+       Tidligere var dette étt stort «featured»-kort pluss tre små rader, og da
+       leste man i praksis bare det første. Andreas 17.09: alle skal komme like
+       bra ut — samme grep som Bård ba om for arrangementene i nyhetsbrevet.
+       Tre og ikke fire: samme rytme som kortraden under, og det fjerde kortet
+       er uansett den eldste artikkelen. */
     .bv3-articles__grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
+        .bv3-articles__grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
         .bv3-articles__grid { grid-template-columns: 1fr; }
     }
-    .bv3-article-featured {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-    }
-    .bv3-article-featured:hover { text-decoration: none; color: inherit; }
-    .bv3-article-featured__img {
-        aspect-ratio: 4/3;
-        border-radius: var(--bv3-radius);
-        overflow: hidden;
-        margin-bottom: 1.25rem;
-        background: var(--bv3-bg-alt);
-    }
-    .bv3-article-featured__img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s;
-    }
-    .bv3-article-featured:hover .bv3-article-featured__img img {
-        transform: scale(1.03);
-    }
-    .bv3-article-stacked {
+
+    .bv3-article-card {
         display: flex;
         flex-direction: column;
-        gap: 0;
-    }
-    .bv3-article-row {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        padding: 1rem 0;
-        border-bottom: 1px solid var(--bv3-border);
+        background: var(--bv3-bg-alt);
+        border-radius: var(--bv3-radius);
+        overflow: hidden;
+        transition: box-shadow 0.3s ease;
         text-decoration: none;
         color: inherit;
-        transition: background 0.15s;
+        min-width: 0;
     }
-    .bv3-article-row:last-child { border-bottom: none; }
-    .bv3-article-row:hover { text-decoration: none; color: inherit; }
-    .bv3-article-row__thumb {
-        width: 100px;
-        height: 68px;
-        border-radius: 10px;
+    .bv3-article-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        text-decoration: none;
+        color: inherit;
+    }
+    .bv3-article-card__img {
+        aspect-ratio: 16 / 10;
         overflow: hidden;
-        flex-shrink: 0;
-        background: var(--bv3-bg-alt);
+        background: #EDECEA;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .bv3-article-row__thumb img {
+    .bv3-article-card__img img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
     }
-    .bv3-article-row__info { flex-grow: 1; min-width: 0; }
-    .bv3-article-row__date {
+    .bv3-article-card:hover .bv3-article-card__img img { transform: scale(1.03); }
+
+    /* Kortene holdes like høye av faste linjeklipp på tittel og ingress, ikke
+       av en fast høyde — da blir de riktige også når teksten er kort. */
+    .bv3-article-card__body {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    /* Deltakermerket er det eneste som skiller kortene fra hverandre, og det
+       skal det gjøre — Bård vil se hvilke artikler som kommer fra deltakerne.
+       Plassen holdes av selv når merket mangler, ellers hopper datoene i
+       forhold til hverandre. */
+    .bv3-article-card__deltaker {
+        display: block;
+        min-height: 1.125rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #1D4ED8;
+        margin-bottom: 0.375rem;
+    }
+    .bv3-article-card__date {
         font-size: 0.75rem;
         color: var(--bv3-text-muted);
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.375rem;
     }
-    .bv3-article-row__title {
-        font-size: 0.9375rem;
-        font-weight: 600;
+    .bv3-article-card__title {
+        font-size: 1.0625rem;
+        font-weight: 700;
         color: var(--bv3-dark);
-        line-height: 1.35;
+        line-height: 1.3;
+        margin: 0 0 0.5rem;
         display: -webkit-box;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .bv3-article-card__desc {
+        font-size: 0.875rem;
+        line-height: 1.55;
+        color: var(--bv3-text-secondary);
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
@@ -751,7 +805,7 @@ $theme_groups = [
     /* ---- CTA / DARK SECTION ---- */
     .bv3-cta {
         background: var(--bv3-dark);
-        padding: 6rem 0;
+        padding: 4.5rem 0;
         text-align: center;
     }
     .bv3-cta .bv3-h2 { color: #fff; }
@@ -801,7 +855,7 @@ $theme_groups = [
 
     /* ---- SECTION HEADER CENTERED ---- */
     .bv3-section-header {
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
     }
     .bv3-section-header--center {
         text-align: center;
@@ -1094,6 +1148,141 @@ $theme_groups = [
             padding-left: 0.25rem;
         }
     }
+
+    /* ---- HERO-FEED: levende topp (Trello #352) ----
+       Erstatter nettverks-SVG-en i heroen. To kort under hverandre, ikke ved
+       siden av: høyrekolonnen er ca. 560 px på 1280, og to kort i bredden gir
+       under 280 px hver — for trangt til bilde, dato, tittel og ingress.
+       I motsetning til .bv3-hero__visual skjules dette ALDRI på mobil; det er
+       hele poenget med å flytte det opp. */
+    /* Kortet står alene i kolonnen og sentreres mot overskriften. Det skal
+       IKKE strekkes til full høyde lenger — uten bilde er det bare tekst, og
+       en tvunget høyde ville bare blitt luft. */
+    .bv3-hero__feed {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-width: 0;
+    }
+
+    /* Arrangementskortet følger samme språk som artikkelkortene og kortraden:
+       lys flate, samme radius, samme hover.
+       UTEN BILDE (Andreas 17.09). Det startet som én stor mørk boks med teksten
+       lagt OPPÅ bildet bak et gradient-overlay — vi måtte mørkne overlayet én
+       gang bare for å redde lesbarheten. Bildene på arrangementene er uansett
+       skjermbilder med egen tekst i, og i det første man møter på siden er de
+       støy. Da er det bedre å la dato, tittel og tidspunkt stå alene. */
+    .bv3-feedcard {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 2rem;
+        background: var(--bv3-bg-alt);
+        border-radius: var(--bv3-radius);
+        text-decoration: none;
+        color: inherit;
+        transition: box-shadow 0.3s ease;
+    }
+    .bv3-feedcard:hover,
+    .bv3-feedcard:focus-visible {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .bv3-feedcard__flag {
+        display: inline-block;
+        margin-bottom: 1.25rem;
+        padding: 0.3125rem 0.75rem;
+        border-radius: 100px;
+        background: var(--bv3-orange);
+        color: #fff;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    /* Datoen er det som gjør dette til et arrangement og ikke en artikkel, og
+       nå som bildet er borte er den også det eneste blikkfanget. Derfor større
+       enn før. */
+    .bv3-feedcard__date {
+        display: flex;
+        align-items: baseline;
+        gap: 0.625rem;
+        margin-bottom: 0.875rem;
+    }
+    .bv3-feedcard__day {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--bv3-dark);
+    }
+    .bv3-feedcard__monthyear {
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1.2;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--bv3-text-muted);
+    }
+    .bv3-feedcard__title {
+        font-size: 1.375rem;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--bv3-dark);
+        margin: 0 0 0.625rem;
+    }
+    .bv3-feedcard__lead {
+        font-size: 1rem;
+        line-height: 1.55;
+        color: var(--bv3-text-secondary);
+        margin: 0 0 0.75rem;
+    }
+    .bv3-feedcard__fakta {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--bv3-text-muted);
+        margin-bottom: 1.25rem;
+    }
+    .bv3-feedcard__link {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--bv3-orange);
+    }
+
+    /* Lenka til arkivet: dempet, så den ikke konkurrerer med «Meld deg på»
+       inne i kortet. .bv3-hero__feed har gap: 1rem, så avstanden kommer derfra. */
+    .bv3-hero__feed-mer {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--bv3-text-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    .bv3-hero__feed-mer:hover,
+    .bv3-hero__feed-mer:focus-visible {
+        color: var(--bv3-orange);
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .bv3-hero__feed { margin-top: 2rem; }
+        .bv3-feedcard { padding: 1.5rem; }
+        .bv3-feedcard__day { font-size: 2.5rem; }
+        .bv3-feedcard__title { font-size: 1.1875rem; }
+    }
+
+    /* Tema-grafkortet: bildet fyller hele visual-flaten. */
+    .bv3-fcard__visual--graf { padding: 0; }
+    .bv3-fcard__visual--graf img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+    }
 </style>
 
 
@@ -1126,87 +1315,80 @@ $theme_groups = [
                 </div>
             </div>
 
-            <!-- Network illustration with entity count cards -->
-            <div class="bv3-hero__visual">
-                <svg class="bv3-network-svg" viewBox="0 0 480 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Orbital rings -->
-                    <circle cx="240" cy="200" r="150" stroke="#E7E5E4" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
-                    <circle cx="240" cy="200" r="85" stroke="#E7E5E4" stroke-width="1" stroke-dasharray="4 4" opacity="0.25"/>
+            <!-- Levende topp (Trello #352): arrangementet ALENE, med hele
+                 kolonnen. Andreas 17.09: to kort side om side delte
+                 oppmerksomheten på det første man møter, og arrangementet er
+                 det eneste elementet her som har en frist. Artikkelen er flyttet
+                 ned rett under logostripa, der «Fra nettverket» nå ligger — det
+                 gir Bård endringen-fra-uke-til-uke han er ute etter, uten at
+                 toppen blir to ting som konkurrerer.
+                 Finnes ingen kommende arrangement, viser vi det siste som var.
+                 En tom topp er verre enn et arrangement som nettopp har vært. -->
+            <div class="bv3-hero__feed">
+                <?php
+                // Samme kilde ($events) og samme «kommende»-regel som resten av
+                // forsiden, så toppen og kortraden aldri viser hver sin «neste».
+                $hero_event      = !empty($events) ? $events[0] : null;
+                $hero_event_obj  = null;
+                $hero_kommende   = false;
+                if ($hero_event) {
+                    $hero_dato_raw  = get_field('arrangement_dato', $hero_event->ID) ?: get_field('dato', $hero_event->ID) ?: '';
+                    $hero_event_obj = DateTime::createFromFormat('Y-m-d', $hero_dato_raw) ?: DateTime::createFromFormat('Ymd', $hero_dato_raw);
+                    $hero_kommende  = (get_field('arrangement_status_toggle', $hero_event->ID) === 'kommende')
+                        || ($hero_event_obj && $hero_event_obj->getTimestamp() >= strtotime('today'));
+                }
 
-                    <!-- Connection lines from center to nodes -->
-                    <line x1="240" y1="200" x2="105" y2="80" stroke="#FF8B5E" stroke-width="1.5" class="dash-line" opacity="0.3"/>
-                    <line x1="240" y1="200" x2="390" y2="95" stroke="#005898" stroke-width="1.5" class="dash-line" opacity="0.3"/>
-                    <line x1="240" y1="200" x2="85" y2="310" stroke="#6B9B37" stroke-width="1.5" class="dash-line" opacity="0.3"/>
-                    <line x1="240" y1="200" x2="395" y2="310" stroke="#0D9488" stroke-width="1.5" class="dash-line" opacity="0.3"/>
-                    <line x1="240" y1="200" x2="340" y2="50" stroke="#D97706" stroke-width="1.5" class="dash-line" opacity="0.3"/>
-                    <line x1="240" y1="200" x2="155" y2="365" stroke="#5E36FE" stroke-width="1.5" class="dash-line" opacity="0.3"/>
-                    <line x1="240" y1="200" x2="440" y2="195" stroke="#EC4899" stroke-width="1.5" class="dash-line" opacity="0.3"/>
+                // Måned på norsk. Sidens locale er en_US, så wp_date('F') gir
+                // «September» midt i en norsk forside — samme felle som
+                // påminnelses-e-posten gikk i (bimverdi_paminnelse_dato_norsk).
+                $bv_maneder = array('januar', 'februar', 'mars', 'april', 'mai', 'juni',
+                                    'juli', 'august', 'september', 'oktober', 'november', 'desember');
+                ?>
 
-                    <!-- Cross-connections (ecosystem links) -->
-                    <line x1="105" y1="80" x2="340" y2="50" stroke="#E7E5E4" stroke-width="0.75" class="dash-line" opacity="0.2"/>
-                    <line x1="390" y1="95" x2="395" y2="310" stroke="#E7E5E4" stroke-width="0.75" class="dash-line" opacity="0.2"/>
-                    <line x1="85" y1="310" x2="155" y2="365" stroke="#E7E5E4" stroke-width="0.75" class="dash-line" opacity="0.2"/>
-                    <line x1="105" y1="80" x2="85" y2="310" stroke="#E7E5E4" stroke-width="0.75" class="dash-line" opacity="0.15"/>
+                <?php if ($hero_event): ?>
+                    <?php
+                    $he_ts    = $hero_event_obj ? $hero_event_obj->getTimestamp() : 0;
+                    $he_dag   = $he_ts ? date('j', $he_ts) : '';
+                    $he_maned = $he_ts ? $bv_maneder[(int) date('n', $he_ts) - 1] : '';
+                    $he_ar    = $he_ts ? date('Y', $he_ts) : '';
+                    $he_tema  = get_field('formal_tema', $hero_event->ID);
 
-                    <!-- Decorative scatter dots -->
-                    <circle cx="170" cy="140" r="2.5" fill="#E7E5E4"/>
-                    <circle cx="310" cy="150" r="2" fill="#E7E5E4"/>
-                    <circle cx="180" cy="270" r="2" fill="#E7E5E4"/>
-                    <circle cx="305" cy="260" r="2.5" fill="#E7E5E4"/>
-                    <circle cx="255" cy="105" r="2" fill="#E7E5E4"/>
-                    <circle cx="145" cy="205" r="2" fill="#E7E5E4"/>
-                    <circle cx="345" cy="205" r="2" fill="#E7E5E4"/>
-                    <circle cx="220" cy="315" r="2" fill="#E7E5E4"/>
+                    // Én linje med det praktiske. Nå som kortet har plassen, er
+                    // klokkeslett og digitalt/fysisk det folk faktisk trenger for
+                    // å avgjøre om de kan delta.
+                    $he_fakta = array();
+                    $he_start = get_field('tidspunkt_start', $hero_event->ID);
+                    $he_slutt = get_field('tidspunkt_slutt', $hero_event->ID);
+                    if ($he_start) {
+                        $he_fakta[] = $he_slutt ? $he_start . '–' . $he_slutt : 'Fra ' . $he_start;
+                    }
+                    $he_type = get_field('arrangement_type', $hero_event->ID);
+                    if ($he_type) {
+                        $he_fakta[] = ucfirst((string) $he_type);
+                    }
+                    ?>
+                    <a href="<?php echo esc_url(get_permalink($hero_event)); ?>" class="bv3-feedcard">
+                        <span class="bv3-feedcard__flag"><?php echo $hero_kommende ? 'Neste arrangement' : 'Siste arrangement'; ?></span>
+                        <div class="bv3-feedcard__date">
+                            <span class="bv3-feedcard__day"><?php echo esc_html($he_dag); ?></span>
+                            <span class="bv3-feedcard__monthyear"><?php echo esc_html($he_maned); ?><br><?php echo esc_html($he_ar); ?></span>
+                        </div>
+                        <h2 class="bv3-feedcard__title"><?php echo esc_html($hero_event->post_title); ?></h2>
+                        <?php if ($he_tema): ?>
+                            <p class="bv3-feedcard__lead"><?php echo esc_html($he_tema); ?></p>
+                        <?php endif; ?>
+                        <?php if ($he_fakta): ?>
+                            <span class="bv3-feedcard__fakta"><?php echo esc_html(implode(' · ', $he_fakta)); ?></span>
+                        <?php endif; ?>
+                        <span class="bv3-feedcard__link"><?php echo $hero_kommende ? 'Meld deg på' : 'Se arrangementet'; ?> <span aria-hidden="true">&rarr;</span></span>
+                    </a>
+                <?php endif; ?>
 
-                    <!-- Entity card: Verktøy (top-left) -->
-                    <rect x="48" y="48" width="114" height="56" rx="10" fill="#fff" stroke="#E7E5E4" stroke-width="1"/>
-                    <circle cx="72" cy="72" r="8" fill="#FF8B5E" opacity="0.15"/>
-                    <circle cx="72" cy="72" r="4" fill="#FF8B5E"/>
-                    <text x="86" y="69" fill="#111827" font-size="12" font-weight="700"><?php echo esc_html($total_tools); ?></text>
-                    <text x="86" y="82" fill="#A8A29E" font-size="9" font-weight="500">verktøy</text>
-
-                    <!-- Entity card: Foretak (top-right) -->
-                    <rect x="330" y="58" width="114" height="56" rx="10" fill="#fff" stroke="#E7E5E4" stroke-width="1"/>
-                    <circle cx="354" cy="82" r="8" fill="#005898" opacity="0.15"/>
-                    <circle cx="354" cy="82" r="4" fill="#005898"/>
-                    <text x="368" y="79" fill="#111827" font-size="12" font-weight="700"><?php echo esc_html($total_companies); ?></text>
-                    <text x="368" y="92" fill="#A8A29E" font-size="9" font-weight="500">foretak</text>
-
-                    <!-- Entity card: Kilder (bottom-left) -->
-                    <rect x="30" y="278" width="114" height="56" rx="10" fill="#fff" stroke="#E7E5E4" stroke-width="1"/>
-                    <circle cx="54" cy="302" r="8" fill="#6B9B37" opacity="0.15"/>
-                    <circle cx="54" cy="302" r="4" fill="#6B9B37"/>
-                    <text x="68" y="299" fill="#111827" font-size="12" font-weight="700"><?php echo esc_html($total_sources); ?></text>
-                    <text x="68" y="312" fill="#A8A29E" font-size="9" font-weight="500">kilder</text>
-
-                    <!-- Entity card: Arrangementer (bottom-right) -->
-                    <rect x="338" y="278" width="114" height="56" rx="10" fill="#fff" stroke="#E7E5E4" stroke-width="1"/>
-                    <circle cx="362" cy="302" r="8" fill="#0D9488" opacity="0.15"/>
-                    <circle cx="362" cy="302" r="4" fill="#0D9488"/>
-                    <text x="376" y="299" fill="#111827" font-size="12" font-weight="700"><?php echo esc_html($total_events); ?></text>
-                    <text x="376" y="312" fill="#A8A29E" font-size="9" font-weight="500">eventer</text>
-
-                    <!-- Small node: Temagrupper (top) -->
-                    <circle cx="340" cy="50" r="14" fill="#D97706" opacity="0.12"/>
-                    <circle cx="340" cy="50" r="8" fill="#D97706"/>
-                    <text x="340" y="36" text-anchor="middle" fill="#A8A29E" font-size="9" font-weight="500">Temagrupper</text>
-
-                    <!-- Small node: Standarder (bottom) -->
-                    <circle cx="155" cy="365" r="14" fill="#5E36FE" opacity="0.12"/>
-                    <circle cx="155" cy="365" r="8" fill="#5E36FE"/>
-                    <text x="155" y="390" text-anchor="middle" fill="#A8A29E" font-size="9" font-weight="500">Standarder</text>
-
-                    <!-- Small node: Artikler (right) -->
-                    <circle cx="440" cy="195" r="14" fill="#EC4899" opacity="0.12"/>
-                    <circle cx="440" cy="195" r="8" fill="#EC4899"/>
-                    <text x="440" y="180" text-anchor="middle" fill="#A8A29E" font-size="9" font-weight="500">Artikler</text>
-
-                    <!-- Central BIM Verdi node -->
-                    <circle cx="240" cy="200" r="36" fill="#FF8B5E" opacity="0.08" class="node-pulse"/>
-                    <circle cx="240" cy="200" r="24" fill="#FF8B5E" opacity="0.15"/>
-                    <circle cx="240" cy="200" r="16" fill="#FF8B5E"/>
-                    <text x="240" y="204" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">BV</text>
-                </svg>
+                <?php // Arkivlenka står utenfor kortet med vilje: kortet er étt arrangement,
+                      // og en lenke inni det ville konkurrert med «Meld deg på».
+                      // get_post_type_archive_link fremfor en hardkodet /arrangement/, så
+                      // den følger permalenke-oppsettet og ikke brekker hvis slug-en endres. ?>
+                <a href="<?php echo esc_url(get_post_type_archive_link('arrangement') ?: home_url('/arrangement/')); ?>" class="bv3-hero__feed-mer">Se flere arrangement her <span aria-hidden="true">&rarr;</span></a>
             </div>
         </div>
     </div>
@@ -1247,70 +1429,84 @@ $theme_groups = [
 
 
 <!-- =============================================
-     3. FEATURE CARDS (was 4)
+     3. ARTIKLER
+     Flyttet hit fra bunnen (Andreas 17.09). Bårds innvending mot den
+     gamle forsiden var at en gjentakende besøkende må scrolle for å se at
+     noe har endret seg. Arrangementet alene svarer bare halvt på det —
+     det bytter sjelden. Artiklene er det som faktisk kommer til, og her
+     ligger de rett under logostripa, altså første ting under heroen.
+     ============================================= -->
+<?php if (!empty($articles)): ?>
+<section class="bv3-section">
+    <div class="bv3-container">
+        <div class="bv3-section-header bv3-section-header--split bv3-reveal">
+            <div>
+                <span class="bv3-eyebrow">Fra nettverket</span>
+                <h2 class="bv3-h2" style="margin-bottom:0;">Siste artikler og innsikt</h2>
+            </div>
+            <a href="<?php echo esc_url(home_url('/artikler/')); ?>" class="bv3-section-header__link">Se alle &rarr;</a>
+        </div>
+
+        <?php
+        // Norske månedsnavn. Sidens locale er en_US, så get_the_date('d. M Y')
+        // ga «17. Sep 2026» midt i en norsk forside. Samme felle som heroen og
+        // påminnelses-e-posten gikk i.
+        if (!isset($bv_maneder)) {
+            $bv_maneder = array('januar', 'februar', 'mars', 'april', 'mai', 'juni',
+                                'juli', 'august', 'september', 'oktober', 'november', 'desember');
+        }
+        ?>
+
+        <div class="bv3-articles__grid bv3-reveal">
+            <?php foreach (array_slice($articles, 0, 3) as $bv_art): ?>
+                <?php
+                $ba_thumb = get_the_post_thumbnail_url($bv_art->ID, 'medium_large');
+                $ba_ts    = get_post_timestamp($bv_art);
+                $ba_dato  = $ba_ts ? sprintf('%d. %s %d', (int) date('j', $ba_ts), $bv_maneder[(int) date('n', $ba_ts) - 1], (int) date('Y', $ba_ts)) : '';
+                $ba_desc  = get_field('artikkel_ingress', $bv_art->ID)
+                    ?: wp_trim_words(strip_tags($bv_art->post_excerpt ?: $bv_art->post_content), 22);
+
+                // Deltakermerket avgjøres av samme funksjon som artikkellista og
+                // nyhetsbrevet — den ser kun på foretaksfeltet på artikkelen og
+                // holder Verdinettverk AS utenfor, så redaksjonens egne artikler
+                // ikke merkes som om de kom fra en deltaker.
+                $ba_foretak_id = 0;
+                if (function_exists('bimverdi_artikkel_er_deltakerartikkel')
+                    && bimverdi_artikkel_er_deltakerartikkel($bv_art->ID)) {
+                    $ba_foretak_id = (int) bimverdi_artikkel_foretak_id($bv_art->ID, false);
+                }
+                ?>
+                <a href="<?php echo esc_url(get_permalink($bv_art)); ?>" class="bv3-article-card">
+                    <div class="bv3-article-card__img">
+                        <?php if ($ba_thumb): ?>
+                            <?php // Tom alt med vilje: tittelen står rett under og er lenketeksten,
+                                  // så bildet er dekorativt. Det hindrer også at alt-teksten renner
+                                  // utover ruta hvis bildefila mangler — slik som 3326 lokalt. ?>
+                            <img src="<?php echo esc_url($ba_thumb); ?>" alt="" loading="lazy">
+                        <?php else: ?>
+                            <svg style="width:40px;height:40px;color:#A8A29E;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                        <?php endif; ?>
+                    </div>
+                    <div class="bv3-article-card__body">
+                        <span class="bv3-article-card__deltaker"><?php if ($ba_foretak_id): ?>Fra deltakerforetaket <?php echo esc_html(get_the_title($ba_foretak_id)); ?><?php endif; ?></span>
+                        <div class="bv3-article-card__date"><?php echo esc_html($ba_dato); ?></div>
+                        <h3 class="bv3-article-card__title"><?php echo esc_html($bv_art->post_title); ?></h3>
+                        <p class="bv3-article-card__desc"><?php echo esc_html($ba_desc); ?></p>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+
+<!-- =============================================
+     4. FEATURE CARDS
      ============================================= -->
 <section class="bv3-section">
     <div class="bv3-container">
         <div class="bv3-features__grid">
-
-            <!-- Card: Arrangementer -->
-            <?php
-            // Get the next upcoming event specifically
-            $next_event = !empty($events) ? $events[0] : null;
-            $has_upcoming = false;
-            if ($next_event) {
-                $next_date_raw = get_field('arrangement_dato', $next_event->ID) ?: get_field('dato', $next_event->ID) ?: '';
-                $next_date_obj = DateTime::createFromFormat('Y-m-d', $next_date_raw) ?: DateTime::createFromFormat('Ymd', $next_date_raw);
-                $next_status = get_field('arrangement_status_toggle', $next_event->ID);
-                $has_upcoming = ($next_status === 'kommende') || ($next_date_obj && $next_date_obj->getTimestamp() >= strtotime('today'));
-            }
-            ?>
-            <?php if ($has_upcoming && $next_event): ?>
-                <?php
-                $ne_ts = $next_date_obj ? $next_date_obj->getTimestamp() : 0;
-                $ne_day = $ne_ts ? wp_date('d', $ne_ts) : '';
-                $ne_month = $ne_ts ? wp_date('F', $ne_ts) : '';
-                $ne_year = $ne_ts ? wp_date('Y', $ne_ts) : '';
-                $ne_tg_terms = get_the_terms($next_event->ID, 'temagruppe');
-                $ne_tg_name = ($ne_tg_terms && !is_wp_error($ne_tg_terms)) ? $ne_tg_terms[0]->name : '';
-                $ne_tg_color = isset($tg_colors[$ne_tg_name]) ? $tg_colors[$ne_tg_name] : 'var(--bv3-orange)';
-                $ne_format = get_field('arrangement_type', $next_event->ID) ?: '';
-                ?>
-                <?php $ne_featured_img = get_the_post_thumbnail_url($next_event->ID, 'large'); ?>
-                <a href="<?php echo esc_url(get_permalink($next_event)); ?>" class="bv3-fcard bv3-fcard--event">
-                    <div class="bv3-fcard__visual"<?php if ($ne_featured_img): ?> style="background-image:url('<?php echo esc_url($ne_featured_img); ?>')"<?php endif; ?>>
-                        <span class="bv3-fcard__badge" style="background:var(--bv3-orange);">Kommende</span>
-                        <div class="bv3-fcard--event__date-block">
-                            <span class="bv3-fcard--event__day"><?php echo esc_html($ne_day); ?></span>
-                            <span class="bv3-fcard--event__monthyear"><?php echo esc_html($ne_month); ?><br><?php echo esc_html($ne_year); ?></span>
-                        </div>
-                        <div class="bv3-fcard--event__title-preview"><?php echo esc_html($next_event->post_title); ?></div>
-                        <?php if ($ne_tg_name): ?>
-                        <span class="bv3-fcard--event__tag" style="background:color-mix(in srgb, <?php echo esc_attr($ne_tg_color); ?> 20%, transparent);color:<?php echo esc_attr($ne_tg_color); ?>;"><?php echo esc_html($ne_tg_name); ?></span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="bv3-fcard__content">
-                        <span class="bv3-eyebrow">Neste arrangement</span>
-                        <h3 class="bv3-fcard__title"><?php echo esc_html($next_event->post_title); ?></h3>
-                        <p class="bv3-fcard__desc"><?php echo esc_html(wp_trim_words(strip_tags($next_event->post_content), 18)); ?></p>
-                        <span class="bv3-fcard__link">Meld deg på <span aria-hidden="true">&rarr;</span></span>
-                    </div>
-                </a>
-            <?php else: ?>
-                <a href="<?php echo esc_url(home_url('/arrangement/')); ?>" class="bv3-fcard bv3-fcard--event-archive">
-                    <div class="bv3-fcard__visual">
-                        <span class="bv3-fcard__badge"><?php echo esc_html($total_events); ?> arrangementer</span>
-                        <svg style="width:64px;height:64px;color:var(--bv3-text-muted);opacity:0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <span style="font-size:0.875rem;color:var(--bv3-text-secondary);font-weight:500;">Ingen kommende arrangementer</span>
-                    </div>
-                    <div class="bv3-fcard__content">
-                        <span class="bv3-eyebrow">Arrangementer</span>
-                        <h3 class="bv3-fcard__title">Workshops, seminarer og nettverks&shy;møter</h3>
-                        <p class="bv3-fcard__desc">Se hva som har skjedd — <?php echo esc_html($total_events); ?> arrangementer med presentasjoner, opptak og materiell.</p>
-                        <span class="bv3-fcard__link">Se alle arrangementer <span aria-hidden="true">&rarr;</span></span>
-                    </div>
-                </a>
-            <?php endif; ?>
 
             <!-- Card: Verktøykatalogen -->
             <a href="<?php echo esc_url(home_url('/verktoy/')); ?>" class="bv3-fcard">
@@ -1389,6 +1585,31 @@ $theme_groups = [
                     <span class="bv3-fcard__link">Utforsk kunnskapskilder <span aria-hidden="true">&rarr;</span></span>
                 </div>
             </a>
+
+            <!-- Card: Dynamisk tema-graf (Trello #352) -->
+            <?php
+            // Bildet er et fast skjermbilde av /demo/temagruppe-graf/, ikke grafen
+            // selv: den er tung å kjøre, og Andreas avgjorde 15.09 at den uansett
+            // er for liten til å utforskes her — «det må bli et bilde av den
+            // nettverksvisningen og så en klikk inn der i stedet». Bildet ligger i
+            // temaet, ikke i mediebiblioteket, så det følger med deploy og kan tas
+            // på nytt når grafen endrer seg.
+            ?>
+            <a href="<?php echo esc_url(home_url('/demo/temagruppe-graf/')); ?>" class="bv3-fcard">
+                <div class="bv3-fcard__visual bv3-fcard__visual--graf">
+                    <span class="bv3-fcard__badge">6 temagrupper</span>
+                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/temagruppe-graf.jpg'); ?>"
+                         alt="Nettverksgraf der de seks temagruppene er knyttet til foretak, verktøy, kunnskapskilder, arrangementer og artikler"
+                         loading="lazy" width="820" height="620">
+                </div>
+                <div class="bv3-fcard__content">
+                    <span class="bv3-eyebrow">Tema-graf</span>
+                    <h3 class="bv3-fcard__title">Dynamisk tema-graf med semantiske koblinger</h3>
+                    <p class="bv3-fcard__desc">Se hvordan temagrupper, foretak, verktøy og kunnskapskilder henger sammen. Klikk en node for å følge koblingene videre.</p>
+                    <span class="bv3-fcard__link">Utforsk grafen <span aria-hidden="true">&rarr;</span></span>
+                </div>
+            </a>
+
 
         </div>
     </div>
@@ -1527,69 +1748,6 @@ $support = [
         </div>
     </div>
 </section>
-
-
-<!-- =============================================
-     6. ARTIKLER
-     ============================================= -->
-<?php if (!empty($articles)): ?>
-<section class="bv3-section bv3-section--alt">
-    <div class="bv3-container">
-        <div class="bv3-section-header bv3-section-header--split bv3-reveal">
-            <div>
-                <span class="bv3-eyebrow">Fra nettverket</span>
-                <h2 class="bv3-h2" style="margin-bottom:0;">Siste artikler og innsikt</h2>
-            </div>
-            <a href="<?php echo esc_url(home_url('/artikler/')); ?>" class="bv3-section-header__link">Se alle &rarr;</a>
-        </div>
-
-        <?php
-        $featured = $articles[0];
-        $rest = array_slice($articles, 1);
-        $featured_thumb = get_the_post_thumbnail_url($featured->ID, 'large');
-        $featured_date = get_the_date('d. M Y', $featured->ID);
-        ?>
-
-        <div class="bv3-articles__grid bv3-reveal">
-            <!-- Featured article -->
-            <a href="<?php echo esc_url(get_permalink($featured)); ?>" class="bv3-article-featured">
-                <div class="bv3-article-featured__img">
-                    <?php if ($featured_thumb): ?>
-                    <img src="<?php echo esc_url($featured_thumb); ?>" alt="<?php echo esc_attr($featured->post_title); ?>" loading="lazy">
-                    <?php else: ?>
-                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                        <svg style="width:48px;height:48px;color:#A8A29E;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-                    </div>
-                    <?php endif; ?>
-                </div>
-                <div style="font-size:0.8125rem;color:var(--bv3-text-muted);margin-bottom:0.5rem;"><?php echo esc_html($featured_date); ?></div>
-                <h3 style="font-size:1.375rem;font-weight:700;color:var(--bv3-dark);margin:0 0 0.5rem;line-height:1.25;"><?php echo esc_html($featured->post_title); ?></h3>
-                <p style="font-size:0.9375rem;color:var(--bv3-text-secondary);line-height:1.6;margin:0;"><?php echo esc_html(wp_trim_words($featured->post_excerpt ?: strip_tags($featured->post_content), 25)); ?></p>
-            </a>
-
-            <!-- Stacked articles -->
-            <div class="bv3-article-stacked">
-                <?php foreach ($rest as $article):
-                    $thumb = get_the_post_thumbnail_url($article->ID, 'medium');
-                    $date = get_the_date('d. M Y', $article->ID);
-                ?>
-                <a href="<?php echo esc_url(get_permalink($article)); ?>" class="bv3-article-row">
-                    <div class="bv3-article-row__thumb">
-                        <?php if ($thumb): ?>
-                        <img src="<?php echo esc_url($thumb); ?>" alt="<?php echo esc_attr($article->post_title); ?>" loading="lazy">
-                        <?php endif; ?>
-                    </div>
-                    <div class="bv3-article-row__info">
-                        <div class="bv3-article-row__date"><?php echo esc_html($date); ?></div>
-                        <div class="bv3-article-row__title"><?php echo esc_html($article->post_title); ?></div>
-                    </div>
-                </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
 
 
 <!-- =============================================
