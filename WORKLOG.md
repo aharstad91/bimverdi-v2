@@ -15,7 +15,10 @@ files:
   - "themes/bimverdi-theme/parts/minside/verktoy-registrer.php, verktoy-rediger.php (feilmelding)"
   - "mu-plugins/bimverdi-ics-generator.php (escape-rekkefølge)"
   - "mu-plugins/bimverdi-verktoy-admin-kolonne.php (NY)"
-  - "themes/bimverdi-theme/templates/public/template-forside-forslag.php (topp, seksjonsrekkefølge, kortdesign, vertikal rytme)"
+  - "themes/bimverdi-theme/front-page.php (ERSTATTET — ny topp, seksjonsrekkefølge, kortdesign, vertikal rytme)"
+  - "themes/bimverdi-theme/templates/public/template-forside-forslag.php (SLETTET — innholdet ble front-page.php)"
+  - "themes/bimverdi-theme/assets/img/temagruppe-graf.jpg (NY)"
+  - "themes/bimverdi-theme/archive-artikkel.php (deltakermerket, fra 16.09)"
 summary: "ALT LIVE PÅ PROD 17.09, sjekksum-verifisert mot serveren. Møtereferat + seks leveranser fra Trello uke 38 (punkt 1–6), og fire runder på forsiden etterpå (punkt 7–10). Begge de åpne spørsmålene fra 16.09 er avgjort av Bård: fylke fylles ut manuelt av ham, og kun deltakerforetak får registrere verktøy. Forsideforslaget ble godkjent av Bård, deretter omarbeidet av Andreas — arrangementet alene i toppen uten bilde, artiklene opp under logostripa som tre like kort, strammere vertikal rytme — og er nå selve forsiden på bimverdi.no. Forhåndsvisningssiden er fjernet."
 status: waiting
 waiting_on: "Bård — teste de seks punktene og den nye forsiden på bimverdi.no, og generere nyhetsbrevet på nytt. Tagget i to kommentarer på Trello #350 17.09. + Andreas — åpne påminnelse-gaten i wp-config på prod, haster før 8. oktober."
