@@ -3,6 +3,467 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-09-17
+action: Synk med Bård — to avklaringer landet, seks punkter fra uke 38 bygget, og forsiden omarbeidet etter godkjenning
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-content.php (bildemål følger med til malen)"
+  - "themes/bimverdi-theme/parts/email/nyhetsbrev.php (logo skaleres, foto beskjæres)"
+  - "mu-plugins/bimverdi-verktoy-varsel.php (NY)"
+  - "mu-plugins/bimverdi-tool-registration.php (varsel + deltakersjekk på POST)"
+  - "plugins/bim-verdi-core/includes/acf/register-foretak-fields.php (bv_fylke)"
+  - "themes/bimverdi-theme/single-foretak.php (viser fylke)"
+  - "themes/bimverdi-theme/parts/minside/verktoy-registrer.php, verktoy-rediger.php (feilmelding)"
+  - "mu-plugins/bimverdi-ics-generator.php (escape-rekkefølge)"
+  - "mu-plugins/bimverdi-verktoy-admin-kolonne.php (NY)"
+  - "themes/bimverdi-theme/templates/public/template-forside-forslag.php (topp, seksjonsrekkefølge, kortdesign, vertikal rytme)"
+summary: "Møtereferat + seks leveranser fra Trello uke 38 (punkt 1–6), og fire runder på forsiden etterpå (punkt 7–10). Begge de åpne spørsmålene fra 16.09 er avgjort av Bård: fylke fylles ut manuelt av ham, og kun deltakerforetak får registrere verktøy. Forsideforslaget ble godkjent som det var, og deretter omarbeidet av Andreas: arrangementet alene i toppen uten bilde, artiklene opp under logostripa som tre like kort, strammere vertikal rytme. INGENTING er pushet."
+status: waiting
+waiting_on: "Andreas — godkjenne push. Bård venter på patchen i dag."
+detail: |
+  MØTE 17.09.2026, Andreas og Bård (~30 min).
+
+  AVKLARING 1 — FYLKE PÅ FORETAKSPROFIL (Trello uke 38)
+  Kortet sa at fylket skulle hentes fra BRREG; i møtet 15.09 sa Bård at han
+  legger det inn selv. Andreas la fram at automatisk henting uansett bare
+  virker for NYE tilkoblinger, og at de 61 foretakene som allerede ligger inne
+  må etterfylles i en egen kjøring. Bård: «Ja, det går fint. Det kan jeg
+  gjøre.» AVGJORT: vi lager feltet, Bård fyller det ut med sin egen agent.
+  MERKNAD verdt en senere runde: BRREG-svaret inneholder allerede
+  `kommunenummer` (bimverdi_brreg_parse_company), og fylket er de to første
+  sifrene der. Automatisk utfylling for nye foretak er altså vesentlig
+  billigere enn anslaget i møtet, hvis det skulle bli aktuelt likevel.
+
+  AVKLARING 2 — HVEM KAN EIE ELLER REGISTRERE ET VERKTØY
+  Bård: «Det er kun deltakerne som kan registrere verktøy. Det har vi snakket
+  om før.» AVGJORT: registrering stenges for alle andre enn deltakerforetak.
+  Bakgrunnen hans er lenkesjekken han kjører ukentlig, som melder at de ~1900
+  hub-verktøyene mangler eier — han vil at AIinAEC settes som eier på dem, men
+  kalte det selv «ikke noe stor sak». Det står fortsatt igjen.
+
+  FORSIDEN — GODKJENT
+  Bård så forslaget delt på skjerm og sa «det er i hvert fall bedre enn sist»
+  og «jeg ville bare lansere det der, og så får vi justere ting litt senere».
+  Han bekreftet strukturen: nærmeste arrangement øverst, artikkel ved siden av,
+  resten under — og at kortene under hverandre er greit. Begrunnelsen hans er
+  at forsiden i dag ikke endrer seg fra uke til uke uten at man scroller.
+  Han foreslo bilde som bakgrunn på artikkelkortet; Andreas sa nei fordi
+  bildene er for detaljerte og blir støy i det første man møter. Bård:
+  «jeg har ikke noen mening om det der — du er designeren, gjør det som er
+  best i ditt hode.» Andreas skal gjøre «noen småtterier» før publisering.
+
+  NYTT FRA BÅRD I MØTET
+  - Han sendte ut ~1800–2000 e-poster natt til 17.09 med oppfordring om å
+    registrere bruker, og med lenker til alt det nye. Gjennomgang 17.09 kl 14
+    og på nytt 8. oktober, påmeldinger triller inn.
+  - ICS-sak meldt av Kjell i Teams: påmeldinger får en lenke som virker, men
+    «ser veldig rart ut». Lagt på uke 38-kortet. Detaljene ligger i Teams-tråden
+    og er ikke sett av oss ennå.
+  - Han bygger en egen plugin for prosjekt-/pilotregistrering som kolliderer
+    med eksisterende sider. Han trakk forespørselen om menypunkt selv og
+    kommer tilbake i uke 39. Andreas flagget at plugin-en kjører i sin egen
+    verden og er et sikkerhetsspørsmål.
+  - SEO: Bård vil ha en 6-måneders plan og en ARTIKKEL til deltakerne om at
+    BIM Verdi jobber med søkemotoroptimalisering — ikke en rapport. Poenget er
+    å vise at trafikken finnes, så deltakerne ser at det er verdt å skrive.
+    Hans egen temahypotese: maskintolkbare standarder / språkmodeller for
+    byggenæringen (Byggtjeneste-prosjektet), med workshop på gang. Han vil
+    bruke de utsendte lenkene som agn og lese analytics for å se hva folk biter
+    på. Andreas tar analytics først og sender skrive-skillen.
+  - Påminnelse dagen før: Bård så en melding om at den ikke virket, men finner
+    den ikke igjen. SVARET ER KJENT fra 16.09: cron kjørte 10:00:09 med
+    gate «lukket», så bare Andreas og Bård fikk testkopier — de fire eksterne
+    påmeldte fikk ingenting. `_bv_paminnelse_sendt` er nå satt for 20260917,
+    så å åpne gaten alene sender ikke på nytt.
+
+  BYGGET ETTER MØTET (alt lokalt, ingenting pushet):
+
+  1. NYHETSBREV — FORVRENGTE LOGOER (uke 38 punkt 1)
+  ROTÅRSAK: e-postmalens thumb-celle rendret ALLE bilder som 64×64 med faste
+  width/height-attributter og `object-fit:cover`. Et foto tåler det, en logo
+  gjør ikke — den er nesten aldri kvadratisk. Målt på ekte data: Smart
+  Innovations logo er 150×78, altså nesten dobbelt så bred som høy, presset
+  inn i et kvadrat. Datalaget visste allerede forskjellen (`bilde_type` er
+  'featured' eller 'logo'), men malen brukte aldri feltet.
+  FIKS: bildets pikselmål følger nå med fra bimverdi_nyhetsbrev_bilde() til
+  malen, og en logo skaleres proporsjonalt ned til å passe innenfor 56×56 og
+  sentreres i ruta. Foto beskjæres som før.
+  HVORFOR MÅLENE REGNES UT I PHP: Outlooks Word-motor ignorerer både
+  `object-fit` og `max-width`, så CSS alene avgjør ingenting der. Eneste
+  robuste løsning er å skrive riktige width/height-attributter.
+  VERIFISERT lokalt: 6 logoer får nå 56×29, 56×14, 56×25, 56×26 — alle med
+  riktig sideforhold — og de 4 fotoene beskjæres til 64×64 som før.
+  MERK: sendte og genererte nyhetsbrev er FROSNE øyeblikksbilder. Bård må
+  generere brevet på nytt for å se endringen.
+
+  2. VARSEL VED VERKTØYREGISTRERING (uke 38 punkt 4c)
+  ROTÅRSAK: verktøy fra Min side opprettes med post_status «draft» og venter
+  på godkjenning, men ingen fikk beskjed. Derfor klaget Bård til Smart
+  Innovation på at de ikke hadde sendt inn — de hadde, registreringen lå bare
+  usynlig og ventet på ham.
+  FIKS: ny mu-plugin bimverdi-verktoy-varsel.php sender e-post til
+  post@bimverdi.no med verktøynavn, hvem som registrerte, foretak, status og
+  en knapp rett til redigeringsskjermen. Reply-To settes til innsenderen.
+  Mottakerne kan overstyres med filteret `bimverdi_verktoy_varsel_mottakere`.
+  Varselet henger på en egen action (`bimverdi_verktoy_registrert`) som bare
+  registreringsskjemaet utløser — IKKE på wp_insert_post eller
+  transition_post_status, fordi AEC-synken rører ~1900 hub-verktøy i uka og
+  ville sendt én e-post per verktøy. Bare oppretting varsler; redigering av et
+  allerede publisert verktøy beholder statusen sin og trenger ingen godkjenning.
+  VERIFISERT lokalt: localhost-blokkeringen fanget den som forventet —
+  «BLOKKERT wp_mail: to="post@bimverdi.no" subject="Nytt verktøy registrert: …»
+
+  3. KUN DELTAKERFORETAK KAN REGISTRERE VERKTØY
+  ROTÅRSAK: regelen fantes allerede — register_tool og edit_tool ligger i
+  ACTIVE_COMPANY_FEATURES i bimverdi-access-control.php, som krever
+  bv_rolle != «Ikke deltaker». Men den ble bare brukt til å skjule menyvalget
+  og til ruting. POST-handleren sjekket KUN at brukeren hadde et foretak, så
+  en bruker fra et ikke-betalende foretak som kom til skjema-URL-en kunne
+  registrere likevel. Det er trolig slik registreringen Bård reagerte på kom inn.
+  FIKS: handleren kaller nå bimverdi_can_access() før den lagrer, og gir
+  feilmeldingen «Bare deltakerforetak kan registrere og redigere verktøy».
+  KONTROLLERT FØR ENDRING at ingen reelle deltakere låses ute: av 100 foretak
+  mangler 8 bv_foretakstype, og alle 8 står som «Ikke deltaker» — de ville
+  vært blokkert uansett. Smart Innovation Norway AS (#199) er deltaker og
+  rammes ikke.
+
+  4. FYLKE PÅ FORETAKSPROFILEN
+  Nytt ACF-felt bv_fylke på CPT foretak, registrert i kode (ikke i databasen)
+  så det følger deployen. Select og ikke fritekst, fordi verdiene skal kunne
+  filtreres og telles på — de 15 fylkene etter inndelingen 01.01.2024, pluss
+  «Utenfor Norge». Vises på foretaksprofilen i adresseblokka, etter kommunen
+  og uten suffiks («Oslo fylke» leses rart).
+
+  5. ICS-LENKA SOM «SER VELDIG RART UT» (uke 38, meldt av Kjell)
+  Teams-tråden var ikke nødvendig — Bård hadde limt inn en full analyse i
+  selve kortet, og feilen er reproduserbar lokalt på arrangement 5826.
+  ROTÅRSAK: bimverdi_ics_escape() gjorde to erstatninger i feil rekkefølge.
+  Først ble ekte linjeskift byttet til sekvensen \n, deretter ble alle
+  backslasher doblet — og da traff dobblingen også backslashen i \n-sekvensen
+  som nettopp var laget. Resultatet i fila var \\n, som kalenderklienten viser
+  som bokstavene «\n» i stedet for et linjeskift; Outlook drar dem med inn i
+  Teams-lenka over, så lenken ser ødelagt ut selv om den virker.
+  (Bårds egen agent gjettet på at teksten ble bygget med feil hermetegn. Den
+  delen er riktig fra før — feilen lå bare i escape-rekkefølgen.)
+  FIKS: backslash escapes først, linjeskift sist. Dette er standard-rekkefølgen
+  i RFC 5545 og den eneste som ikke spiser sin egen output.
+  VERIFISERT lokalt på arrangement 5826, det samme Bård lenket til:
+  «…fylb\n\nArrangert av BIM Verdi\nLes mer: …» — én backslash hver gang.
+
+  6. EIER/LEVERANDØR-KOLONNE I VERKTØY-ADMINLISTA (uke 38 punkt 4a/4b)
+  Ny mu-plugin bimverdi-verktoy-admin-kolonne.php. Kolonnen leser
+  bimverdi_verktoy_eier_foretak_id() — samme kilde som katalogen og
+  foretaksprofilen, så admin og front-end aldri viser ulike eiere — og lenker
+  til foretaket. Mangler verktøyet eier, men bærer `_bv_aec_source`, står det
+  «AIinAEC-hub». Er begge deler tomt, står det «Ingen» i rødt.
+  HVORFOR IKKE SKRIVE AIinAEC INN SOM EIER PÅ DE ~1900: Bård ba om at AIinAEC
+  skal stå som eier/leverandør. Kolonnen svarer på det uten en masse-mutasjon
+  av 1900 poster, og uten å opprette AIinAEC som et foretak i deltakerregisteret
+  — der hører det ikke hjemme, og det ville dukket opp i deltakerlista.
+  Vil han likevel ha det skrevet inn i databasen, er det en egen kjøring å ta
+  med åpne øyne. Lenkesjekken hans leser front-end og vil fortsatt melde dem
+  som eierløse til vi gjør det.
+  KOLONNEN ER IKKE SORTERBAR, med vilje: sortering på metanøkkel i wp-admin
+  skjuler radene som mangler nøkkelen — altså nettopp deltakerverktøyene.
+  I stedet er det et nedtrekk over lista: alle / kun deltakerverktøy / kun
+  AIinAEC-hub. Det er også den praktiske delen: ~40 deltakerverktøy drukner
+  i ~1900 hub-verktøy, som er grunnen til at Smart Innovations registrering
+  ikke ble oppdaget.
+  VERIFISERT lokalt: verktøy 3032 (det Bård lenket til i kortet) viser
+  «AIinAEC-hub», og Smart Innovations tre viser «Smart Innovation Norway AS».
+
+  7. FORSIDEN — ARRANGEMENTET ALENE I TOPPEN, ARTIKLENE OPP
+  Andreas 17.09, etter at Bård hadde godkjent forslaget som det var:
+  toppen skal vise NESTE ARRANGEMENT alene, med hele kolonnen. Artikkelen
+  som sto ved siden av flyttes ned til rett under logostripa — altså
+  «Fra nettverket / Siste artikler og innsikt», som nå er første seksjon
+  under heroen i stedet for nest siste.
+  BEGRUNNELSE: to kort side om side delte oppmerksomheten på det første man
+  møter, og arrangementet er det eneste elementet der som har en frist.
+  Bårds innvending — at en gjentakende besøkende må scrolle for å se noe nytt
+  — besvares bedre av artiklene enn av arrangementet, som bytter sjelden.
+  Blir han likevel ikke fornøyd, er dette svaret å peke på.
+  NÅR KORTET FIKK PLASSEN, FIKK DET OGSÅ INNHOLD: formål/tema som ingress,
+  og en faktalinje med klokkeslett og digitalt/fysisk. Begge er valgfrie —
+  mangler feltene, faller kortet tilbake til dato, tittel og lenke.
+  Overlayet over bakgrunnsbildet er samtidig gjort mørkere i toppen (0,42 →
+  0,58), fordi et høyere kort viser mer av et bilde som ofte er et lyst
+  skjermbilde.
+  BAKOVERFALLET VAR ØDELAGT FRA FØR: fantes ingen kommende arrangement, hentet
+  fallback-spørringen fire arrangement sortert ASC — altså det ELDSTE i basen.
+  Snudd til DESC, så den viser det siste som var, og flagget sier da «Siste
+  arrangement» og lenketeksten «Se arrangementet» i stedet for «Meld deg på».
+  VERIFISERT lokalt: toppen viser 17.09-arrangementet med 14:00–14:30 · Digitalt,
+  artikkelseksjonen ligger rett under logostripa, og fallback-spørringen
+  plukker 08.10 (nyeste), ikke det eldste.
+
+  8. ARTIKKELSEKSJONEN: TRE LIKEVERDIGE KORT I SAMME DRAKT SOM KORTRADEN
+  Seksjonen hadde étt stort «featured»-kort med bilde pluss tre små rader ved
+  siden av. I praksis leste man bare det første — de tre andre så ut som en
+  fotnote. Nå er det tre like kort: bilde i 16:10 helt ut i kortkanten, så
+  deltakermerke, dato, tittel og ingress. Samme grep som Bård ba om for
+  arrangementene i nyhetsbrevet («alle like store»).
+  TRE OG IKKE FIRE (Andreas 17.09): samme rytme som kortraden under, og det
+  fjerde kortet var uansett den eldste artikkelen.
+  SAMME DRAKT SOM KORTRADEN: kortene har nå --bv3-bg-alt, samme radius og
+  samme hover-skygge som .bv3-fcard lenger nede. Seksjonen er derfor flyttet
+  fra --bv3-bg-section til hvit bakgrunn — kortfargen (#F5F5F4) ligger for
+  nær seksjonsfargen (#FAFAF9) til at kortene ville lest som kort.
+  LIK HØYDE UTEN FAST HØYDE: tittel og ingress klippes på tre linjer hver, og
+  deltakermerket holder av plassen sin også når det er tomt. Da står datoene
+  på linje uansett hvor lange titlene er. Målt lokalt: 462 px på alle tre.
+  TO FEIL RYDDET PÅ VEIEN:
+  - Datoene sto på engelsk («31. Aug 2026»). Seksjonen brukte get_the_date()
+    med en_US-locale. Nå samme norske månedstabell som heroen.
+  - Bildene hadde artikkeltittelen som alt-tekst. Mangler bildefila, renner
+    hele tittelen utover ruta — som på artikkel 3326 lokalt. Alt er nå tom,
+    som er riktig uansett: tittelen står rett under og er lenketeksten.
+    (3326 sitt bilde finnes på prod, svarer 200 — det er bare lokalt uploads
+    ikke er fullt synket. Ingen sak for deploy.)
+
+  9. ARRANGEMENTSKORTET: DEN STORE MØRKE BOKSEN ER BORTE
+  Kortet var én stor mørk flate der teksten lå OPPÅ bakgrunnsbildet bak et
+  gradient-overlay. Det tvang alt til hvit tekst, gjorde arrangementsbildet til
+  grøt bak bokstavene, og var det eneste elementet på hele forsiden som så
+  slik ut. Vi hadde allerede skrudd overlayet mørkere én gang for å redde
+  lesbarheten — et tegn på at grepet var feil, ikke at det trengte justering.
+  NÅ: lys flate med samme fyll, radius og hover som artikkelkortene — og UTEN
+  BILDE i det hele tatt (Andreas 17.09). Arrangementsbildene er skjermbilder
+  med egen tekst i, og i det første man møter på siden er de støy uansett hvor
+  de plasseres. At vi først måtte mørkne overlayet for å redde lesbarheten var
+  symptomet, ikke problemet.
+  Kortet er dermed dato, tittel, formål, tidspunkt og lenke. Datoen er blitt
+  større (3rem) fordi den nå er det eneste blikkfanget, og den er også det som
+  gjør dette til et arrangement og ikke en artikkel.
+  Kortet strekkes ikke lenger til full kolonnehøyde — uten bilde ville det
+  bare blitt luft. Det sentreres mot overskriften i stedet.
+  RETTET PÅ VEIEN: forrige omskriving av heroen hadde mistet et </div>, så
+  .bv3-hero__feed sto ulåst. Nettleseren lappet det selv, så det så riktig ut,
+  men markupen var ugyldig. Kontrollert nå: to barn i .bv3-hero__inner, feeden
+  er direkte barn av den.
+
+  10. VERTIKAL RYTME STRAMMET INN
+  Mellom hero-kortet og artikkeloverskriften lå det over 200 px ren luft: 48
+  under heroen, 80 rundt logostripa og 80 over seksjonen. Ett hakk ned på alt,
+  fortsatt på 8px-skalaen:
+  - .bv3-section    5rem   → 3.5rem   (gjelder alle seksjonene)
+  - .bv3-hero       5/3rem → 4/2.5rem
+  - .bv3-logobar    2.5rem → 1.75rem, og labelen 1.5rem → 1rem
+  - .bv3-section-header  3rem → 2rem
+  - .bv3-cta        6rem   → 4.5rem
+  Ingen av kortene eller typografien er rørt — bare avstanden mellom blokkene.
+
+  11. «SE FLERE ARRANGEMENT HER» UNDER KORTET
+  Dempet lenke til arrangementsarkivet, rett under kortet i toppkolonnen.
+  Den står UTENFOR kortet med vilje: kortet er étt arrangement, og en lenke
+  inni det ville konkurrert med «Meld deg på».
+  URL-en hentes med get_post_type_archive_link('arrangement') og ikke som
+  hardkodet /arrangement/, så den følger permalenke-oppsettet og ikke brekker
+  om slug-en endres. home_url('/arrangement/') som fallback.
+
+  IKKE GJORT ENNÅ
+  - Forsiden: publiseringen — og avgjørelsen om forslaget skal bli den ekte
+    forsiden (front-page.php) eller ligge som forhåndsvisning.
+  - AIinAEC skrevet inn som eier i databasen på hub-verktøyene (kolonnen viser
+    det, men lenkesjekken leser front-end og melder dem fortsatt eierløse).
+  - SEO: analytics-gjennomgang, 6-måneders plan, artikkel til deltakerne.
+  - Krav om foretaksregistrering (uke 38 punkt 2) — merket AVVENT på kortet.
+
+---
+date: 2026-09-16
+action: Deltakerartikkel-merket fikset + forside-forslag bygget som egen mal (Trello #348 pkt 3, #352)
+files:
+  - "themes/bimverdi-theme/archive-artikkel.php (deltakermerket bruker nå den kanoniske regelen)"
+  - "themes/bimverdi-theme/templates/public/template-forside-forslag.php (NY, kopi av front-page.php)"
+  - "themes/bimverdi-theme/assets/img/temagruppe-graf.jpg (NY, 138 kB)"
+summary: "To leveranser til møtet 17.09, begge verifisert lokalt mot prod-data, INGENTING pushet. (1) Deltakerartikkel-merket traff 36 av 38 artikler fordi det arvet forfatterens foretak; nå 2 av 38, som er de reelle. (2) Forsiden med arrangement + siste artikkel i toppen og tema-graf i kortraden ligger som EGEN sidemal, ikke som endring av front-page.php."
+status: waiting
+waiting_on: "Andreas — se forslaget på /forside-forslag/ lokalt og si om det skal pushes. Deltakerartikkel-fiksen kan pushes med en gang."
+detail: |
+  1. DELTAKERARTIKKEL-MERKET — ROTÅRSAK FUNNET I DATA
+  Bård meldte 04.09 «fjern blå ramme rundt det som IKKE er merket» og gjentok
+  saken 11.09 (kort #348, pkt 3). I møtet 15.09 bekreftet Andreas at den var
+  «datt ut». Den var ikke det: merket var på plass, men traff alt.
+  MÅLT PÅ PROD FØR FIKS: 38 av 38 publiserte artikler fikk merket «Artikkel fra
+  deltakerforetaket X» og blå ramme. 36 av dem sto på Verdinettverk AS.
+  ÅRSAK: archive-artikkel.php regnet selv ut om noe var en deltakerartikkel, og
+  brukte bimverdi_artikkel_foretak_id() MED forfatter-fallback. Den kjeden er
+  riktig for BYLINEN («hvem står bak»), men feil her: når artikkelfeltet er tomt
+  faller den tilbake på forfatterens foretak, og redaksjonens egne artikler er
+  skrevet av folk knyttet til Verdinettverk. Bare 3 av 38 artikler har feltet
+  satt i det hele tatt.
+  Den kanoniske regelen fantes allerede i mu-plugins/bimverdi-artikkel-helpers.php:
+  bimverdi_artikkel_er_deltakerartikkel() ser KUN på feltet, krever publisert
+  foretak og holder Verdinettverk utenfor via filteret
+  bimverdi_deltakerartikkel_unntatte_foretak (avgjort med Bård 03.09). Nyhetsbrevet
+  brukte den alt — arkivet gjorde ikke. Fila advarer til og med eksplisitt mot å
+  bruke foretak_id() til dette; advarselen var ikke fulgt i malen.
+  FIKS: arkivet bruker nå er_deltakerartikkel(), og henter navn/lenke med
+  foretak_id($id, false). Bylinen på single-artikkel.php er BEVISST urørt — der
+  er forfatterens foretak riktig svar.
+  VERIFISERT lokalt mot synket prod-DB: 2 av 38 artikler merkes, Catenda AS og
+  NTNU (begge Partner, begge med feltet satt). 4 merker i HTML = 2 artikler x
+  (rutenett + liste). Verdinettverk er borte fra merkingen.
+  BONUS: merket forsvinner samtidig fra forsidens artikkelkort — i Bårds egen
+  skisse til #352 står det «Artikkel fra deltakerforetaket Verdinettverk AS»,
+  altså samme feil.
+
+  2. FORSIDE-FORSLAG SOM EGEN MAL — IKKE ENDRING AV FORSIDEN
+  Andreas 16.09: «bare ta en kopi av forsiden vi har». Forslaget ligger derfor i
+  templates/public/template-forside-forslag.php med Template Name
+  «Forside – forslag (uke 38)», og dagens front-page.php er ikke rørt.
+  Lokal side opprettet på /forside-forslag/ (post-ID varierer, gjenskapes med
+  wp_insert_post + _wp_page_template hvis DB synkes på nytt).
+  ENDRING A — HEROEN: den håndtegnede nettverks-SVG-en er byttet mot to kort,
+  neste arrangement øverst og siste artikkel under. Bårds skisse hadde dem side
+  om side; de er lagt under hverandre fordi høyrekolonnen er ca. 560 px på 1280,
+  og to kort i bredden gir under 280 px hver — for trangt til bilde, dato,
+  tittel og ingress. I motsetning til .bv3-hero__visual, som skjules under
+  768 px, vises .bv3-hero__feed også på mobil; det er hele poenget med å flytte
+  innholdet opp.
+  Arrangementskortet har én tekstlenke («Meld deg på»), ikke en fylt knapp, så
+  heroen beholder én fylt knapp og ikke tre konkurrerende oppfordringer.
+  ENDRING B — KORTRADEN: arrangementskortet er fjernet derfra (det står nå
+  øverst) og erstattet av et kort for tema-grafen, som lenker til
+  /demo/temagruppe-graf/.
+  GRAFBILDET er et skjermbilde av den ekte grafen på prod, beskåret uten
+  nettleserkant og uten legend-panelet, lagret som assets/img/temagruppe-graf.jpg
+  (820x620, 138 kB). Det ligger i TEMAET, ikke i mediebiblioteket, så det følger
+  autodeploy og kan tas på nytt når grafen endrer seg. Valget bilde framfor
+  levende graf er Andreas' fra møtet 15.09: grafen er for liten til å utforskes
+  i et kort, og «det må bli et bilde av den nettverksvisningen og så en klikk
+  inn der i stedet».
+  BÅRDS PLASSHOLDER «<ant> ressurser» er bevisst ikke fylt ut. Grafen rapporterer
+  selv 314 noder og 723 koblinger, mens verktøy + kunnskapskilder er 2187 — to
+  tall som ville motsagt hverandre på samme side. Kortet sier derfor
+  «6 temagrupper» og beskriver koblingene uten å tallfeste dem. Bård må avgjøre
+  hvilket tall han vil ha.
+  NORSKE DATOER: malen slår opp månedsnavnet selv i stedet for wp_date('F'),
+  som ville gitt «September» — samme felle som påminnelses-e-posten gikk i.
+  VERIFISERT i nettleser mot synket prod-data: 1280 px (begge kort, riktig
+  arrangement 3349 17.09, riktig siste artikkel 5700 med Catenda-merke) og smal
+  skjerm (kortene stables, ingen horisontal scroll). Gradienten på
+  arrangementskortet måtte strammes fordi bildet er et lyst skjermbilde og den
+  hvite datoen forsvant.
+
+  3. LOKAL DATABASE SYNKET FRA PROD
+  Lokal DB var fra 12.03 og hadde ingen kommende arrangementer, så
+  arrangementskortet kunne ikke verifiseres. Kjørte ./sync-db.sh --db
+  (80 MB dump, 24 109 URL-erstatninger) pluss rsync av uploads for 2026/08 og
+  2026/09 (173 + 34 filer). Full uploads-synk ble bevisst droppet — 2026/07
+  alene er 204 MB og trengs ikke.
+  MERK: alt lokalt innhold ble erstattet, inkludert forslagssiden som måtte
+  opprettes på nytt etterpå.
+
+  IKKE GJORT
+  Ingenting er pushet. Forslaget finnes ikke på prod, så Bård kan ikke se det
+  ennå. Påminnelsesgaten for arrangement 3349 står fortsatt lukket etter
+  Andreas' beslutning 16.09 om å la den ligge; de fire eksterne påmeldte fikk
+  ingen påminnelse, og idempotens-merket _bv_paminnelse_sendt = 20260917 er
+  satt, så en åpning av gaten alene sender ikke på nytt.
+
+---
+date: 2026-09-15
+action: documented
+files: [WORKLOG.md]
+summary: "Tirsdagssynk Andreas–Bård (transkript levert 16.09). SEO-planen nedskalert fra 12 til 6 måneder, rollene delt (Andreas teknisk/agentisk, Bård innhold), og Bård har bygget en egen SEO/analytics-plugin hvis datagrunnlag er misforstått. Ny ukespatch avtalt: forside, deltakerartikkel-differensiering, nyhetsbrev-logoer, temagraf på mobil, fylke-felt. Andreas presenterer trimmet SEO-plan torsdag 17.09."
+status: waiting
+waiting_on: "Andreas — trimmet 6-måneders SEO-plan + ukespatchen til torsdag 17.09. Bård — venter på skills og GitHub-veiledning."
+detail: |
+  KILDE OG FORBEHOLD
+  Transkript fra Fireflies/Google Meet, limt inn av Andreas 16.09. Speaker 1 =
+  Bård, Microphone = Andreas (bekreftet av Andreas). Møtedato er tirsdag 15.09,
+  den faste synken. Ingenting av dette er implementert — entryen er referat.
+  Transkripsjonsfeil tolket der sammenhengen er tydelig: «Billingsmart» leses
+  som buildingSMART, «akrylion» som Akrylok (Andreas' andre prosjekt),
+  «console Claude Google com» som Google Search Console. «Norman» er navnet
+  Bård bruker på APX/Apex' rådgiver i Berlin — samme person som 11.09-referatet
+  omtaler som «norsk analyseekspert i Berlin». Stavemåten er ikke bekreftet.
+
+  BÅRDS EGEN SEO-PLUGIN — DATAGRUNNLAGET ER FEIL (03:46–19:15)
+  Bård har på eget initiativ bygget en plugin i WordPress som kobler seg til
+  Google Search Console og Analytics, og har brukt den til å sammenligne
+  bimverdi.no mot buildingSMART. Hans lesning var at buildingSMART ligger på
+  rødt og er på vei ned, mens BIM Verdi er på vei opp.
+  ANDREAS' INNSIGELSE, SOM BÅRD AKSEPTERTE: sammenligningen bygger på Internet
+  Archive, som bare sier hvor mange sider som er arkivert på et domene. Den
+  sier ingenting om besøk, bruk eller tid — de tallene er ikke offentlige, de
+  eies av domeneeieren. Bård: «da har jeg misforstått», «da har jeg vært litt
+  kjapp igjen». Konklusjonen om at BIM Verdi nærmer seg buildingSMART står
+  altså uten dekning i dataene, og må ikke gjenbrukes i SEO-planen.
+  FORMÅLET BAK ER LIKEVEL GYLDIG og bør tas videre: Bård vil ha fakta på bordet
+  til møtet med APX, som har sagt at det ikke er trafikk og derfor tviler på om
+  det lønner seg å skrive artikler. Han vil vise progresjonen til utvalgte
+  prosjektdeltakere, gjerne bak et enkelt passord, for å få andre som «sitter
+  på gjerdet» i gang. Han vil ikke vise det før tallene er gode.
+  Bård må selv spørre Norman hos APX hva hans påstand om null trafikk bygger
+  på — Andreas' hypotese er at han har slått opp søkeord BIM Verdi treffer på.
+  ANDREAS' STANDPUNKT: det er en god idé å speile Analytics- og Search
+  Console-data og visualisere progresjonen inne i WordPress, spisset mot
+  SEO-planen. Men Analytics er massivt og uoversiktlig, så spørsmålet er hva
+  Bård faktisk vil oppnå — ønsket må defineres først, ikke dashboardet.
+
+  SEO-PLANEN NEDSKALERT: 12 MÅNEDER → 6 (19:18–22:46)
+  Andreas: tolv måneder blir overkill. Planen skal gjelde resten av året.
+  Dette overstyrer 11.09-referatets tolvmånedersplan med evaluering hver
+  tredje måned.
+  ROLLEDELING, NY OG EKSPLISITT: Andreas jobber agentisk og teknisk, og skal
+  IKKE lage innhold. Bård tar rollen som innholdsprodusent, med en skriveskill
+  i sin egen Claude som hjelpemiddel. Begrunnelsen er rammen på 8,3 timer i
+  måneden — Andreas kan ikke bruke fire–fem av dem på tekst.
+  Sammenligningen med Akrylok: der gjør Andreas all innholdsproduksjon selv,
+  men har fire ganger budsjettet. Skal det samme fungere her, må Bård skrive.
+  PRIORITERINGSPRINSIPP: gjør én ting hundre prosent framfor å spre innsatsen
+  og gjøre alt femti prosent. Konkret betyr det å finne ut hva som faktisk
+  leses i dag — fagartikler, temagrupper — og satse der. Andreas kan hente
+  innsikten om hva som har vært mest lest siste år; Bård tar avgjørelsen om
+  hvilken konkret plass på nettstedet som skal prioriteres.
+  LEVERANSE: Andreas kutter planen ned til noe konkret og presenterer den
+  torsdag 17.09. Utkastet er påbegynt, men ikke klart til gjennomlesing.
+
+  SKILLS TIL BÅRD — FORTSATT IKKE LEVERT (20:35, 23:00–25:35)
+  Bård ba igjen om tilgang til en skriveskill for å coache egne ferdigheter.
+  Andreas forklarte hva en skill er (en instruksjon som setter modellen i en
+  rolle) og sa han bare kan sende over relevante Compound Engineering-skills.
+  Leveringsvei ikke avgjort: enten via kontekst-repoet eller direkte til Bård.
+  REELL BLOKKER: Bård får ikke til koblingen mellom GitHub og sine lokale
+  filer — «jeg aner ikke hva jeg skal gjøre, hva jeg skal trykke på». Han ser
+  endringer i kontekst-repoet han ikke vet hvor kommer fra, og Andreas
+  bekreftet at han ikke har rørt Bårds kontekstfil. Avtalt å se på det sammen.
+  Dette er samme problem som 03.08-oppsettet skulle løse; det er ikke løst.
+
+  UKESPATCH — FEM PUNKTER AVTALT (03:16–14:44)
+   1. FORSIDEN: siste artikkel og neste arrangement skal løftes øverst, så man
+      slipper å scrolle. Bård: «ikke noe stor sak». Andreas: grensesnittendring,
+      skal være lett.
+   2. DELTAKERARTIKLER — DIFFERENSIERINGEN ER IKKE LEVERT. Bård viser til
+      Trello «Diverse endringer uke 37», sin egen kommentar 11.09 kl. 09:19,
+      punkt 3. Andreas bekreftet i møtet: «ja, den er datt ut». Dette avklarer
+      avviket som 11.09-referatet flagget som uavklart — loggen for 04.09
+      (e6c53b2) dekket altså ikke dette punktet. Skal med i ukens patch.
+   3. NYHETSBREV: forvrengte logoer. Andreas: «det er en enkel fiks».
+   4. TEMAGRAFEN PÅ FORSIDEN: Bård ville ha bevegelse i den. Konklusjonen ble
+      motsatt — på mobil er den «bare et kaos» og lar seg ikke zoome, så den
+      erstattes av et bilde som lenker videre til /temagrupper/graf. Bård
+      lastet opp et skjermbilde («Screenshot») til Trello-kortet; det skal
+      døpes om og brukes.
+   5. NYTT FELT FYLKE på foretaksprofilen. Bård trenger å vite hvilke aktører
+      han har i hvert fylke til et Akershus-prosjekt, og fyller det ut selv.
+      Han trenger bare at feltet opprettes.
+
+  UTSATT: KRAV OM FORETAKSTILKNYTNING VED PÅMELDING (09:00–09:56)
+  Bård vurderte å kreve foretaksregistrering for å vite hvilket foretak de
+  påmeldte tilhører. Andreas: selve endringen er kanskje ti minutter, men den
+  endrer onboardingen igjen, og følgene må gjennomgås aktivt. BESLUTNING:
+  avventes. Bård rekonstruerer i mellomtiden foretak ut fra e-postadressen
+  manuelt.
+
+  BÅRDS PÅBEGYNTE ARTIKKEL
+  Bård har en påbegynt, upublisert artikkel om søkeoptimalisering han vil ha
+  hjelp til å legge ut når SEO-biten er på plass. Han fikk den ikke åpnet i
+  møtet, så innholdet er ukjent. Bård foreslo at SEO blir fast punkt på
+  møtene; Andreas sa ja.
+
+---
 date: 2026-09-11
 action: documented
 files: [WORKLOG.md]
