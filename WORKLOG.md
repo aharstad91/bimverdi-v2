@@ -275,8 +275,22 @@ detail: |
   Bård er tagget i en kommentar på Trello #350 med hva han skal teste, og lagt
   til som medlem på kortet så varselet når fram.
 
-  IKKE GJORT ENNÅ
-  - Forsiden: å gjøre forslaget til den EKTE forsiden (venter på Bårds ja) — og avgjørelsen om forslaget skal bli den ekte
+  13. FORSLAGET ER NÅ FORSIDEN (bimverdi.no)
+  Andreas 17.09: «den erstatter forsiden som er i dag, så bare få den inn».
+  Innholdet er flyttet inn i front-page.php, og BÅDE sidemalen og
+  forhåndsvisningssiden er fjernet — lokalt (side 5861) og på prod (side 5867).
+  HVORFOR FJERNE FORHÅNDSVISNINGEN: to identiske sider på samme nettsted
+  konkurrerer med hverandre i søk, og vi skal akkurat i gang med
+  søkemotorarbeid for Bård. Dårlig tidspunkt å legge igjen en duplikat av
+  forsiden på /forside-forslag/.
+  MERK OM MALHIERARKIET: dette MÅTTE gjøres ved å skrive front-page.php.
+  Å tilordne sidemalen til forsiden i WP-innstillingene virker ikke —
+  front-page.php vinner over en sidemal i WordPress' malhierarki, så malen
+  ville blitt ignorert.
+  Den gamle forsiden er ikke tapt: `git log --follow
+  themes/bimverdi-theme/front-page.php`.
+  VERIFISERT PÅ PROD etter cache-flush: bimverdi.no rendrer de nye kortene,
+  og /forside-forslag/ gir 404. — og avgjørelsen om forslaget skal bli den ekte
     forsiden (front-page.php) eller ligge som forhåndsvisning.
   - AIinAEC skrevet inn som eier i databasen på hub-verktøyene (kolonnen viser
     det, men lenkesjekken leser front-end og melder dem fortsatt eierløse).
