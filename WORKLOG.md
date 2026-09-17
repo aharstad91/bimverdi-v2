@@ -4,7 +4,7 @@
 
 ---
 date: 2026-09-17
-action: Synk med Bård — to avklaringer landet, seks punkter fra uke 38 bygget, og forsiden omarbeidet etter godkjenning
+action: Synk med Bård — seks punkter fra uke 38 bygget, ny forside live, alt pushet og verifisert på prod
 files:
   - "mu-plugins/bimverdi-nyhetsbrev-content.php (bildemål følger med til malen)"
   - "themes/bimverdi-theme/parts/email/nyhetsbrev.php (logo skaleres, foto beskjæres)"
@@ -16,9 +16,9 @@ files:
   - "mu-plugins/bimverdi-ics-generator.php (escape-rekkefølge)"
   - "mu-plugins/bimverdi-verktoy-admin-kolonne.php (NY)"
   - "themes/bimverdi-theme/templates/public/template-forside-forslag.php (topp, seksjonsrekkefølge, kortdesign, vertikal rytme)"
-summary: "PUSHET TIL PROD 17.09. Møtereferat + seks leveranser fra Trello uke 38 (punkt 1–6), og fire runder på forsiden etterpå (punkt 7–10). Begge de åpne spørsmålene fra 16.09 er avgjort av Bård: fylke fylles ut manuelt av ham, og kun deltakerforetak får registrere verktøy. Forsideforslaget ble godkjent som det var, og deretter omarbeidet av Andreas: arrangementet alene i toppen uten bilde, artiklene opp under logostripa som tre like kort, strammere vertikal rytme. INGENTING er pushet."
+summary: "ALT LIVE PÅ PROD 17.09, sjekksum-verifisert mot serveren. Møtereferat + seks leveranser fra Trello uke 38 (punkt 1–6), og fire runder på forsiden etterpå (punkt 7–10). Begge de åpne spørsmålene fra 16.09 er avgjort av Bård: fylke fylles ut manuelt av ham, og kun deltakerforetak får registrere verktøy. Forsideforslaget ble godkjent av Bård, deretter omarbeidet av Andreas — arrangementet alene i toppen uten bilde, artiklene opp under logostripa som tre like kort, strammere vertikal rytme — og er nå selve forsiden på bimverdi.no. Forhåndsvisningssiden er fjernet."
 status: waiting
-waiting_on: "Bård — teste de seks punktene og se på https://bimverdi.no/forside-forslag/. Tagget på Trello #350 17.09."
+waiting_on: "Bård — teste de seks punktene og den nye forsiden på bimverdi.no, og generere nyhetsbrevet på nytt. Tagget i to kommentarer på Trello #350 17.09. + Andreas — åpne påminnelse-gaten i wp-config på prod, haster før 8. oktober."
 detail: |
   MØTE 17.09.2026, Andreas og Bård (~30 min).
 
@@ -290,11 +290,35 @@ detail: |
   Den gamle forsiden er ikke tapt: `git log --follow
   themes/bimverdi-theme/front-page.php`.
   VERIFISERT PÅ PROD etter cache-flush: bimverdi.no rendrer de nye kortene,
-  og /forside-forslag/ gir 404. — og avgjørelsen om forslaget skal bli den ekte
-    forsiden (front-page.php) eller ligge som forhåndsvisning.
-  - AIinAEC skrevet inn som eier i databasen på hub-verktøyene (kolonnen viser
-    det, men lenkesjekken leser front-end og melder dem fortsatt eierløse).
+  og /forside-forslag/ gir 404.
+
+  14. SLUTTKONTROLL — ALT ARBEID ER LIVE
+  Sammenlignet sjekksum på alle 13 endrede/nye filene mot serveren: identiske.
+  Arbeidstreet er rent, ingenting upushet, main == origin/main.
+  Funksjonelt verifisert på PROD, ikke bare at filene kom fram:
+  - ICS-endepunktet for arrangement 5826 gir én backslash per linjeskift.
+  - bv_fylke svarer på acf_get_field().
+  - bimverdi_verktoy_kolonne_innhold finnes.
+  - Actionen bimverdi_verktoy_registrert har en lytter.
+  - bimverdi.no rendrer de nye kortene, /forside-forslag/ gir 404.
+  Bård er tagget i to kommentarer på Trello #350: én gjennomgang av hvert
+  punkt med hva han skal teste, og én korreksjon om at forhåndsvisningslenka
+  er død fordi siden NÅ er forsiden. Han er også lagt til som medlem på kortet
+  — en @-mention alene når ikke alltid fram til den som ikke står på kortet.
+
+  IKKE GJORT ENNÅ — og hvorfor
+  - PÅMINNELSE-GATEN står fortsatt lukket på prod. BIMVERDI_PAMINNELSE_APEN
+    finnes ikke i wp-config på serveren (sjekket 17.09). Så lenge den mangler,
+    får ingen påmeldte påminnelse dagen før — heller ikke til 8. oktober, der
+    påmeldingene triller inn nå. Må settes manuelt av Andreas. HASTER MEST.
+  - AIinAEC skrevet inn som eier i databasen på de ~1900 hub-verktøyene.
+    Admin-kolonnen viser det allerede, men Bårds lenkesjekk leser front-end og
+    melder dem fortsatt som eierløse. Er en massemutasjon — venter på
+    eksplisitt go.
+  - NYHETSBREVET må GENERERES PÅ NYTT av Bård før logofiksen vises. Sendte og
+    genererte brev er frosne øyeblikksbilder. Står i Trello-kommentaren.
   - SEO: analytics-gjennomgang, 6-måneders plan, artikkel til deltakerne.
+    Andreas skylder også Bård «skrive-skillen».
   - Krav om foretaksregistrering (uke 38 punkt 2) — merket AVVENT på kortet.
 
 ---
