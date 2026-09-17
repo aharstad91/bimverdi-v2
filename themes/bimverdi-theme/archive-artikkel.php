@@ -92,16 +92,23 @@ while ($articles->have_posts()): $articles->the_post();
     $ingress = get_field('artikkel_ingress', get_the_ID());
     $bedrift_id = get_field('artikkel_bedrift', get_the_ID());
 
-    // Deltakerartikkel (Bård, Trello #348 punkt 2): artikkelen tilhører et
-    // foretak med bv_rolle Deltaker/Prosjektdeltaker/Partner. Foretaket hentes
-    // via samme kjede som bylinen på single-artikkel (felt, ellers forfatterens
-    // foretak), så merket og bylinen aldri peker på ulike foretak.
+    // Deltakerartikkel (Bård, Trello #348 punkt 2 og 3): avgjøres av
+    // bimverdi_artikkel_er_deltakerartikkel(), samme kilde som nyhetsbrevets
+    // «Artikler fra deltakere». Den ser KUN på foretaksfeltet på artikkelen, og
+    // holder BIM Verdis egen redaksjon (Verdinettverk AS) utenfor.
+    //
+    // Varianten som sto her falt tilbake på FORFATTERENS foretak når feltet var
+    // tomt — samme kjede som bylinen. Det gjorde at 36 av 38 publiserte artikler
+    // ble tilskrevet Verdinettverk AS og fikk blå ramme, altså alt redaksjonen
+    // selv skriver. Merket skilte da ingenting fra hverandre, som er det Bård
+    // meldte 04.09 («fjern blå ramme rundt det som IKKE er merket») og gjentok
+    // 11.09. Bylinen beholder fallbacken — der er forfatterens foretak riktig
+    // svar på «hvem står bak»; her er spørsmålet et annet, nemlig om artikkelen
+    // er levert AV et deltakerforetak.
     $deltaker_foretak_id = 0;
-    if (function_exists('bimverdi_artikkel_foretak_id')) {
-        $kandidat = bimverdi_artikkel_foretak_id(get_the_ID());
-        if ($kandidat && in_array((string) get_field('bv_rolle', $kandidat), ['Deltaker', 'Prosjektdeltaker', 'Partner'], true)) {
-            $deltaker_foretak_id = (int) $kandidat;
-        }
+    if (function_exists('bimverdi_artikkel_er_deltakerartikkel')
+        && bimverdi_artikkel_er_deltakerartikkel(get_the_ID())) {
+        $deltaker_foretak_id = (int) bimverdi_artikkel_foretak_id(get_the_ID(), false);
     }
 
     $items[] = [
