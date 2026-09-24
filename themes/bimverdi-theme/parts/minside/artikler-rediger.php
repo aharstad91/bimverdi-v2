@@ -2,8 +2,9 @@
 /**
  * Min Side - Rediger artikkel
  *
- * Edit form for pending articles. Reuses artikler-skriv structure.
- * Only pending articles owned by the current user can be edited.
+ * Edit form for pending and published articles. Reuses artikler-skriv structure.
+ * Tilgang og Gutenberg-lås: mu-plugins/bimverdi-artikkel-redigering.php.
+ * Endringer i publiserte artikler går rett ut; BIM Verdi varsles.
  *
  * @package BimVerdi_Theme
  */
@@ -36,22 +37,32 @@ if (!$artikkel || $artikkel->post_type !== 'artikkel') {
     exit;
 }
 
-if ((int) $artikkel->post_author !== (int) $user_id && !current_user_can('manage_options')) {
+if (!bimverdi_artikkel_kan_redigere($artikkel_id, $user_id)) {
     wp_redirect(add_query_arg('bv_error', 'not_owner', home_url('/min-side/artikler/')));
     exit;
 }
 
-// Only pending can be edited
-if (get_post_status($artikkel_id) !== 'pending') {
-    wp_redirect(add_query_arg('bv_error', 'already_published', home_url('/min-side/artikler/')));
+if (!bimverdi_artikkel_kan_redigeres_status($artikkel_id)) {
+    wp_redirect(add_query_arg('bv_error', 'not_editable', home_url('/min-side/artikler/')));
     exit;
 }
 
-$company = get_post($company_id);
+if (bimverdi_artikkel_er_laast($artikkel_id)) {
+    wp_redirect(add_query_arg('bv_error', 'laast', home_url('/min-side/artikler/')));
+    exit;
+}
+
+$er_publisert = get_post_status($artikkel_id) === 'publish';
+
+// Byline viser artikkelens foretak, ikke redaktørens (kollega/medforfatter
+// kan redigere, men artikkelen tilhører fortsatt foretaket den ble sendt fra).
+$artikkel_foretak_id = (int) get_post_meta($artikkel_id, 'artikkel_bedrift', true) ?: (int) $company_id;
+$company = get_post($artikkel_foretak_id);
+$forfatter = get_userdata($artikkel->post_author);
 
 // Pre-fill values
 $existing_title = $artikkel->post_title;
-$existing_content = $artikkel->post_content;
+$existing_content = bimverdi_artikkel_innhold_for_redigering($artikkel->post_content);
 $existing_ingress = get_field('artikkel_ingress', $artikkel_id) ?: '';
 $existing_temagrupper = wp_get_object_terms($artikkel_id, 'temagruppe', ['fields' => 'ids']);
 $existing_verktoykategorier = wp_get_object_terms($artikkel_id, 'verktoykategori', ['fields' => 'ids']);
@@ -97,7 +108,9 @@ $kunnskapskilder = get_posts([
 <!-- Page Header -->
 <?php get_template_part('parts/components/page-header', null, [
     'title' => __('Rediger artikkel', 'bimverdi'),
-    'description' => __('Endre artikkelen før den godkjennes.', 'bimverdi'),
+    'description' => $er_publisert
+        ? __('Artikkelen er publisert. Endringene vises på nettsiden med en gang du lagrer, og BIM Verdi får beskjed om hva som er endret.', 'bimverdi')
+        : __('Endre artikkelen før den godkjennes.', 'bimverdi'),
 ]); ?>
 
 <!-- Error message -->
@@ -271,7 +284,7 @@ $kunnskapskilder = get_posts([
     <!-- Eksterne lenker -->
     <div class="mb-6">
         <label class="block text-sm font-medium text-[#1A1A1A] mb-3">
-            <?php _e('Eksterne lenker (valgfritt)', 'bimverdi'); ?>
+            <?php _e('Lenker, f.eks. til originalartikkelen (valgfritt)', 'bimverdi'); ?>
         </label>
         <div id="bv-eksterne-lenker">
             <?php if (!empty($existing_lenker)): ?>
@@ -279,7 +292,7 @@ $kunnskapskilder = get_posts([
                 <div class="bv-lenke-rad flex gap-2 mb-2">
                     <input type="url" name="eksterne_lenker_url[]" value="<?php echo esc_attr($lenke['url'] ?? ''); ?>" placeholder="https://eksempel.no"
                         class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
-                    <input type="text" name="eksterne_lenker_label[]" value="<?php echo esc_attr($lenke['label'] ?? ''); ?>" placeholder="<?php esc_attr_e('Lenketekst', 'bimverdi'); ?>"
+                    <input type="text" name="eksterne_lenker_label[]" value="<?php echo esc_attr($lenke['label'] ?? ''); ?>" placeholder="<?php esc_attr_e('Lenketekst, f.eks. «Les hele artikkelen på nettsiden vår»', 'bimverdi'); ?>"
                         class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
                     <button type="button" onclick="this.parentElement.remove()" class="p-2 text-[#57534E] hover:text-red-600 transition-colors" title="Fjern">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -290,7 +303,7 @@ $kunnskapskilder = get_posts([
                 <div class="bv-lenke-rad flex gap-2 mb-2">
                     <input type="url" name="eksterne_lenker_url[]" placeholder="https://eksempel.no"
                         class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
-                    <input type="text" name="eksterne_lenker_label[]" placeholder="<?php esc_attr_e('Lenketekst', 'bimverdi'); ?>"
+                    <input type="text" name="eksterne_lenker_label[]" placeholder="<?php esc_attr_e('Lenketekst, f.eks. «Les hele artikkelen på nettsiden vår»', 'bimverdi'); ?>"
                         class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
                     <button type="button" onclick="this.parentElement.remove()" class="p-2 text-[#57534E] hover:text-red-600 transition-colors" title="Fjern">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -302,7 +315,7 @@ $kunnskapskilder = get_posts([
             class="text-sm text-[#FF8B5E] hover:text-[#e87a4e] font-medium transition-colors">
             + <?php _e('Legg til lenke', 'bimverdi'); ?>
         </button>
-        <p class="mt-1 text-xs text-[#5A5A5A]"><?php _e('Maks 5 lenker.', 'bimverdi'); ?></p>
+        <p class="mt-1 text-xs text-[#5A5A5A]"><?php _e('Vises som «Les mer» nederst i artikkelen. Maks 5 lenker. Du kan også lenke direkte i brødteksten med lenkeknappen.', 'bimverdi'); ?></p>
     </div>
 
     <hr class="border-[#E5E0D8] my-8">
@@ -311,14 +324,14 @@ $kunnskapskilder = get_posts([
     <div class="mb-6 p-4 bg-[#F5F5F4] rounded-lg">
         <p class="text-xs text-[#5A5A5A] mb-1"><?php _e('Artikkelen publiseres med byline:', 'bimverdi'); ?></p>
         <p class="text-sm font-medium text-[#1A1A1A]">
-            <?php echo esc_html($current_user->display_name); ?>, <?php echo esc_html($company ? $company->post_title : ''); ?>
+            <?php echo esc_html($forfatter ? $forfatter->display_name : $current_user->display_name); ?>, <?php echo esc_html($company ? $company->post_title : ''); ?>
         </p>
     </div>
 
     <!-- Submit -->
     <div class="flex items-center gap-4">
         <?php bimverdi_button([
-            'text'    => __('Lagre endringer', 'bimverdi'),
+            'text'    => $er_publisert ? __('Publiser endringer', 'bimverdi') : __('Lagre endringer', 'bimverdi'),
             'variant' => 'primary',
             'type'    => 'submit',
             'icon'    => 'save',
@@ -329,7 +342,8 @@ $kunnskapskilder = get_posts([
     </div>
 </form>
 
-<!-- Danger zone: Slett -->
+<!-- Danger zone: Slett (kun før godkjenning — publiserte avpubliseres av BIM Verdi) -->
+<?php if (!$er_publisert): ?>
 <div class="max-w-[960px] mt-12 pt-8 border-t border-red-200">
     <h3 class="text-sm font-medium text-red-700 mb-2"><?php _e('Faresone', 'bimverdi'); ?></h3>
     <p class="text-sm text-[#57534E] mb-4"><?php _e('Sletting kan ikke angres.', 'bimverdi'); ?></p>
@@ -347,6 +361,12 @@ $kunnskapskilder = get_posts([
         'onclick' => "return confirm('" . esc_js(__('Er du sikker på at du vil slette denne artikkelen?', 'bimverdi')) . "')",
     ]); ?>
 </div>
+<?php else: ?>
+<p class="max-w-[960px] mt-12 pt-8 border-t border-[#E5E0D8] text-sm text-[#5A5A5A]">
+    <?php _e('Vil du fjerne en publisert artikkel? Skriv til', 'bimverdi'); ?>
+    <a href="mailto:post@bimverdi.no" class="text-[#1A1A1A] underline">post@bimverdi.no</a>.
+</p>
+<?php endif; ?>
 
 <!-- JavaScript: Kunnskapskilde filter + Eksterne lenker -->
 <script>
@@ -374,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var row = document.createElement('div');
             row.className = 'bv-lenke-rad flex gap-2 mb-2';
             row.innerHTML = '<input type="url" name="eksterne_lenker_url[]" placeholder="https://eksempel.no" class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">'
-                + '<input type="text" name="eksterne_lenker_label[]" placeholder="Lenketekst" class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">'
+                + '<input type="text" name="eksterne_lenker_label[]" placeholder="Lenketekst, f.eks. «Les hele artikkelen på nettsiden vår»" class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">'
                 + '<button type="button" onclick="this.parentElement.remove()" class="p-2 text-[#57534E] hover:text-red-600 transition-colors" title="Fjern"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
             container.appendChild(row);
         });

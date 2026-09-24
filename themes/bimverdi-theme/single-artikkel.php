@@ -193,6 +193,22 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                 </div>
             <?php endif; ?>
 
+            <?php
+            // Snarvei for forfatter/kollega: rett til redigering på Min Side.
+            // Admin redigerer i wp-admin og får ikke lenken her.
+            if (is_user_logged_in() && !current_user_can('manage_options')
+                && function_exists('bimverdi_artikkel_kan_redigere')
+                && bimverdi_artikkel_kan_redigere(get_the_ID())
+                && !bimverdi_artikkel_er_laast(get_the_ID())) : ?>
+                <p class="mt-8 text-sm">
+                    <a href="<?php echo esc_url(add_query_arg('id', get_the_ID(), home_url('/min-side/artikler/rediger/'))); ?>"
+                       class="inline-flex items-center gap-1.5 text-[#5A5A5A] hover:text-[#1A1A1A]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        Rediger artikkelen
+                    </a>
+                </p>
+            <?php endif; ?>
+
             <!-- Temagrupper -->
             <?php if ($temagrupper && !is_wp_error($temagrupper)) : ?>
                 <div class="mt-8 pt-6 border-t border-[#E5E0D8]">

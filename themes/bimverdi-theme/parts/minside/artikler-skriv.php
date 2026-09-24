@@ -226,13 +226,13 @@ $kunnskapskilder = get_posts([
     <!-- Eksterne lenker (dynamisk, maks 5) -->
     <div class="mb-6">
         <label class="block text-sm font-medium text-[#1A1A1A] mb-3">
-            <?php _e('Eksterne lenker (valgfritt)', 'bimverdi'); ?>
+            <?php _e('Lenker, f.eks. til originalartikkelen (valgfritt)', 'bimverdi'); ?>
         </label>
         <div id="bv-eksterne-lenker">
             <div class="bv-lenke-rad flex gap-2 mb-2">
                 <input type="url" name="eksterne_lenker_url[]" placeholder="https://eksempel.no"
                     class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
-                <input type="text" name="eksterne_lenker_label[]" placeholder="<?php esc_attr_e('Lenketekst', 'bimverdi'); ?>"
+                <input type="text" name="eksterne_lenker_label[]" placeholder="<?php esc_attr_e('Lenketekst, f.eks. «Les hele artikkelen på nettsiden vår»', 'bimverdi'); ?>"
                     class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
                 <button type="button" onclick="this.parentElement.remove()" class="p-2 text-[#57534E] hover:text-red-600 transition-colors" title="Fjern">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -243,7 +243,7 @@ $kunnskapskilder = get_posts([
             class="text-sm text-[#FF8B5E] hover:text-[#e87a4e] font-medium transition-colors">
             + <?php _e('Legg til lenke', 'bimverdi'); ?>
         </button>
-        <p class="mt-1 text-xs text-[#5A5A5A]"><?php _e('Maks 5 lenker. Vises i bunnen av artikkelen.', 'bimverdi'); ?></p>
+        <p class="mt-1 text-xs text-[#5A5A5A]"><?php _e('Vises som «Les mer» nederst i artikkelen. Maks 5 lenker. Du kan også lenke direkte i brødteksten med lenkeknappen.', 'bimverdi'); ?></p>
     </div>
 
     <hr class="border-[#E5E0D8] my-8">
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var row = document.createElement('div');
             row.className = 'bv-lenke-rad flex gap-2 mb-2';
             row.innerHTML = '<input type="url" name="eksterne_lenker_url[]" placeholder="https://eksempel.no" class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">'
-                + '<input type="text" name="eksterne_lenker_label[]" placeholder="Lenketekst" class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">'
+                + '<input type="text" name="eksterne_lenker_label[]" placeholder="Lenketekst, f.eks. «Les hele artikkelen på nettsiden vår»" class="flex-1 px-3 py-2 border border-[#D6D1C6] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">'
                 + '<button type="button" onclick="this.parentElement.remove()" class="p-2 text-[#57534E] hover:text-red-600 transition-colors" title="Fjern"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
             container.appendChild(row);
         });

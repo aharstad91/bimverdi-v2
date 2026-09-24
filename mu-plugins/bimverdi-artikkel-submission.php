@@ -30,6 +30,8 @@ add_action('init', function () {
 
     $is_create = isset($_POST['bimverdi_register_artikkel']);
     $is_edit = isset($_POST['bimverdi_edit_artikkel']);
+    $var_publisert = false; // settes i edit-grenen når artikkelen var publisert
+    $for_endring = null;
 
     if (!$is_create && !$is_edit) {
         return;
@@ -198,23 +200,34 @@ add_action('init', function () {
             exit;
         }
 
-        // Ownership check
-        if ((int) $existing->post_author !== (int) $user_id && !current_user_can('manage_options')) {
-            wp_redirect(add_query_arg('bv_error', 'not_owner', $redirect_error));
+        // Tilgang: forfatter, medforfatter, kollega i samme foretak eller admin
+        // (regelen bor i bimverdi-artikkel-redigering.php)
+        if (!bimverdi_artikkel_kan_redigere($artikkel_id, $user_id)) {
+            wp_redirect(add_query_arg('bv_error', 'not_owner', home_url('/min-side/artikler/')));
             exit;
         }
 
-        // Race guard: only pending articles can be edited
-        if (get_post_status($artikkel_id) !== 'pending') {
-            wp_redirect(add_query_arg('bv_error', 'already_published', home_url('/min-side/artikler/')));
+        // Ventende og publiserte artikler kan redigeres. Publiserte forblir
+        // publisert — endringen går rett ut og BIM Verdi varsles (24.09).
+        if (!bimverdi_artikkel_kan_redigeres_status($artikkel_id)) {
+            wp_redirect(add_query_arg('bv_error', 'not_editable', home_url('/min-side/artikler/')));
             exit;
         }
+
+        // Artikler Bård har satt opp med bilder/spesialblokker i Gutenberg
+        // ville mistet oppsettet i dette skjemaet.
+        if (bimverdi_artikkel_er_laast($artikkel_id)) {
+            wp_redirect(add_query_arg('bv_error', 'laast', home_url('/min-side/artikler/')));
+            exit;
+        }
+
+        $var_publisert = get_post_status($artikkel_id) === 'publish';
+        $for_endring   = $var_publisert ? bimverdi_artikkel_snapshot($artikkel_id) : null;
 
         wp_update_post([
             'ID'           => $artikkel_id,
             'post_title'   => $title,
             'post_content' => $content,
-            'post_status'  => 'pending',
         ]);
 
         $post_id = $artikkel_id;
@@ -245,7 +258,11 @@ add_action('init', function () {
         // Ingress: use provided or auto-extract from content
         $ingress_value = !empty($ingress) ? $ingress : mb_substr(wp_strip_all_tags($content), 0, 200);
         update_field('artikkel_ingress', $ingress_value, $post_id);
-        update_field('artikkel_bedrift', intval($company_id), $post_id);
+        // Foretaket settes ved innsending. Ved redigering beholdes det — ellers
+        // ville en admin eller medforfatter fra et annet foretak flyttet artikkelen.
+        if (!$is_edit || !get_post_meta($post_id, 'artikkel_bedrift', true)) {
+            update_field('artikkel_bedrift', intval($company_id), $post_id);
+        }
     }
 
     // --- Save post meta (native, not ACF) ---
@@ -302,6 +319,12 @@ add_action('init', function () {
         bimverdi_send_admin_notification_email($admin_subject, $admin_body);
     }
 
+    if ($is_edit && $var_publisert) {
+        bimverdi_artikkel_varsle_endring($post_id, $for_endring, bimverdi_artikkel_snapshot($post_id), $user_id);
+        wp_redirect(add_query_arg('publisert_endret', '1', home_url('/min-side/artikler/')));
+        exit;
+    }
+
     $param = $is_edit ? 'updated' : 'submitted';
     wp_redirect(add_query_arg($param, '1', home_url('/min-side/artikler/')));
     exit;
@@ -349,9 +372,9 @@ add_action('init', function () {
         exit;
     }
 
-    // Only author can delete (or admin)
+    // Samme tilgangsregel som redigering
     $user_id = get_current_user_id();
-    if ((int) $artikkel->post_author !== (int) $user_id && !current_user_can('manage_options')) {
+    if (!bimverdi_artikkel_kan_redigere($artikkel_id, $user_id)) {
         wp_redirect(add_query_arg('bv_error', 'not_owner', $redirect_list));
         exit;
     }

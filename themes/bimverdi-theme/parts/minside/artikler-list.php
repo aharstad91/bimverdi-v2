@@ -13,21 +13,15 @@ if (!defined('ABSPATH')) exit;
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
-// Get user's own articles
-$user_articles = get_posts([
-    'post_type'      => 'artikkel',
-    'post_status'    => ['publish', 'pending'],
-    'author'         => $user_id,
-    'posts_per_page' => -1,
-    'orderby'        => 'modified',
-    'order'          => 'DESC',
-]);
+// Egne artikler, der brukeren er medforfatter, og kollegers i samme foretak
+// (regelen bor i mu-plugins/bimverdi-artikkel-redigering.php)
+$user_articles = bimverdi_artikler_for_bruker($user_id);
 ?>
 
 <!-- Page Header -->
 <?php get_template_part('parts/components/page-header', null, [
     'title' => __('Mine artikler', 'bimverdi'),
-    'description' => __('Oversikt over artikler du har sendt inn.', 'bimverdi'),
+    'description' => __('Artikler du og kollegene dine har sendt inn. Du kan rette både ventende og publiserte artikler.', 'bimverdi'),
     'actions' => bimverdi_can_access('write_article') ? [
         ['text' => __('Skriv ny artikkel', 'bimverdi'), 'url' => bimverdi_minside_url('artikler/skriv'), 'variant' => 'primary', 'icon' => 'plus'],
     ] : [],
@@ -53,6 +47,16 @@ $user_articles = get_posts([
 </div>
 <?php endif; ?>
 
+<!-- Success: publisert artikkel endret -->
+<?php if (isset($_GET['publisert_endret']) && $_GET['publisert_endret'] === '1'): ?>
+<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    <p class="text-green-800 text-sm"><?php _e('Endringene er publisert og synlige på nettsiden.', 'bimverdi'); ?></p>
+</div>
+<?php endif; ?>
+
 <!-- Success: deleted -->
 <?php if (isset($_GET['deleted']) && $_GET['deleted'] === '1'): ?>
 <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
@@ -70,7 +74,9 @@ $user_articles = get_posts([
         'nonce'             => __('Lenken har utløpt. Prøv igjen.', 'bimverdi'),
         'not_owner'         => __('Du har ikke tilgang til denne artikkelen.', 'bimverdi'),
         'not_found'         => __('Artikkelen ble ikke funnet.', 'bimverdi'),
-        'already_published' => __('Artikkelen er allerede publisert og kan ikke endres herfra.', 'bimverdi'),
+        'already_published' => __('Publiserte artikler kan ikke slettes herfra. Skriv til post@bimverdi.no.', 'bimverdi'),
+        'not_editable'      => __('Denne artikkelen er skjult eller et utkast, og kan bare endres av BIM Verdi. Skriv til post@bimverdi.no.', 'bimverdi'),
+        'laast'             => __('BIM Verdi har satt opp denne artikkelen med bilder eller spesielt oppsett som skjemaet ikke kan vise. Send endringene dine til post@bimverdi.no, så legger vi dem inn.', 'bimverdi'),
         'system'            => __('En teknisk feil oppstod. Prøv igjen.', 'bimverdi'),
     ];
     $error_text = $error_messages[$error_code] ?? '';
@@ -99,13 +105,20 @@ $user_articles = get_posts([
         <tbody>
             <?php foreach ($user_articles as $article):
                 $status = get_post_status($article->ID);
-                $status_class = $status === 'publish'
-                    ? 'bg-[#DCFCE7] text-[#166534]'
-                    : 'bg-[#FEF9C3] text-[#854D0E]';
-                $status_label = $status === 'publish'
-                    ? __('Publisert', 'bimverdi')
-                    : __('Venter på godkjenning', 'bimverdi');
+                $status_map = [
+                    'publish' => ['bg-[#DCFCE7] text-[#166534]', __('Publisert', 'bimverdi')],
+                    'pending' => ['bg-[#FEF9C3] text-[#854D0E]', __('Venter på godkjenning', 'bimverdi')],
+                    'private' => ['bg-[#F5F5F4] text-[#57534E]', __('Skjult av BIM Verdi', 'bimverdi')],
+                    'draft'   => ['bg-[#F5F5F4] text-[#57534E]', __('Utkast hos BIM Verdi', 'bimverdi')],
+                ];
+                [$status_class, $status_label] = $status_map[$status] ?? $status_map['draft'];
                 $date = get_the_date('d.m.Y', $article->ID);
+                $kan_redigere = bimverdi_artikkel_kan_redigere($article->ID, $user_id)
+                    && bimverdi_artikkel_kan_redigeres_status($article->ID);
+                $laast = $kan_redigere && bimverdi_artikkel_er_laast($article->ID);
+                $forfatter_navn = (int) $article->post_author !== (int) $user_id
+                    ? get_the_author_meta('display_name', $article->post_author)
+                    : '';
             ?>
             <tr class="border-b border-[#E7E5E4] hover:bg-[#F5F5F4] transition-colors">
                 <!-- Tittel -->
@@ -126,6 +139,9 @@ $user_articles = get_posts([
                             $names = wp_list_pluck($temagrupper, 'name');
                         ?>
                             <p class="text-xs text-[#57534E] mt-0.5"><?php echo esc_html(implode(', ', $names)); ?></p>
+                        <?php endif; ?>
+                        <?php if ($forfatter_navn): ?>
+                            <p class="text-xs text-[#57534E] mt-0.5"><?php printf(esc_html__('Skrevet av %s', 'bimverdi'), esc_html($forfatter_navn)); ?></p>
                         <?php endif; ?>
                     </div>
                 </td>
@@ -150,11 +166,19 @@ $user_articles = get_posts([
                             <a href="<?php echo get_permalink($article->ID); ?>" class="p-2 text-[#57534E] hover:text-[#111827] hover:bg-[#F5F5F4] rounded transition-colors" title="<?php esc_attr_e('Vis artikkel', 'bimverdi'); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                             </a>
-                        <?php else: ?>
+                        <?php endif; ?>
+                        <?php if ($kan_redigere && !$laast): ?>
                             <!-- Rediger -->
                             <a href="<?php echo esc_url(bimverdi_minside_url('artikler/rediger') . '?id=' . $article->ID); ?>" class="p-2 text-[#57534E] hover:text-[#111827] hover:bg-[#F5F5F4] rounded transition-colors" title="<?php esc_attr_e('Rediger', 'bimverdi'); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                             </a>
+                        <?php elseif ($laast): ?>
+                            <!-- Låst: satt opp i Gutenberg -->
+                            <a href="<?php echo esc_url(add_query_arg('bv_error', 'laast', bimverdi_minside_url('artikler'))); ?>" class="p-2 text-[#A8A29E] hover:text-[#57534E] rounded transition-colors" title="<?php esc_attr_e('Kan ikke redigeres her — se forklaring', 'bimverdi'); ?>">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </a>
+                        <?php endif; ?>
+                        <?php if ($status === 'pending' && $kan_redigere): ?>
                             <!-- Slett -->
                             <a href="<?php echo esc_url(wp_nonce_url(
                                 add_query_arg([
