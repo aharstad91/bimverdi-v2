@@ -168,6 +168,31 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                 <?php the_content(); ?>
             </div>
 
+            <?php
+            // Eksterne lenker fra skrive-skjemaet på Min Side (feltet «Eksterne
+            // lenker», lagret i bimverdi-artikkel-submission.php). Typisk lenke
+            // til originalartikkelen hos foretaket (Bård, møte 24.09).
+            $eksterne_lenker = get_post_meta(get_the_ID(), '_bv_eksterne_lenker', true);
+            $eksterne_lenker = is_array($eksterne_lenker) ? array_filter($eksterne_lenker, function ($l) {
+                return !empty($l['url']);
+            }) : [];
+            if ($eksterne_lenker) : ?>
+                <div class="mt-8 pt-6 border-t border-[#E5E0D8]">
+                    <h2 class="text-sm font-semibold text-[#57534E] mb-3">Les mer</h2>
+                    <ul class="space-y-2">
+                        <?php foreach ($eksterne_lenker as $lenke) : ?>
+                            <li>
+                                <a href="<?php echo esc_url($lenke['url']); ?>" target="_blank" rel="noopener"
+                                   class="inline-flex items-center gap-1.5 font-medium text-[#1A1A1A] underline decoration-[#FF8B5E] underline-offset-4 hover:text-[#FF8B5E]">
+                                    <?php echo esc_html(!empty($lenke['label']) ? $lenke['label'] : preg_replace('#^https?://(www\.)?#', '', untrailingslashit($lenke['url']))); ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3"/></svg>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
             <!-- Temagrupper -->
             <?php if ($temagrupper && !is_wp_error($temagrupper)) : ?>
                 <div class="mt-8 pt-6 border-t border-[#E5E0D8]">
