@@ -55,7 +55,7 @@ function bimverdi_ics_download($request) {
     }
     
     // Clean filename
-    $filename = sanitize_file_name($arrangement->post_title) . '.ics';
+    $filename = sanitize_file_name(bimverdi_ics_tittel($arrangement_id)) . '.ics';
     
     // Output ICS file
     header('Content-Type: text/calendar; charset=utf-8');
@@ -67,103 +67,154 @@ function bimverdi_ics_download($request) {
 }
 
 /**
+ * Ren arrangementstittel for kalender og e-post.
+ *
+ * WordPress lagrer tittelen HTML-kodet («Nytt &amp; Nyttig»). En kalenderfil
+ * er ren tekst, så uten dekoding viser kalenderen bokstavelig «&amp;».
+ *
+ * @param int $arrangement_id
+ * @return string
+ */
+function bimverdi_ics_tittel($arrangement_id) {
+    $tittel = html_entity_decode(get_the_title($arrangement_id), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    return trim(wp_strip_all_tags($tittel));
+}
+
+/**
+ * Tolk ACF-dato + klokkeslett som norsk tid.
+ *
+ * PHPs standard-tidssone er UTC her (WordPress setter den slik), så både
+ * createFromFormat uten tidssone og strtotime ville lest «14:00» som 14:00 UTC.
+ * Klokkeslettene i admin er norsk tid, så vi tolker dem eksplisitt i
+ * wp_timezone() (Europe/Oslo).
+ *
+ * @param string $dato ACF-dato (Y-m-d, Ymd eller d.m.Y)
+ * @param string $tid  Klokkeslett (H:i eller H:i:s)
+ * @return DateTimeImmutable|null
+ */
+function bimverdi_ics_parse_tid($dato, $tid) {
+    if (!$dato || !$tid) {
+        return null;
+    }
+
+    $tz  = wp_timezone();
+    $tid = substr(trim($tid), 0, 5);
+
+    foreach (array('Y-m-d H:i', 'Ymd H:i', 'd.m.Y H:i') as $format) {
+        $dt = DateTimeImmutable::createFromFormat('!' . $format, $dato . ' ' . $tid, $tz);
+        if ($dt) {
+            return $dt;
+        }
+    }
+
+    try {
+        return new DateTimeImmutable($dato . ' ' . $tid, $tz);
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+/**
+ * Hent start/slutt, sted og beskrivelse for et arrangement — felles for
+ * ICS-fila og Google/Outlook-lenkene, så de ikke kan skli fra hverandre.
+ *
+ * @param int $arrangement_id
+ * @return array|WP_Error
+ */
+function bimverdi_ics_data($arrangement_id) {
+    $dato      = get_field('arrangement_dato', $arrangement_id);
+    $tid_start = get_field('tidspunkt_start', $arrangement_id);
+    $tid_slutt = get_field('tidspunkt_slutt', $arrangement_id);
+
+    if (!$dato || !$tid_start) {
+        return new WP_Error('missing_data', 'Arrangementet mangler dato eller tidspunkt', array('status' => 404));
+    }
+
+    $start = bimverdi_ics_parse_tid($dato, $tid_start);
+    if (!$start) {
+        return new WP_Error('invalid_date', 'Ugyldig dato eller tidspunkt', array('status' => 404));
+    }
+
+    // Slutt faller tilbake til én time etter start hvis den mangler eller er
+    // før start (feilregistrering i admin).
+    $slutt = bimverdi_ics_parse_tid($dato, $tid_slutt);
+    if (!$slutt || $slutt <= $start) {
+        $slutt = $start->modify('+1 hour');
+    }
+
+    $format         = get_field('arrangement_type', $arrangement_id);
+    $fysisk_adresse = trim((string) get_field('sted_adresse', $arrangement_id));
+    $motelenke      = trim((string) get_field('online_lenke', $arrangement_id));
+    $har_lenke      = $motelenke && $format !== 'fysisk';
+
+    // Sted: en kort, lesbar tekst. Selve møtelenka står i beskrivelsen.
+    // Tidligere lå hele Teams-URL-en her, og kalenderen viste den som et langt
+    // uleselig «sted» over beskrivelsen der den også sto.
+    $digitalt = (false !== stripos($motelenke, 'teams.microsoft.com') || false !== stripos($motelenke, 'teams.live.com'))
+        ? 'Digitalt (Microsoft Teams)'
+        : 'Digitalt';
+
+    $sted = '';
+    if ($format === 'fysisk') {
+        $sted = $fysisk_adresse;
+    } elseif ($format === 'digitalt') {
+        $sted = $motelenke ? $digitalt : 'Digitalt';
+    } elseif ($format === 'hybrid') {
+        $sted = implode(' og ', array_filter(array($fysisk_adresse, $motelenke ? lcfirst($digitalt) : '')));
+    }
+
+    // Beskrivelse — bevisst minimal: ingen tekst fra post_content, kun metadata og permalink.
+    // Bård 2026-04-21: "IKKE LEGGE INNHOLD FRA LINKEN TIL ARRANGEMENTET I DESCRIPTION".
+    $beskrivelse = '';
+    if ($har_lenke) {
+        $beskrivelse .= "Bli med i møtet:\n" . $motelenke . "\n\n";
+    }
+    $beskrivelse .= "Arrangert av BIM Verdi\nLes mer: " . get_permalink($arrangement_id);
+
+    return array(
+        'tittel'      => bimverdi_ics_tittel($arrangement_id),
+        'start'       => $start,
+        'slutt'       => $slutt,
+        'sted'        => $sted,
+        'beskrivelse' => $beskrivelse,
+        'url'         => get_permalink($arrangement_id),
+    );
+}
+
+/**
+ * Tidspunkt som UTC i ICS-format (20261008T120000Z).
+ *
+ * UTC med Z er entydig i alle kalendere uten at vi må sende med en
+ * VTIMEZONE-blokk. Uten Z («flytende tid») ville en mottaker i en annen
+ * tidssone fått arrangementet på feil klokkeslett.
+ *
+ * @param DateTimeInterface $dt
+ * @return string
+ */
+function bimverdi_ics_utc($dt) {
+    return $dt->setTimezone(new DateTimeZone('UTC'))->format('Ymd\THis\Z');
+}
+
+/**
  * Generate ICS content for an arrangement
- * 
+ *
  * @param int $arrangement_id Post ID of the arrangement
  * @return string|WP_Error ICS content or error
  */
 function bimverdi_generate_ics($arrangement_id) {
     $arrangement = get_post($arrangement_id);
-    
+
     if (!$arrangement) {
-        return new WP_Error('not_found', 'Arrangement ikke funnet');
+        return new WP_Error('not_found', 'Arrangement ikke funnet', array('status' => 404));
     }
-    
-    // Get ACF fields
-    $dato = get_field('arrangement_dato', $arrangement_id);
-    $tid_start = get_field('tidspunkt_start', $arrangement_id);
-    $tid_slutt = get_field('tidspunkt_slutt', $arrangement_id);
-    $format = get_field('arrangement_type', $arrangement_id);
-    $beskrivelse = get_post_field('post_content', $arrangement_id);
-    $fysisk_adresse = get_field('sted_adresse', $arrangement_id);
-    $motelenke = get_field('online_lenke', $arrangement_id);
-    
-    if (!$dato || !$tid_start) {
-        return new WP_Error('missing_data', 'Mangler dato eller tidspunkt');
+
+    $data = bimverdi_ics_data($arrangement_id);
+    if (is_wp_error($data)) {
+        return $data;
     }
-    
-    // Parse date and times - try multiple formats
-    $start_datetime = DateTime::createFromFormat('Ymd H:i', $dato . ' ' . $tid_start);
-    if (!$start_datetime) {
-        $start_datetime = DateTime::createFromFormat('Y-m-d H:i', $dato . ' ' . $tid_start);
-    }
-    if (!$start_datetime) {
-        $start_datetime = DateTime::createFromFormat('d.m.Y H:i', $dato . ' ' . $tid_start);
-    }
-    if (!$start_datetime) {
-        $timestamp = strtotime($dato . ' ' . $tid_start);
-        if ($timestamp) {
-            $start_datetime = new DateTime();
-            $start_datetime->setTimestamp($timestamp);
-        }
-    }
-    
-    if (!$start_datetime) {
-        return new WP_Error('invalid_date', 'Ugyldig dato eller tidspunkt');
-    }
-    
-    // End time defaults to 1 hour after start if not set
-    $end_datetime = null;
-    if ($tid_slutt) {
-        $end_datetime = DateTime::createFromFormat('Ymd H:i', $dato . ' ' . $tid_slutt);
-        if (!$end_datetime) {
-            $end_datetime = DateTime::createFromFormat('Y-m-d H:i', $dato . ' ' . $tid_slutt);
-        }
-        if (!$end_datetime) {
-            $end_datetime = DateTime::createFromFormat('d.m.Y H:i', $dato . ' ' . $tid_slutt);
-        }
-        if (!$end_datetime) {
-            $timestamp = strtotime($dato . ' ' . $tid_slutt);
-            if ($timestamp) {
-                $end_datetime = new DateTime();
-                $end_datetime->setTimestamp($timestamp);
-            }
-        }
-    }
-    
-    if (!$end_datetime) {
-        $end_datetime = clone $start_datetime;
-        $end_datetime->modify('+1 hour');
-    }
-    
-    // Build location string
-    $location = '';
-    if ($format === 'fysisk' && $fysisk_adresse) {
-        $location = $fysisk_adresse;
-    } elseif ($format === 'digitalt' && $motelenke) {
-        $location = $motelenke;
-    } elseif ($format === 'hybrid') {
-        $parts = array();
-        if ($fysisk_adresse) $parts[] = $fysisk_adresse;
-        if ($motelenke) $parts[] = 'Online: ' . $motelenke;
-        $location = implode(' | ', $parts);
-    }
-    
-    // Build description — bevisst minimal: ingen tekst fra post_content, kun metadata og permalink.
-    // Bård 2026-04-21: "IKKE LEGGE INNHOLD FRA LINKEN TIL ARRANGEMENTET I DESCRIPTION".
-    $description_parts = array();
-    if ($motelenke && $format !== 'fysisk') {
-        $description_parts[] = 'Møtelenke: ' . $motelenke . "\n\n";
-    }
-    $description_parts[] = 'Arrangert av BIM Verdi';
-    $description_parts[] = "\nLes mer: " . get_permalink($arrangement_id);
-    
-    $description = implode('', $description_parts);
-    
-    // Generate unique ID for event
+
     $uid = 'arrangement-' . $arrangement_id . '@' . parse_url(home_url(), PHP_URL_HOST);
-    
-    // Build ICS content
+
     $ics = array();
     $ics[] = 'BEGIN:VCALENDAR';
     $ics[] = 'VERSION:2.0';
@@ -174,33 +225,62 @@ function bimverdi_generate_ics($arrangement_id) {
     $ics[] = 'BEGIN:VEVENT';
     $ics[] = 'UID:' . $uid;
     $ics[] = 'DTSTAMP:' . gmdate('Ymd\THis\Z');
-    $ics[] = 'DTSTART:' . $start_datetime->format('Ymd\THis');
-    $ics[] = 'DTEND:' . $end_datetime->format('Ymd\THis');
-    $ics[] = 'SUMMARY:' . bimverdi_ics_escape($arrangement->post_title);
-    
-    if ($location) {
-        $ics[] = 'LOCATION:' . bimverdi_ics_escape($location);
+    $ics[] = 'DTSTART:' . bimverdi_ics_utc($data['start']);
+    $ics[] = 'DTEND:' . bimverdi_ics_utc($data['slutt']);
+    $ics[] = 'SUMMARY:' . bimverdi_ics_escape($data['tittel']);
+
+    if ($data['sted']) {
+        $ics[] = 'LOCATION:' . bimverdi_ics_escape($data['sted']);
     }
-    
-    if ($description) {
-        $ics[] = 'DESCRIPTION:' . bimverdi_ics_escape($description);
-    }
-    
-    $ics[] = 'URL:' . get_permalink($arrangement_id);
+
+    $ics[] = 'DESCRIPTION:' . bimverdi_ics_escape($data['beskrivelse']);
+    $ics[] = 'URL:' . $data['url'];
     $ics[] = 'STATUS:CONFIRMED';
     $ics[] = 'ORGANIZER;CN=BIM Verdi:mailto:post@bimverdi.no';
-    
+
     // Add reminder 1 hour before
     $ics[] = 'BEGIN:VALARM';
     $ics[] = 'TRIGGER:-PT1H';
     $ics[] = 'ACTION:DISPLAY';
-    $ics[] = 'DESCRIPTION:Påminnelse: ' . bimverdi_ics_escape($arrangement->post_title);
+    $ics[] = 'DESCRIPTION:' . bimverdi_ics_escape('Påminnelse: ' . $data['tittel']);
     $ics[] = 'END:VALARM';
-    
+
     $ics[] = 'END:VEVENT';
     $ics[] = 'END:VCALENDAR';
-    
-    return implode("\r\n", $ics);
+
+    // RFC 5545: hver linje, også den siste, avsluttes med CRLF.
+    return implode("\r\n", array_map('bimverdi_ics_fold', $ics)) . "\r\n";
+}
+
+/**
+ * Brett en ICS-linje til maks 75 byte per linje (RFC 5545 §3.1).
+ *
+ * Fortsettelseslinjer starter med ett mellomrom. Vi teller byte, ikke tegn,
+ * og deler aldri midt i et flerbyte UTF-8-tegn (æ, ø, å).
+ *
+ * @param string $line
+ * @return string
+ */
+function bimverdi_ics_fold($line) {
+    if (strlen($line) <= 75) {
+        return $line;
+    }
+
+    $linjer = array();
+    $gjeldende = '';
+    $maks = 75;
+
+    foreach (preg_split('//u', $line, -1, PREG_SPLIT_NO_EMPTY) as $tegn) {
+        if (strlen($gjeldende) + strlen($tegn) > $maks) {
+            $linjer[] = $gjeldende;
+            $gjeldende = '';
+            $maks = 74; // ledende mellomrom teller med i de 75
+        }
+        $gjeldende .= $tegn;
+    }
+    $linjer[] = $gjeldende;
+
+    return implode("\r\n ", $linjer);
 }
 
 /**
@@ -246,8 +326,7 @@ function bimverdi_generate_ics_file($arrangement_id) {
         return false;
     }
     
-    $arrangement = get_post($arrangement_id);
-    $filename = sanitize_file_name($arrangement->post_title) . '.ics';
+    $filename = sanitize_file_name(bimverdi_ics_tittel($arrangement_id)) . '.ics';
     
     $upload_dir = wp_upload_dir();
     $ics_dir = $upload_dir['basedir'] . '/ics-temp/';
@@ -294,10 +373,10 @@ add_action('bimverdi_pamelding_created', function($pamelding_id, $arrangement_id
 
     $dato_formatted = $dato ? wp_date('j. F Y', strtotime($dato)) : '';
 
-    $subject  = 'Påmelding bekreftet: ' . $arrangement->post_title;
+    $subject  = 'Påmelding bekreftet: ' . bimverdi_ics_tittel($arrangement_id);
     $ics_url  = rest_url('bimverdi/v1/ics/arrangement/' . $arrangement_id);
     $minside  = home_url('/min-side/arrangementer/');
-    $title_e  = esc_html($arrangement->post_title);
+    $title_e  = esc_html(bimverdi_ics_tittel($arrangement_id));
     $name_e   = esc_html($user->display_name);
 
     // Location line
@@ -349,82 +428,29 @@ add_action('bimverdi_cleanup_ics_file', function($file_path) {
  * @return array Links for various calendar services
  */
 function bimverdi_get_calendar_links($arrangement_id) {
-    $arrangement = get_post($arrangement_id);
-    
-    if (!$arrangement) {
+    if (!get_post($arrangement_id)) {
         return array();
     }
-    
-    $dato = get_field('arrangement_dato', $arrangement_id);
-    $tid_start = get_field('tidspunkt_start', $arrangement_id);
-    $tid_slutt = get_field('tidspunkt_slutt', $arrangement_id);
-    $fysisk_adresse = get_field('sted_adresse', $arrangement_id);
-    $beskrivelse = wp_strip_all_tags(get_post_field('post_content', $arrangement_id) ?: '');
-    
-    if (!$dato || !$tid_start) {
+
+    // Samme data som ICS-fila: norsk tid, ingen tekst fra post_content (Bård 2026-04-21).
+    $data = bimverdi_ics_data($arrangement_id);
+    if (is_wp_error($data)) {
         return array();
     }
-    
-    // Parse dates - try multiple formats (ACF may return different formats)
-    $start = DateTime::createFromFormat('Ymd H:i', $dato . ' ' . $tid_start);
-    if (!$start) {
-        // Try Y-m-d format
-        $start = DateTime::createFromFormat('Y-m-d H:i', $dato . ' ' . $tid_start);
-    }
-    if (!$start) {
-        // Try d.m.Y format (Norwegian)
-        $start = DateTime::createFromFormat('d.m.Y H:i', $dato . ' ' . $tid_start);
-    }
-    if (!$start) {
-        // Try strtotime as fallback
-        $timestamp = strtotime($dato . ' ' . $tid_start);
-        if ($timestamp) {
-            $start = new DateTime();
-            $start->setTimestamp($timestamp);
-        }
-    }
-    
-    // If still can't parse, return empty
-    if (!$start) {
-        return array();
-    }
-    
-    $end = null;
-    if ($tid_slutt) {
-        $end = DateTime::createFromFormat('Ymd H:i', $dato . ' ' . $tid_slutt);
-        if (!$end) {
-            $end = DateTime::createFromFormat('Y-m-d H:i', $dato . ' ' . $tid_slutt);
-        }
-        if (!$end) {
-            $end = DateTime::createFromFormat('d.m.Y H:i', $dato . ' ' . $tid_slutt);
-        }
-        if (!$end) {
-            $timestamp = strtotime($dato . ' ' . $tid_slutt);
-            if ($timestamp) {
-                $end = new DateTime();
-                $end->setTimestamp($timestamp);
-            }
-        }
-    }
-    
-    if (!$end) {
-        $end = (clone $start)->modify('+1 hour');
-    }
-    
-    $title = urlencode($arrangement->post_title);
-    $location = urlencode($fysisk_adresse ?: '');
-    $details = urlencode(substr($beskrivelse, 0, 500) . "\n\nLes mer: " . get_permalink($arrangement_id));
-    
-    // Format for Google Calendar
-    $google_dates = $start->format('Ymd\THis') . '/' . $end->format('Ymd\THis');
-    
-    // Format for Outlook
-    $outlook_start = $start->format('Y-m-d\TH:i:s');
-    $outlook_end = $end->format('Y-m-d\TH:i:s');
-    
+
+    $title    = rawurlencode($data['tittel']);
+    $location = rawurlencode($data['sted']);
+    $details  = rawurlencode($data['beskrivelse']);
+
+    // Google tar UTC med Z; Outlook tar ISO 8601 med Z.
+    $google_dates  = bimverdi_ics_utc($data['start']) . '/' . bimverdi_ics_utc($data['slutt']);
+    $utc           = new DateTimeZone('UTC');
+    $outlook_start = $data['start']->setTimezone($utc)->format('Y-m-d\TH:i:s\Z');
+    $outlook_end   = $data['slutt']->setTimezone($utc)->format('Y-m-d\TH:i:s\Z');
+
     return array(
-        'ics' => bimverdi_get_ics_url($arrangement_id),
-        'google' => "https://calendar.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$google_dates}&details={$details}&location={$location}",
+        'ics'     => bimverdi_get_ics_url($arrangement_id),
+        'google'  => "https://calendar.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$google_dates}&details={$details}&location={$location}",
         'outlook' => "https://outlook.live.com/calendar/0/action/compose?subject={$title}&startdt={$outlook_start}&enddt={$outlook_end}&body={$details}&location={$location}",
     );
 }
