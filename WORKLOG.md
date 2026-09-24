@@ -3,6 +3,72 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-09-24
+action: Påminnelse-gaten åpnet, kalenderfila fikset, møte med Bård, deltakerartikler kan redigeres etter publisering — alt live
+files:
+  - "prod wp-config.php (BIMVERDI_PAMINNELSE_APEN = true; backup wp-config.php.bak-20260924)"
+  - "mu-plugins/bimverdi-ics-generator.php (UTC-tid, linjebretting, ren tittel, kort sted-felt, 404 uten dato)"
+  - "mu-plugins/bimverdi-artikkel-redigering.php (NY — tilgang, Gutenberg-lås, liste, varsler, revisjoner)"
+  - "mu-plugins/bimverdi-artikkel-submission.php (publisert forblir publisert, artikkel_bedrift beholdes, ny tilgangsregel)"
+  - "themes/bimverdi-theme/parts/minside/artikler-list.php, artikler-rediger.php, artikler-skriv.php"
+  - "themes/bimverdi-theme/single-artikkel.php («Les mer»-lenker + «Rediger artikkelen»)"
+  - "docs/plans/2026-09-24-001-feat-artikkel-user-journey-plan.md (NY)"
+summary: "ALT LIVE PÅ PROD 24.09, sjekksum-verifisert. (1) Påminnelse-gaten er åpnet i prod wp-config — første ekte utsending 7. okt kl 10 for arrangementet 8. okt (5826, 7 påmeldte). (2) Kalenderfila (Kjells «ser veldig rart ut») viste norsk tid som UTC, brettet ikke lange linjer og hadde HTML-entiteter i tittelen — rettet og validert med icalendar (commit 232a623). (3) Møte med Bård om uke 39. Hovedsak punkt 5: NTIs lenke «forsvant» fordi feltet «Eksterne lenker» ble lagret men aldri vist (commit 095cf62). Deretter hele skrive/redigere-reisen bygget (commit 73d04d5): forfatter, medforfatter og kolleger i samme foretak kan redigere også publiserte artikler fra Min Side; endringen går rett ut og post@bimverdi.no får e-post med hva som er endret; revisjoner slått på; artikler Bård har satt opp med bilder/spesialblokker er låst. Bård tagget på Trello #354 med testinstruks."
+status: waiting
+waiting_on: "Bård — teste artikkelredigering selv og via Håvard (NTI), og gi go for forfattervarselet «Artikkelen din er publisert» (gate BIMVERDI_ARTIKKEL_VARSLER_APEN, låst: testkopi til andreas@aharstad.no). Trello #354 24.09. + Kjell — bekrefte at kalenderfila nå ser riktig ut. + Fortsatt åpent fra 17.09: Bårds test av uke 38-punktene og nyhetsbrevet (#350)."
+detail: |
+  PÅMINNELSE-GATEN
+  Sjekket først at ingen arrangementer 25.09 ville trigge utsending umiddelbart.
+  5826 har _bv_paminnelse_sendt = 20260917 (fra test), som ikke blokkerer
+  utsendingen for 20261008. Nødstenging: filteret
+  bimverdi_paminnelse_gate_apen → __return_false.
+
+  KALENDERFILA (ICS)
+  Feil funnet: DTSTART/DTEND uten tidssone (klienter tolket som UTC → 2 t feil),
+  ingen linjebretting (RFC 5545: 75 oktetter), &#8211; o.l. i SUMMARY, lang
+  beskrivelse med hele post_content, 500-feil på arrangementer uten dato.
+  Nå: UTC med Z via wp_timezone(), UTF-8-sikker bretting, dekodet tittel,
+  LOCATION «Digitalt (Microsoft Teams)» / adresse / hybrid, beskrivelse med
+  Teams-lenke + «Les mer», 404 uten dato. Verifisert på prod: 5826 gir
+  DTSTART:20261008T120000Z (= 14:00 norsk tid).
+
+  MØTE 24.09 (Andreas og Bård, ~30 min, uke 39-kortet #354)
+  - Punkt 5 deltakerartikler: Håvard (NTI) vil redigere Betonmast-artikkelen
+    (5882) og lenken hans forsvant. Andreas sa i møtet at en sikkerhets-
+    mekanisme fjernet lenken — det viste seg FEIL: wp_kses_post beholder
+    <a href> (testet på prod). Lenken lå i «Eksterne lenker» som aldri ble
+    vist. Bård ba om at lenke prioriteres; redigering tas i samme runde.
+  - Punkt 4 brukerredigering: Bård lurer på om de tre feltene for
+    deltakernivå på foretaksprofilen kan slås sammen, og om prosjektdeltaker
+    skal være valg på brukernivå. Andreas skal se på avhengighetene. IKKE GJORT.
+  - Punkt 3 SEO: Bård vil ha en strukturert plan. Avtalt: Andreas kjører en
+    research-rapport (Claude research) om aktuelle tema, med kildekritikk i
+    to steg; Bård reviderer kildelista (bygg.no, Construction City,
+    buildingSMART …). Også: hvilke emneknagger (hashtags) på LinkedIn, og om
+    de har noe å si. Andreas viste Google Analytics: 66 aktive brukere,
+    260 besøk, 1250 sidevisninger siste 28 dager; verktøy og artikler mest
+    lest; «(not set)» nr. 2 = manglende sporing. Forslag: UTM-lenker i
+    nyhetsbrevet. IKKE GJORT.
+  - Punkt 1 (avmeldingsfrist vises som passert før fristen) og punkt 2
+    (avvise registreringer fra gmail/yahoo/aol/hotmail) står på kortet, ble
+    ikke tatt i møtet. IKKE GJORT.
+
+  ARTIKKELREISEN — BESLUTNING OG TEST
+  Beslutning (Andreas): endringer i publiserte artikler går rett ut, BIM Verdi
+  varsles, revisjoner gir angremulighet. Testet lokalt i nettleser (5700):
+  status forble publish, lenke via lenkeknappen lagret, revisjon opprettet,
+  foretak uendret, endringsvarsel generert (blokkert lokalt). Publisert-
+  varsel testet med midlertidig artikkel → testkopi til andreas@aharstad.no.
+  Kollega-regelen ikke testet i nettleser (mangler kolleger lokalt);
+  verifisert på prod at Håvard (568) kan redigere 5882 og ser den i lista.
+
+  RESTER / MERKNADER
+  - `git pull` mot baardkr/bimverdi-context feiler med «repository not found»
+    — repoet kan være omdøpt eller tilgangen fjernet. Sjekk med Bård.
+  - TinyMCE-lenkeboksen er på engelsk («Paste URL or type to search»).
+  - Ingen «avvist»-e-post til forfatter; Bård avviser ved å slette.
+
+---
 date: 2026-09-17
 action: Synk med Bård — seks punkter fra uke 38 bygget, ny forside live, alt pushet og verifisert på prod
 files:
