@@ -3,6 +3,77 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-10-01
+action: Uke 40 (Trello, møte med Bård 29.09) — logostripa live, forbedringsagent prøvekjørt og kontrollert på Weld IT-artikkelen
+files:
+  - "themes/bimverdi-theme/front-page.php (logostripa: alle deltakere+, tilfeldig rekkefølge, animasjonstid skalert)"
+  - "docs/plans/2026-10-01-forbedringsagent-weldit.html (NY — før/etter-side for Bård, lokal fil, ikke artifact)"
+summary: "(1) LIVE: Logostripa på forsiden viste bare de 18 nyeste av 61 foretak med bv_rolle Deltaker/Prosjektdeltaker/Partner, under overskriften «Disse foretakene er med i nettverket». Nå posts_per_page -1 og orderby rand; animasjonstiden skaleres (2,8 s per logo, 171 s for 61) så farten er uendret. Commit 8128e0a, verifisert på prod (122 elementer = 61 x 2). (2) Forbedringsagent prøvekjørt på «Sveisedata i BIM-modellen» (5901, Kjell Inge Jørgensen, Weld IT): vurdering, markert/før/etter, forslag til metabeskrivelse, alt-tekst og temagrupper, utkast til tilbakemelding fra Bård. Deretter kjørt en egen kontrollør-agent som fant 20 feil/svakheter i agentens arbeid; alle rettet og vist i en egen seksjon «Kontroll». Ingenting er endret i den publiserte artikkelen."
+status: waiting
+waiting_on: "Bård — i møtet 01.10: (a) go på forfattervarselet «Artikkelen din er publisert» rett til forfatter med Bård på kopi (BIMVERDI_ARTIKKEL_VARSLER_APEN i prod wp-config, backup først) — lovet 29.09, ikke gjort; (b) navn på agenten («forbedringsagent»); (c) hvilke vurderingspunkter som er viktigst; (d) om forslagene til Kjell Inge skal sendes. + Andreas — kjøre agenten (begge steg) på Betonmast (5882), NTNU og Catenda før demoen 8. okt kl 14."
+detail: |
+  KONTROLLENS VIKTIGSTE FUNN (rettet)
+  - Kommentarfeltet er IKKE stengt: comment_status=closed i DB, men
+    mu-plugins/bimverdi-still-sporsmal.php (~linje 93) overstyrer for artikler.
+    Lærdom: sjekk live-siden, ikke rå DB-felt.
+  - Agenten la nye påstander inn i forfatterens tekst (møtet 29.10 «tar opp
+    akkurat dette», ny kildehenvisning). Regel nå: BIM Verdis lenker/tips i egen
+    «Relatert»-boks; i forfatterens tekst kun lenker på ord han selv har skrevet.
+  - Metabeskrivelsen påsto at Weld IT har valgt IFC; forfatteren sier det motsatte.
+  - Scoren trakk forfatteren for ting han ikke rår over (arrangement 5903 opprettet
+    en time etter publisering; metabeskrivelse mangler på hele nettstedet).
+    Vurderingen er nå delt: forfatterens tekst (36/45, ni punkter inkl. nye: kilder,
+    reklamepreg, faglig presisjon) og redaksjonens tiltak.
+
+  REDAKSJONELLE FUNN (ikke gjort)
+  - Ingen SEO-plugin, temaet skriver ikke ut meta description: metabeskrivelser
+    krever utvikling (henger sammen med SEO-rapporten 29.09).
+  - Kunnskapskilden for NS 3456 er 2010-utgaven; gjeldende er NS 3456:2022.
+  - 5901 har temagruppene Andre kategorier, ByggesaksBIM, MiljøBIM, SirkBIM;
+    forslag ProsjektBIM + EiendomsBIM + SirkBIM.
+  - Toppbilde (attachment 5900) mangler alt-tekst.
+
+  TEKST TIL BÅRDS BREV OM DELTAKERARTIKLER (gitt i chat)
+  Kort avsnitt om at forfattere får tilbakemelding på overskrift, språk, struktur
+  og kilder, og lenkeforslag, uten at budskapet endres.
+
+  MERKNAD
+  Disken på Mac-en var full under økten (1,7 GB ledig etter rydding).
+
+---
+date: 2026-09-29
+action: SEO-research til Bård (uke 39-kortet #354, punkt 3) — rapport og HTML-side klar, ingen kodeendringer
+files:
+  - "docs/plans/2026-09-29-seo-research-rapport.md (NY)"
+  - "docs/plans/2026-09-29-seo-research-rapport.html (NY — selvstendig side å vise Bård, 36 kildelenker)"
+summary: "Research-rapporten fra møtet 24.09 er levert som markdown og HTML. To runder Sonnet-agenter med websøk: bred kartlegging først, deretter originalkilder lest i full tekst og kodegjennomgang av GA4. Ingenting er endret i koden eller pushet. Hovedfunn: (1) Bårds hypotese om maskinlesbare regler og KI holder; alle seks temaer mangler en aktuell fagartikkel på bimverdi.no. (2) «(not set)» skyldes trolig at nyhetsbrevlenkene ikke har UTM, at innloggings-redirecten mister utm_*, og at GA4 bare lastes etter samtykke uten Consent Mode. (3) Teknisk SEO mangler helt: ingen meta description, Open Graph eller schema, html lang=en-US, sitemap med brukerprofiler og 18 testarrangementer. (4) Kildelisten er sjekket mot faktisk innhold siste 6 mnd."
+status: waiting
+waiting_on: "Bård — svar på fem punkter i HTML-siden: kildelisten, hva NorBIM er, temaprioritering (maskinlesbare regler, produktpass, KI), adresser til Norsk Byggebransje/Arkitektnytt/Ingeniøren, og ok til tekniske rettinger + UTM i måned 1–2. + Andreas — sjekke manuelt Statsbygg, Ingeniøren, Arkitektnytt, Norsk Byggebransje og TU (agentene fikk ikke hentet innhold). + Fortsatt åpent fra 24.09: Bårds test av artikkelredigering (#354) og go for forfattervarselet, Kjell om kalenderfila."
+detail: |
+  IKKE GJORT (anbefalt, venter på ok)
+  - UTM på nyhetsbrevlenker: hjelpefunksjon i mu-plugins/bimverdi-nyhetsbrev-content.php
+    (linje 356, 429, 468, 499, 559 + arkiv_url 595–651), ikke på avmeldingslenken.
+  - Ta med utm_* gjennom innloggings-redirecten (auth-routes.php linje 123 og 154).
+  - Consent Mode og ekskludering av innloggede/admin i cookie-consent.php.
+  - Meta description, Open Graph, Article/Organization-schema, lang=nb-NO, Sitemap-linje
+    i robots.txt, rydde testdata og brukerprofiler ut av sitemap.
+
+  RETTELSE
+  Tallet «opptil 25 % bedre for arrangementshashtags» i første utkast lot seg ikke
+  verifisere som van der Bloms tall (rapporten er betalt) og er fjernet. Bård kan ha sett
+  det i et tidligere utkast.
+
+  ÅPNE KONTROLLER FØR PUBLISERING AV ARTIKLER
+  - Utfallet av høringen om byggesaksforskriften (frist 11.06.2026).
+  - EØS-status for byggevareforordningen; dato for batteripass (18.02.2026 eller 2027).
+  - Søkevolum er ikke målt; søkeverktøyet var USA-basert og viser ikke ekte Google.no.
+  - NorBIM er en nettleserbasert BIM-tjeneste (That Open), eier ikke funnet.
+
+  INNHOLDSREVISJON bimverdi.no (målt 29.09)
+  40 artikler, 238 kunnskapskilder, 1949 verktøy. Forfatterforetak oppgitt på bare fire
+  artikler. /verktoy/-filtrene virker ikke i server-HTML. robots.txt uten Sitemap-linje.
+
+---
 date: 2026-09-24
 action: Påminnelse-gaten åpnet, kalenderfila fikset, møte med Bård, deltakerartikler kan redigeres etter publisering — alt live
 files:
