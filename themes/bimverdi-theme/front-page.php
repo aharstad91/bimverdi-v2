@@ -51,13 +51,14 @@ $total_events    = wp_count_posts('arrangement')->publish;
 $total_sources   = wp_count_posts('kunnskapskilde')->publish;
 $total_articles  = wp_count_posts('artikkel')->publish;
 
-// Foretak for logo bar (prefer those with thumbnails, fallback to any)
+// Foretak for logo bar: alle deltakere og oppover, i tilfeldig rekkefølge.
+// Overskriften sier «Disse foretakene er med i nettverket», så et utvalg på
+// 18 av ~60 var misvisende (Bård, uke 40).
 $logo_companies = get_posts([
     'post_type'      => 'foretak',
-    'posts_per_page' => 18,
+    'posts_per_page' => -1,
     'post_status'    => 'publish',
-    'orderby'        => 'date',
-    'order'          => 'DESC',
+    'orderby'        => 'rand',
     'meta_query'     => [
         [
             'key'     => 'bv_rolle',
@@ -1403,7 +1404,8 @@ $theme_groups = [
     <div class="bv3-container">
         <div class="bv3-logobar__label">Disse foretakene er med i nettverket</div>
         <div class="bv3-logobar__scroll">
-            <div class="bv3-logobar__track">
+            <?php // Farten skal være den samme uansett antall: 50 s for 18 logoer ≈ 2,8 s per logo. ?>
+            <div class="bv3-logobar__track" style="animation-duration: <?php echo max(50, (int) round(count($logo_companies) * 2.8)); ?>s;">
                 <?php
                 // Render twice for seamless loop
                 for ($loop = 0; $loop < 2; $loop++):
