@@ -57,6 +57,8 @@ add_action('template_redirect', function () {
     $phone        = sanitize_text_field($_POST['phone'] ?? '');
     $job_title    = sanitize_text_field($_POST['job_title'] ?? '');
     $linkedin_url = esc_url_raw($_POST['linkedin_url'] ?? '');
+    // Biografi lagres i WP-feltet «Biographical Info» (description), maks 300 tegn
+    $bio          = mb_substr(trim(sanitize_textarea_field(wp_unslash($_POST['bio'] ?? ''))), 0, 300);
 
     // Sanitize checkbox arrays
     $registration_background = array_map('sanitize_text_field', (array) ($_POST['registration_background'] ?? []));
@@ -123,6 +125,7 @@ add_action('template_redirect', function () {
         'ID'         => $user_id,
         'first_name' => $first_name,
         'last_name'  => $last_name,
+        'description' => $bio,
     ];
 
     $result = wp_update_user($user_data);

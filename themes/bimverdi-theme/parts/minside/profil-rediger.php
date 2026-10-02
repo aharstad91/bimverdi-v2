@@ -197,6 +197,27 @@ if ($profile_image_id) {
                                autocomplete="url"
                                class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
                     </div>
+
+                    <!-- Biografi -->
+                    <div>
+                        <label for="bio" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                            <?php _e('Biografi', 'bimverdi'); ?>
+                        </label>
+                        <textarea id="bio" name="bio" rows="4" maxlength="300"
+                                  placeholder="<?php esc_attr_e('Kort om deg og din rolle', 'bimverdi'); ?>"
+                                  class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent"><?php echo esc_textarea($profile['bio'] ?? ''); ?></textarea>
+                        <p class="mt-1 text-xs text-[#888888]">
+                            <?php _e('Vises under navnet ditt på styre- og faggruppesider. Maks 300 tegn.', 'bimverdi'); ?>
+                            <span id="bio-count" class="ml-1"></span>
+                        </p>
+                        <script>
+                        (function () {
+                            var el = document.getElementById('bio'), out = document.getElementById('bio-count');
+                            function update() { out.textContent = el.value.length + '/300'; }
+                            el.addEventListener('input', update); update();
+                        })();
+                        </script>
+                    </div>
                 </div>
             </div>
 

@@ -48,6 +48,7 @@ function bim_get_user_profile($user_id) {
         'first_name' => $user->first_name,
         'last_name' => $user->last_name,
         'email' => $user->user_email,
+        'bio' => $user->description,
         'phone' => bim_get_user_profile_field('phone', $user_id),
         'job_title' => bim_get_user_profile_field('job_title', $user_id),
         'linkedin_url' => bim_get_user_profile_field('linkedin_url', $user_id),
