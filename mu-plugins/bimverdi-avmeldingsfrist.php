@@ -15,6 +15,26 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Tolk en klokkeslett-streng («2026-10-08 13:00:00») som norsk tid.
+ *
+ * WordPress setter PHP-tidssonen til UTC, så strtotime() alene leser
+ * norske tider to timer for sent (én time om vinteren).
+ *
+ * @param string $datetime Dato/tid slik den er lagret i ACF
+ * @return int Unix-tidsstempel, 0 hvis strengen ikke kan tolkes
+ */
+function bimverdi_local_timestamp($datetime) {
+    if (!$datetime) {
+        return 0;
+    }
+    try {
+        return (new DateTimeImmutable((string) $datetime, wp_timezone()))->getTimestamp();
+    } catch (Exception $e) {
+        return 0;
+    }
+}
+
+/**
  * Get dynamic cancellation deadline for an arrangement
  * 
  * @param int $arrangement_id Post ID of the arrangement
@@ -47,7 +67,7 @@ function bimverdi_get_avmeldingsfrist($arrangement_id) {
     }
     
     // Parse event datetime
-    $event_datetime = strtotime($dato . ' ' . $tid_start);
+    $event_datetime = bimverdi_local_timestamp($dato . ' ' . $tid_start);
     
     if (!$event_datetime) {
         return $result;
@@ -55,9 +75,9 @@ function bimverdi_get_avmeldingsfrist($arrangement_id) {
     
     // If manual deadline is set, use that
     if ($manual_frist) {
-        $deadline = strtotime($manual_frist . ' 23:59:59');
+        $deadline = bimverdi_local_timestamp($manual_frist . ' 23:59:59');
         $result['timestamp'] = $deadline;
-        $result['formatted'] = date_i18n('j. F Y', $deadline);
+        $result['formatted'] = wp_date('j. F Y', $deadline);
         $result['can_cancel'] = time() < $deadline;
         $result['hours'] = round(($event_datetime - $deadline) / 3600);
         return $result;
@@ -78,7 +98,7 @@ function bimverdi_get_avmeldingsfrist($arrangement_id) {
     $deadline = $event_datetime - ($hours_before * 3600);
     
     $result['timestamp'] = $deadline;
-    $result['formatted'] = date_i18n('j. F Y \k\l. H:i', $deadline);
+    $result['formatted'] = wp_date('j. F Y \k\l. H:i', $deadline);
     $result['can_cancel'] = time() < $deadline;
     $result['hours'] = $hours_before;
     

@@ -52,7 +52,7 @@ function bimverdi_ajax_register_event() {
     // Check registration deadline
     $pameldingsfrist = get_field('pameldingsfrist', $arrangement_id);
     $dato = get_field('arrangement_dato', $arrangement_id);
-    if ($pameldingsfrist && strtotime($pameldingsfrist) < time()) {
+    if ($pameldingsfrist && bimverdi_local_timestamp($pameldingsfrist) < time()) {
         wp_send_json_error(['message' => 'Påmeldingsfristen har gått ut.'], 400);
     } elseif (!$pameldingsfrist && $dato && strtotime($dato) < strtotime('today')) {
         wp_send_json_error(['message' => 'Påmeldingsfristen har gått ut.'], 400);

@@ -58,7 +58,7 @@ $is_past = ($arrangement_status_toggle === 'tidligere');
 // Check registration deadline
 $frist_passert = false;
 if ($pameldingsfrist) {
-    $frist_passert = strtotime($pameldingsfrist) < time();
+    $frist_passert = bimverdi_local_timestamp($pameldingsfrist) < time();
 } elseif ($dato) {
     $frist_passert = strtotime($dato) < strtotime('today');
 }
@@ -457,7 +457,7 @@ if ($sted_adresse && ($arrangement_type === 'fysisk' || $arrangement_type === 'h
                     <?php if ($pameldingsfrist && !$frist_passert): ?>
                     <p class="text-xs text-[#57534E] mt-2 flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Frist: <?php echo wp_date('j. F Y H:i', strtotime($pameldingsfrist)); ?>
+                        Frist: <?php echo wp_date('j. F Y H:i', bimverdi_local_timestamp($pameldingsfrist)); ?>
                     </p>
                     <?php endif; ?>
 
