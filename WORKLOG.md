@@ -3,6 +3,75 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-10-02
+action: UKE40-oppgaver fra møtet 01.10 — bio-felt, arrangementfrist (tidssone), oppdateringer-omdøping og forfattervarsel, alt live på prod
+files:
+  - "mu-plugins/bimverdi-profile-edit.php (bio → description, maks 300 tegn)"
+  - "plugins/bim-verdi-core/includes/helpers/user-profile-helpers.php (bio i bim_get_user_profile)"
+  - "themes/bimverdi-theme/parts/minside/profil-rediger.php (Biografi-felt med teller)"
+  - "mu-plugins/bimverdi-avmeldingsfrist.php (NY bimverdi_local_timestamp; wp_date)"
+  - "mu-plugins/bimverdi-event-registration.php, themes/bimverdi-theme/single-arrangement.php (frist som norsk tid)"
+  - "mu-plugins/bimverdi-nyhetsbrev-cpt.php, -send.php, -content.php, themes/.../parts/email/nyhetsbrev.php + 6 brukerrettede tekster (Nyhetsbrev → Oppdateringer)"
+  - "prod wp-config.php (BIMVERDI_ARTIKKEL_VARSLER_APEN = true; backup wp-config.php.bak-20261002)"
+summary: "Fire av åtte punkter fra møtet 01.10 er gjort og live (commits 87678ab, 3346c51, 05ccba5 + wp-config). (1) Bio-felt: «Biografi» maks 300 tegn på /min-side/profil/rediger/, lagres i Biographical Info; testet ende-til-ende lokalt (kapping, HTML strippet, øvrige felt urørt). (2) Arrangement-bug: årsaken var tidssone. strtotime() leste lagrede tider som UTC, så påmeldingsfrist og avmeldingsfrist ble vist og håndhevet 2 t for sent (13:00 ble 15:00, etter start kl 14). Ny hjelper bruker wp_timezone(); verifisert på prod for 5826 og 3349. Avmeldingsfristen (24 t digitalt / 48 t fysisk og hybrid) er en egen regel og er IKKE endret. (3) Nyhetsbrev → «Oppdateringer» i alle synlige tekster; standardtekst nå «Oppdateringer fra nettverket». Logo-PNG-en (assets/email/nyhetsbrev-logo.png) har «Nytt og nyttig» innebygd og er IKKE endret. (4) Forfattervarselet «Artikkelen din er publisert» åpnet på prod; gjelder bare artikler godkjent fra nå av, admin-forfattere hoppes over. Bård kommentert på Trello #356 og #354."
+status: waiting
+waiting_on: "Bård — (a) avmelding: skal den følge påmeldingsfristen i stedet for 24/48 t-regelen? (b) e-post-logoen: nytt bilde med «Oppdateringer», eller fjerne bildet så ren tekst vises? (c) kopi av forfattervarselet: baard@verdinettverk.no eller post@bimverdi.no? (d) test at bioen vises riktig under navn på styre-/faggruppesidene med hans snippet. + Fortsatt åpent fra 02.10-lista: punkt 4 meldingsfelt (#357 UKE41 utvider: infotekst øverst, felt nederst, ref. hvordan-vi-jobber), 6 arkiv for utsendte oppdateringer (offentlig URL ved publisering; Andreas sjekker koden), 7 SEO-skill til Bård, 8 vurdere systemtilgang for Bårds Claude. Frist: forbedringsagenten på Betonmast (5882), NTNU og Catenda før demoen 8. okt kl 14."
+detail: |
+  AVMELDING VS PÅMELDING (funn)
+  Påmeldingsfrist = ACF pameldingsfrist (dato+tid, satt av Bård). Avmeldingsfrist
+  beregnes separat i bimverdi_get_avmeldingsfrist(): 24 t før start (digitalt),
+  48 t (fysisk/hybrid). For 5826: avmelding stenger 07.10 kl 14:00, påmelding
+  08.10 kl 13:00. Kan ha sett ut som «feilet før fristen». Eldre kode refererer
+  til feltet pamelding_frist (finnes ikke) — død gren for manuell frist.
+
+  ARTIKKELVARSEL
+  Nødstenging uten å røre wp-config: filteret bimverdi_artikkel_varsler_gate_apen
+  → __return_false. Kø ved åpning: kun testartikkel 1677 (Bård, admin → hoppes over).
+  Ikke sett en ekte utsending ennå — første sjekk er neste godkjente deltakerartikkel.
+
+  IKKE VERIFISERT
+  Bioen er ikke sett under navn på styre-/faggruppesidene (Bårds snippet).
+  Oppdateringer-e-posten er rendret lokalt (tekstsjekk), ikke sett på prod.
+
+---
+date: 2026-10-02
+action: Møtereferat Andreas/Bård (01.10) omgjort til oppgaveliste — ingen kodeendringer
+files: []
+summary: "Gjennomgikk transkripsjonen av gårsdagens møte med Bård og lagde en oppgaveliste. Bård sendte i dag også en eksplisitt bestilling på bio-feltet (UKE40 pkt. 3). Ingenting er kodet eller endret ennå."
+status: waiting
+waiting_on: "OVERTATT av oppføringen over (02.10): punkt 1, 2, 3 og 5 er gjort. Punkt 4, 6, 7 og 8 gjenstår."
+detail: |
+  OPPGAVER
+  1. BIO-FELT PÅ PROFIL (UKE40 pkt. 3, bestilt 02.10): legg til «Biografi – maks 300 tegn»
+     på /min-side/profil/rediger/, lagres i WP-feltet description («Biographical Info»).
+     Bård har allerede en snippet/shortcode som viser bioen under hvert navn på
+     styre- og faggruppesider (Stefan m.fl.). Test mot Claude AI-brukeren.
+  2. ARRANGEMENT-BUG (uke 39): påmelding og avmelding feilet før fristen var ute.
+     Bård mistenker to timers forskyvning mellom arrangementstidspunkt og frist
+     (sannsynlig tidssone). Sjekk begge tidspunktene.
+  3. ÅPNE «Artikkelen din er publisert»-varselet: Bård ga klarsignal i møtet.
+     Gate: BIMVERDI_ARTIKKEL_VARSLER_APEN i prod wp-config (backup først), #354.
+  4. MELDINGSFELT i stedet for diskusjon: døp om i global mal. Minimumsløsning:
+     «send e-post»-lenke (mailto:) per kommentar med ferdig emne + kommentartekst
+     til avsender. Tråder i systemet = neste versjon. Ønsket kommer av at konkurrenter
+     ikke skal se priser/personlige hilsener.
+  5. NYHETSBREV -> «OPPDATERINGER»: døp om, og endre standardtekst «Det ferskeste fra
+     nettverket» til «Oppdateringer fra nettverket» (UKE40 pkt. 7).
+  6. ARKIV FOR UTSENDTE NYHETSBREV: post type, bør få offentlig URL ved publisering.
+     Andreas sjekker i koden (Bårds Claude kunne ikke gå god for det). Masseutsending
+     er fortsatt låst; «Publish» skal være trygt.
+  7. SEO-SKILL TIL BÅRD: forbedringsagenten (før/etter på Weld IT-artikkelen) sendes
+     som skill. Veiled Bård i å legge den inn i Claude-appen (Innstillinger -> Skills).
+  8. VURDER direkte systemtilgang for Bårds Claude (snippets/shortcodes begrenser;
+     siste plugin-opplasting kunne ikke agenten hans fikse). Han ber Andreas guide.
+
+  ANDRE NOTATER FRA MØTET
+  - Navnekarusellen (logostripa) regnes som fikset.
+  - Bård gjør teknisk SEO selv (bl.a. ~4000 døde URL-er i søk) i parallell med innholdsløpet.
+  - Gutenberg kan ikke brukes utenfor admin, derfor klassisk editor for artikler.
+
+---
+---
 date: 2026-10-01
 action: Uke 40 (Trello, møte med Bård 29.09) — logostripa live, forbedringsagent prøvekjørt og kontrollert på Weld IT-artikkelen
 files:
