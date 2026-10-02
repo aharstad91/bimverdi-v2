@@ -146,7 +146,7 @@ add_action('acf/init', function() {
                     'oppdatering' => 'Dette er en oppdatering - jeg er allerede registrert',
                     'tilleggskontakt' => 'Min arbeidsgiver er deltaker og jeg er ny tilleggskontakt',
                     'arrangement' => 'Gjelder registrering for arrangement-deltakelse',
-                    'nyhetsbrev' => 'Jeg ønsker å motta nyhetsbrev fra BIM Verdi',
+                    'nyhetsbrev' => 'Jeg ønsker å motta oppdateringer fra BIM Verdi',
                     'deltaker_verktoy' => 'Deltakerregistrering og digitale verktøy',
                     'mote' => 'Ønsker å avtale et møte',
                 ),

@@ -32,17 +32,17 @@ if (!defined('BV_NYHETSBREV_CPT')) {
  * ---------------------------------------------------------------------- */
 add_action('init', function () {
     $labels = array(
-        'name'               => 'Nyhetsbrev',
-        'singular_name'      => 'Nyhetsbrev',
-        'menu_name'          => 'Nyhetsbrev',
-        'all_items'          => 'Alle nyhetsbrev',
+        'name'               => 'Oppdateringer',
+        'singular_name'      => 'Oppdatering',
+        'menu_name'          => 'Oppdateringer',
+        'all_items'          => 'Alle oppdateringer',
         'add_new'            => 'Generer nytt',
-        'add_new_item'       => 'Nytt nyhetsbrev',
-        'edit_item'          => 'Nyhetsbrev',
-        'view_item'          => 'Forhåndsvis nyhetsbrev',
-        'search_items'       => 'Søk nyhetsbrev',
-        'not_found'          => 'Ingen nyhetsbrev ennå',
-        'not_found_in_trash' => 'Ingen nyhetsbrev i papirkurven',
+        'add_new_item'       => 'Ny oppdatering',
+        'edit_item'          => 'Oppdatering',
+        'view_item'          => 'Forhåndsvis oppdatering',
+        'search_items'       => 'Søk oppdateringer',
+        'not_found'          => 'Ingen oppdateringer ennå',
+        'not_found_in_trash' => 'Ingen oppdateringer i papirkurven',
     );
 
     register_post_type(BV_NYHETSBREV_CPT, array(
@@ -140,7 +140,7 @@ function bimverdi_nyhetsbrev_snapshot($post_id, $args = array()) {
 function bimverdi_nyhetsbrev_generer($args = array()) {
     $title = !empty($args['title'])
         ? $args['title']
-        : 'Nytt & Nyttig — ' . bimverdi_nyhetsbrev_dato_nb();
+        : 'Oppdateringer fra BIM Verdi — ' . bimverdi_nyhetsbrev_dato_nb();
 
     $post_id = wp_insert_post(array(
         'post_type'   => BV_NYHETSBREV_CPT,

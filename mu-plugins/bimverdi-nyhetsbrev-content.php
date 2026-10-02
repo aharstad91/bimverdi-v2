@@ -2,7 +2,7 @@
 /**
  * BIM Verdi - Nyhetsbrev innholds-spørringer (Fase 1, temanøytral)
  *
- * Henter de 6 innholdsseksjonene til nyhetsbrevet «Nytt & Nyttig fra BIM Verdi»:
+ * Henter de 6 innholdsseksjonene til nyhetsbrevet «Oppdateringer fra BIM Verdi» (tidl. «Nytt & Nyttig»):
  *   1. Siste 3 publiserte artikler
  *   2. Neste (kommende) arrangement
  *   3. Siste 3 verktøy/tjenester

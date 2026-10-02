@@ -311,7 +311,7 @@ endif;
 if (isset($_GET['nb_nudge']) && $_GET['nb_nudge'] === 'pameldt'):
     get_template_part('parts/components/success-banner', null, [
         'title'   => __('Påmeldt!', 'bimverdi'),
-        'message' => __('Du mottar nå nyhetsbrevet fra BIM Verdi.', 'bimverdi'),
+        'message' => __('Du mottar nå oppdateringer fra BIM Verdi.', 'bimverdi'),
     ]);
 elseif (!$is_welcome_state):
     get_template_part('parts/minside/nyhetsbrev-nudge');

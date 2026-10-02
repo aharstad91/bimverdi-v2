@@ -602,7 +602,7 @@ $prefill_name = '';
                                 <input type="checkbox" name="subscribe_newsletter" value="1"
                                        style="margin-top: 4px; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--bv-accent);">
                                 <span style="font-size: var(--bv-text-sm); color: var(--bv-text-primary);">
-                                    Jeg vil motta nyhetsbrev fra BIM Verdi
+                                    Jeg vil motta oppdateringer fra BIM Verdi
                                 </span>
                             </label>
                         </div>

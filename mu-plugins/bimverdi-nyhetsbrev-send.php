@@ -111,10 +111,10 @@ add_action('template_redirect', function () {
     status_header($gyldig ? 200 : 400);
     header('Content-Type: text/html; charset=UTF-8');
 
-    $tittel  = $gyldig ? 'Du er meldt av nyhetsbrevet' : 'Ugyldig avmeldingslenke';
+    $tittel  = $gyldig ? 'Du er meldt av oppdateringene' : 'Ugyldig avmeldingslenke';
     $melding = $gyldig
-        ? 'Du vil ikke lenger motta «Nytt &amp; Nyttig fra BIM Verdi». Ombestemmer du deg, ta kontakt på <a href="mailto:post@bimverdi.no" style="color:#1A1A1A;">post@bimverdi.no</a>.'
-        : 'Lenken er ugyldig eller utløpt. Ta kontakt på <a href="mailto:post@bimverdi.no" style="color:#1A1A1A;">post@bimverdi.no</a> hvis du ønsker å melde deg av nyhetsbrevet.';
+        ? 'Du vil ikke lenger motta «Oppdateringer fra BIM Verdi». Ombestemmer du deg, ta kontakt på <a href="mailto:post@bimverdi.no" style="color:#1A1A1A;">post@bimverdi.no</a>.'
+        : 'Lenken er ugyldig eller utløpt. Ta kontakt på <a href="mailto:post@bimverdi.no" style="color:#1A1A1A;">post@bimverdi.no</a> hvis du ønsker å melde deg av oppdateringene.';
     ?><!DOCTYPE html>
 <html lang="nb">
 <head>

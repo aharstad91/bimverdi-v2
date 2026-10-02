@@ -161,7 +161,7 @@ $display_name = bim_get_user_display_name($user_id);
                 'oppdatering' => 'Oppdatering - allerede registrert',
                 'tilleggskontakt' => 'Ny tilleggskontakt',
                 'arrangement' => 'Arrangement-deltakelse',
-                'nyhetsbrev' => 'Nyhetsbrev',
+                'nyhetsbrev' => 'Oppdateringer',
                 'deltaker_verktoy' => 'Deltakerregistrering og digitale verktøy',
                 'mote' => 'Ønsker å avtale et møte',
             ];

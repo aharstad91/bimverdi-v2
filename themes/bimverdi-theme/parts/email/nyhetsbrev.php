@@ -1,6 +1,6 @@
 <?php
 /**
- * Nyhetsbrev-mal «Nytt & Nyttig fra BIM Verdi» (e-post-HTML)
+ * Mal for «Oppdateringer fra BIM Verdi» (tidl. nyhetsbrev) (e-post-HTML)
  *
  * Tabellbasert, e-postklient-vennlig HTML med inline CSS. Rendres via
  * bimverdi_render_nyhetsbrev() i mu-plugins/bimverdi-nyhetsbrev-content.php.
@@ -56,7 +56,7 @@ $bv_nb_ingress = isset($context['ingress']) ? trim((string) $context['ingress'])
 
 // Preheader (forhåndsvisningslinja i innboksen): Bårds egen innledning hvis
 // den finnes, ellers tease toppsaken, ellers generisk.
-$preheader = 'Det ferskeste fra nettverket — artikler, arrangementer, verktøy og mer.';
+$preheader = 'Oppdateringer fra nettverket — artikler, arrangementer, verktøy og mer.';
 if ($bv_nb_ingress !== '') {
     $preheader = wp_trim_words($bv_nb_ingress, 22, '…');
 } elseif (!empty($seksjoner[0]['items'][0]['tittel'])) {
@@ -159,7 +159,7 @@ $bv_nb_kort_header = function ($seksjon) {
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
-<title>Nytt &amp; Nyttig fra BIM Verdi</title>
+<title>Oppdateringer fra BIM Verdi</title>
 <style>
     html, body { margin:0 !important; padding:0 !important; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
     img { -ms-interpolation-mode:bicubic; border:0; outline:none; text-decoration:none; }
@@ -209,13 +209,13 @@ $bv_nb_kort_header = function ($seksjon) {
                 $bv_nb_logo_path = get_theme_file_path($bv_nb_logo_rel);
                 $bv_nb_logo_url  = get_theme_file_uri($bv_nb_logo_rel);
                 if (file_exists($bv_nb_logo_path)): ?>
-                <img src="<?php echo esc_url($bv_nb_logo_url); ?>" width="480" alt="BIM Verdi — Nytt &amp; Nyttig" style="display:block;margin:0 auto 4px auto;width:100%;max-width:480px;height:auto;border:0;outline:none;text-decoration:none;">
+                <img src="<?php echo esc_url($bv_nb_logo_url); ?>" width="480" alt="BIM Verdi — Oppdateringer" style="display:block;margin:0 auto 4px auto;width:100%;max-width:480px;height:auto;border:0;outline:none;text-decoration:none;">
                 <?php else: ?>
                 <div class="nb-title" style="font-size:16px;font-weight:700;color:#1A1A1A;margin-bottom:14px;">
                     BIM Verdi
                 </div>
                 <h1 class="nb-h1" style="margin:0;font-size:30px;line-height:1.2;font-weight:600;color:#1A1A1A;">
-                    Nytt &amp; Nyttig
+                    Oppdateringer
                 </h1>
                 <?php endif; ?>
                 <?php if ($bv_nb_ingress !== ''): ?>
@@ -224,7 +224,7 @@ $bv_nb_kort_header = function ($seksjon) {
                 </p>
                 <?php endif; ?>
                 <p class="nb-text" style="margin:12px 0 0 0;font-size:15px;line-height:1.6;color:#5A5A5A;">
-                    Det ferskeste fra nettverket — utvalgt fra
+                    Oppdateringer fra nettverket — utvalgt fra
                     <strong style="color:#1A1A1A;"><?php echo esc_html($totaler['sum']); ?> ressurser</strong>.
                 </p>
                 <?php if (!empty($totaler['typer'])): ?>
@@ -390,7 +390,7 @@ $bv_nb_kort_header = function ($seksjon) {
                     <tr><td style="border-top:1px solid #E3DDD0;height:1px;line-height:1px;font-size:0;">&nbsp;</td></tr>
                 </table>
                 <p class="nb-muted" style="margin:18px 0 0 0;font-size:12px;line-height:1.7;<?php echo $muted; ?>">
-                    Du mottar dette nyhetsbrevet som registrert bruker hos BIM Verdi.<br>
+                    Du mottar disse oppdateringene som registrert bruker hos BIM Verdi.<br>
                     <a href="<?php echo esc_url($context['profil_url']); ?>" style="color:#8A8578;text-decoration:underline;">Oppdater din profil</a>
                     &nbsp;·&nbsp;
                     <a href="<?php echo esc_url($context['avmelding_url']); ?>" style="color:#8A8578;text-decoration:underline;">Meld deg av</a>
