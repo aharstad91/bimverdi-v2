@@ -173,3 +173,47 @@ add_action('template_redirect', function () {
     wp_redirect(add_query_arg('updated', '1', home_url('/min-side/profil/')));
     exit;
 });
+
+// =============================================================================
+// BIOGRAFI I WP-ADMIN (Biographical Info): maks 300 tegn
+// Bestilt av Bård 02.10.2026 (UKE 40, punkt 3). Samme grense som Min Side.
+// =============================================================================
+
+const BIMVERDI_BIO_MAKS_TEGN = 300;
+
+// Hjelpeteksten under feltet, ordrett fra Bård.
+add_filter('gettext', function ($tekst, $original) {
+    if ($original === 'Share a little biographical information to fill out your profile. This may be shown publicly.') {
+        return 'Share max 300 characters of biographical information to fill out your profile. This may be shown publicly.';
+    }
+    return $tekst;
+}, 10, 2);
+
+// Teknisk begrensning i skjemaet (maxlength) med teller.
+add_action('admin_footer-profile.php', 'bimverdi_admin_bio_maxlengde');
+add_action('admin_footer-user-edit.php', 'bimverdi_admin_bio_maxlengde');
+function bimverdi_admin_bio_maxlengde() {
+    ?>
+    <script>
+    (function () {
+        var el = document.getElementById('description');
+        if (!el) { return; }
+        el.setAttribute('maxlength', '<?php echo (int) BIMVERDI_BIO_MAKS_TEGN; ?>');
+        var hint = el.parentNode.querySelector('.description');
+        var out = document.createElement('span');
+        out.style.marginLeft = '6px';
+        (hint || el.parentNode).appendChild(out);
+        function update() { out.textContent = el.value.length + '/<?php echo (int) BIMVERDI_BIO_MAKS_TEGN; ?>'; }
+        el.addEventListener('input', update); update();
+    })();
+    </script>
+    <?php
+}
+
+// Serverside kapping, så grensen også gjelder om skjemaet omgås.
+add_filter('insert_user_meta', function ($meta) {
+    if (isset($meta['description'])) {
+        $meta['description'] = mb_substr((string) $meta['description'], 0, BIMVERDI_BIO_MAKS_TEGN);
+    }
+    return $meta;
+});

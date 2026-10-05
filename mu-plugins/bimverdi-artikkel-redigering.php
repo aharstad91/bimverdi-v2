@@ -394,9 +394,16 @@ function bimverdi_artikkel_publisert_varsel($ny, $gammel, $post) {
         ),
     ));
 
-    $ok = wp_mail($mottaker, 'Artikkelen din er publisert: ' . $tittel, $html, array(
+    $headers = array(
         'Content-Type: text/html; charset=UTF-8',
         'From: BIM Verdi <noreply@bimverdi.no>',
-    ));
+    );
+    // Kopi til BIM Verdi (Bård, 02.10) — bare når varselet går til ekte forfatter.
+    // Mens gaten er låst går alt til allowlisten, og kopien utelates.
+    if (bimverdi_artikkel_varsler_gate_apen()) {
+        $headers[] = 'Bcc: post@bimverdi.no';
+    }
+
+    $ok = wp_mail($mottaker, 'Artikkelen din er publisert: ' . $tittel, $html, $headers);
     error_log(sprintf('[bv-artikkel-varsel] artikkel %d → %s: %s', $post->ID, $mottaker, $ok ? 'sendt' : 'FEILET'));
 }

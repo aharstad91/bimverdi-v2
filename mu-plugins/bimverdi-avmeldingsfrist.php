@@ -2,10 +2,9 @@
 /**
  * BIM Verdi - Dynamisk Avmeldingsfrist
  * 
- * Beregner avmeldingsfrist basert på arrangementformat:
- * - Fysisk: 48 timer før
- * - Digitalt: 24 timer før
- * - Hybrid: 48 timer før
+ * Avmeldingsfristen følger påmeldingsfristen (ACF «pameldingsfrist»,
+ * satt av Bård). Beslutning 02.10.2026 — erstatter 24/48-timersregelen.
+ * Uten påmeldingsfrist stenger avmelding ved arrangementets start.
  * 
  * @package BIM_Verdi
  */
@@ -42,18 +41,16 @@ function bimverdi_local_timestamp($datetime) {
  *     @type int    $timestamp  Unix timestamp for deadline
  *     @type string $formatted  Human-readable deadline
  *     @type bool   $can_cancel Whether cancellation is still allowed
- *     @type int    $hours      Hours before event
+ *     @type int    $hours      Timer mellom frist og start (informativt)
  *     @type string $format     Event format (fysisk/digitalt/hybrid)
  * }
  */
 function bimverdi_get_avmeldingsfrist($arrangement_id) {
-    // Get event details
     $dato = get_field('arrangement_dato', $arrangement_id);
     $tid_start = get_field('tidspunkt_start', $arrangement_id);
     $format = get_field('arrangement_type', $arrangement_id);
-    $manual_frist = get_field('pamelding_frist', $arrangement_id);
-    
-    // Default result
+    $pameldingsfrist = get_field('pameldingsfrist', $arrangement_id);
+
     $result = array(
         'timestamp' => 0,
         'formatted' => '',
@@ -61,47 +58,20 @@ function bimverdi_get_avmeldingsfrist($arrangement_id) {
         'hours' => 0,
         'format' => $format,
     );
-    
-    if (!$dato || !$tid_start) {
+
+    $event_datetime = ($dato && $tid_start) ? bimverdi_local_timestamp($dato . ' ' . $tid_start) : 0;
+
+    // Frist = påmeldingsfristen; uten den stenger avmelding ved start.
+    $deadline = $pameldingsfrist ? bimverdi_local_timestamp($pameldingsfrist) : $event_datetime;
+    if (!$deadline) {
         return $result;
     }
-    
-    // Parse event datetime
-    $event_datetime = bimverdi_local_timestamp($dato . ' ' . $tid_start);
-    
-    if (!$event_datetime) {
-        return $result;
-    }
-    
-    // If manual deadline is set, use that
-    if ($manual_frist) {
-        $deadline = bimverdi_local_timestamp($manual_frist . ' 23:59:59');
-        $result['timestamp'] = $deadline;
-        $result['formatted'] = wp_date('j. F Y', $deadline);
-        $result['can_cancel'] = time() < $deadline;
-        $result['hours'] = round(($event_datetime - $deadline) / 3600);
-        return $result;
-    }
-    
-    // Calculate dynamic deadline based on format
-    switch ($format) {
-        case 'digitalt':
-            $hours_before = 24;
-            break;
-        case 'fysisk':
-        case 'hybrid':
-        default:
-            $hours_before = 48;
-            break;
-    }
-    
-    $deadline = $event_datetime - ($hours_before * 3600);
-    
+
     $result['timestamp'] = $deadline;
     $result['formatted'] = wp_date('j. F Y \k\l. H:i', $deadline);
     $result['can_cancel'] = time() < $deadline;
-    $result['hours'] = $hours_before;
-    
+    $result['hours'] = $event_datetime ? max(0, (int) round(($event_datetime - $deadline) / 3600)) : 0;
+
     return $result;
 }
 
@@ -113,32 +83,22 @@ function bimverdi_get_avmeldingsfrist($arrangement_id) {
  */
 function bimverdi_get_avmeldingsfrist_message($arrangement_id) {
     $frist = bimverdi_get_avmeldingsfrist($arrangement_id);
-    
+
     if (!$frist['timestamp']) {
         return '';
     }
-    
-    $format_labels = array(
-        'fysisk' => 'fysiske arrangementer',
-        'digitalt' => 'digitale arrangementer',
-        'hybrid' => 'hybridarrangementer',
-    );
-    
-    $format_label = $format_labels[$frist['format']] ?? 'arrangementer';
-    
+
     if ($frist['can_cancel']) {
         return sprintf(
-            '<span class="text-gray-600">Avmeldingsfrist: <strong>%s</strong> (%d timer før for %s)</span>',
-            esc_html($frist['formatted']),
-            $frist['hours'],
-            esc_html($format_label)
-        );
-    } else {
-        return sprintf(
-            '<span class="text-red-600">Avmeldingsfristen (%s) har passert</span>',
+            '<span class="text-gray-600">Avmeldingsfrist: <strong>%s</strong></span>',
             esc_html($frist['formatted'])
         );
     }
+
+    return sprintf(
+        '<span class="text-red-600">Avmeldingsfristen (%s) har passert</span>',
+        esc_html($frist['formatted'])
+    );
 }
 
 /**
