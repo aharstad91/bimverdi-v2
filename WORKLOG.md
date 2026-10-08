@@ -3,6 +3,44 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-10-06
+action: «Send som e-post» per innlegg i diskusjonen (UKE41 / #357, punkt 4 fra 02.10) — bygget og verifisert på localhost, ikke committet eller deployet
+files:
+  - "themes/bimverdi-theme/comments.php (ny bimverdi_diskusjon_epost_href(); «Send som e-post» ved siden av «Svar»; CSS for .bv-diskusjon-handlinger)"
+summary: "Andreas spurte om e-postknappen per kommentar (emne + kommentartekst) var utviklet; worklog og kode viste at den bare var planlagt (02.10 punkt 4, åpen 05.10). Bygget nå: hvert publisert innlegg i diskusjonen får en mailto:-lenke uten mottaker (avsenders adresse eksponeres ikke) med emne «Fra diskusjonen: [sidetittel]» og brødtekst «[Navn] skrev: [tekst, kuttet ved 1200 tegn] + Se hele diskusjonen: [permalenke med ?bvk=ID#comment-ID]». Vises også for utloggede (de ser tråden), ikke for innlegg som venter på godkjenning. Verifisert på /prosjekter/byggchat/ (localhost): alle innlegg har lenken, dekodet emne/tekst/tilbakelenke riktig, php -l ren."
+status: waiting
+waiting_on: "Andreas — se utseendet i nettleser (ikke sett visuelt), deretter go på commit + push. Resten av #357 gjenstår: døpe om til «Meldingsfelt», infotekst øverst (ref. bimverdi.no/hvordan-vi-jobber), felt nederst på alle sider."
+detail: |
+  VALG
+  mailto: (ikke kopier til utklippstavle) — det er det worklog 02.10 beskriver.
+  Klikk logges IKKE i del-loggen (den logger hele sider via post_id, ikke innlegg).
+  Teksten kuttes ved 1200 tegn fordi lange mailto-lenker kuttes av enkelte klienter.
+
+  LOKALT MILJØ
+  MAMP sto av; MySQL og Apache startet manuelt (bin/startMysql.sh, startApache.sh).
+
+---
+date: 2026-10-05
+action: Bårds svar på UKE 40-kortet (#356) innarbeidet — avmelding følger påmeldingsfrist, Bcc til post@ på forfattervarsel, bio maks 300 i wp-admin, alt live på prod
+files:
+  - "mu-plugins/bimverdi-avmeldingsfrist.php (frist = ACF pameldingsfrist; uten frist = arrangementets start; 24/48 t-regelen og død pamelding_frist-gren fjernet)"
+  - "mu-plugins/bimverdi-artikkel-redigering.php (Bcc: post@bimverdi.no på «Artikkelen din er publisert», kun når gaten er åpen)"
+  - "mu-plugins/bimverdi-profile-edit.php (wp-admin Biographical Info: maxlength 300 + teller, serverkapping via insert_user_meta, hjelpetekst via gettext)"
+summary: "Bård svarte 02.10 kl 11:19 (+ skjermbilde 11:41) på våre fire spørsmål; sjekket Trello 05.10, ingen ny aktivitet fra ham siden. Svar: (1) avmelding skal følge påmeldingsfristen, gjort; for arrangement 5826 stenger nå begge 8. okt kl 13:00 (verifisert på prod). (2) E-postlogoen «La det stå slik», ingen endring (tolket som at bildet med «Nytt og nyttig» beholdes). (3) Kopi av forfattervarselet til post@bimverdi.no, lagt inn som Bcc. (4) Bio: skjermbildet viste wp-admin-feltet Biographical Info, ikke Min Side-skjemaet vårt. Der er det nå teknisk grense på 300 tegn, teller og hjelpeteksten «Share max 300 characters of biographical information to fill out your profile. This may be shown publicly.» (ordrett fra Bård). Test lokalt: 350 tegn lagres som 300. Commit 05a1bc5 pushet til main, filer verifisert på Servebolt. Kommentert på #356."
+status: waiting
+waiting_on: "Bård — test at bioen vises riktig under navn på styre-/faggruppesidene med hans snippet (fortsatt ikke bekreftet). Fra oppføringen 02.10 gjenstår: UKE41 (#357, opprettet av Bård 02.10) meldingsfelt: døpe om til «Meldingsfelt», infotekst øverst (ref. bimverdi.no/hvordan-vi-jobber), felt nederst på alle sider; arkiv for utsendte oppdateringer (offentlig URL ved publisering); SEO-skill til Bård; systemtilgang for Bårds Claude. Frist: forbedringsagenten på Betonmast (5882), NTNU og Catenda før demoen 8. okt kl 14."
+detail: |
+  IKKE VERIFISERT
+  Bcc til post@bimverdi.no er ikke sett i praksis: krever en ekte godkjent
+  deltakerartikkel (pending → publish, forfatter ikke admin). Første sjekk er
+  neste godkjente deltakerartikkel; se på [bv-artikkel-varsel] i debug.log.
+  Eksisterende bioer lengre enn 300 tegn kappes først når de lagres på nytt.
+  Nytt navn på e-postens toppgrafikk er dermed ikke aktuelt; logo-PNG er uendret.
+
+  LOKALT MILJØ
+  MAMPs MySQL stod av og ble startet manuelt (bin/startMysql.sh) for testen.
+
+---
 date: 2026-10-02
 action: UKE40-oppgaver fra møtet 01.10 — bio-felt, arrangementfrist (tidssone), oppdateringer-omdøping og forfattervarsel, alt live på prod
 files:
@@ -14,8 +52,8 @@ files:
   - "mu-plugins/bimverdi-nyhetsbrev-cpt.php, -send.php, -content.php, themes/.../parts/email/nyhetsbrev.php + 6 brukerrettede tekster (Nyhetsbrev → Oppdateringer)"
   - "prod wp-config.php (BIMVERDI_ARTIKKEL_VARSLER_APEN = true; backup wp-config.php.bak-20261002)"
 summary: "Fire av åtte punkter fra møtet 01.10 er gjort og live (commits 87678ab, 3346c51, 05ccba5 + wp-config). (1) Bio-felt: «Biografi» maks 300 tegn på /min-side/profil/rediger/, lagres i Biographical Info; testet ende-til-ende lokalt (kapping, HTML strippet, øvrige felt urørt). (2) Arrangement-bug: årsaken var tidssone. strtotime() leste lagrede tider som UTC, så påmeldingsfrist og avmeldingsfrist ble vist og håndhevet 2 t for sent (13:00 ble 15:00, etter start kl 14). Ny hjelper bruker wp_timezone(); verifisert på prod for 5826 og 3349. Avmeldingsfristen (24 t digitalt / 48 t fysisk og hybrid) er en egen regel og er IKKE endret. (3) Nyhetsbrev → «Oppdateringer» i alle synlige tekster; standardtekst nå «Oppdateringer fra nettverket». Logo-PNG-en (assets/email/nyhetsbrev-logo.png) har «Nytt og nyttig» innebygd og er IKKE endret. (4) Forfattervarselet «Artikkelen din er publisert» åpnet på prod; gjelder bare artikler godkjent fra nå av, admin-forfattere hoppes over. Bård kommentert på Trello #356 og #354."
-status: waiting
-waiting_on: "Bård — (a) avmelding: skal den følge påmeldingsfristen i stedet for 24/48 t-regelen? (b) e-post-logoen: nytt bilde med «Oppdateringer», eller fjerne bildet så ren tekst vises? (c) kopi av forfattervarselet: baard@verdinettverk.no eller post@bimverdi.no? (d) test at bioen vises riktig under navn på styre-/faggruppesidene med hans snippet. + Fortsatt åpent fra 02.10-lista: punkt 4 meldingsfelt (#357 UKE41 utvider: infotekst øverst, felt nederst, ref. hvordan-vi-jobber), 6 arkiv for utsendte oppdateringer (offentlig URL ved publisering; Andreas sjekker koden), 7 SEO-skill til Bård, 8 vurdere systemtilgang for Bårds Claude. Frist: forbedringsagenten på Betonmast (5882), NTNU og Catenda før demoen 8. okt kl 14."
+status: done
+waiting_on: "OVERTATT av oppføringen 05.10 (Bård svarte på a, b og c; d gjenstår). Opprinnelig: Bård — (a) avmelding: skal den følge påmeldingsfristen i stedet for 24/48 t-regelen? (b) e-post-logoen: nytt bilde med «Oppdateringer», eller fjerne bildet så ren tekst vises? (c) kopi av forfattervarselet: baard@verdinettverk.no eller post@bimverdi.no? (d) test at bioen vises riktig under navn på styre-/faggruppesidene med hans snippet. + Fortsatt åpent fra 02.10-lista: punkt 4 meldingsfelt (#357 UKE41 utvider: infotekst øverst, felt nederst, ref. hvordan-vi-jobber), 6 arkiv for utsendte oppdateringer (offentlig URL ved publisering; Andreas sjekker koden), 7 SEO-skill til Bård, 8 vurdere systemtilgang for Bårds Claude. Frist: forbedringsagenten på Betonmast (5882), NTNU og Catenda før demoen 8. okt kl 14."
 detail: |
   AVMELDING VS PÅMELDING (funn)
   Påmeldingsfrist = ACF pameldingsfrist (dato+tid, satt av Bård). Avmeldingsfrist

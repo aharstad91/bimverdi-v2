@@ -37,6 +37,35 @@ if (!comments_open() && get_comments_number() == 0) {
 }
 
 /**
+ * mailto-lenke for ett innlegg: emne = sidetittel, brødtekst = innleggstekst
+ * pluss lenke tilbake til innlegget. Teksten kuttes (mailto-lenker over ca.
+ * 2000 tegn kuttes av enkelte e-postprogrammer og nettlesere).
+ */
+if (!function_exists('bimverdi_diskusjon_epost_href')) {
+    function bimverdi_diskusjon_epost_href($comment) {
+        $comment = get_comment($comment);
+        if (!$comment) {
+            return '';
+        }
+
+        $tittel = wp_strip_all_tags(html_entity_decode(get_the_title($comment->comment_post_ID), ENT_QUOTES, 'UTF-8'));
+        $emne   = trim(preg_replace('/[\r\n]+/', ' ', 'Fra diskusjonen: ' . $tittel));
+
+        $tekst = wp_strip_all_tags(html_entity_decode($comment->comment_content, ENT_QUOTES, 'UTF-8'));
+        $tekst = trim(preg_replace("/\n{3,}/", "\n\n", str_replace("\r", '', $tekst)));
+        $maks  = 1200;
+        if (mb_strlen($tekst) > $maks) {
+            $tekst = rtrim(mb_substr($tekst, 0, $maks)) . '…';
+        }
+
+        $lenke = add_query_arg('bvk', (int) $comment->comment_ID, get_permalink($comment->comment_post_ID)) . '#comment-' . (int) $comment->comment_ID;
+        $brod  = $comment->comment_author . " skrev:\n\n" . $tekst . "\n\nSe hele diskusjonen: " . $lenke;
+
+        return 'mailto:?subject=' . rawurlencode($emne) . '&body=' . rawurlencode($brod);
+    }
+}
+
+/**
  * Ett innlegg i diskusjonen.
  */
 if (!function_exists('bimverdi_diskusjon_comment')) {
@@ -61,16 +90,29 @@ if (!function_exists('bimverdi_diskusjon_comment')) {
             <div class="bv-diskusjon-content">
                 <?php comment_text($comment); ?>
             </div>
-            <?php if ($innlogget):
-                comment_reply_link(array_merge($args, [
-                    'depth'      => $depth,
-                    'max_depth'  => $args['max_depth'],
-                    'reply_text' => 'Svar',
-                    'login_text' => 'Logg inn for å svare',
-                    'before'     => '<div>',
-                    'after'      => '</div>',
-                ]), $comment);
-            endif; ?>
+            <?php
+            // E-postknapp per innlegg (worklog 02.10, punkt 4 / #357): åpner
+            // e-postklienten med ferdig emne og innleggstekst. Ingen mottaker
+            // er satt — avsenderens adresse skal ikke eksponeres. Ikke for
+            // innlegg som venter på godkjenning (ikke publisert ennå).
+            $epost_href = $comment->comment_approved == '1' ? bimverdi_diskusjon_epost_href($comment) : '';
+            if ($innlogget || $epost_href): ?>
+            <div class="bv-diskusjon-handlinger">
+                <?php if ($innlogget):
+                    comment_reply_link(array_merge($args, [
+                        'depth'      => $depth,
+                        'max_depth'  => $args['max_depth'],
+                        'reply_text' => 'Svar',
+                        'login_text' => 'Logg inn for å svare',
+                        'before'     => '',
+                        'after'      => '',
+                    ]), $comment);
+                endif; ?>
+                <?php if ($epost_href): ?>
+                <a class="bv-diskusjon-epost" href="<?php echo esc_attr($epost_href); ?>" title="Åpner e-postprogrammet med innlegget ferdig utfylt">Send som e-post</a>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         <?php // </div> lukkes av wp_list_comments (style => div)
     }
 }
@@ -124,6 +166,9 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
 #diskusjon .bv-diskusjon-date { font-size: 12px; color: #78716C; }
 #diskusjon .bv-diskusjon-pending { font-size: 12px; color: #854D0E; }
 #diskusjon .bv-diskusjon-content { font-size: 14px; color: #57534E; line-height: 1.6; }
+#diskusjon .bv-diskusjon-handlinger { display: flex; align-items: center; gap: 16px; margin-top: 8px; font-size: 12px; }
+#diskusjon .bv-diskusjon-handlinger a { color: #57534E; font-weight: 500; text-decoration: none; transition: color .15s; }
+#diskusjon .bv-diskusjon-handlinger a:hover { color: #F97316; text-decoration: underline; }
 #diskusjon .bv-diskusjon-content p { margin-bottom: 8px; }
 #diskusjon .bv-diskusjon-content p:last-child { margin-bottom: 0; }
 /* Lange innlegg klippes til tre linjer med «Vis mer» — klassen settes av JS,
