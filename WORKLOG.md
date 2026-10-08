@@ -18,6 +18,22 @@ detail: |
 
 ---
 date: 2026-10-08
+action: Møtereferat Andreas/Bård (08.10) omgjort til oppgaveliste, ingen kodeendringer
+files: []
+summary: "Gjennomgikk transkripsjonen av dagens møte. Avgjort: (1) Meldingsfeltet (Diskusjon → Melding) er godkjent av Bård, ferdig. (2) «Send som e-post» beholdes som den er (per innlegg). Bård ville også ha valget på egen førstekommentar, men det krever at vi avgjør hvem som mottar en privat melding; notert som åpent. (3) Fremhevet bilde på Halvors artikkel blir ikke kodet: Bård legger bildet i Gutenberg i halv størrelse og laster opp med høyere oppløsning. (4) Kunnskapskilder #358 er sett av Bård som utført; han mangler å gå gjennom uklarhetslisten (16 kilder) på kortet. (5) Bård vil vise artikkel-skillen til Halvor og purret; Andreas lovet å sende den neste uke (må hentes ut manuelt). (6) Systemtilgang for Bårds Claude: Bård sa ja. Hans pilotplugin «Registrer piloter» og oppslag i standarder i kunnskapsbasen parkeres som eksempel på overgangen. (7) Chatbot (#258): Alexander har bygd en egen ByggChat på Onrender.com med MCP-server, manuell «tøm og synk alt» og kildevisning. Bård vil ha den på Servebolt og spør Alexander om koden og et møte. ByggChat ALFA pilot 0.6.0 ligger allerede på prod (kun /test/, indeks fra 05.08, ingen embeddings, ikke i git). Nytt medlem: Institutt for energiteknikk (IFE)."
+status: waiting
+waiting_on: "Andreas: (a) skillen til Halvor/Bård, neste uke; hvilken skill det er er ikke avklart (plain-language fra Øystein er eneste kandidat funnet, engelsk). (b) systemtilgang for Bårds Claude (design/tilgangsmodell ikke startet). Bård: gå gjennom uklarhetslisten på #358; spørre Alexander om koden til ByggChat og få ham med på møte."
+detail: |
+  SIKKERHET
+  bvbc_settings i wp_options på prod inneholder Anthropic API-nøkkelen i klartekst.
+  Nøkkelen ble ved en feil skrevet ut i terminalen 08.10 (wp option get). Bytt den hvis loggen deles.
+
+  CHATBOT, NESTE STEG
+  Sammenlign ByggChat_ALFA_0.6.0.zip (Trello #258, vedlagt 06.10) med pluginen på prod. Deretter: ta pluginen inn i git,
+  slå på embeddings, reindekser (sist 05.08), legg chatten på alle sider.
+
+---
+date: 2026-10-08
 action: Kunnskapskilder #358 — «Kildetype» → «Kilde-kategori» (avkrysning, maks to), «Kategori» fjernet, 261 kilder overført på prod; meldingsfelt på alle innholdssider
 files:
   - "mu-plugins/bimverdi-kunnskapskilde-registration.php (hjelpefunksjoner bimverdi_get_kildekategorier m.fl., skjemabehandling, ACF-validering maks 2)"
