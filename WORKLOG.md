@@ -17,6 +17,31 @@ detail: |
   #358 Kunnskapskilder-rydding (datamigrering Kildetype/Kategori) er ikke startet.
 
 ---
+date: 2026-10-08
+action: Kunnskapskilder #358 — «Kildetype» → «Kilde-kategori» (avkrysning, maks to), «Kategori» fjernet, 261 kilder overført på prod; meldingsfelt på alle innholdssider
+files:
+  - "mu-plugins/bimverdi-kunnskapskilde-registration.php (hjelpefunksjoner bimverdi_get_kildekategorier m.fl., skjemabehandling, ACF-validering maks 2)"
+  - "plugins/bim-verdi-core/acf-json/group_kunnskapskilde_info.json (kildetype: select → checkbox, label «Kilde-kategori»)"
+  - "plugins/bim-verdi-core/includes/class-taxonomies.php (kunnskapskildekategori skjult: ingen UI, ingen offentlige sider; data beholdt)"
+  - "plugins/bim-verdi-core/cli/migrer-kildekategori.php (overføring; tørrkjøring uten argument, «apply» skriver)"
+  - "themes/bimverdi-theme/parts/components/kilde-kategori-felt.php (ny), archive-kunnskapskilde.php, single-kunnskapskilde.php, single-foretak.php, single-theme_group.php, inc/ressurs-rig.php, template-parts/temagruppe/kunnskapskilder-grid.php, parts/minside/{kunnskapskilder-registrer,-rediger,-list,dashboard}.php"
+  - "mu-plugins/bimverdi-still-sporsmal.php (meldingsfelt aktivt på alle innholdssider, ikke forside/spesialmaler/unntaksliste)"
+summary: "Meldingsfelt (#357 punkt 3): feltet står nå på alle vanlige innholdssider (17 stk), ikke på forsiden, sider med egen mal (Min Side, registrering m.fl.) eller unntakslista (vilkår, personvern, priser, skjema- og interne sider; filter bimverdi_diskusjon_side_unntak). #358: kildetype er nå avkrysning med maks to valg (klientside + server + ACF), vist som «Kilde-kategori». Feltet «Kategori» er fjernet fra skjema, arkivfilter, enkeltsider og rutenett; taksonomien er skjult men dataene beholdt. Gamle filterlenker ?kategori=standard peker på tilsvarende kilde-kategori. Overføring på prod 08.10 kl 06:42 UTC: dagens kildetype beholdt først, kategorier lagt til (1:1-mapping), maks 2. Resultat 245 kilder med ett valg, 16 med to, ingen uten. 2 kilder hadde tre kandidater og ble kuttet til to (1306 Concept-programmet: droppet forskningsrapport; 1309 Kunnskapsbanken for ombruk: droppet opplaering). 14 kilder fikk en ekstra kilde-kategori fra Kategori-feltet. Alt live og verifisert på bimverdi.no/kunnskapskilder/."
+status: waiting
+waiting_on: "Bård — gå gjennom listen over 16 uklarheter (2 kuttet + 14 tillagt) og bekrefte/endre. Andreas — godkjenne at listen postes på #358. Deretter kan taksonomien kunnskapskildekategori slettes helt."
+detail: |
+  ROLLBACK
+  Full DB-eksport før overføring: ~/backup-358/db-for-358-20261008.sql (Servebolt, utenfor webrot, 123 MB).
+  Per-kilde sikkerhetskopi (gammel kildetype-streng + kategori-slugs): ~/backup-358/kildekategori-sikkerhetskopi-20261008-064205.json.
+  Rapport: ~/backup-358/kildekategori-rapport-20261008-064205.json. Rapport-/sikkerhetskopi-filene ble flyttet ut av uploads/ (offentlig).
+  Tilbakerulling av én kilde: sett post_meta kildetype tilbake til kildetype_raa fra JSON-filen.
+
+  ÅPNE PUNKTER
+  1. Artikkelvurdering-skill (#357 punkt 3 i listen): «hvor?» og «hvordan?» ikke definert. Andreas: det er AI-slop-skillen (plain-language eller tilsvarende) som skal sendes til Bård. Ikke levert.
+  2. Taksonomien kunnskapskildekategori har fortsatt termkoblinger i databasen (ingen UI). Slettes etter Bårds gjennomgang.
+  3. Redigeringsskjema/registrering testet ved rendring lokalt (11 bokser, ingen Kategori-felt); ikke testet med ekte innsending på prod.
+
+---
 date: 2026-10-06
 action: «Send som e-post» per innlegg i diskusjonen (UKE41 / #357, punkt 4 fra 02.10) — bygget og verifisert på localhost, ikke committet eller deployet
 files:
