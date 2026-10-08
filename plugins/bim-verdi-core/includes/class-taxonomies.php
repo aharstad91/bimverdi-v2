@@ -147,6 +147,12 @@ class BIM_Verdi_Taxonomies {
 
     /**
      * Register Kunnskapskildekategori taxonomy
+     *
+     * Trello #358 (08.10.2026): «Kategori» er slått sammen med «Kildetype»
+     * (nå «Kilde-kategori», avkrysning). Taksonomien og termkoblingene beholdes
+     * som sikkerhetskopi av de gamle valgene, men den vises ikke i wp-admin og
+     * har ingen offentlige sider. Slett den først når Bård har gått gjennom listen
+     * over uklarheter.
      */
     private function register_kunnskapskildekategori() {
         $labels = array(
@@ -161,13 +167,13 @@ class BIM_Verdi_Taxonomies {
         $args = array(
             'labels'            => $labels,
             'hierarchical'      => true,
-            'public'            => true,
-            'show_ui'           => true,
-            'show_admin_column' => true,
-            'show_in_nav_menus' => true,
+            'public'            => false,
+            'show_ui'           => false,
+            'show_admin_column' => false,
+            'show_in_nav_menus' => false,
             'show_tagcloud'     => false,
-            'rewrite'           => array('slug' => 'kunnskapskilde-kategori'),
-            'show_in_rest'      => true,
+            'rewrite'           => false,
+            'show_in_rest'      => false,
         );
 
         register_taxonomy('kunnskapskildekategori', array('kunnskapskilde'), $args);

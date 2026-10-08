@@ -21,7 +21,7 @@ $utgiver = get_field('utgiver');
 $spraak = get_field('spraak');
 $versjon = get_field('versjon');
 $utgivelsesaar = get_field('utgivelsesaar');
-$kildetype = get_field('kildetype');
+$kildetype = bimverdi_get_kildekategorier(get_the_ID());
 $geografisk_gyldighet = get_field('geografisk_gyldighet');
 $dataformat = get_field('dataformat');
 $ant_lovpalagte = get_field('ant_lovpalagte_standarder');
@@ -34,7 +34,6 @@ $tilknyttet_bedrift = get_field('tilknyttet_bedrift');
 
 // Get taxonomy terms
 $temagruppe_terms = wp_get_post_terms(get_the_ID(), 'temagruppe');
-$kategori_terms = wp_get_post_terms(get_the_ID(), 'kunnskapskildekategori');
 
 // Check if current user can edit
 $current_user_id = get_current_user_id();
@@ -51,23 +50,6 @@ if ($current_user_id) {
         $can_edit = true;
     }
 }
-
-// Kildetype labels
-$kildetype_labels = [
-    'standard' => 'Standard (ISO, NS, etc.)',
-    'veiledning' => 'Veiledning/metodikk',
-    'forskrift_norsk' => 'Forskrift (norsk lov)',
-    'forordning_eu' => 'Forordning (EU/EØS)',
-    'mal' => 'Mal/Template',
-    'forskningsrapport' => 'Forskningsrapport',
-    'casestudie' => 'Casestudie',
-    'opplaering' => 'Opplæringsmateriell',
-    'dokumentasjon' => 'Verktøydokumentasjon',
-    'nettressurs' => 'Nettressurs/Database',
-    'annet' => 'Annet',
-    // Legacy values
-    'veileder' => 'Veileder',
-];
 
 // Geografisk gyldighet labels
 $geo_labels = [
@@ -191,17 +173,10 @@ $kilde_created = get_the_date('d.m.Y');
                     <?php endif; ?>
 
                     <!-- Tags -->
-                    <?php if (!empty($temagruppe_terms) || !empty($kategori_terms)): ?>
+                    <?php if (!empty($temagruppe_terms)): ?>
                     <div class="flex flex-wrap gap-2 pt-6 mt-6 border-t border-[#E7E5E4]">
                         <?php if (!empty($temagruppe_terms)): ?>
                             <?php foreach ($temagruppe_terms as $term): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
-                                <?php echo esc_html($term->name); ?>
-                            </span>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                        <?php if (!empty($kategori_terms)): ?>
-                            <?php foreach ($kategori_terms as $term): ?>
                             <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
                                 <?php echo esc_html($term->name); ?>
                             </span>
@@ -318,13 +293,15 @@ $kilde_created = get_the_date('d.m.Y');
                         <?php endif; ?>
 
                         <!-- Kildetype -->
-                        <?php if ($kildetype): ?>
+                        <?php if (!empty($kildetype)): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
-                            <dt class="text-sm text-[#57534E]">Kildetype</dt>
-                            <dd class="text-sm">
+                            <dt class="text-sm text-[#57534E]">Kilde-kategori</dt>
+                            <dd class="text-sm flex flex-wrap gap-2">
+                                <?php foreach ($kildetype as $kildetype_slug): ?>
                                 <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
-                                    <?php echo esc_html(isset($kildetype_labels[$kildetype]) ? $kildetype_labels[$kildetype] : $kildetype); ?>
+                                    <?php echo esc_html(bimverdi_kildekategori_label($kildetype_slug)); ?>
                                 </span>
+                                <?php endforeach; ?>
                             </dd>
                         </div>
                         <?php endif; ?>

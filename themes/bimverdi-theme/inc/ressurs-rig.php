@@ -190,12 +190,12 @@ if (!function_exists('bv_ressurs_rig_build')) {
             $items = [];
             foreach ($q->posts as $ks) {
                 $ekstern   = get_field('ekstern_lenke', $ks->ID);
-                $kildetype = get_field('kildetype', $ks->ID);
+                $kildetype = bimverdi_kildekategorier_tekst($ks->ID);
                 $items[] = [
                     'title'    => get_the_title($ks->ID),
                     'href'     => $ekstern ?: get_permalink($ks->ID),
                     'external' => !empty($ekstern),
-                    'meta'     => $kildetype ? ucfirst($kildetype) : '',
+                    'meta'     => $kildetype,
                     'icon'     => 'file-text',
                 ];
             }

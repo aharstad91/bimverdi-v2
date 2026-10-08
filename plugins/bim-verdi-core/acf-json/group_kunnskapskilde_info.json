@@ -56,10 +56,10 @@
         },
         {
             "key": "field_kunnskapskilde_kildetype",
-            "label": "Kildetype",
+            "label": "Kilde-kategori",
             "name": "kildetype",
-            "type": "select",
-            "instructions": "Hva slags type kilde er dette?",
+            "type": "checkbox",
+            "instructions": "Velg inntil to.",
             "required": 1,
             "choices": {
                 "standard": "Standard (ISO, NS, etc.)",
@@ -74,11 +74,15 @@
                 "nettressurs": "Nettressurs/Database",
                 "annet": "Annet (tjeneste, webside etc.)"
             },
-            "default_value": "standard",
+            "default_value": [],
             "return_format": "value",
             "wrapper": {
                 "width": "50"
-            }
+            },
+            "layout": "vertical",
+            "allow_custom": 0,
+            "save_custom": 0,
+            "toggle": 0
         },
         {
             "key": "field_kunnskapskilde_geografisk_gyldighet",

@@ -19,6 +19,124 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Kilde-kategori (tidligere «Kildetype»). Trello #358 (Bård, 06.10.2026):
+ * avkrysningsbokser med maks to valg. Feltet «Kategori» (taksonomien
+ * kunnskapskildekategori) er slått sammen inn i dette feltet og vises ikke lenger.
+ * Feltnøkkelen i databasen er fortsatt `kildetype` så lenker og ACF-oppsett holder.
+ */
+function bimverdi_kildekategori_valg() {
+    return [
+        'standard'          => 'Standard (ISO, NS, etc.)',
+        'veiledning'        => 'Veiledning/metodikk',
+        'forskrift_norsk'   => 'Forskrift (norsk lov)',
+        'forordning_eu'     => 'Forordning (EU/EØS)',
+        'mal'               => 'Mal/Template',
+        'forskningsrapport' => 'Forskningsrapport',
+        'casestudie'        => 'Casestudie',
+        'opplaering'        => 'Opplæringsmateriell',
+        'dokumentasjon'     => 'Verktøydokumentasjon',
+        'nettressurs'       => 'Nettressurs/Database',
+        'annet'             => 'Annet (tjeneste, webside etc.)',
+    ];
+}
+
+/** Maks antall valg per kilde. */
+function bimverdi_kildekategori_maks() {
+    return 2;
+}
+
+/**
+ * Kilde-kategoriene til en kilde som liste med slugs (rekkefølge bevart).
+ * Tåler både gammel lagring (én streng) og ny (liste), samt det gamle
+ * verdien «veileder» som er skrevet «veiledning» i dag.
+ */
+function bimverdi_get_kildekategorier($post_id = null) {
+    $post_id = $post_id ?: get_the_ID();
+    $raa = function_exists('get_field') ? get_field('kildetype', $post_id, false) : get_post_meta($post_id, 'kildetype', true);
+    return bimverdi_normaliser_kildekategorier($raa);
+}
+
+function bimverdi_normaliser_kildekategorier($raa) {
+    if (is_string($raa)) {
+        $maybe = maybe_unserialize($raa);
+        $raa   = is_array($maybe) ? $maybe : ($raa === '' ? [] : [$raa]);
+    }
+    if (!is_array($raa)) {
+        return [];
+    }
+    $gyldige = bimverdi_kildekategori_valg();
+    $ut      = [];
+    foreach ($raa as $v) {
+        $v = is_string($v) ? sanitize_key($v) : '';
+        if ($v === 'veileder') {
+            $v = 'veiledning';
+        }
+        if ($v !== '' && isset($gyldige[$v]) && !in_array($v, $ut, true)) {
+            $ut[] = $v;
+        }
+    }
+    return $ut;
+}
+
+/** Visningsnavn for én kilde-kategori. */
+function bimverdi_kildekategori_label($slug) {
+    $valg = bimverdi_kildekategori_valg();
+    return $valg[$slug] ?? (string) $slug;
+}
+
+/** Visningsnavn for alle en kildes kategorier, kommaseparert. */
+function bimverdi_kildekategorier_tekst($post_id = null, $skille = ', ') {
+    return implode($skille, array_map('bimverdi_kildekategori_label', bimverdi_get_kildekategorier($post_id)));
+}
+
+/**
+ * meta_query-del som finner kilder med minst én av disse kilde-kategoriene,
+ * uavhengig av om feltet er lagret som streng (gammelt) eller liste (nytt).
+ */
+function bimverdi_kildekategori_meta_query($slugs) {
+    $q = ['relation' => 'OR'];
+    foreach ((array) $slugs as $slug) {
+        $slug = sanitize_key($slug);
+        $q[]  = ['key' => 'kildetype', 'value' => $slug, 'compare' => '='];
+        $q[]  = ['key' => 'kildetype', 'value' => '"' . $slug . '"', 'compare' => 'LIKE'];
+    }
+    return $q;
+}
+
+/**
+ * Tidligere «Kategori» (taksonomien kunnskapskildekategori) → kilde-kategori.
+ * Brukes av overføringen og av gamle filterlenker (?kategori=standard).
+ */
+function bimverdi_kategori_slug_til_kildekategori($term_slug) {
+    $map = [
+        'standard'            => 'standard',
+        'veileder'            => 'veiledning',
+        'mal-template'        => 'mal',
+        'forskning'           => 'forskningsrapport',
+        'forskningsrapport'   => 'forskningsrapport',
+        'casestudie'          => 'casestudie',
+        'opplaering'          => 'opplaering',
+        'verktoydokumentasjon' => 'dokumentasjon',
+        'annet'               => 'annet',
+    ];
+    return $map[$term_slug] ?? '';
+}
+
+/**
+ * wp-admin: maks to valg og minst ett (ACF-feltet er avkrysning).
+ */
+add_filter('acf/validate_value/key=field_kunnskapskilde_kildetype', function ($valid, $value) {
+    if ($valid !== true) {
+        return $valid;
+    }
+    $valgt = bimverdi_normaliser_kildekategorier($value);
+    if (count($valgt) > bimverdi_kildekategori_maks()) {
+        return 'Velg inntil ' . bimverdi_kildekategori_maks() . ' kilde-kategorier.';
+    }
+    return $valid;
+}, 10, 2);
+
+/**
  * Handle kunnskapskilde registration/edit form submission
  */
 add_action('init', function () {
@@ -104,7 +222,7 @@ add_action('init', function () {
     $versjon                = sanitize_text_field($_POST['versjon'] ?? '');
     $utgivelsesaar          = sanitize_text_field($_POST['utgivelsesaar'] ?? '');
     $tilgang                = sanitize_text_field($_POST['tilgang'] ?? '');
-    $kildetype              = sanitize_text_field($_POST['kildetype'] ?? '');
+    $kildetype              = bimverdi_normaliser_kildekategorier(array_map('sanitize_text_field', (array) ($_POST['kildetype'] ?? [])));
     $geografisk_gyldighet   = sanitize_text_field($_POST['geografisk_gyldighet'] ?? '');
     $dataformat             = sanitize_text_field($_POST['dataformat'] ?? '');
     $ant_lovpalagte         = sanitize_text_field($_POST['ant_lovpalagte_standarder'] ?? '');
@@ -112,7 +230,6 @@ add_action('init', function () {
     $ant_anbefalte          = sanitize_text_field($_POST['ant_anbefalte_standarder'] ?? '');
     $anbefalte              = sanitize_text_field($_POST['anbefalte_standarder'] ?? '');
     $temagrupper            = array_map('sanitize_text_field', (array) ($_POST['temagrupper'] ?? []));
-    $kategorier             = array_map('sanitize_text_field', (array) ($_POST['kategorier'] ?? []));
 
     // --- Validate required fields ---
     if (empty($navn)) {
@@ -130,10 +247,9 @@ add_action('init', function () {
         exit;
     }
 
-    // Validate select values
-    $allowed_kildetype = ['standard', 'veiledning', 'forskrift_norsk', 'forordning_eu', 'mal', 'forskningsrapport', 'casestudie', 'opplaering', 'dokumentasjon', 'nettressurs', 'annet'];
-    if (!in_array($kildetype, $allowed_kildetype)) {
-        $kildetype = '';
+    if (count($kildetype) > bimverdi_kildekategori_maks()) {
+        wp_redirect(add_query_arg('bv_error', 'too_many_kildetype', $redirect_error));
+        exit;
     }
 
     $allowed_spraak = ['norsk', 'engelsk', 'svensk', 'dansk', 'flerspraklig', 'annet'];
@@ -244,7 +360,7 @@ add_action('init', function () {
         update_field('versjon', $versjon, $post_id);
         if ($utgivelsesaar) update_field('utgivelsesaar', $utgivelsesaar, $post_id);
         if ($tilgang) update_field('tilgang', $tilgang, $post_id);
-        if ($kildetype) update_field('kildetype', $kildetype, $post_id);
+        update_field('kildetype', $kildetype, $post_id);
         if ($geografisk_gyldighet) update_field('geografisk_gyldighet', $geografisk_gyldighet, $post_id);
         if ($dataformat) update_field('dataformat', $dataformat, $post_id);
         update_field('ant_lovpalagte_standarder', $ant_lovpalagte, $post_id);
@@ -261,9 +377,6 @@ add_action('init', function () {
     // --- Save taxonomies ---
     if (!empty($temagrupper)) {
         wp_set_object_terms($post_id, $temagrupper, 'temagruppe');
-    }
-    if (!empty($kategorier)) {
-        wp_set_object_terms($post_id, $kategorier, 'kunnskapskildekategori');
     }
 
     // Clear rate limit

@@ -535,7 +535,7 @@ if (!$company && $bruker_foretak) : ?>
             <?php if (!empty($my_kilder)): ?>
                 <div class="divide-y divide-[#E7E5E4]">
                     <?php foreach ($my_kilder as $kilde):
-                        $kilde_type = get_field('kildetype', $kilde->ID);
+                        $kilde_type = bimverdi_kildekategorier_tekst($kilde->ID);
                         $kilde_status = $kilde->post_status;
                     ?>
                         <div class="flex items-center gap-3 py-3">

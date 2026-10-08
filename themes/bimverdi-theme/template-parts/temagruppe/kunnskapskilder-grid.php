@@ -42,19 +42,6 @@ if ($temagruppe_term) {
     wp_reset_postdata();
 }
 
-// Kildetype labels and icons
-$kildetype_config = [
-    'standard' => ['label' => 'Standard', 'icon' => 'file-badge'],
-    'veileder' => ['label' => 'Veileder', 'icon' => 'book-open'],
-    'mal' => ['label' => 'Mal', 'icon' => 'file-text'],
-    'forskningsrapport' => ['label' => 'Forskning', 'icon' => 'microscope'],
-    'casestudie' => ['label' => 'Case', 'icon' => 'briefcase'],
-    'opplaering' => ['label' => 'Opplæring', 'icon' => 'graduation-cap'],
-    'dokumentasjon' => ['label' => 'Dokumentasjon', 'icon' => 'file-code'],
-    'nettressurs' => ['label' => 'Nettressurs', 'icon' => 'globe'],
-    'annet' => ['label' => 'Annet', 'icon' => 'file'],
-];
-
 // If no items, don't render section
 if (empty($kunnskapskilder)) {
     return;
@@ -77,15 +64,8 @@ if (empty($kunnskapskilder)) {
             $kort_beskrivelse = get_field('kort_beskrivelse', $kilde_id);
             $ekstern_lenke = get_field('ekstern_lenke', $kilde_id);
             $utgiver = get_field('utgiver', $kilde_id);
-            $kildetype = get_field('kildetype', $kilde_id);
+            $kildetype = bimverdi_get_kildekategorier($kilde_id);
             $utgivelsesaar = get_field('utgivelsesaar', $kilde_id);
-
-            // Get kategori
-            $kategori_terms = wp_get_post_terms($kilde_id, 'kunnskapskildekategori', ['fields' => 'names']);
-            $kategori = !empty($kategori_terms) ? $kategori_terms[0] : '';
-
-            // Determine type config
-            $type_config = $kildetype_config[$kildetype] ?? $kildetype_config['annet'];
 
             // Determine link
             $resource_url = $ekstern_lenke ?: get_permalink($kilde_id);
@@ -94,15 +74,11 @@ if (empty($kunnskapskilder)) {
         <article class="bg-white rounded-lg border border-[#E5E0D8] p-5 flex flex-col">
             <!-- Type Badge -->
             <div class="mb-3">
-                <?php if ($kategori) : ?>
+                <?php foreach ($kildetype as $kildetype_slug) : ?>
                 <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-[#5A5A5A]">
-                    <?php echo esc_html($kategori); ?>
+                    <?php echo esc_html(bimverdi_kildekategori_label($kildetype_slug)); ?>
                 </span>
-                <?php elseif ($kildetype) : ?>
-                <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-[#5A5A5A]">
-                    <?php echo esc_html($type_config['label']); ?>
-                </span>
-                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
 
             <!-- Title -->

@@ -524,17 +524,6 @@ $company_kunnskapskilder = get_posts(array(
 
                 <!-- Kunnskapskilder Section -->
                 <?php
-                    $kildetype_labels = array(
-                        'standard' => 'Standard',
-                        'veileder' => 'Veileder',
-                        'mal' => 'Mal',
-                        'forskningsrapport' => 'Rapport',
-                        'casestudie' => 'Case',
-                        'opplaering' => 'Opplæring',
-                        'dokumentasjon' => 'Dokumentasjon',
-                        'nettressurs' => 'Nettressurs',
-                        'annet' => 'Annet',
-                    );
                     $kilde_count = count($company_kunnskapskilder);
                 ?>
                 <section class="border-t border-[#E7E5E4] pt-10">
@@ -548,7 +537,7 @@ $company_kunnskapskilder = get_posts(array(
                     <?php if (!empty($company_kunnskapskilder)): ?>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <?php foreach ($company_kunnskapskilder as $kilde):
-                            $kildetype = get_field('kildetype', $kilde->ID);
+                            $kildetype = bimverdi_get_kildekategorier($kilde->ID);
                             $kort_beskrivelse = get_field('kort_beskrivelse', $kilde->ID);
                             $utgiver = get_field('utgiver', $kilde->ID);
                             $ekstern_lenke = get_field('ekstern_lenke', $kilde->ID);
@@ -561,9 +550,9 @@ $company_kunnskapskilder = get_posts(array(
                                 </div>
 
                                 <!-- Type Tag -->
-                                <?php if ($kildetype && isset($kildetype_labels[$kildetype])): ?>
+                                <?php if (!empty($kildetype)): ?>
                                 <span class="inline-block text-xs bg-[#F0FDFA] text-[#0D9488] px-2 py-0.5 rounded mb-3">
-                                    <?php echo esc_html($kildetype_labels[$kildetype]); ?>
+                                    <?php echo esc_html(bimverdi_kildekategorier_tekst($kilde->ID)); ?>
                                 </span>
                                 <?php endif; ?>
 

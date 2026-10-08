@@ -60,7 +60,7 @@ $current_spraak        = get_field('spraak', $kunnskapskilde_id);
 $versjon               = get_field('versjon', $kunnskapskilde_id);
 $current_utgivelsesaar = get_field('utgivelsesaar', $kunnskapskilde_id);
 $current_tilgang       = get_field('tilgang', $kunnskapskilde_id);
-$current_kildetype     = get_field('kildetype', $kunnskapskilde_id);
+$current_kildetype     = bimverdi_get_kildekategorier($kunnskapskilde_id);
 $current_geo           = get_field('geografisk_gyldighet', $kunnskapskilde_id);
 $current_dataformat    = get_field('dataformat', $kunnskapskilde_id);
 $ant_lovpalagte        = get_field('ant_lovpalagte_standarder', $kunnskapskilde_id);
@@ -72,28 +72,15 @@ $anbefalte             = get_field('anbefalte_standarder', $kunnskapskilde_id);
 if (is_array($current_spraak)) $current_spraak = reset($current_spraak);
 if (is_array($current_utgivelsesaar)) $current_utgivelsesaar = reset($current_utgivelsesaar);
 if (is_array($current_tilgang)) $current_tilgang = reset($current_tilgang);
-if (is_array($current_kildetype)) $current_kildetype = reset($current_kildetype);
 if (is_array($current_geo)) $current_geo = reset($current_geo);
 if (is_array($current_dataformat)) $current_dataformat = reset($current_dataformat);
 
 $kilde_status  = get_post_status($kunnskapskilde_id);
 $kilde_updated = get_the_modified_date('d.m.Y', $kunnskapskilde_id);
 
-// Kildetype labels for info badge
-$kildetype_labels = [
-    'standard'          => 'Standard',
-    'veiledning'        => 'Veiledning',
-    'forskrift_norsk'   => 'Forskrift (norsk)',
-    'forordning_eu'     => 'Forordning (EU)',
-    'mal'               => 'Mal/Template',
-    'forskningsrapport' => 'Forskningsrapport',
-    'casestudie'        => 'Casestudie',
-    'opplaering'        => 'Opplæring',
-    'dokumentasjon'     => 'Dokumentasjon',
-    'nettressurs'       => 'Nettressurs',
-    'annet'             => 'Annet',
-];
-$kilde_type_label = $kildetype_labels[$current_kildetype] ?? ($current_kildetype ?: 'Ukategorisert');
+$kilde_type_label = bimverdi_kildekategorier_tekst($kunnskapskilde_id) ?: 'Ukategorisert';
+
+require_once get_template_directory() . '/parts/components/kilde-kategori-felt.php';
 
 // Error handling
 $error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
@@ -102,28 +89,14 @@ $error_messages = [
     'rate_limit'        => 'For mange forsøk. Vennligst vent litt.',
     'missing_name'      => 'Navn på kunnskapskilde er påkrevd.',
     'missing_url'       => 'Ekstern lenke er påkrevd.',
-    'missing_kildetype' => 'Du må velge kildetype.',
+    'missing_kildetype' => 'Du må velge minst én kilde-kategori.',
+    'too_many_kildetype' => 'Du kan velge inntil to kilde-kategorier.',
     'url_duplicate'     => 'Denne lenken er allerede registrert. Vennligst bruk en annen URL.',
     'not_found'         => 'Kunnskapskilden ble ikke funnet.',
     'permission'        => 'Du har ikke tilgang til å redigere denne kunnskapskilden.',
     'system'            => 'En teknisk feil oppstod. Vennligst prøv igjen.',
 ];
 $error_text = $error_messages[$error] ?? '';
-
-// Select options (same as registrer)
-$kildetype_options = [
-    'standard'         => 'Standard (ISO, NS, etc.)',
-    'veiledning'       => 'Veiledning/metodikk',
-    'forskrift_norsk'  => 'Forskrift (norsk lov)',
-    'forordning_eu'    => 'Forordning (EU/EØS)',
-    'mal'              => 'Mal/Template',
-    'forskningsrapport'=> 'Forskningsrapport',
-    'casestudie'       => 'Casestudie',
-    'opplaering'       => 'Opplæringsmateriell',
-    'dokumentasjon'    => 'Verktøydokumentasjon',
-    'nettressurs'      => 'Nettressurs/Database',
-    'annet'            => 'Annet',
-];
 
 $spraak_options = [
     'norsk'       => 'Norsk',
@@ -165,15 +138,11 @@ $aar_options = ['2026', '2025', '2024', '2023', '2022', 'Eldre enn 2022'];
 $temagrupper = get_terms(['taxonomy' => 'temagruppe', 'hide_empty' => false]);
 if (is_wp_error($temagrupper)) $temagrupper = [];
 
-$kategorier = get_terms(['taxonomy' => 'kunnskapskildekategori', 'hide_empty' => false]);
-if (is_wp_error($kategorier)) $kategorier = [];
 
 // Get current taxonomy terms for this kunnskapskilde
 $current_temagrupper = wp_get_post_terms($kunnskapskilde_id, 'temagruppe', ['fields' => 'slugs']);
 if (is_wp_error($current_temagrupper)) $current_temagrupper = [];
 
-$current_kategorier = wp_get_post_terms($kunnskapskilde_id, 'kunnskapskildekategori', ['fields' => 'slugs']);
-if (is_wp_error($current_kategorier)) $current_kategorier = [];
 ?>
 
 <!-- Breadcrumb -->
@@ -285,19 +254,8 @@ if (is_wp_error($current_kategorier)) $current_kategorier = [];
         <hr class="border-[#E5E0D5]">
         <h2 class="text-lg font-semibold text-[#111827]">Klassifisering</h2>
 
-        <!-- Kildetype -->
-        <div>
-            <label for="kildetype" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                Kildetype <span class="text-red-500">*</span>
-            </label>
-            <select id="kildetype" name="kildetype" required
-                    class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
-                <option value="">Velg kildetype</option>
-                <?php foreach ($kildetype_options as $value => $label): ?>
-                <option value="<?php echo esc_attr($value); ?>" <?php selected($current_kildetype, $value); ?>><?php echo esc_html($label); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+        <!-- Kilde-kategori (avkrysning, maks to) -->
+        <?php bimverdi_kilde_kategori_felt($current_kildetype); ?>
 
         <div class="grid lg:grid-cols-2 gap-4">
             <!-- Tilgang -->
@@ -443,23 +401,6 @@ if (is_wp_error($current_kategorier)) $current_kategorier = [];
         </fieldset>
         <?php endif; ?>
 
-        <?php if (!empty($kategorier)): ?>
-        <!-- Kategorier -->
-        <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">Kategorier</legend>
-            <p class="text-xs text-[#888888] mb-3">Velg relevante kategorier.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <?php foreach ($kategorier as $term): ?>
-                <label class="flex items-start gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
-                    <input type="checkbox" name="kategorier[]" value="<?php echo esc_attr($term->slug); ?>"
-                           <?php checked(in_array($term->slug, $current_kategorier)); ?>
-                           class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
-                    <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($term->name); ?></span>
-                </label>
-                <?php endforeach; ?>
-            </div>
-        </fieldset>
-        <?php endif; ?>
 
         <!-- Submit -->
         <div class="pt-4">

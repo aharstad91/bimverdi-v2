@@ -17,6 +17,8 @@ $company_id = get_user_meta($user_id, 'bimverdi_company_id', true)
            ?: get_user_meta($user_id, 'bim_verdi_company_id', true);
 $company = $company_id ? get_post($company_id) : null;
 
+require_once get_template_directory() . '/parts/components/kilde-kategori-felt.php';
+
 // Error handling
 $error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
 $error_messages = [
@@ -24,27 +26,13 @@ $error_messages = [
     'rate_limit'        => 'For mange forsøk. Vennligst vent litt.',
     'missing_name'      => 'Navn på kunnskapskilde er påkrevd.',
     'missing_url'       => 'Ekstern lenke er påkrevd.',
-    'missing_kildetype' => 'Du må velge kildetype.',
+    'missing_kildetype' => 'Du må velge minst én kilde-kategori.',
+    'too_many_kildetype' => 'Du kan velge inntil to kilde-kategorier.',
     'missing_consent'   => 'Du må samtykke for å registrere.',
     'url_duplicate'     => 'Denne lenken er allerede registrert. Vennligst bruk en annen URL.',
     'system'            => 'En teknisk feil oppstod. Vennligst prøv igjen.',
 ];
 $error_text = $error_messages[$error] ?? '';
-
-// Select options
-$kildetype_options = [
-    'standard'         => 'Standard (ISO, NS, etc.)',
-    'veiledning'       => 'Veiledning/metodikk',
-    'forskrift_norsk'  => 'Forskrift (norsk lov)',
-    'forordning_eu'    => 'Forordning (EU/EØS)',
-    'mal'              => 'Mal/Template',
-    'forskningsrapport'=> 'Forskningsrapport',
-    'casestudie'       => 'Casestudie',
-    'opplaering'       => 'Opplæringsmateriell',
-    'dokumentasjon'    => 'Verktøydokumentasjon',
-    'nettressurs'      => 'Nettressurs/Database',
-    'annet'            => 'Annet',
-];
 
 $spraak_options = [
     'norsk'       => 'Norsk',
@@ -86,8 +74,6 @@ $aar_options = ['2026', '2025', '2024', '2023', '2022', 'Eldre enn 2022'];
 $temagrupper = get_terms(['taxonomy' => 'temagruppe', 'hide_empty' => false]);
 if (is_wp_error($temagrupper)) $temagrupper = [];
 
-$kategorier = get_terms(['taxonomy' => 'kunnskapskildekategori', 'hide_empty' => false]);
-if (is_wp_error($kategorier)) $kategorier = [];
 ?>
 
 <!-- Breadcrumb -->
@@ -184,19 +170,8 @@ if (is_wp_error($kategorier)) $kategorier = [];
         <hr class="border-[#E5E0D5]">
         <h2 class="text-lg font-semibold text-[#111827]">Klassifisering</h2>
 
-        <!-- Kildetype -->
-        <div>
-            <label for="kildetype" class="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                Kildetype <span class="text-red-500">*</span>
-            </label>
-            <select id="kildetype" name="kildetype" required
-                    class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
-                <option value="">Velg kildetype</option>
-                <?php foreach ($kildetype_options as $value => $label): ?>
-                <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+        <!-- Kilde-kategori (avkrysning, maks to) -->
+        <?php bimverdi_kilde_kategori_felt([]); ?>
 
         <div class="grid lg:grid-cols-2 gap-4">
             <!-- Tilgang -->
@@ -325,23 +300,6 @@ if (is_wp_error($kategorier)) $kategorier = [];
                 <?php foreach ($temagrupper as $term): ?>
                 <label class="flex items-start gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
                     <input type="checkbox" name="temagrupper[]" value="<?php echo esc_attr($term->slug); ?>"
-                           class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
-                    <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($term->name); ?></span>
-                </label>
-                <?php endforeach; ?>
-            </div>
-        </fieldset>
-        <?php endif; ?>
-
-        <?php if (!empty($kategorier)): ?>
-        <!-- Kategorier -->
-        <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">Kategorier</legend>
-            <p class="text-xs text-[#888888] mb-3">Velg relevante kategorier.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <?php foreach ($kategorier as $term): ?>
-                <label class="flex items-start gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
-                    <input type="checkbox" name="kategorier[]" value="<?php echo esc_attr($term->slug); ?>"
                            class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
                     <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($term->name); ?></span>
                 </label>

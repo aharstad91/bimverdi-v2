@@ -782,7 +782,7 @@ class BIM_Verdi_CLI_Commands {
             'Nettressurs/Database' => 'nettressurs',
         ];
         if (!empty($kildetype)) {
-            update_field('kildetype', $kildetype_map[$kildetype] ?? 'annet', $post_id);
+            update_field('kildetype', array($kildetype_map[$kildetype] ?? 'annet'), $post_id);
         }
 
         // Geografisk gyldighet

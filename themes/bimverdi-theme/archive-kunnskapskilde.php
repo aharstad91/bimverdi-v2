@@ -3,7 +3,7 @@
  * Archive template for Kunnskapskilde (Knowledge Sources)
  *
  * Public knowledge source catalog with BIM Verdi design.
- * Filter on temagruppe, kildetype and kategori.
+ * Filter on temagruppe and kilde-kategori (Trello #358: «Kategori» er slått sammen med «Kildetype»).
  * URL: /kunnskapskilder (from CPT rewrite slug)
  * Updated 2026-02-03: Replaced checkbox filters with compact dropdown filter bar.
  *
@@ -26,6 +26,13 @@ $kategori = isset($_GET['kategori']) && is_array($_GET['kategori'])
 $kildetype = isset($_GET['kildetype']) && is_array($_GET['kildetype'])
     ? array_map('sanitize_text_field', $_GET['kildetype'])
     : array();
+// Gamle lenker (?kategori=standard) peker nå på samme kilde-kategori.
+foreach ($kategori as $gammel_kategori) {
+    $ny = bimverdi_kategori_slug_til_kildekategori($gammel_kategori);
+    if ($ny && !in_array($ny, $kildetype, true)) {
+        $kildetype[] = $ny;
+    }
+}
 
 // Define filter options
 $temagruppe_options = array(
@@ -37,31 +44,8 @@ $temagruppe_options = array(
     'bimtech' => 'BIMtech',
 );
 
-$kildetype_options = array(
-    'standard' => 'Standard (ISO, NS, etc.)',
-    'veiledning' => 'Veiledning/metodikk',
-    'forskrift_norsk' => 'Forskrift (norsk lov)',
-    'forordning_eu' => 'Forordning (EU/EØS)',
-    'mal' => 'Mal/Template',
-    'forskningsrapport' => 'Forskningsrapport',
-    'casestudie' => 'Casestudie',
-    'opplaering' => 'Opplæring',
-    'dokumentasjon' => 'Verktøydokumentasjon',
-    'nettressurs' => 'Nettressurs/Database',
-    'annet' => 'Annet',
-);
+$kildetype_options = bimverdi_kildekategori_valg();
 
-// Get kategori terms from taxonomy
-$kategori_terms = get_terms(array(
-    'taxonomy' => 'kunnskapskildekategori',
-    'hide_empty' => false,
-));
-$kategori_options = array();
-if (!empty($kategori_terms) && !is_wp_error($kategori_terms)) {
-    foreach ($kategori_terms as $term) {
-        $kategori_options[$term->slug] = $term->name;
-    }
-}
 
 // Build query
 $args = array(
@@ -76,20 +60,13 @@ if (!empty($search)) {
     $args['s'] = $search;
 }
 
-// Tax query for temagruppe and kategori
+// Tax query for temagruppe
 $tax_query = array();
 if (!empty($temagruppe)) {
     $tax_query[] = array(
         'taxonomy' => 'temagruppe',
         'field' => 'slug',
         'terms' => $temagruppe,
-    );
-}
-if (!empty($kategori)) {
-    $tax_query[] = array(
-        'taxonomy' => 'kunnskapskildekategori',
-        'field' => 'slug',
-        'terms' => $kategori,
     );
 }
 if (!empty($tax_query)) {
@@ -99,13 +76,7 @@ if (!empty($tax_query)) {
 
 // Meta query for kildetype
 if (!empty($kildetype)) {
-    $args['meta_query'] = array(
-        array(
-            'key' => 'kildetype',
-            'value' => $kildetype,
-            'compare' => 'IN',
-        ),
-    );
+    $args['meta_query'] = array(bimverdi_kildekategori_meta_query($kildetype));
 }
 
 $kunnskapskilder_query = new WP_Query($args);
@@ -128,37 +99,13 @@ foreach (array_keys($temagruppe_options) as $slug) {
     $temagruppe_counts[$slug] = $count_query->found_posts;
 }
 
-$kildetype_counts = array();
-foreach (array_keys($kildetype_options) as $value) {
-    $count_query = new WP_Query([
-        'post_type' => 'kunnskapskilde',
-        'post_status' => 'publish',
-        'posts_per_page' => -1,
-        'fields' => 'ids',
-        'meta_query' => [[
-            'key' => 'kildetype',
-            'value' => $value,
-            'compare' => '=',
-        ]],
-    ]);
-    $kildetype_counts[$value] = $count_query->found_posts;
+$kildetype_counts = array_fill_keys(array_keys($kildetype_options), 0);
+foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids']) as $kilde_id_telling) {
+    foreach (bimverdi_get_kildekategorier($kilde_id_telling) as $kildekategori_slug) {
+        $kildetype_counts[$kildekategori_slug]++;
+    }
 }
 
-$kategori_counts = array();
-foreach (array_keys($kategori_options) as $slug) {
-    $count_query = new WP_Query([
-        'post_type' => 'kunnskapskilde',
-        'post_status' => 'publish',
-        'posts_per_page' => -1,
-        'fields' => 'ids',
-        'tax_query' => [[
-            'taxonomy' => 'kunnskapskildekategori',
-            'field' => 'slug',
-            'terms' => $slug,
-        ]],
-    ]);
-    $kategori_counts[$slug] = $count_query->found_posts;
-}
 ?>
 
 <div class="min-h-screen bg-white">
@@ -172,7 +119,6 @@ foreach (array_keys($kategori_options) as $slug) {
         'tag_cloud'        => [
             'taxonomies' => [
                 ['taxonomy' => 'temagruppe', 'filter_class' => 'filter-temagruppe'],
-                ['taxonomy' => 'kunnskapskildekategori', 'filter_class' => 'filter-kategori'],
             ],
             'max_tags' => 12,
         ],
@@ -193,24 +139,13 @@ foreach (array_keys($kategori_options) as $slug) {
             ],
             [
                 'name'         => 'kildetype[]',
-                'label'        => 'Kildetype',
+                'label'        => 'Kilde-kategori',
                 'options'      => $kildetype_options,
                 'selected'     => $kildetype,
                 'counts'       => $kildetype_counts,
                 'filter_class' => 'filter-kildetype',
             ],
         ];
-        // Only add kategori dropdown if there are terms
-        if (!empty($kategori_options)) {
-            $dropdowns[] = [
-                'name'         => 'kategori[]',
-                'label'        => 'Kategori',
-                'options'      => $kategori_options,
-                'selected'     => $kategori,
-                'counts'       => $kategori_counts,
-                'filter_class' => 'filter-kategori',
-            ];
-        }
 
         bimverdi_filter_bar([
             'form_id'            => 'kunnskapskilde-filter-form',
@@ -237,8 +172,7 @@ foreach (array_keys($kategori_options) as $slug) {
         $items = [];
         while ($kunnskapskilder_query->have_posts()): $kunnskapskilder_query->the_post();
             $temagruppe_terms_post = wp_get_post_terms(get_the_ID(), 'temagruppe');
-            $kategori_terms_post = wp_get_post_terms(get_the_ID(), 'kunnskapskildekategori');
-            $kildetype_val = get_field('kildetype', get_the_ID());
+            $kildetype_val = bimverdi_get_kildekategorier(get_the_ID());
             $items[] = [
                 'id'               => get_the_ID(),
                 'navn'             => get_field('kunnskapskilde_navn', get_the_ID()) ?: get_the_title(),
@@ -250,7 +184,6 @@ foreach (array_keys($kategori_options) as $slug) {
                 'permalink'        => get_the_permalink(),
                 'temagruppe_terms' => $temagruppe_terms_post,
                 'temagruppe_slugs' => !empty($temagruppe_terms_post) ? implode(' ', wp_list_pluck($temagruppe_terms_post, 'slug')) : '',
-                'kategori_slugs'   => !empty($kategori_terms_post) ? implode(' ', wp_list_pluck($kategori_terms_post, 'slug')) : '',
             ];
         endwhile; wp_reset_postdata();
 
@@ -272,15 +205,15 @@ foreach (array_keys($kategori_options) as $slug) {
         <!-- Grid View -->
         <div id="kunnskapskilde-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <?php foreach ($items as $item):
-                $icon_path = isset($icon_map[$item['kildetype']]) ? $icon_map[$item['kildetype']] : $default_icon;
+                $forste_kildetype = $item['kildetype'][0] ?? '';
+                $icon_path = isset($icon_map[$forste_kildetype]) ? $icon_map[$forste_kildetype] : $default_icon;
             ?>
 
             <div class="kunnskapskilde-card bg-white rounded-xl border border-[#E7E5E4] shadow-sm overflow-hidden hover:shadow-md hover:border-[#D6D3D1] transition-all group"
                data-title="<?php echo esc_attr(strtolower($item['navn'])); ?>"
                data-utgiver="<?php echo esc_attr(strtolower($item['utgiver'])); ?>"
                data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
-               data-kildetype="<?php echo esc_attr($item['kildetype']); ?>"
-               data-kategori="<?php echo esc_attr($item['kategori_slugs']); ?>">
+               data-kildetype="<?php echo esc_attr(implode(' ', $item['kildetype'])); ?>">
 
                 <!-- Icon Header -->
                 <div class="h-32 bg-[#FAFAF9] overflow-hidden flex items-center justify-center p-6">
@@ -297,11 +230,11 @@ foreach (array_keys($kategori_options) as $slug) {
                             <?php echo esc_html($item['temagruppe_terms'][0]->name); ?>
                         </span>
                         <?php endif; ?>
-                        <?php if ($item['kildetype'] && isset($kildetype_options[$item['kildetype']])): ?>
+                        <?php foreach ($item['kildetype'] as $kildetype_slug): ?>
                         <span class="text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded">
-                            <?php echo esc_html($kildetype_options[$item['kildetype']]); ?>
+                            <?php echo esc_html(bimverdi_kildekategori_label($kildetype_slug)); ?>
                         </span>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
 
                     <h3 class="text-lg font-bold text-[#111827] mb-1 group-hover:text-[#57534E] transition-colors line-clamp-2">
@@ -358,7 +291,7 @@ foreach (array_keys($kategori_options) as $slug) {
                                 <span class="inline-flex items-center gap-1">Navn <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
                             </th>
                             <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="type">
-                                <span class="inline-flex items-center gap-1">Type <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                <span class="inline-flex items-center gap-1">Kilde-kategori <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
                             </th>
                             <th class="px-4 py-3 font-medium text-[#57534E] cursor-pointer hover:text-[#111827] select-none" data-sort="utgiver">
                                 <span class="inline-flex items-center gap-1">Utgiver <svg class="w-3 h-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
@@ -375,10 +308,9 @@ foreach (array_keys($kategori_options) as $slug) {
                             data-title="<?php echo esc_attr(strtolower($item['navn'])); ?>"
                             data-utgiver="<?php echo esc_attr(strtolower($item['utgiver'])); ?>"
                             data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
-                            data-kildetype="<?php echo esc_attr($item['kildetype']); ?>"
-                            data-kildetype-label="<?php echo esc_attr(mb_strtolower($item['kildetype'] && isset($kildetype_options[$item['kildetype']]) ? $kildetype_options[$item['kildetype']] : '')); ?>"
-                            data-aar="<?php echo esc_attr($item['utgivelsesaar'] === 'eldre' ? '0' : (string) (int) $item['utgivelsesaar']); ?>"
-                            data-kategori="<?php echo esc_attr($item['kategori_slugs']); ?>">
+                            data-kildetype="<?php echo esc_attr(implode(' ', $item['kildetype'])); ?>"
+                            data-kildetype-label="<?php echo esc_attr(mb_strtolower(implode(', ', array_map('bimverdi_kildekategori_label', $item['kildetype'])))); ?>"
+                            data-aar="<?php echo esc_attr($item['utgivelsesaar'] === 'eldre' ? '0' : (string) (int) $item['utgivelsesaar']); ?>">
                             <td class="px-4 py-3">
                                 <!-- Navnet lenker til detaljsiden (Bård, Trello #348 punkt 3.3) -->
                                 <a href="<?php echo esc_url($item['permalink']); ?>" class="font-medium text-[#111827] hover:underline"><?php echo esc_html($item['navn']); ?></a>
@@ -387,11 +319,13 @@ foreach (array_keys($kategori_options) as $slug) {
                                 <?php endif; ?>
                             </td>
                             <td class="px-4 py-3">
-                                <?php if ($item['kildetype'] && isset($kildetype_options[$item['kildetype']])): ?>
+                                <div class="flex flex-wrap gap-1">
+                                <?php foreach ($item['kildetype'] as $kildetype_slug): ?>
                                 <span class="text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded whitespace-nowrap">
-                                    <?php echo esc_html($kildetype_options[$item['kildetype']]); ?>
+                                    <?php echo esc_html(bimverdi_kildekategori_label($kildetype_slug)); ?>
                                 </span>
-                                <?php endif; ?>
+                                <?php endforeach; ?>
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-[#57534E]"><?php echo esc_html($item['utgiver']); ?></td>
                             <td class="px-4 py-3 text-[#57534E]">
@@ -476,8 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var filterMap = {
             'temagruppe': '.filter-temagruppe:checked',
-            'kildetype': '.filter-kildetype:checked',
-            'kategori': '.filter-kategori:checked'
+            'kildetype': '.filter-kildetype:checked'
         };
         Object.keys(filterMap).forEach(function(key) {
             var checked = document.querySelectorAll('[data-multiselect] ' + filterMap[key]);
@@ -510,8 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Restore checkboxes
         var filterMap = {
             'temagruppe': '.filter-temagruppe',
-            'kildetype': '.filter-kildetype',
-            'kategori': '.filter-kategori'
+            'kildetype': '.filter-kildetype'
         };
         Object.keys(filterMap).forEach(function(key) {
             var values = params.getAll(key);
@@ -538,23 +470,20 @@ document.addEventListener('DOMContentLoaded', function() {
         var searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
         var selectedTemagruppe = Array.from(document.querySelectorAll('.filter-temagruppe:checked')).map(function(cb) { return cb.value; });
         var selectedKildetype = Array.from(document.querySelectorAll('.filter-kildetype:checked')).map(function(cb) { return cb.value; });
-        var selectedKategori = Array.from(document.querySelectorAll('.filter-kategori:checked')).map(function(cb) { return cb.value; });
 
         // Filter all cards in both grid and list
         var allCards = document.querySelectorAll('.kunnskapskilde-card');
         allCards.forEach(function(card) {
             var title = card.dataset.title || '';
             var cardTemagruppe = card.dataset.temagruppe || '';
-            var cardKildetype = card.dataset.kildetype || '';
-            var cardKategori = card.dataset.kategori || '';
+            var cardKildetype = (card.dataset.kildetype || '').split(' ');
 
             var utgiver = card.dataset.utgiver || '';
             var matchesSearch = !searchTerm || title.includes(searchTerm) || utgiver.includes(searchTerm);
             var matchesTemagruppe = selectedTemagruppe.length === 0 || selectedTemagruppe.some(function(t) { return cardTemagruppe.includes(t); });
-            var matchesKildetype = selectedKildetype.length === 0 || selectedKildetype.includes(cardKildetype);
-            var matchesKategori = selectedKategori.length === 0 || selectedKategori.some(function(k) { return cardKategori.includes(k); });
+            var matchesKildetype = selectedKildetype.length === 0 || selectedKildetype.some(function(k) { return cardKildetype.includes(k); });
 
-            card.style.display = (matchesSearch && matchesTemagruppe && matchesKildetype && matchesKategori) ? '' : 'none';
+            card.style.display = (matchesSearch && matchesTemagruppe && matchesKildetype) ? '' : 'none';
         });
 
         // Count only from active (visible) container to avoid double-counting

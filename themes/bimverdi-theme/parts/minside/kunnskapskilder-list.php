@@ -120,23 +120,11 @@ if (empty($user_kunnskapskilder)) {
                     : '';
 
                 // Get ACF fields
-                $kildetype = get_field('kildetype', $kilde->ID);
+                $kildetype = bimverdi_get_kildekategorier($kilde->ID);
                 $utgiver = get_field('utgiver', $kilde->ID);
                 $ekstern_lenke = get_field('ekstern_lenke', $kilde->ID);
 
-                // Kildetype labels
-                $kildetype_labels = [
-                    'standard' => 'Standard',
-                    'veileder' => 'Veileder',
-                    'mal' => 'Mal/Template',
-                    'forskningsrapport' => 'Forskningsrapport',
-                    'casestudie' => 'Casestudie',
-                    'opplaering' => 'Opplæring',
-                    'dokumentasjon' => 'Dokumentasjon',
-                    'nettressurs' => 'Nettressurs',
-                    'annet' => 'Annet'
-                ];
-                $kildetype_label = isset($kildetype_labels[$kildetype]) ? $kildetype_labels[$kildetype] : $kildetype;
+                $kildetype_label = bimverdi_kildekategorier_tekst($kilde->ID);
             ?>
             <tr class="border-b border-[#E7E5E4] hover:bg-[#F5F5F4] transition-colors group">
                 <!-- Navn & Beskrivelse -->
