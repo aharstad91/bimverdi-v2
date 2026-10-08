@@ -48,13 +48,49 @@ function bimverdi_sporsmal_post_types() {
 }
 
 /**
- * Sider (slugs) med aktiv diskusjonstråd. Slug, ikke post-ID: prod-siden
+ * Sider (slugs) som ALLTID har diskusjonstråd, uansett unntakslista under. Slug, ikke post-ID: prod-siden
  * (ID 3354) finnes ikke i lokal DB, så en lokal testside med samme slug gir
  * identisk oppførsel begge steder.
  * Filter: bimverdi_diskusjon_sider
  */
 function bimverdi_diskusjon_sider() {
     return apply_filters('bimverdi_diskusjon_sider', ['byggchat']);
+}
+
+/**
+ * Sider uten meldingsfelt. Trello #357 punkt 3 (Bård, 06.10): feltet skal stå
+ * nederst på alle sider, men Andreas bestemte 08.10 at det ikke skal på forsiden,
+ * innlogging og Min Side-lignende sider. Forsiden og alle sider med egen
+ * sidemal (Min Side, registrering, katalog, policy-graf m.fl.) utelates
+ * automatisk. Her står resten: juridiske sider, skjemasider og interne sider
+ * uten egen mal.
+ * Filter: bimverdi_diskusjon_side_unntak
+ */
+function bimverdi_diskusjon_side_unntak() {
+    return apply_filters('bimverdi_diskusjon_side_unntak', [
+        'vilkar', 'personvern',                       // juridisk
+        'registrer-bruker', 'aksepter-invitasjon',    // registrering og invitasjon
+        'logg-inn', 'glemt-passord',                  // innlogging (egne ruter i dag)
+        'prosjekt', 'innspill-med-tale', 'priser',    // skjema-/shortcode-sider
+        'trafikk', 'test', 'teams-invite', 'nye-bimverdi', // interne og midlertidige
+    ]);
+}
+
+/**
+ * Skal denne siden (post_type page) ha meldingsfelt? Sider på listen
+ * bimverdi_diskusjon_sider() er alltid med; ellers alle vanlige innholdssider.
+ */
+function bimverdi_diskusjon_side_aktiv($post) {
+    if (in_array($post->post_name, bimverdi_diskusjon_sider(), true)) {
+        return true;
+    }
+    if ((int) get_option('page_on_front') === (int) $post->ID || (int) get_option('page_for_posts') === (int) $post->ID) {
+        return false;
+    }
+    if (get_page_template_slug($post)) {
+        return false; // Spesialmaler er funksjonssider, ikke innhold.
+    }
+    return !in_array($post->post_name, bimverdi_diskusjon_side_unntak(), true);
 }
 
 /**
@@ -68,7 +104,7 @@ function bimverdi_diskusjon_aktiv($post = null) {
         return false;
     }
     if ($post->post_type === 'page') {
-        return in_array($post->post_name, bimverdi_diskusjon_sider(), true);
+        return bimverdi_diskusjon_side_aktiv($post);
     }
     return in_array($post->post_type, bimverdi_sporsmal_post_types(), true);
 }
