@@ -49,7 +49,7 @@ if (!function_exists('bimverdi_diskusjon_epost_href')) {
         }
 
         $tittel = wp_strip_all_tags(html_entity_decode(get_the_title($comment->comment_post_ID), ENT_QUOTES, 'UTF-8'));
-        $emne   = trim(preg_replace('/[\r\n]+/', ' ', 'Fra diskusjonen: ' . $tittel));
+        $emne   = trim(preg_replace('/[\r\n]+/', ' ', 'Fra meldingsfeltet: ' . $tittel));
 
         $tekst = wp_strip_all_tags(html_entity_decode($comment->comment_content, ENT_QUOTES, 'UTF-8'));
         $tekst = trim(preg_replace("/\n{3,}/", "\n\n", str_replace("\r", '', $tekst)));
@@ -59,7 +59,7 @@ if (!function_exists('bimverdi_diskusjon_epost_href')) {
         }
 
         $lenke = add_query_arg('bvk', (int) $comment->comment_ID, get_permalink($comment->comment_post_ID)) . '#comment-' . (int) $comment->comment_ID;
-        $brod  = $comment->comment_author . " skrev:\n\n" . $tekst . "\n\nSe hele diskusjonen: " . $lenke;
+        $brod  = $comment->comment_author . " skrev:\n\n" . $tekst . "\n\nSe alle meldingene: " . $lenke;
 
         return 'mailto:?subject=' . rawurlencode($emne) . '&body=' . rawurlencode($brod);
     }
@@ -203,7 +203,7 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
 
 <section id="diskusjon" class="border-t border-[#E7E5E4] pt-10">
     <div class="flex items-center justify-between gap-6 mb-2">
-        <h2 class="text-lg font-bold text-[#111827]">Diskusjon</h2>
+        <h2 class="text-lg font-bold text-[#111827]">Meldingsfelt</h2>
         <?php if ($bv_abonnement && $innlogget): ?>
             <?php // Bårds «abonnér på aktivitet her» (kort #337). Vanlig POST-skjema,
                   // ikke JS: knappen må virke like godt for de som leser med
@@ -242,7 +242,7 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
             } elseif ($bv_ab_kvittering === 'pa_alle') {
                 // Brukeren hadde slått av alle diskusjonsvarsler; påmeldingen slo dem
                 // på igjen. Det sies eksplisitt — endringen er større enn knappeteksten.
-                echo 'Du abonnerer nå på denne tråden. Du hadde slått av alle diskusjonsvarsler, så de er skrudd på igjen.';
+                echo 'Du abonnerer nå på denne tråden. Du hadde slått av alle varsler fra meldingsfeltet, så de er skrudd på igjen.';
             } else {
                 echo 'Abonnementet er slått av. Du får fortsatt varsel hvis noen nevner deg med @navn eller svarer deg.';
             }
@@ -332,7 +332,7 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
                     <?php if ($comment_count === 0): ?>
                         Vær den første til å dele en tanke eller et spørsmål &mdash; logg inn eller registrer deg for å delta.
                     <?php else: ?>
-                        Du kan lese hele diskusjonen her. Logg inn for å delta &mdash; eller for å slå på varsel
+                        Du kan lese alle meldingene her. Logg inn for å delta &mdash; eller for å slå på varsel
                         på e-post når noen skriver et nytt innlegg.
                     <?php endif; ?>
                 </p>

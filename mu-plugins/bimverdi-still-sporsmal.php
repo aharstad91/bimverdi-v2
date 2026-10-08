@@ -119,7 +119,7 @@ add_filter('pre_comment_approved', function ($approved, $commentdata) {
 
     $user_id = (int) ($commentdata['user_id'] ?? 0);
     if (!$user_id) {
-        return new WP_Error('bimverdi_login_required', __('Du må være innlogget for å delta i diskusjonen.'), 403);
+        return new WP_Error('bimverdi_login_required', __('Du må være innlogget for å delta i meldingsfeltet.'), 403);
     }
 
     $maks_per_time = (int) apply_filters('bimverdi_diskusjon_maks_kommentarer_per_time', 15);

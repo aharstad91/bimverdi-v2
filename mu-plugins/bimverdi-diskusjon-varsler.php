@@ -256,14 +256,14 @@ function bimverdi_diskusjon_varsel_html($type, $mottaker, $avsender_navn, $comme
     $utdrag = wp_trim_words(wp_strip_all_tags($comment->comment_content), 30, ' …');
 
     if ('mention' === $type) {
-        $lead   = sprintf('<strong>%s</strong> nevnte deg i en kommentar i diskusjonen på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
-        $grunn  = sprintf('Du mottar denne e-posten fordi %s nevnte deg med @navn i en diskusjon på bimverdi.no.', esc_html($avsender_navn));
+        $lead   = sprintf('<strong>%s</strong> nevnte deg i en melding i meldingsfeltet på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
+        $grunn  = sprintf('Du mottar denne e-posten fordi %s nevnte deg med @navn i et meldingsfelt på bimverdi.no.', esc_html($avsender_navn));
     } elseif ('abonnement' === $type) {
-        $lead   = sprintf('<strong>%s</strong> skrev et nytt innlegg i diskusjonen på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
-        $grunn  = sprintf('Du mottar denne e-posten fordi du abonnerer på diskusjonen på «%s».', esc_html($tittel));
+        $lead   = sprintf('<strong>%s</strong> skrev en ny melding i meldingsfeltet på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
+        $grunn  = sprintf('Du mottar denne e-posten fordi du abonnerer på meldingsfeltet på «%s».', esc_html($tittel));
     } else {
-        $lead   = sprintf('<strong>%s</strong> svarte på kommentaren din i diskusjonen på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
-        $grunn  = 'Du mottar denne e-posten fordi noen svarte på kommentaren din i en diskusjon på bimverdi.no.';
+        $lead   = sprintf('<strong>%s</strong> svarte på meldingen din i meldingsfeltet på <strong>«%s»</strong>:', esc_html($avsender_navn), esc_html($tittel));
+        $grunn  = 'Du mottar denne e-posten fordi noen svarte på meldingen din i et meldingsfelt på bimverdi.no.';
     }
 
     // Avmeldingsvei. Erstatter mailto-omveien til post@bimverdi.no som sto her
@@ -275,20 +275,20 @@ function bimverdi_diskusjon_varsel_html($type, $mottaker, $avsender_navn, $comme
         if ('abonnement' === $type) {
             $lenke_trad = bimverdi_diskusjon_avmeldingslenke($mottaker->ID, $post->ID, 'trad');
             $avmelding  = sprintf(
-                '<a href="%s" style="color: #6B6B6B;">Slutt å følge denne diskusjonen</a> &nbsp;·&nbsp; <a href="%s" style="color: #6B6B6B;">Slå av alle diskusjonsvarsler</a>',
+                '<a href="%s" style="color: #6B6B6B;">Slutt å følge dette meldingsfeltet</a> &nbsp;·&nbsp; <a href="%s" style="color: #6B6B6B;">Slå av alle varsler fra meldingsfeltet</a>',
                 esc_url($lenke_trad),
                 esc_url($lenke_alle)
             );
         } else {
             $avmelding = sprintf(
-                'Vil du ikke motta slike varsler? <a href="%s" style="color: #6B6B6B;">Slå av alle diskusjonsvarsler</a>.',
+                'Vil du ikke motta slike varsler? <a href="%s" style="color: #6B6B6B;">Slå av alle varsler fra meldingsfeltet</a>.',
                 esc_url($lenke_alle)
             );
         }
     } else {
         $avmelding = sprintf(
             'Vil du ikke motta slike varsler? Gi beskjed til <a href="mailto:post@bimverdi.no?subject=%s" style="color: #6B6B6B;">post@bimverdi.no</a>, så skrur vi dem av for deg.',
-            rawurlencode('Avmelding: varsler om diskusjoner')
+            rawurlencode('Avmelding: varsler fra meldingsfelt')
         );
     }
 
@@ -359,7 +359,7 @@ function bimverdi_diskusjon_varsel_html($type, $mottaker, $avsender_navn, $comme
                                                 <td align="center">
                                                     <a href="<?php echo esc_url($lenke); ?>"
                                                        style="display: inline-block; background-color: #FF8B5E; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 500;">
-                                                        Les og svar i diskusjonen
+                                                        Les og svar i meldingsfeltet
                                                     </a>
                                                 </td>
                                             </tr>

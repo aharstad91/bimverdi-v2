@@ -63,17 +63,19 @@ function bimverdi_diskusjon_banner($args = array()) {
 
         <p class="bv-diskusjonsbanner__tekst">
             <?php if ($innlogget) : ?>
-                <strong>Se diskusjonen nederst på siden.</strong>
+                <strong>Se meldingsfeltet nederst på siden.</strong>
                 Du kan tagge @navn på brukere i nettverket og følge nye innspill — de blir varslet på e-post.
                 Del gjerne siden med andre.
+                <a href="<?php echo esc_url(home_url('/hvordan-vi-jobber/')); ?>">Les mer om hvordan vi jobber</a>.
             <?php else : ?>
-                <strong>Se «diskusjon» nederst på siden. Du kan tagge @navn på brukere i nettverket og følge nye innspill.</strong>
+                <strong>Se «meldingsfeltet» nederst på siden. Du kan tagge @navn på brukere i nettverket og følge nye innspill.</strong>
                 <a href="<?php echo esc_url($logg_inn); ?>">Logg inn</a> og bruk muligheten.
                 Du blir varslet på e-post hvis noen tagger deg. Del gjerne siden med andre.
+                <a href="<?php echo esc_url(home_url('/hvordan-vi-jobber/')); ?>">Les mer om hvordan vi jobber</a>.
             <?php endif; ?>
         </p>
 
-        <a class="bv-diskusjonsbanner__hopp" href="#diskusjon">Til diskusjonen</a>
+        <a class="bv-diskusjonsbanner__hopp" href="#diskusjon">Til meldingsfeltet</a>
 
         <button type="button" class="bv-diskusjonsbanner__lukk" aria-label="Skjul denne meldingen">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>

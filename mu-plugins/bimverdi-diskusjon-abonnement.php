@@ -323,16 +323,16 @@ function bimverdi_diskusjon_avmelding_side($tilstand, $omfang, $post) {
     if ('ugyldig' === $tilstand) {
         status_header(400);
         $overskrift = 'Lenken virker ikke';
-        $tekst      = 'Avmeldingslenken er ugyldig eller utdatert. Du kan slå av varsler selv under diskusjonen på nettsiden, eller gi beskjed til post@bimverdi.no.';
+        $tekst      = 'Avmeldingslenken er ugyldig eller utdatert. Du kan slå av varsler selv under meldingsfeltet på nettsiden, eller gi beskjed til post@bimverdi.no.';
         $knapp      = '';
     } elseif ('bekreft' === $tilstand) {
         status_header(200);
-        $overskrift = 'alle' === $omfang ? 'Slå av alle diskusjonsvarsler?' : 'Slutte å følge denne diskusjonen?';
+        $overskrift = 'alle' === $omfang ? 'Slå av alle varsler fra meldingsfeltet?' : 'Slutte å følge dette meldingsfeltet?';
         $tekst      = 'alle' === $omfang
-            ? 'Du vil ikke lenger få e-post om diskusjoner på bimverdi.no &mdash; verken når noen nevner deg med @navn, svarer deg eller skriver i en tråd du følger. Du kan slå dem på igjen når som helst under en diskusjon på nettsiden.'
+            ? 'Du vil ikke lenger få e-post fra meldingsfeltene på bimverdi.no &mdash; verken når noen nevner deg med @navn, svarer deg eller skriver i en tråd du følger. Du kan slå dem på igjen når som helst under et meldingsfelt på nettsiden.'
             : ($tittel
-                ? sprintf('Du vil ikke lenger få e-post når noen skriver et nytt innlegg i diskusjonen på &laquo;%s&raquo;. Du får fortsatt varsel hvis noen nevner deg med @navn eller svarer direkte på innlegget ditt.', esc_html($tittel))
-                : 'Du vil ikke lenger få e-post når noen skriver et nytt innlegg i denne diskusjonen. Du får fortsatt varsel hvis noen nevner deg med @navn eller svarer direkte på innlegget ditt.');
+                ? sprintf('Du vil ikke lenger få e-post når noen skriver et ny melding i meldingsfeltet på &laquo;%s&raquo;. Du får fortsatt varsel hvis noen nevner deg med @navn eller svarer direkte på innlegget ditt.', esc_html($tittel))
+                : 'Du vil ikke lenger få e-post når noen skriver et ny melding i dette meldingsfeltet. Du får fortsatt varsel hvis noen nevner deg med @navn eller svarer direkte på innlegget ditt.');
         // Skjemaet poster tilbake til nøyaktig samme URL — tokenet er
         // legitimasjonen, så ingen nonce (avsenderen er ikke innlogget).
         $knapp = sprintf(
@@ -342,12 +342,12 @@ function bimverdi_diskusjon_avmelding_side($tilstand, $omfang, $post) {
         );
     } else {
         status_header(200);
-        $overskrift = 'alle' === $omfang ? 'Varslene er slått av' : 'Du følger ikke denne diskusjonen lenger';
+        $overskrift = 'alle' === $omfang ? 'Varslene er slått av' : 'Du følger ikke dette meldingsfeltet lenger';
         $tekst      = 'alle' === $omfang
-            ? 'Du får ikke flere e-poster om diskusjoner på bimverdi.no. Vil du ha dem tilbake, kan du slå dem på igjen under en diskusjon på nettsiden.'
+            ? 'Du får ikke flere e-poster fra meldingsfeltene på bimverdi.no. Vil du ha dem tilbake, kan du slå dem på igjen under et meldingsfelt på nettsiden.'
             : 'Du får fortsatt varsel hvis noen nevner deg med @navn eller svarer direkte på innlegget ditt.';
         $knapp = $post
-            ? sprintf('<a class="bv-knapp" href="%s">Tilbake til diskusjonen</a>', esc_url(get_permalink($post) . '#diskusjon'))
+            ? sprintf('<a class="bv-knapp" href="%s">Tilbake til meldingsfeltet</a>', esc_url(get_permalink($post) . '#diskusjon'))
             : sprintf('<a class="bv-knapp" href="%s">Til bimverdi.no</a>', esc_url(home_url('/')));
     }
 

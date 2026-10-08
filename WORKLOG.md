@@ -3,6 +3,20 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-10-08
+action: «Diskusjon» → «Meldingsfelt» i alle synlige tekster (UKE41 / #357 punkt 1–2) + «Send som e-post» live
+files:
+  - "themes/bimverdi-theme/comments.php (overskrift «Meldingsfelt», e-postemne «Fra meldingsfeltet: …», tekster)"
+  - "themes/bimverdi-theme/parts/components/diskusjon-banner.php (banner: «Se meldingsfeltet nederst på siden», knapp «Til meldingsfeltet», lenke til /hvordan-vi-jobber/)"
+  - "mu-plugins/bimverdi-diskusjon-abonnement.php, bimverdi-diskusjon-varsler.php, bimverdi-still-sporsmal.php (avmeldingssider, varsel-e-poster, feilmelding)"
+summary: "Commit 828b5b5 (Send som e-post) pushet 08.10 etter Andreas sin godkjenning av utseendet, verifisert på Servebolt. Bård ba samme dag om at Diskusjon heter Melding. Alle synlige tekster er byttet til «Meldingsfelt»/«melding»; funksjonsnavn, CSS-klasser og ankeret #diskusjon er beholdt så eksisterende lenker i utsendte e-poster virker. Banneret øverst lenker nå til /hvordan-vi-jobber/. Syntakssjekk ren; rendret på localhost (/prosjekter/byggchat/). Gjenbrukbar blokk «Kommentarmuligheter» (wp_block 5555, brukt på 6 sider) har fortsatt teksten «Bruk 'diskusjon' nederst på sidene» i DB."
+status: waiting
+waiting_on: "Bård — (a) #357 punkt 3: «meldingsfeltet nederst på ALLE sider». Feltet står i dag på de seks CPT-ene + siden byggchat; skal det på alle WP-sider (forside, innlogging m.fl.), eller bare innholdssider? (b) Claude-skill for artikkelvurdering: «hvor?» og «hvordan?» er ikke definert."
+detail: |
+  IKKE GJORT
+  #358 Kunnskapskilder-rydding (datamigrering Kildetype/Kategori) er ikke startet.
+
+---
 date: 2026-10-06
 action: «Send som e-post» per innlegg i diskusjonen (UKE41 / #357, punkt 4 fra 02.10) — bygget og verifisert på localhost, ikke committet eller deployet
 files:
