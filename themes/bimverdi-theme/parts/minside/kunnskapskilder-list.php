@@ -53,7 +53,7 @@ if (empty($user_kunnskapskilder)) {
 
 <!-- Page Header -->
 <?php get_template_part('parts/components/page-header', null, [
-    'title' => __('Mine kunnskapskilder', 'bimverdi'),
+    'title' => __('Kunnskapskilder', 'bimverdi'),
     'description' => __('Oversikt over kunnskapskilder du har registrert.', 'bimverdi'),
     'actions' => [
         ['text' => __('Ny kunnskapskilde', 'bimverdi'), 'url' => bimverdi_minside_url('kunnskapskilder/registrer'), 'variant' => 'primary', 'icon' => 'plus'],

@@ -516,11 +516,11 @@ if (!$company && $bruker_foretak) : ?>
         </div>
         <?php endif; ?>
 
-        <!-- 4. Mine kunnskapskilder -->
+        <!-- 4. Kunnskapskilder -->
         <div class="py-8 border-b border-[#E7E5E4]">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
-                    <h3 class="text-lg font-semibold text-[#111827]"><?php _e('Mine kunnskapskilder', 'bimverdi'); ?></h3>
+                    <h3 class="text-lg font-semibold text-[#111827]"><?php _e('Kunnskapskilder', 'bimverdi'); ?></h3>
                     <?php if ($my_kilder_count > 0): ?>
                         <span class="inline-flex items-center justify-center text-xs font-medium bg-[#F5F5F4] text-[#57534E] rounded-full w-6 h-6"><?php echo esc_html($my_kilder_count); ?></span>
                     <?php endif; ?>

@@ -540,7 +540,7 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'routes' => ['verktoy', 'verktoy/registrer', 'verktoy/rediger'],
             ],
             'kunnskapskilder' => [
-                'label' => 'Mine kunnskapskilder',
+                'label' => 'Kunnskapskilder',
                 'url' => bimverdi_minside_url('kunnskapskilder'),
                 'icon' => 'book-open',
                 'routes' => ['kunnskapskilder', 'kunnskapskilder/registrer', 'kunnskapskilder/rediger'],
