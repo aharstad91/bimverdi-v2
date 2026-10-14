@@ -5138,16 +5138,16 @@ details.collapse summary::-webkit-details-marker {
   height: 2px;
 }
 
-.h-\[4\.5rem\] {
-  height: 4.5rem;
-}
-
 .h-auto {
   height: auto;
 }
 
 .h-full {
   height: 100%;
+}
+
+.max-h-40 {
+  max-height: 10rem;
 }
 
 .max-h-48 {
@@ -5262,10 +5262,6 @@ details.collapse summary::-webkit-details-marker {
   width: 2.25rem;
 }
 
-.w-\[4\.5rem\] {
-  width: 4.5rem;
-}
-
 .w-auto {
   width: auto;
 }
@@ -5316,6 +5312,10 @@ details.collapse summary::-webkit-details-marker {
 
 .max-w-\[150px\] {
   max-width: 150px;
+}
+
+.max-w-\[60\%\] {
+  max-width: 60%;
 }
 
 .max-w-\[720px\] {
@@ -6341,6 +6341,11 @@ details.collapse summary::-webkit-details-marker {
      object-fit: cover;
 }
 
+.object-left {
+  -o-object-position: left;
+     object-position: left;
+}
+
 .p-1 {
   padding: 0.25rem;
 }
@@ -7064,8 +7069,16 @@ details.collapse summary::-webkit-details-marker {
   text-decoration-line: underline;
 }
 
+.decoration-\[\#FF8B5E\] {
+  text-decoration-color: #FF8B5E;
+}
+
 .underline-offset-2 {
   text-underline-offset: 2px;
+}
+
+.underline-offset-4 {
+  text-underline-offset: 4px;
 }
 
 .antialiased {
@@ -7928,6 +7941,10 @@ details.collapse summary::-webkit-details-marker {
 
   .md\:h-80 {
     height: 20rem;
+  }
+
+  .md\:max-w-md {
+    max-width: 28rem;
   }
 
   .md\:grid-cols-2 {

@@ -229,12 +229,10 @@ $company_kunnskapskilder = get_posts(array(
 
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
-            <div class="flex items-start gap-5">
-                <!-- Logo -->
+            <div class="flex <?php echo $logo_url ? 'flex-col items-start gap-6' : 'items-start gap-5'; ?>">
+                <!-- Logo: over navnet, uten ramme. Tak på 160px høyde / 448px bredde fordi originalene varierer fra 70 til 2560px -->
                 <?php if ($logo_url): ?>
-                    <div class="w-16 h-16 rounded-lg bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0 border border-[#E7E5E4]">
-                        <img src="<?php echo esc_url($logo_url); ?>" alt="" class="w-full h-full object-contain p-1.5">
-                    </div>
+                    <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($company_title); ?>" class="block w-auto h-auto max-h-40 max-w-full md:max-w-md">
                 <?php else: ?>
                     <div class="w-16 h-16 rounded-lg bg-[#F5F5F4] flex items-center justify-center flex-shrink-0">
                         <span class="text-2xl font-bold text-[#A8A29E]"><?php echo esc_html(strtoupper(substr($company_title, 0, 2))); ?></span>

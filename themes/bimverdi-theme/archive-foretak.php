@@ -204,13 +204,13 @@ if (!function_exists('bimverdi_get_initials')) {
                  data-poststed="<?php echo esc_attr(mb_strtolower($item['poststed'])); ?>">
                 <div>
                     <div class="flex items-start justify-between mb-6">
-                        <div class="w-20 h-20 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center overflow-hidden flex-shrink-0">
-                            <?php if ($item['logo_url']): ?>
-                                <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="w-[4.5rem] h-[4.5rem] object-contain">
-                            <?php else: ?>
+                        <?php if ($item['logo_url']): ?>
+                            <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="h-20 w-auto max-w-[60%] object-contain object-left flex-shrink-0">
+                        <?php else: ?>
+                            <div class="w-20 h-20 rounded-full bg-[#F5F5F4] shadow-sm flex items-center justify-center flex-shrink-0">
                                 <span class="text-lg font-bold text-[#111827] tracking-tight"><?php echo esc_html($item['initials']); ?></span>
-                            <?php endif; ?>
-                        </div>
+                            </div>
+                        <?php endif; ?>
 
                         <?php if ($item['membership_level'] === 'Partner'): ?>
                         <span class="inline-flex items-center text-xs font-medium text-white bg-[#111827] px-2.5 py-0.5 rounded-full">Partner</span>
@@ -287,13 +287,13 @@ if (!function_exists('bimverdi_get_initials')) {
                             data-poststed="<?php echo esc_attr(mb_strtolower($item['poststed'])); ?>">
                             <td class="px-4 py-3">
                                 <a href="<?php echo esc_url($item['permalink']); ?>" class="flex items-center gap-3 group">
-                                    <div class="w-12 h-12 rounded-full bg-[#F5F5F4] flex items-center justify-center overflow-hidden flex-shrink-0">
-                                        <?php if ($item['logo_url']): ?>
-                                            <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="w-10 h-10 object-contain">
-                                        <?php else: ?>
+                                    <?php if ($item['logo_url']): ?>
+                                        <img src="<?php echo esc_url($item['logo_url']); ?>" alt="" class="w-12 h-12 object-contain flex-shrink-0">
+                                    <?php else: ?>
+                                        <div class="w-12 h-12 rounded-full bg-[#F5F5F4] flex items-center justify-center flex-shrink-0">
                                             <span class="text-xs font-bold text-[#111827]"><?php echo esc_html($item['initials']); ?></span>
-                                        <?php endif; ?>
-                                    </div>
+                                        </div>
+                                    <?php endif; ?>
                                     <span class="font-medium text-[#111827] group-hover:underline"><?php echo esc_html($item['title']); ?></span>
                                 </a>
                             </td>
