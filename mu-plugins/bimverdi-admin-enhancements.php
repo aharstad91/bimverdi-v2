@@ -35,6 +35,9 @@ function bimverdi_get_cpts_for_id_column() {
         'theme_group',
         'artikkel',
         'kunnskapskilde',
+        // Vanlige sider og innlegg: Bård bruker ID-en til å rydde kladder (#360 punkt 1.3)
+        'page',
+        'post',
     );
 }
 
