@@ -677,6 +677,12 @@ function bimverdi_sync_brreg_on_foretak_creation($post_id, $feed, $entry, $form)
         update_field('antall_ansatte', intval($data['antallAnsatte']), $post_id);
     }
 
+    // Organisasjonsform, næringskode, kommune og stiftelsesdato ble aldri lagret her.
+    // Fyll dem (og andre tomme BRREG-felt) uten nytt API-kall. Se bimverdi-brreg-fyll-tomme.php.
+    if (function_exists('bimverdi_brreg_fyll_tomme_felt')) {
+        bimverdi_brreg_fyll_tomme_felt($post_id, $data);
+    }
+
     error_log('BIM Verdi: Synket Brreg-data for foretak ' . $post_id . ' (' . $data['navn'] . ')');
 }
 
@@ -817,6 +823,11 @@ function bimverdi_maybe_sync_all_foretak() {
         // Antall ansatte
         if (isset($data['antallAnsatte'])) {
             update_field('antall_ansatte', intval($data['antallAnsatte']), $post->ID);
+        }
+
+        // Resten av BRREG-feltene (organisasjonsform, næringskode, kommune, stiftelsesdato)
+        if (function_exists('bimverdi_brreg_fyll_tomme_felt')) {
+            bimverdi_brreg_fyll_tomme_felt($post->ID, $data);
         }
 
         $results['synced']++;
