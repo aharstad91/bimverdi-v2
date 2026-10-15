@@ -773,3 +773,20 @@ function bimverdi_page_status_orderby($orderby, $query) {
     // Sekundærsortering på tittel så rader med samme status ligger stabilt
     return "{$felt} {$dir}, {$wpdb->posts}.post_title ASC";
 }
+
+
+/**
+ * =============================================================================
+ * 5. SKJUL GAMLE ACF-FELT FOR BRANSJE/ROLLE OG KUNDETYPER (#360 punkt 4.1)
+ * =============================================================================
+ * Bransje og kundetyper lagres i taksonomiene «bransjekategori» og «kundetype»
+ * (boksene til høyre i redigeringen). Det er dem Min Side, deltakerfilteret og
+ * profilen leser. De gamle ACF-checkboksene i skjemaet var en parallell lagring
+ * som ikke ble holdt i sync, og valgene deres (f.eks. «bestiller») matchet ikke
+ * lagrede verdier («bestiller_byggherre»), så de så tomme ut.
+ *
+ * Feltene skjules bare. prepare_field = false gjør at ACF heller ikke sender dem
+ * med ved lagring, så den gamle metaen ligger urørt i databasen.
+ */
+add_filter('acf/prepare_field/key=field_foretak_bransje_rolle', '__return_false');
+add_filter('acf/prepare_field/key=field_foretak_kundetyper', '__return_false');

@@ -34,9 +34,7 @@ $er_aktiv_deltaker = $bv_rolle && $bv_rolle !== 'Ikke deltaker';
 
 // Hent profil-data
 $kort_beskrivelse = get_field('kort_beskrivelse', $company_id);
-$bransje_rolle = get_field('bransje_rolle', $company_id);
 $interesseomrader = get_field('interesseomrader', $company_id);
-$kundetyper_acf = get_field('kundetyper', $company_id);
 $artikkel_lenke = get_field('artikkel_lenke', $company_id);
 $hashtag = get_field('hashtag', $company_id);
 $land = get_field('land', $company_id);
@@ -307,7 +305,20 @@ $company_kunnskapskilder = get_posts(array(
                         <p class="text-[#57534E] italic mb-6">Ingen beskrivelse tilgjengelig.</p>
                     <?php endif; ?>
 
-                    <!-- Bransje/rolle (from taxonomy, displayed in Tags section below) -->
+                    <!-- Bransje/rolle (taksonomien «bransjekategori»). Egen overskrift så den
+                         ikke forveksles med kundetyper, som bruker mange av de samme ordene. -->
+                    <?php if (!empty($bransjekategorier) && !is_wp_error($bransjekategorier)): ?>
+                    <div class="mb-4">
+                        <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-2">Bransje</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <?php foreach ($bransjekategorier as $cat): ?>
+                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
+                                <?php echo esc_html($cat->name); ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
 
                     <!-- Interesseområder -->
                     <?php if (!empty($interesseomrader) && is_array($interesseomrader)): ?>
@@ -323,14 +334,14 @@ $company_kunnskapskilder = get_posts(array(
                     </div>
                     <?php endif; ?>
 
-                    <!-- Kundetyper (from ACF checkbox, using taxonomy lookup for readable names) -->
-                    <?php if (!empty($kundetyper_acf) && is_array($kundetyper_acf)): ?>
+                    <!-- Kundetyper (taksonomien «kundetype», samme kilde som Min Side og wp-admin) -->
+                    <?php if (!empty($kundetyper) && !is_wp_error($kundetyper)): ?>
                     <div class="mb-4">
                         <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-2">Kundetyper</h3>
                         <div class="flex flex-wrap gap-2">
-                            <?php foreach ($kundetyper_acf as $kundetype_slug): ?>
+                            <?php foreach ($kundetyper as $type): ?>
                             <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
-                                <?php echo esc_html(bimverdi_get_readable_term($kundetype_slug, 'kundetype')); ?>
+                                <?php echo esc_html($type->name); ?>
                             </span>
                             <?php endforeach; ?>
                         </div>
@@ -356,23 +367,9 @@ $company_kunnskapskilder = get_posts(array(
                     </div>
                     <?php endif; ?>
 
-                    <!-- Tags: Taxonomier -->
-                    <?php if ((!empty($bransjekategorier) && !is_wp_error($bransjekategorier)) || (!empty($kundetyper) && !is_wp_error($kundetyper)) || (!empty($temagrupper) && !is_wp_error($temagrupper))): ?>
+                    <!-- Tags: Temagrupper (bransje og kundetyper vises i egne blokker over) -->
+                    <?php if (!empty($temagrupper) && !is_wp_error($temagrupper)): ?>
                     <div class="flex flex-wrap gap-2 pt-4 border-t border-[#E7E5E4]">
-                        <?php if (!empty($bransjekategorier) && !is_wp_error($bransjekategorier)): ?>
-                            <?php foreach ($bransjekategorier as $cat): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
-                                <?php echo esc_html($cat->name); ?>
-                            </span>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                        <?php if (!empty($kundetyper) && !is_wp_error($kundetyper)): ?>
-                            <?php foreach ($kundetyper as $type): ?>
-                            <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-3 py-1.5 rounded">
-                                <?php echo esc_html($type->name); ?>
-                            </span>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
                         <?php if (!empty($temagrupper) && !is_wp_error($temagrupper)): ?>
                             <?php foreach ($temagrupper as $gruppe): ?>
                             <span class="inline-block text-xs font-medium bg-[#ECFDF5] text-[#059669] px-3 py-1.5 rounded">

@@ -402,8 +402,6 @@ add_action('init', function () {
         update_field('poststed', $poststed, $foretak_id);
         update_field('nettside', $nettside, $foretak_id);
         update_field('beskrivelse', $beskrivelse, $foretak_id);
-        update_field('bransje_rolle', array_values($bransje_rolle), $foretak_id);
-        update_field('kundetyper', array_values($kundetyper), $foretak_id);
         update_field('hovedkontaktperson', $user_id, $foretak_id);
 
         // Map POST value to ACF select value (capitalized for ACF choices)
@@ -433,6 +431,21 @@ add_action('init', function () {
 
         if ($logo_attachment_id) {
             set_post_thumbnail($foretak_id, $logo_attachment_id);
+        }
+    }
+
+    // --- Bransje og kundetyper som taksonomi (#360 punkt 4.1) ---
+    // Lagres i samme taksonomier som Min Side-redigeringen, deltakerfilteret og
+    // profilen leser. Tidligere gikk de til ACF-feltene bransje_rolle/kundetyper,
+    // som ingen av disse viser, så nye foretak sto uten bransje.
+    $bransje_resultat = wp_set_object_terms($foretak_id, array_values($bransje_rolle), defined('BV_TAX_INDUSTRY') ? BV_TAX_INDUSTRY : 'bransjekategori');
+    if (is_wp_error($bransje_resultat)) {
+        error_log('BIMVerdi: Kunne ikke sette bransjekategori på nytt foretak ' . $foretak_id . ': ' . $bransje_resultat->get_error_message());
+    }
+    if (!empty($kundetyper)) {
+        $kundetype_resultat = wp_set_object_terms($foretak_id, array_values($kundetyper), defined('BV_TAX_CUSTOMER_TYPE') ? BV_TAX_CUSTOMER_TYPE : 'kundetype');
+        if (is_wp_error($kundetype_resultat)) {
+            error_log('BIMVerdi: Kunne ikke sette kundetype på nytt foretak ' . $foretak_id . ': ' . $kundetype_resultat->get_error_message());
         }
     }
 
