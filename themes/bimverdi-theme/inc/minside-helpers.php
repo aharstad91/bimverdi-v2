@@ -453,6 +453,9 @@ if (!function_exists('bimverdi_get_minside_routes')) {
             'kunnskapskilder/registrer' => 'kunnskapskilder-registrer',
             'kunnskapskilder/rediger'   => 'kunnskapskilder-rediger',
 
+            // Pilot/prosjekt (Bårds plugin bv-pilot-prosjekt, #360 punkt 2.2)
+            'prosjekter'                => 'prosjekter-list',
+
             // Events
             'arrangementer'       => 'arrangementer-list',
             
@@ -545,6 +548,13 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'icon' => 'book-open',
                 'routes' => ['kunnskapskilder', 'kunnskapskilder/registrer', 'kunnskapskilder/rediger'],
             ],
+            'prosjekter' => [
+                'label' => 'Mine prosjekter',
+                'url' => bimverdi_minside_url('prosjekter'),
+                'icon' => 'folder-kanban',
+                'badge' => function_exists('bvp_mine_prosjekter_antall') ? (bvp_mine_prosjekter_antall($user_id) ?: null) : null,
+                'routes' => ['prosjekter'],
+            ],
             'artikler' => [
                 'label' => 'Mine artikler',
                 'url' => bimverdi_minside_url('artikler'),
@@ -563,6 +573,11 @@ if (!function_exists('bimverdi_get_minside_nav')) {
         // Verktøy requires company, but kunnskapskilder is open for all users
         if (!$has_company) {
             unset($nav['verktoy']);
+        }
+
+        // Mine prosjekter krever Bårds plugin bv-pilot-prosjekt (finnes kun på prod)
+        if (!function_exists('bvp_mine_prosjekter')) {
+            unset($nav['prosjekter']);
         }
 
         // Artikler krever betalende foretak (Deltaker/Prosjektdeltaker/Partner — B9 23.06)
