@@ -3,6 +3,52 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-10-15
+action: "UKE42 (#360): 1.1 BRREG-utfylling, 1.3 ID-kolonne, 2.1 Kunnskapskilder, 2.2 Mine prosjekter, 4.1 kundetyper som taksonomi, 4.2 logoer — alt live. Møte med Bård 15.10."
+files:
+  - "mu-plugins/bimverdi-brreg-fyll-tomme.php (NY: fyll tomme BRREG-felt, trigger på org.nr, WP-CLI wp bv-brreg-fyll, vakt mot utblanking)"
+  - "mu-plugins/bimverdi-brreg-api.php (opprettelses- og massesynk kaller fyll-funksjonen)"
+  - "mu-plugins/bimverdi-admin-enhancements.php (ID-kolonne for page/post; skjuler ACF bransje_rolle/kundetyper)"
+  - "mu-plugins/bimverdi-foretak-registration.php (betalt registrering skriver bransje/kundetyper til taksonomi, ikke ACF)"
+  - "themes/bimverdi-theme/single-foretak.php (logo over navnet, maks 160px høy; kundetyper én gang; bransje med egen overskrift)"
+  - "themes/bimverdi-theme/archive-foretak.php (logo uten sirkel/bakgrunn i grid og liste)"
+  - "themes/bimverdi-theme/parts/minside/prosjekter-list.php (NY: /min-side/prosjekter/ med Bårds bvp_mine_prosjekter())"
+  - "themes/bimverdi-theme/inc/minside-helpers.php (rute + menypunkt Mine prosjekter; «Kunnskapskilder»)"
+  - "themes/bimverdi-theme/parts/components/button.php (ikoner folder-kanban og book-open — book-open manglet, Kunnskapskilder sto uten ikon)"
+summary: "Commits b0f0518, 4f43d9b, 42ebe23, 7c34a6f, a74a0b3, 6843a31, 715a7e9 + vakt-commit, alle verifisert på Servebolt. BRREG: synken lagret aldri organisasjonsform/næringskode/kommune/stiftelsesdato, og registreringene setter org.nr etter wp_insert_post så synken fant aldri org.nr. Engangsutfylling på prod: 47 foretak, 366 nye verdier, 0 eksisterende verdier/titler endret (verifisert mot backup). 4 foretak finnes ikke i BRREG (404), 2 mangler org.nr. Kundetyper/bransje: taksonomien er nå eneste kilde; ACF-feltene skjult, metaen urørt. Akershus fylkeskommune (5878, pending) fikk ACF-verdiene kopiert til taksonomi. Uhell rettet samme minutt: kopien brukte korte ACF-nøkler og laget to kundetype-termer (bestiller, entreprenor); Akershus koblet til riktige termer og de to slettet (termantall tilbake til 14/12). Bård hadde IFE åpen i wp-admin under utfyllingen → la inn acf/update_value-vakt så tom innsending ikke blanker ut lagrede BRREG-felt. Trello: to kommentarer på #360 (det vi venter på + ferdigmelding), Bård tagget på begge kontoer (baardkr, baardk). Møte 15.10: Bård fikk ce-no-slop-skillen på e-post og lagt inn i sin Claude; deltakeroversikten godkjent («akkurat det vi trenger»); Bård legger inn punkt neste uke om å overføre redaktørrettigheter på prosjekter (han registrerer på vegne av andre, f.eks. Standard Norge)."
+status: waiting
+waiting_on: "Bård: (1) bekrefte hovedkontakt-regelen (pkt 3) før koding; (2) bilder + tekst til velkomst ved innlogging (4.3); (3) hvilken «gammel prosjektliste» som skal bort (2.2); (4) om Interesseområder = Temagrupper (44 foretak har bare MiljøBIM, ser ut som importrest); (5) om Heidelberg (156) skal ha «Byggevarehandel» tilbake — finnes i gammel ACF, ikke i taksonomi, sist redigert i wp-admin 27.03; (6) tidspunkt for økt om systemtilgang for hans Claude. Andreas: maks bredde på logoer i deltakerkortene (buildingSMART skyver merkelappen ut) — lovet Bård som neste."
+detail: |
+  BACKUP
+  claude/backups/prod-foretak-backup-2026-10-15.json — BRREG-felt, ACF bransje/kundetyper/interesseområder og taksonomier for alle 104 foretak FØR utfyllingen.
+  claude/backups/prod-brreg-fyll-logg-2026-10-15.txt — full logg fra utfyllingen på prod.
+
+  KJENTE RESTER
+  - Datoen i Bårds plugin vises på engelsk («13. October 2026») fordi nettstedets WPLANG er tomt (en_US). Hans kode, ikke rørt.
+  - Logo-taket på profilen (160px høyde / 448px bredde) er en avveining; Bård sa «uten begrensning», men originalene spenner fra 70 til 2560px.
+  - Den gamle ACF-metaen for bransje_rolle/kundetyper ligger fortsatt i databasen. Kan ryddes når vi er sikre på at ingen trenger den.
+
+---
+date: 2026-10-13
+action: Møtereferat Andreas/Bård (13.10) omgjort til oppgaveliste mot UKE42-kortet (#360), ingen kodeendringer
+files: []
+summary: "Gjennomgikk transkripsjonen mot #360. Avgjort: (1.1) IFE (foretak 2955): BRREG-feltene vises deaktivert selv om offisielt navn er hentet, behandles som bug. (1.2) Bård kan ikke enkelt justere layouten på nyhetsbrevet selv; svaret er at han får systemtilgang, og det trenger en egen økt snart med regler for hvordan hans Claude jobber. (1.3) Snippets: kan legges inn, men kan bli overskrevet ved deploy fordi de ikke er i git; behovet (ID-kolonne i wp-admin for sider/artikler, for å rydde kladder) bygges heller av oss. (2.1) «Mine kunnskapskilder» → «Kunnskapskilder» på Min Side. (2.2) Nytt menypunkt «Mine prosjekter» mot Bårds plugin BV pilotprosjekt (kortkodene [bv_pilot_prosjekt], [bv_mine_prosjekter], [bv_alle_prosjekter]); den gamle prosjektlista skal bort. Agenten skal vurdere kortkoder mot Gutenberg-blokker. (3) Hovedkontakt i gratisforetak: koble seg til foretak ja, fylle ut foretaksprofil nei, være hovedkontakt nei; alle i gratisforetak er tilleggskontakter; den som oppgraderer til Deltaker+ blir hovedkontakt. IFE-saken: hovedkontakt ble satt automatisk i gratisfasen og Uliana fikk ikke endret den. Formuleringen skal bekreftes med Bård før koding. (4.1) Kundetyper vises to ganger på foretaksprofilen (høyre kolonne og i skjemaet) med ulike avkrysninger; undersøk uten å miste data. (4.2) Logoer på deltakergrid: fjern sirkel og bakgrunnsfarge; på deltakerprofilen vises logoen over navnet uten størrelsesbegrensning. (4.3) Innlogging/registrering: velkomst med bilde av Halvor og Bård og redigerbar tekst (inspirert av skatteguiden.no). Andreas: sjekke at Analytics skiller trafikk fra LinkedIn. Bård har nytt møte torsdag ettermiddag."
+status: waiting
+waiting_on: "Andreas: alle punktene over (bygging). Bård: bekrefte vår formulering av hovedkontakt-regelen (punkt 3) før koding; bilder og tekst til velkomsten (4.3). Felles: egen økt om systemtilgang for Bårds Claude."
+detail: |
+  HØY RISIKO
+  Punkt 3 (hovedkontakt) er rollelogikk som har gitt trøbbel før (se project_fase2_gratisforetak_hovedkontakt).
+  Punkt 4.1 (kundetyper) kan miste data hvis feil felt slettes.
+  Begge: les koden og data først, ikke endre før Bård har bekreftet regelen.
+
+  FORESLÅTT REKKEFØLGE (ikke avgjort)
+  Raske, lav risiko først: 2.1 (tekst), 4.2 (logoer), 1.3 (ID-kolonne). Deretter 1.1 (BRREG-bug IFE), 2.2 (Mine prosjekter).
+  Punkt 3 og 4.1 til slutt, med /effort xhigh. Ikke avgjort: om formuleringen av punkt 3 skal sendes Bård som kommentar på #360.
+
+  STRATEGI SOM SKAL OPP I ØKTEN OM SYSTEMTILGANG
+  Kortkoder eller Gutenberg-blokker for Bårds plugins; hvordan admin-sidemenyen holdes ryddig når antall plugins vokser.
+
+---
 date: 2026-10-08
 action: «Diskusjon» → «Meldingsfelt» i alle synlige tekster (UKE41 / #357 punkt 1–2) + «Send som e-post» live
 files:
