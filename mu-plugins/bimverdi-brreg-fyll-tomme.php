@@ -241,6 +241,29 @@ function bimverdi_brreg_fyll_tomme_felt($post_id, $data = null, $dry_run = false
 }
 
 /**
+ * Ikke la et redigeringsskjema blanke ut BRREG-felt som er fylt.
+ *
+ * BRREG-fanen i wp-admin er readonly, men readonly-felt sendes likevel med ved
+ * lagring. Et skjema som ble åpnet før feltene ble fylt (eller en ny post der
+ * shutdown-utfyllingen ennå ikke har kjørt) sender tomme verdier, og ACF ville
+ * skrevet dem over dataene. Tom innkommende verdi + utfylt lagret verdi =
+ * behold den lagrede. Ikke-tomme verdier slipper gjennom som før.
+ */
+add_filter('acf/update_value', 'bimverdi_brreg_ikke_blank_ut', 20, 3);
+
+function bimverdi_brreg_ikke_blank_ut($value, $post_id, $field) {
+    $vaktede = array('organisasjonsform', 'naeringskode', 'naeringskode_beskrivelse', 'kommune', 'stiftelsesdato', 'antall_ansatte', 'bedriftsnavn');
+    if (!in_array($field['name'] ?? '', $vaktede, true) || !is_numeric($post_id) || get_post_type($post_id) !== 'foretak') {
+        return $value;
+    }
+    if ($value !== '' && $value !== null && $value !== false) {
+        return $value;
+    }
+    $lagret = get_post_meta($post_id, $field['name'], true);
+    return ($lagret !== '' && $lagret !== null && $lagret !== false) ? $lagret : $value;
+}
+
+/**
  * Når org.nr legges til eller endres på et foretak: fyll tomme BRREG-felt
  * på shutdown. Dekker alle opprettelsesveier (gratis- og betalt registrering,
  * wp-admin, import), som alle setter org.nr etter wp_insert_post.
