@@ -34,6 +34,12 @@ if ($bvp_aktiv && class_exists('BVP_Minside')) {
 ]); ?>
 
 <?php if ($bvp_aktiv): ?>
+    <style>
+        /* Pluginet sentrerer seg i 820px og bruker blå aksent; inne i Min Side skal det
+           følge sidebredden og våre mørke knapper. Bårds plugin-CSS røres ikke. */
+        .bv-minside-prosjekter .bvp { max-width: none; margin-inline: 0; --bvp-accent: #1A1A1A; }
+    </style>
+    <div class="bv-minside-prosjekter">
     <?php
     // Tittel og knapp ligger i sideoverskriften over, så de slås av i pluginets visning.
     echo bvp_mine_prosjekter([
@@ -41,6 +47,7 @@ if ($bvp_aktiv && class_exists('BVP_Minside')) {
         'knapp'  => false,
     ]);
     ?>
+    </div>
 <?php else: ?>
     <p class="text-[#5A5A5A]"><?php _e('Prosjektregistrering er ikke tilgjengelig akkurat nå.', 'bimverdi'); ?></p>
 <?php endif; ?>
