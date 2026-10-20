@@ -374,34 +374,27 @@ $error_message = $error_messages[$error] ?? '';
 
             .auth-card { padding: var(--bv-space-lg); }
         }
+    
+        /* Velkomstkort (Halvor og Bård) — redigeres under Innstillinger → Innlogging: velkomst */
+        .velkomst-kort-liste { display: flex; flex-direction: column; gap: var(--bv-space-md); margin-bottom: var(--bv-space-lg); }
+        .velkomst-kort { margin: 0; padding: var(--bv-space-lg); border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); text-align: left; }
+        .velkomst-kort--a { background: #E8D5C6; }
+        .velkomst-kort--b { background: #DCD8D0; }
+        .velkomst-kort blockquote { margin: 0 0 var(--bv-space-md) 0; padding: 0; border: 0; font-size: var(--bv-text-base); line-height: 1.65; color: var(--bv-text-primary); }
+        .velkomst-person { display: flex; align-items: center; gap: 12px; }
+        .velkomst-person img, .velkomst-initialer { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
+        .velkomst-person img { object-fit: cover; }
+        .velkomst-initialer { display: inline-flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.12); font-size: 14px; font-weight: 600; }
+        .velkomst-tekst { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.35; }
+        .velkomst-tekst strong { font-size: var(--bv-text-sm); font-weight: 600; }
+        .velkomst-tekst span { font-size: 13px; color: var(--bv-text-secondary); }
     </style>
 </head>
 <body class="bv-auth-page">
     <div class="auth-container">
         <div class="auth-value">
             <a href="<?php echo home_url('/'); ?>" class="auth-logo"><img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 58px; width: auto;"></a>
-            <h1>Velkommen tilbake</h1>
-            <p class="lead">Som innlogget får du tilgang til å registrere verktøy, delta på arrangementer og bidra med kunnskap til nettverket.</p>
-            <ul class="benefits-list">
-                <li>
-                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Registrer og del dine BIM-verktøy
-                </li>
-                <li>
-                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Meld deg på workshops og meetups
-                </li>
-                <li>
-                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Skriv artikler og del erfaringer
-                </li>
-            </ul>
+            <?php bimverdi_innlogging_velkomst_render(); ?>
             <p class="auth-help">Problemer med innloggingen? <a href="mailto:post@bimverdi.no">Kontakt oss</a></p>
         </div>
 
