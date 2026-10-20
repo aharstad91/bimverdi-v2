@@ -3,6 +3,27 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-10-20
+action: "Resend flyttet til Bårds konto (Pro, 50 000/mnd), nyhetsbrev #1 fullført (464/464), massesend-sperren fjernet"
+files:
+  - "mu-plugins/bimverdi-nyhetsbrev-send.php (gaten krever kun prod-URL + Resend-nøkkel; konstanten BIMVERDI_NYHETSBREV_MASSESEND_AKTIV er borte; bekreftelsessiden: «Er du sikker på at du vil sende?», rolig tekst)"
+  - "mu-plugins/bimverdi-nyhetsbrev-cpt.php (feilmelding og død-knapp-tekst uten konstant-referanse)"
+  - "wp-config.php (prod og lokal: ny BIMVERDI_RESEND_API_KEY fra Bårds konto, sending-only; massesend-konstanten fjernet)"
+summary: "Commit f144e8c. Første massesend 19.10 stoppet etter 250 av 464: Resend-kontoen var på gratisplan (100/døgn), ikke 500 som antatt. Bård oppgraderte til Pro (20 USD/mnd, 50 000/mnd, fornyes 20.11) på sin konto. Domenet bimverdi.no ble claimet fra Andreas' private Resend-konto til Bårds (gammel domene måtte slettes først; placy.no urørt). DNS i Domeneshop: eierskaps-TXT på @, deretter nye DKIM-TXT (resend._domainkey) og CNAME rsend/send mot forge.rmta.net; gamle DKIM + send-MX/TXT slettet; verifisert via dig på alle tre navnetjenere og i Resend. Ny sending-only nøkkel byttet i prod/lokal wp-config, test-send levert. Batch 5 sto som «sendt» i manifestet men alle 50 var failed hos Resend (kvote) — satt tilbake og batch 5–9 bygd om med nye idempotency-nøkler (retry-1); Bård kjørte «Fortsett». Resultat 214 i siste runde: 196 levert, 15 avvist, 3 ventet; ingen dobbeltsending. Totalt ca 40 av 464 avvist (~9 %). Aktiveringsmail til guttorm.nielsen@outlook.com (feilet 19.10 pga kvote) sendt på nytt 20.10, levert; lenken gyldig til 15:25. Resend-MCP byttet til Bårds konto (egen Full access-nøkkel, local scope). Massesend-sperren fjernet etter Andreas' ønske: bekreftelsessiden (avkryssing) + er_sendt()-vern er den eneste sikkerheten."
+status: waiting
+waiting_on: "Andreas: (1) slette wp-config.php.bak-nyhetsbrev-20261019 og wp-config.php.bak-resend-bytte-20261020 på prod (inneholder gammel nøkkel); (2) bestemme om vi sjekker gammel Resend-konto for andre mailer som feilet 19.10 (kvote); (3) lage avvisningsliste (ca 40 adresser, bl.a. sin@bimverdi.no) til Bård for rydding av medlemslisten. Bård: opplysning om at oppgraderingen løste kvoteproblemet; ingenting lovet om opprydding."
+detail: |
+  BACKUP
+  scratchpad: batcher-6314-backup.json (manifest + batch-rader FØR ombygging), wp-config.local.bak. Prod: wp-config.php.bak-* (se over).
+
+  NYHETSBREV-TALL (post 6314)
+  Runde 1 (gammel konto): 250 sendt (222 levert, 25 avvist, 3 forsinket). Runde 2 (Bårds konto): 214 sendt (196 levert, 15 avvist, 3 «sent»).
+
+  KJENTE RESTER
+  - Nettstedet har kun send-nøkkelen; MCP-nøkkelen (full tilgang) ligger kun i Andreas' local scope og skal aldri på nettstedet.
+  - Idempotency: motoren tolker 2xx+IDer som «sendt» selv når Resend senere setter failed (kvote). Verdt en sjekk mot Resend før «fullført» hvis kvote igjen kan være et problem.
+
+---
 date: 2026-10-15
 action: "UKE42 (#360): 1.1 BRREG-utfylling, 1.3 ID-kolonne, 2.1 Kunnskapskilder, 2.2 Mine prosjekter, 4.1 kundetyper som taksonomi, 4.2 logoer — alt live. Møte med Bård 15.10."
 files:
