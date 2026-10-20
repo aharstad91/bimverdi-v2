@@ -21,8 +21,8 @@
  *
  *   🔒 Regelen håndheves INNERST i bimverdi_nyhetsbrev_send_en() — ikke bare i
  *      UI-handleren. Test-stien er adskilt fra massesend, som har sin EGEN
- *      fail-closed gate (BIMVERDI_NYHETSBREV_MASSESEND_AKTIV, settes ALDRI
- *      lokalt) og aldri rører send_en().
+ *      fail-closed miljøgate (kun https://bimverdi.no, aldri lokalt) og
+ *      aldri rører send_en().
  *
  * I tillegg: GDPR-avmelding. Øyeblikksbildet lagres med per-mottaker-
  * placeholdere (%%BV_UID%% / %%BV_TOKEN%%) i avmeldings-lenken; denne motoren
@@ -420,7 +420,7 @@ add_action('admin_post_bimverdi_nyhetsbrev_send_test', function () {
  *    for masseutsendelsen: et IMMUTABELT manifest (fryst mottakerliste,
  *    emne, HTML-hash) og MUTERBARE per-batch-rader for checkpointing.
  *    Selve API-kallene bygges i eget steg bak fail-closed miljøgate
- *    (BIMVERDI_NYHETSBREV_MASSESEND_AKTIV + home_url === prod).
+ *    (home_url === prod + Resend-nøkkel).
  *
  * Tilstandsmodell (post meta på nyhetsbrev-posten):
  *
@@ -727,11 +727,16 @@ function bimverdi_nyhetsbrev_utsendelse_fullfor_hvis_ferdig($post_id) {
  *
  * ⛔ SIKKERHETSMODELL: Massesend går UTENOM wp_mail() — verken localhost-
  *    blockeren eller wp_mail-filtre ser disse e-postene. Det ENESTE vernet
- *    er gaten under, og den er fail-closed med to uavhengige låser:
+ *    er gaten under, og den er fail-closed:
  *
- *      1. BIMVERDI_NYHETSBREV_MASSESEND_AKTIV === true  (settes ALDRI lokalt)
- *      2. home_url() === https://bimverdi.no            (DB-basert — dekker
+ *      1. home_url() === https://bimverdi.no            (DB-basert — dekker
  *         WP-CLI uten SERVER_NAME, LAN-IP, og staging med kopiert config)
+ *      2. BIMVERDI_RESEND_API_KEY er satt
+ *
+ *    Utover dette er det bekreftelsessiden (avkryssing før start) og
+ *    bimverdi_nyhetsbrev_er_sendt() som hindrer utilsiktet utsendelse.
+ *    wp-config-konstanten BIMVERDI_NYHETSBREV_MASSESEND_AKTIV ble fjernet
+ *    20.10.2026 etter første vellykkede utsendelse.
  *
  *    Mangler API-nøkkelen nektes det også — det finnes INGEN fallback til
  *    PHP mail() i denne stien (bevisst brudd med bimverdi-resend-mail.php).
@@ -741,18 +746,13 @@ function bimverdi_nyhetsbrev_utsendelse_fullfor_hvis_ferdig($post_id) {
  * ---------------------------------------------------------------------- */
 
 /**
- * Fail-closed miljøgate for masseutsendelse. Returnerer true KUN når alle
- * tre låsene er åpne; alt annet gir WP_Error og logges.
+ * Fail-closed miljøgate for masseutsendelse. Returnerer true KUN når begge
+ * låsene er åpne (prod-URL + API-nøkkel); alt annet gir WP_Error og logges.
  */
 function bimverdi_nyhetsbrev_massesend_gate() {
-    if (!defined('BIMVERDI_NYHETSBREV_MASSESEND_AKTIV') || BIMVERDI_NYHETSBREV_MASSESEND_AKTIV !== true) {
-        error_log('[bimverdi-nyhetsbrev-send] Massesend NEKTET: BIMVERDI_NYHETSBREV_MASSESEND_AKTIV er ikke true.');
-        return new WP_Error('massesend_deaktivert', 'Masseutsendelse er ikke aktivert (wp-config-konstanten mangler).');
-    }
-
     if (untrailingslashit(home_url()) !== 'https://bimverdi.no') {
         error_log(sprintf(
-            '[bimverdi-nyhetsbrev-send] Massesend NEKTET: feil miljø (home_url = %s). Konstanten var satt — undersøk hvorfor!',
+            '[bimverdi-nyhetsbrev-send] Massesend NEKTET: feil miljø (home_url = %s).',
             home_url()
         ));
         return new WP_Error('feil_miljo', 'Masseutsendelse kjører kun på https://bimverdi.no.');
@@ -1451,13 +1451,13 @@ add_action('admin_post_bimverdi_nyhetsbrev_bekreft', function () {
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:Inter,system-ui,-apple-system,sans-serif;">
 <div style="max-width:560px;margin:64px auto;padding:0 24px;">
     <p style="color:#FF8B5E;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 12px;">BIM Verdi · Nyhetsbrev</p>
-    <h1 style="color:#1A1A1A;font-size:26px;font-weight:500;margin:0 0 20px;">Bekreft utsendelse</h1>
+    <h1 style="color:#1A1A1A;font-size:26px;font-weight:500;margin:0 0 20px;">Er du sikker på at du vil sende?</h1>
 
     <div style="background:#fff;border:1px solid #D6D1C6;border-radius:10px;padding:24px;margin:0 0 24px;">
         <p style="margin:0 0 16px;color:#1A1A1A;font-size:15px;line-height:1.6;">
-            Du er i ferd med å sende nyhetsbrevet til
+            Nyhetsbrevet sendes til
             <strong style="font-size:18px;"><?php echo (int) $antall; ?> mottakere</strong>.
-            Dette kan <strong>ikke angres</strong>.
+            Utsendelsen kan ikke trekkes tilbake når den er startet.
         </p>
         <table style="width:100%;border-collapse:collapse;font-size:14px;color:#5A5A5A;">
             <tr><td style="padding:6px 0;width:90px;">Emne</td><td style="padding:6px 0;color:#1A1A1A;"><?php echo esc_html($emne); ?></td></tr>

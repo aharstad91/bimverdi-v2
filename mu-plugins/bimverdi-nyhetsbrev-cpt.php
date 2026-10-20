@@ -314,7 +314,7 @@ add_action('admin_notices', function () {
             'massesend_mangler_manifest' => array('error', 'Ingen utsendelse er startet for dette brevet.'),
             'massesend_kjoring_pagar'  => array('warning', 'En utsendelse pågår allerede (fersk heartbeat). Vent til den er ferdig.'),
             'massesend_stale_las'      => array('warning', 'Forrige kjøring etterlot en lås uten heartbeat. Bruk «Overta stale lås og fortsett».'),
-            'massesend_massesend_deaktivert' => array('error', 'Masseutsendelse er ikke aktivert i dette miljøet (wp-config-konstant mangler). Ingenting ble sendt.'),
+            'massesend_massesend_deaktivert' => array('error', 'Masseutsendelse er ikke aktivert i dette miljøet. Ingenting ble sendt.'),
             'massesend_feil_miljo'     => array('error', 'Masseutsendelse kjører kun på produksjon (bimverdi.no). Ingenting ble sendt.'),
             'massesend_mangler_api_nokkel' => array('error', 'Resend API-nøkkel mangler. Ingenting ble sendt.'),
             'massesend_payload_drift'  => array('error', 'STOPP: øyeblikksbildet er endret etter at utsendelsen startet. Utsendelsen er stanset — kontakt utvikler.'),
@@ -672,7 +672,7 @@ function bimverdi_nyhetsbrev_metaboks_massesend($post) {
             echo '<button type="button" class="button" style="width:100%;" disabled>Send til alle mottakere</button>';
             echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:6px;">🔒 '
                . esc_html($gate->get_error_message())
-               . ' Masseutsendelse kjører kun på produksjon med <code>BIMVERDI_NYHETSBREV_MASSESEND_AKTIV</code> satt.</span>';
+               . ' Masseutsendelse kjører kun på produksjon (bimverdi.no).</span>';
             return;
         }
 
