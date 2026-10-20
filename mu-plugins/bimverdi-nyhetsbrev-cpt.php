@@ -304,6 +304,8 @@ add_action('admin_notices', function () {
             'allerede_sendt' => array('warning', 'Nyhetsbrevet er allerede sendt og kan ikke endres.'),
             'utsendelse_laast' => array('warning', 'Utsendelsen er startet — øyeblikksbildet er låst og kan ikke regenereres.'),
             'feil'           => array('error', 'Kunne ikke generere nyhetsbrev. Sjekk at innholdsmotoren og malen er på plass.'),
+            'offentlig_opprettet' => array('success', 'Delbar lenke er laget. Du finner den i sidepanelet under «Delbar nettversjon».'),
+            'offentlig_fjernet'   => array('success', 'Delbar lenke er slått av. Den gamle adressen virker ikke lenger.'),
             // Massesend-notiser (Unit 4).
             'massesend_fullfort'   => array('success', 'Nyhetsbrevet er sendt til alle mottakere. 🎉 Sjekk Resend-dashboardet for leveringsbekreftelse.'),
             'massesend_delvis'     => array('warning', 'Utsendelsen er delvis fullført. Se statusrapporten i sidepanelet og trykk «Fortsett utsendelse».'),
@@ -507,6 +509,35 @@ function bimverdi_nyhetsbrev_metaboks($post) {
 
     if ($has_html) {
         echo '<p><a href="' . esc_url($preview) . '" target="_blank" class="button button-secondary" style="width:100%;text-align:center;box-sizing:border-box;">Forhåndsvis i nettleser</a></p>';
+    }
+
+    // Delbar nettversjon: skjult lenke Bård kan sende til folk utenfor nettverket.
+    if ($has_html && function_exists('bimverdi_nyhetsbrev_offentlig_url')) {
+        $offentlig = bimverdi_nyhetsbrev_offentlig_url($post->ID);
+        echo '<hr style="margin:14px 0;border:none;border-top:1px solid #e0e0e0;">';
+        echo '<p style="margin:0 0 6px 0;"><strong>Delbar nettversjon</strong></p>';
+        if ($offentlig) {
+            echo '<input type="text" readonly value="' . esc_attr($offentlig) . '" onclick="this.select();" '
+               . 'style="width:100%;margin-bottom:6px;font-size:12px;">';
+            echo '<p style="margin:0 0 6px 0;"><a href="' . esc_url($offentlig) . '" target="_blank" class="button button-secondary" '
+               . 'style="width:100%;text-align:center;box-sizing:border-box;">Åpne delbar lenke</a></p>';
+            echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-bottom:8px;">Alle som har lenken kan lese brevet. '
+               . 'Avmeldingslenken er fjernet, og siden er skjult for Google.</span>';
+            echo '<div class="bv-nb-handling" style="margin:0;">';
+            echo bimverdi_nyhetsbrev_felt('action', 'bimverdi_nyhetsbrev_offentlig_fjern');
+            echo bimverdi_nyhetsbrev_felt('post_id', $post->ID);
+            echo bimverdi_nyhetsbrev_felt('_wpnonce', wp_create_nonce('bimverdi_nyhetsbrev_offentlig_' . $post->ID));
+            echo '<button type="button" class="button button-secondary" style="width:100%;">Slå av delbar lenke</button>';
+            echo '</div>';
+        } else {
+            echo '<div class="bv-nb-handling" style="margin:0;">';
+            echo bimverdi_nyhetsbrev_felt('action', 'bimverdi_nyhetsbrev_offentlig_opprett');
+            echo bimverdi_nyhetsbrev_felt('post_id', $post->ID);
+            echo bimverdi_nyhetsbrev_felt('_wpnonce', wp_create_nonce('bimverdi_nyhetsbrev_offentlig_' . $post->ID));
+            echo '<button type="button" class="button button-secondary" style="width:100%;">Lag delbar lenke</button>';
+            echo '<span style="display:block;color:#5A5A5A;font-size:12px;margin-top:4px;">Lager en skjult adresse du kan sende til folk som ikke er medlemmer. Du kan slå den av igjen.</span>';
+            echo '</div>';
+        }
     }
 
     // Oppdater øyeblikksbildet (kun kladd, og kun før en utsendelse er startet
