@@ -121,7 +121,8 @@ if (!empty($tg_terms) && !is_wp_error($tg_terms)) {
                     if (!isset($node_ids[$nid])) {
                         $desc = '';
                         if ($etype === 'kunnskapskilde') {
-                            $desc = get_field('utgiver', $pid) ?: get_field('kildetype', $pid) ?: '';
+                            // kildetype er avkrysning (array) siden #358 — bruk tekst-hjelperen
+                            $desc = get_field('utgiver', $pid) ?: bimverdi_kildekategorier_tekst($pid);
                         } elseif ($etype === 'arrangement') {
                             $dato = get_field('dato', $pid) ?: get_field('arrangement_dato', $pid) ?: '';
                             $desc = $dato ? 'Dato: ' . $dato : '';
