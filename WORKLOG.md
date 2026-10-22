@@ -3,6 +3,25 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-10-22
+action: "Gjennomgang av åpne punkter etter 20.10: wp-config-backupene på prod lå åpent på nettet (fikset + sperre i .htaccess), avvisningsliste runde 2 laget, 20.10-leveransene verifisert live"
+files:
+  - "prod: public/wp-config.php.bak-* (5 filer) flyttet til ~/backup-wpconfig/ (chmod 600, utenfor webroten)"
+  - "prod: public/.htaccess (ny blokk øverst: FilesMatch ^wp-config\\.php.+$ → Require all denied; backup ~/backup-wpconfig/htaccess.bak-20261022)"
+  - "docs/plans/2026-10-22-nyhetsbrev-6314-avviste-adresser.csv (17 avviste fra runde 2, med navn/rolle/foretak; utenfor git fordi den har personopplysninger)"
+summary: "SIKKERHET: alle fem wp-config.php.bak-*-filene i webroten (eldste fra 10.06) ble servert som ren tekst (HTTP 200, full størrelse) — Servebolts egne regler sperrer bare .bak/.old/~, ikke .bak-<dato>. De inneholder gjeldende DB-passord og alle WP-salter (samme verdier som i wp-config.php nå) + gammel Resend-nøkkel. Tilgangsloggen går bare tilbake til 16.10; i det vinduet er eneste nedlasting vår egen sjekk 22.10. 10.06–15.10 er ukjent. Gammel Resend-nøkkel testet: «API key is invalid», altså død. Filene flyttet ut og sperre lagt i .htaccess; verifisert 404 på de gamle navnene, 403 på en testfil, forside/logg-inn/deltakere/wp-admin normale. LEVERT 20.10, IKKE LOGGET: c58744e (skjult, delbar nettversjon av nyhetsbrev, /nyhetsbrev/<kode>/) og 6e80306 (velkomstkort Halvor og Bård på /logg-inn/, #360 pkt 4.3) — begge på Servebolt (md5 lik), velkomstkortene vises med bilder og tekst. LOGO-BREDDE i deltakerkortene (lovet Bård 15.10): allerede løst av max-w-[60%] i 4f43d9b; målt på /deltakere/ ved 500, 1024 og 1400 px, ingen av 124 kort har merkelapp som renner over (buildingSMART 152 px logo i 304 px kort). AVVISNINGSLISTE: runde 2 (Bårds konto) = 17 avviste (de 15 + tom@bimpartner.no og nuno.pissarra@byggkpi.no som sto som «sent»); simen@norskbyggebransje.no levert. Runde 1 (25 avviste, gammel privat konto) ble aldri lagret per adresse og kan ikke hentes med API (nøkkelen er død)."
+status: waiting
+waiting_on: "Andreas: (1) bytte DB-passord (Servebolt-panelet → oppdater DB_PASSWORD i prod wp-config) og kjøre wp config shuffle-salts (logger ut alle) — begge lå åpent i månedsvis; (2) logge inn på den gamle private Resend-kontoen og eksportere avviste fra 19.10 (runde 1) hvis loggen fortsatt finnes, ellers godta at lista har 17 av ca 42; (3) sende CSV-en til Bård (ikke gjort, inneholder personopplysninger — e-post/Trello-vedlegg, ikke kommentar); (4) image-backup.zip (1,6 GB, gamle bilder 2012–2017) ligger åpent i webroten — flytte ut eller slette; (5) ~/backup-wpconfig/ kan slettes når passord/salter er byttet. Fortsatt åpent fra 15.10: Bårds punkter (hovedkontakt-regelen m.m.)."
+detail: |
+  ROLLBACK
+  .htaccess: cp ~/backup-wpconfig/htaccess.bak-20261022 public/.htaccess
+  wp-config-backupene: ~/backup-wpconfig/ (ikke slettet)
+
+  DATAGRUNNLAG
+  Runde 2-statuser: scratchpad 6c2674cb…/resend-bard-emails.json (20.10 12:44) + get-email 22.10 for de tre ventende.
+  Bruker-ID-er fra manifestet (batcher-6314-backup.json), navn/foretak slått opp på prod med wp eval (kun lesing).
+
+---
 date: 2026-10-20
 action: "Resend flyttet til Bårds konto (Pro, 50 000/mnd), nyhetsbrev #1 fullført (464/464), massesend-sperren fjernet"
 files:
