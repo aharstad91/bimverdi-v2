@@ -452,9 +452,9 @@ function bimverdi_nyhetsbrev_metaboks_ingress($post) {
        . ($laast ? 'Brevet er låst og kan ikke endres.' : 'Lagres når du trykker «Lagre kladd», «Oppdater øyeblikksbilde» eller «Send test».') . '</p>';
 
     echo '<p style="margin:10px 0 0;font-size:12px;color:#5A5A5A;"><strong>Flettefelt</strong> (i emnet og innledningen): '
-       . '<code>{fornavn}</code> <code>{etternavn}</code> <code>{foretak}</code> <code>{rolle}</code>. '
+       . '<code>{fornavn}</code> <code>{etternavn}</code> <code>{foretak}</code> <code>{rolle}</code> <code>{kontakttype}</code>. '
        . 'Eksempel: «Hei {fornavn},». Hver mottaker får sine egne verdier. Mangler en verdi, faller feltet bort, så «Hei {fornavn},» blir «Hei,». '
-       . 'Rolle er Deltaker, Prosjektdeltaker, Partner eller Gratisbruker. Testen viser dine egne verdier.</p>';
+       . 'Rolle er Deltaker, Prosjektdeltaker, Partner eller Gratisbruker. Kontakttype er Hovedkontakt, Tilleggskontakt eller Gratisbruker. Testen viser dine egne verdier.</p>';
 }
 
 /**

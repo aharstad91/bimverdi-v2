@@ -186,7 +186,7 @@ function bimverdi_nyhetsbrev_er_testadresse($email) {
 }
 
 /* -------------------------------------------------------------------------
- * 2b. Flettefelt: {fornavn}, {etternavn}, {foretak}, {rolle}.
+ * 2b. Flettefelt: {fornavn}, {etternavn}, {foretak}, {rolle}, {kontakttype}.
  *
  * Redaktøren skriver feltene i emnet eller innledningen, f.eks.
  * «Hei {fornavn},». Ved utsending byttes de mot mottakerens verdier.
@@ -197,7 +197,7 @@ function bimverdi_nyhetsbrev_er_testadresse($email) {
 
 /** Navnene på flettefeltene, i den rekkefølgen de vises i hjelpeteksten. */
 function bimverdi_nyhetsbrev_flettefelt_navn() {
-    return ['fornavn', 'etternavn', 'foretak', 'rolle'];
+    return ['fornavn', 'etternavn', 'foretak', 'rolle', 'kontakttype'];
 }
 
 /**
@@ -205,6 +205,10 @@ function bimverdi_nyhetsbrev_flettefelt_navn() {
  *
  * Rolle: foretakets nivå (Deltaker, Prosjektdeltaker, Partner), ellers
  * «Gratisbruker». Administratorer uten foretak får tom rolle.
+ *
+ * Kontakttype: Hovedkontakt (står som hovedkontaktperson på foretaket),
+ * Tilleggskontakt (koblet til foretak), ellers Gratisbruker. Bård vil at
+ * medlemmene skal se hva de er (møte 27.10).
  *
  * @param int $user_id WP-bruker-ID, eller 0 (gir bare tomme verdier).
  * @return array<string,string>
@@ -224,8 +228,12 @@ function bimverdi_nyhetsbrev_flettefelt_verdier($user_id) {
         $verdier['foretak'] = wp_specialchars_decode((string) $foretak['name'], ENT_QUOTES);
         $nivaa = (string) get_post_meta((int) $foretak['id'], 'bv_rolle', true);
         $verdier['rolle'] = in_array($nivaa, ['Deltaker', 'Prosjektdeltaker', 'Partner'], true) ? $nivaa : 'Gratisbruker';
+        $verdier['kontakttype'] = (int) get_post_meta((int) $foretak['id'], 'hovedkontaktperson', true) === (int) $bruker->ID
+            ? 'Hovedkontakt'
+            : 'Tilleggskontakt';
     } elseif (!in_array('administrator', (array) $bruker->roles, true)) {
-        $verdier['rolle'] = 'Gratisbruker';
+        $verdier['rolle']       = 'Gratisbruker';
+        $verdier['kontakttype'] = 'Gratisbruker';
     }
 
     return $verdier;

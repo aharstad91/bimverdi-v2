@@ -391,6 +391,18 @@ $company_kunnskapskilder = get_posts(array(
                     <?php endif; ?>
                 </section>
 
+                <!-- Prosjekter og caser fra Bårds plugin (bv-pilot-prosjekt), rett under
+                     «Om foretaket» og over Verktøy (Trello #362 pkt 1). Med kortkoden i
+                     malen flytter ikke pluginen lista selv med skript. -->
+                <?php
+                $prosjekter_html = shortcode_exists('bv_foretak_prosjekter') ? do_shortcode('[bv_foretak_prosjekter]') : '';
+                if ($prosjekter_html !== ''):
+                ?>
+                <div class="border-t border-[#E7E5E4] pt-10">
+                    <?php echo $prosjekter_html; // Escapet i pluginen. ?>
+                </div>
+                <?php endif; ?>
+
                 <!-- Verktøy Section -->
                 <section class="border-t border-[#E7E5E4] pt-10">
                     <div class="flex items-center justify-between mb-6">
