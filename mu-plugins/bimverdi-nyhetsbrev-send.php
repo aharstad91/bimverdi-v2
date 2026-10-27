@@ -151,14 +151,16 @@ add_action('template_redirect', function () {
  * @return array[] Liste av ['id' => int, 'email' => string, 'navn' => string].
  */
 function bimverdi_nyhetsbrev_mottakere() {
+    // Administratorer er med: Bård har bare admin-kontoer og fikk ikke
+    // nyhetsbrev #1 (møte uke 43). Testkontoer filtreres bort under.
     $brukere = get_users([
-        'role__in' => ['medlem', 'tilleggskontakt', 'deltaker', 'prosjektdeltaker', 'partner'],
+        'role__in' => ['medlem', 'tilleggskontakt', 'deltaker', 'prosjektdeltaker', 'partner', 'administrator'],
         'fields'   => 'all',
     ]);
 
     $mottakere = [];
     foreach ($brukere as $bruker) {
-        if (!is_email($bruker->user_email)) {
+        if (!is_email($bruker->user_email) || bimverdi_nyhetsbrev_er_testadresse($bruker->user_email)) {
             continue;
         }
         if (bimverdi_nyhetsbrev_er_avmeldt($bruker->ID)) {
@@ -174,6 +176,101 @@ function bimverdi_nyhetsbrev_mottakere() {
     return $mottakere;
 }
 
+/**
+ * Testkontoer som aldri skal få nyhetsbrev (f.eks. «Claude AI» med
+ * maria.eriksen@test.no). test.no og example.* er ikke våre domener.
+ */
+function bimverdi_nyhetsbrev_er_testadresse($email) {
+    $domene = strtolower((string) substr(strrchr((string) $email, '@'), 1));
+    return in_array($domene, ['test.no', 'example.com', 'example.org', 'example.net', 'example.no'], true);
+}
+
+/* -------------------------------------------------------------------------
+ * 2b. Flettefelt: {fornavn}, {etternavn}, {foretak}, {rolle}.
+ *
+ * Redaktøren skriver feltene i emnet eller innledningen, f.eks.
+ * «Hei {fornavn},». Ved utsending byttes de mot mottakerens verdier.
+ * Mangler en verdi, fjernes feltet sammen med mellomrommet foran, så
+ * «Hei {fornavn},» blir «Hei,». Store/små bokstaver i feltnavnet spiller
+ * ingen rolle ({Fornavn} virker også).
+ * ---------------------------------------------------------------------- */
+
+/** Navnene på flettefeltene, i den rekkefølgen de vises i hjelpeteksten. */
+function bimverdi_nyhetsbrev_flettefelt_navn() {
+    return ['fornavn', 'etternavn', 'foretak', 'rolle'];
+}
+
+/**
+ * Verdiene for én bruker. Tom streng når verdien mangler.
+ *
+ * Rolle: foretakets nivå (Deltaker, Prosjektdeltaker, Partner), ellers
+ * «Gratisbruker». Administratorer uten foretak får tom rolle.
+ *
+ * @param int $user_id WP-bruker-ID, eller 0 (gir bare tomme verdier).
+ * @return array<string,string>
+ */
+function bimverdi_nyhetsbrev_flettefelt_verdier($user_id) {
+    $verdier = array_fill_keys(bimverdi_nyhetsbrev_flettefelt_navn(), '');
+    $bruker  = $user_id ? get_userdata((int) $user_id) : false;
+    if (!$bruker) {
+        return $verdier;
+    }
+
+    $verdier['fornavn']   = bimverdi_nyhetsbrev_rett_navn(get_user_meta($bruker->ID, 'first_name', true));
+    $verdier['etternavn'] = bimverdi_nyhetsbrev_rett_navn(get_user_meta($bruker->ID, 'last_name', true));
+
+    $foretak = function_exists('bimverdi_get_user_company') ? bimverdi_get_user_company($bruker->ID) : false;
+    if ($foretak) {
+        $verdier['foretak'] = wp_specialchars_decode((string) $foretak['name'], ENT_QUOTES);
+        $nivaa = (string) get_post_meta((int) $foretak['id'], 'bv_rolle', true);
+        $verdier['rolle'] = in_array($nivaa, ['Deltaker', 'Prosjektdeltaker', 'Partner'], true) ? $nivaa : 'Gratisbruker';
+    } elseif (!in_array('administrator', (array) $bruker->roles, true)) {
+        $verdier['rolle'] = 'Gratisbruker';
+    }
+
+    return $verdier;
+}
+
+/**
+ * Rydd et navn fra profilen: trim, og gi stor forbokstav når hele navnet
+ * er skrevet med små bokstaver («andreas» → «Andreas», «anne-lise» →
+ * «Anne-Lise»). Navn med blandede bokstaver («McDonald») står urørt.
+ */
+function bimverdi_nyhetsbrev_rett_navn($navn) {
+    $navn = trim(preg_replace('/\s+/u', ' ', (string) $navn));
+    if ($navn === '' || mb_strtolower($navn, 'UTF-8') !== $navn) {
+        return $navn;
+    }
+    return preg_replace_callback('/(^|[\s\-])(\p{Ll})/u', function ($m) {
+        return $m[1] . mb_strtoupper($m[2], 'UTF-8');
+    }, $navn);
+}
+
+/**
+ * Bytt flettefeltene i en tekst.
+ *
+ * @param string $tekst   HTML eller ren tekst.
+ * @param array  $verdier Fra bimverdi_nyhetsbrev_flettefelt_verdier().
+ * @param bool   $html    True: verdiene HTML-escapes (e-postkroppen).
+ *                        False: ren tekst (emnefeltet).
+ */
+function bimverdi_nyhetsbrev_flett($tekst, array $verdier, $html = true) {
+    foreach (bimverdi_nyhetsbrev_flettefelt_navn() as $felt) {
+        $verdi = (string) ($verdier[$felt] ?? '');
+        $tekst = preg_replace_callback(
+            '/([ \t]*)\{' . $felt . '\}/iu',
+            function ($m) use ($verdi, $html) {
+                if ($verdi === '') {
+                    return '';
+                }
+                return $m[1] . ($html ? esc_html($verdi) : $verdi);
+            },
+            (string) $tekst
+        );
+    }
+    return $tekst;
+}
+
 /* -------------------------------------------------------------------------
  * 3. Send ÉN e-post fra øyeblikksbildet (per-mottaker-substitusjon).
  * ---------------------------------------------------------------------- */
@@ -184,13 +281,23 @@ function bimverdi_nyhetsbrev_mottakere() {
  *
  * MERK: Deterministisk for samme (html, user_id) på samme miljø — det er en
  * forutsetning for idempotency-vernet (re-send av usikker batch må gi
- * byte-identisk payload).
+ * byte-identisk payload). Flettefeltene leses fra profilen ved hver
+ * bygging; endrer en mottaker navnet sitt mellom to forsøk på samme batch,
+ * avviser Resend re-sendingen (samme nøkkel, annen payload) og batchen
+ * blir stående som usikker. Det er trygt — ingen får brevet to ganger.
  *
- * @param string $html    Øyeblikksbildet med %%BV_UID%%/%%BV_TOKEN%%-placeholdere.
- * @param int    $user_id WP-bruker-ID, eller 0 for ikke-bruker (testadresse).
+ * @param string   $html          Øyeblikksbildet med %%BV_UID%%/%%BV_TOKEN%%-placeholdere.
+ * @param int      $user_id       WP-bruker-ID, eller 0 for ikke-bruker (testadresse).
+ * @param int|null $flett_user_id Hvem flettefeltene hentes fra. Standard: $user_id.
+ *                                Test-send til en ikke-bruker bruker avsenderens verdier.
  */
-function bimverdi_nyhetsbrev_personaliser_html($html, $user_id) {
+function bimverdi_nyhetsbrev_personaliser_html($html, $user_id, $flett_user_id = null) {
     $user_id = (int) $user_id;
+
+    $html = bimverdi_nyhetsbrev_flett(
+        $html,
+        bimverdi_nyhetsbrev_flettefelt_verdier($flett_user_id === null ? $user_id : (int) $flett_user_id)
+    );
 
     if ($user_id > 0 && get_userdata($user_id)) {
         $html = str_replace(
@@ -264,11 +371,18 @@ function bimverdi_nyhetsbrev_send_en($post_id, $email, $subject_prefix = '') {
         return new WP_Error('mangler_snapshot', 'Nyhetsbrevet har ikke noe lagret øyeblikksbilde.');
     }
 
-    $bruker = get_user_by('email', $email);
-    $html   = bimverdi_nyhetsbrev_personaliser_html($html, $bruker ? $bruker->ID : 0);
+    // Flettefelt: mottakerens egne verdier hvis adressen er en bruker,
+    // ellers avsenderens (Bård ser sitt eget navn i testen).
+    $bruker   = get_user_by('email', $email);
+    $flett_id = $bruker ? $bruker->ID : get_current_user_id();
+    $html     = bimverdi_nyhetsbrev_personaliser_html($html, $bruker ? $bruker->ID : 0, $flett_id);
 
     // E-postemner er ren tekst — dekod HTML-entiteter fra get_the_title (&#038; → &).
-    $subject = $subject_prefix . wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES);
+    $subject = $subject_prefix . bimverdi_nyhetsbrev_flett(
+        wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES),
+        bimverdi_nyhetsbrev_flettefelt_verdier($flett_id),
+        false
+    );
     $headers = ['Content-Type: text/html; charset=UTF-8'];
 
     $ok = wp_mail($email, $subject, $html, $headers);
@@ -792,9 +906,15 @@ function bimverdi_nyhetsbrev_bygg_batch_elementer($post_id, array $manifest, arr
         $elementer[] = [
             'from'     => $manifest['from'],
             'to'       => [$mottaker['email']],
-            'subject'  => $manifest['subject'],
+            'subject'  => bimverdi_nyhetsbrev_flett($manifest['subject'], bimverdi_nyhetsbrev_flettefelt_verdier($uid), false),
             'html'     => bimverdi_nyhetsbrev_personaliser_html($html, $uid),
             'reply_to' => $manifest['reply_to'],
+            // Følger med hendelsene fra Resend, så utsendingsloggen
+            // (bimverdi-epost-logg.php) vet hvilket brev og hvilken bruker.
+            'tags'     => [
+                ['name' => 'nyhetsbrev', 'value' => (string) (int) $post_id],
+                ['name' => 'bruker', 'value' => (string) $uid],
+            ],
             // One-Click-avmelding (RFC 8058): samme lenke som i brev-bunnen.
             'headers'  => [
                 'List-Unsubscribe'      => '<' . bimverdi_nyhetsbrev_avmelding_url_prod($uid) . '>',

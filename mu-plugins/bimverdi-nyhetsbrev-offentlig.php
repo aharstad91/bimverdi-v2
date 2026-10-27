@@ -60,6 +60,11 @@ function bimverdi_nyhetsbrev_offentlig_html($html) {
     );
     $html = str_replace(array('%%BV_UID%%', '%%BV_TOKEN%%'), '', $html);
 
+    // Nettversjonen har ingen mottaker: flettefeltene fjernes («Hei {fornavn},» → «Hei,»).
+    if (function_exists('bimverdi_nyhetsbrev_flett')) {
+        $html = bimverdi_nyhetsbrev_flett($html, array());
+    }
+
     // noindex også i selve dokumentet (i tillegg til X-Robots-Tag).
     $meta = '<meta name="robots" content="noindex,nofollow">';
     if (stripos($html, '</head>') !== false) {

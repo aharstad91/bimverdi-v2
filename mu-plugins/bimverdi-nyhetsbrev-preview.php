@@ -53,6 +53,10 @@ add_action('template_redirect', function () {
                         $stored
                     );
                 }
+                // Flettefeltene ({fornavn} osv.) vises med adminens egne verdier.
+                if (function_exists('bimverdi_nyhetsbrev_flett')) {
+                    $stored = bimverdi_nyhetsbrev_flett($stored, bimverdi_nyhetsbrev_flettefelt_verdier(get_current_user_id()));
+                }
                 nocache_headers();
                 header('Content-Type: text/html; charset=UTF-8');
                 // Lagret HTML echoes rått. Malen (parts/email/nyhetsbrev.php) er
