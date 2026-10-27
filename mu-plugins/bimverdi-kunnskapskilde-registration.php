@@ -257,9 +257,25 @@ add_action('init', function () {
         $spraak = '';
     }
 
-    $allowed_geo = ['nasjonalt', 'nordisk', 'europeisk', 'internasjonalt', 'annet'];
-    if ($geografisk_gyldighet && !in_array($geografisk_gyldighet, $allowed_geo)) {
+    $allowed_geo = function_exists('bimverdi_geo_gyldighet_valg')
+        ? array_keys(bimverdi_geo_gyldighet_valg())
+        : ['nasjonalt', 'nordisk', 'europeisk', 'internasjonalt', 'annet'];
+    if ($geografisk_gyldighet && !in_array($geografisk_gyldighet, $allowed_geo, true)) {
         $geografisk_gyldighet = '';
+    }
+
+    // Regionalt nivå: fylker (påkrevd) og kommuner (valgfritt), lagret som nummer.
+    // Se mu-plugins/bimverdi-kunnskapskilde-geografi.php for reglene.
+    $geo_valg = ['fylker' => [], 'kommuner' => []];
+    if ($geografisk_gyldighet === 'regionalt') {
+        $geo_valg = bimverdi_geo_normaliser(
+            array_map('sanitize_text_field', (array) ($_POST['geografisk_fylker'] ?? [])),
+            array_map('sanitize_text_field', (array) ($_POST['geografisk_kommuner'] ?? []))
+        );
+        if (empty($geo_valg['fylker'])) {
+            wp_redirect(add_query_arg('bv_error', 'missing_fylke', $redirect_error));
+            exit;
+        }
     }
 
     $allowed_dataformat = ['pdf', 'web_aapent', 'web_lukket', 'api', 'ifc', 'database', 'annet'];
@@ -361,7 +377,12 @@ add_action('init', function () {
         if ($utgivelsesaar) update_field('utgivelsesaar', $utgivelsesaar, $post_id);
         if ($tilgang) update_field('tilgang', $tilgang, $post_id);
         update_field('kildetype', $kildetype, $post_id);
-        if ($geografisk_gyldighet) update_field('geografisk_gyldighet', $geografisk_gyldighet, $post_id);
+        if ($geografisk_gyldighet) {
+            update_field('geografisk_gyldighet', $geografisk_gyldighet, $post_id);
+            // Tømmes når nivået ikke er «regionalt», så gamle valg ikke henger igjen.
+            update_field('geografisk_fylker', $geo_valg['fylker'], $post_id);
+            update_field('geografisk_kommuner', $geo_valg['kommuner'], $post_id);
+        }
         if ($dataformat) update_field('dataformat', $dataformat, $post_id);
         update_field('ant_lovpalagte_standarder', $ant_lovpalagte, $post_id);
         update_field('lovpalagte_standarder', $lovpalagte, $post_id);

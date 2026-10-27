@@ -51,14 +51,10 @@ if ($current_user_id) {
     }
 }
 
-// Geografisk gyldighet labels
-$geo_labels = [
-    'nasjonalt' => 'Nasjonalt/Norsk',
-    'nordisk' => 'Nordisk',
-    'europeisk' => 'Europeisk',
-    'internasjonalt' => 'Internasjonalt',
-    'annet' => 'Annet',
-];
+// Geografisk gyldighet: nivå, og for «Regionalt» én linje per fylke
+// (f.eks. «Oslo», «Akershus: Asker, Bærum» eller «Akershus (hele fylket)»).
+$geo = bimverdi_geo_get(get_the_ID());
+$geo_linjer = bimverdi_geo_region_linjer($geo['fylker'], $geo['kommuner']);
 
 // Dataformat labels
 $dataformat_labels = [
@@ -213,10 +209,15 @@ $kilde_created = get_the_date('d.m.Y');
                         <?php endif; ?>
 
                         <!-- Geografisk gyldighet -->
-                        <?php if ($geografisk_gyldighet): ?>
+                        <?php if ($geo['niva']): ?>
                         <div class="grid grid-cols-2 py-6 gap-4">
                             <dt class="text-sm text-[#57534E]">Geografisk gyldighet</dt>
-                            <dd class="text-sm text-[#111827]"><?php echo esc_html($geo_labels[$geografisk_gyldighet] ?? $geografisk_gyldighet); ?></dd>
+                            <dd class="text-sm text-[#111827]">
+                                <?php echo esc_html(bimverdi_geo_niva_label($geo['niva'])); ?>
+                                <?php foreach ($geo_linjer as $geo_linje): ?>
+                                <span class="block text-[#57534E] mt-1"><?php echo esc_html($geo_linje); ?></span>
+                                <?php endforeach; ?>
+                            </dd>
                         </div>
                         <?php endif; ?>
 

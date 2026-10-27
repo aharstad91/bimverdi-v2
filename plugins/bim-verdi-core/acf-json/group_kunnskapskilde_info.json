@@ -92,6 +92,7 @@
             "instructions": "Hvilket geografisk område gjelder kilden for?",
             "required": 0,
             "choices": {
+                "regionalt": "Regionalt (fylke/kommune)",
                 "nasjonalt": "Nasjonalt/Norsk",
                 "nordisk": "Nordisk",
                 "europeisk": "Europeisk",
@@ -101,6 +102,62 @@
             "default_value": "nasjonalt",
             "return_format": "value",
             "allow_null": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_geografisk_fylker",
+            "label": "Fylke(r)",
+            "name": "geografisk_fylker",
+            "type": "select",
+            "instructions": "Velg fylket eller fylkene kilden gjelder for. Velger du Oslo, gjelder kilden også Oslo kommune.",
+            "required": 1,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_kunnskapskilde_geografisk_gyldighet",
+                        "operator": "==",
+                        "value": "regionalt"
+                    }
+                ]
+            ],
+            "choices": {},
+            "default_value": [],
+            "return_format": "value",
+            "allow_null": 1,
+            "multiple": 1,
+            "ui": 1,
+            "ajax": 0,
+            "placeholder": "Velg fylke",
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_geografisk_kommuner",
+            "label": "Kommune(r)",
+            "name": "geografisk_kommuner",
+            "type": "select",
+            "instructions": "Valgfritt. La feltet stå tomt hvis kilden gjelder hele fylket. Fylket til en valgt kommune legges til automatisk.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_kunnskapskilde_geografisk_gyldighet",
+                        "operator": "==",
+                        "value": "regionalt"
+                    }
+                ]
+            ],
+            "choices": {},
+            "default_value": [],
+            "return_format": "value",
+            "allow_null": 1,
+            "multiple": 1,
+            "ui": 1,
+            "ajax": 0,
+            "placeholder": "Søk etter kommune",
             "wrapper": {
                 "width": "50"
             }

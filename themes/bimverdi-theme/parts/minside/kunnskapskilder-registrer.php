@@ -18,6 +18,7 @@ $company_id = get_user_meta($user_id, 'bimverdi_company_id', true)
 $company = $company_id ? get_post($company_id) : null;
 
 require_once get_template_directory() . '/parts/components/kilde-kategori-felt.php';
+require_once get_template_directory() . '/parts/components/geo-gyldighet-felt.php';
 
 // Error handling
 $error = isset($_GET['bv_error']) ? sanitize_text_field($_GET['bv_error']) : '';
@@ -28,6 +29,7 @@ $error_messages = [
     'missing_url'       => 'Ekstern lenke er påkrevd.',
     'missing_kildetype' => 'Du må velge minst én kilde-kategori.',
     'too_many_kildetype' => 'Du kan velge inntil to kilde-kategorier.',
+    'missing_fylke'     => 'Velg minst ett fylke når gyldigheten er regional.',
     'missing_consent'   => 'Du må samtykke for å registrere.',
     'url_duplicate'     => 'Denne lenken er allerede registrert. Vennligst bruk en annen URL.',
     'system'            => 'En teknisk feil oppstod. Vennligst prøv igjen.',
@@ -41,14 +43,6 @@ $spraak_options = [
     'dansk'       => 'Dansk',
     'flerspraklig'=> 'Flerspråklig',
     'annet'       => 'Annet',
-];
-
-$geo_options = [
-    'nasjonalt'      => 'Nasjonalt/Norsk',
-    'nordisk'        => 'Nordisk',
-    'europeisk'      => 'Europeisk',
-    'internasjonalt' => 'Internasjonalt',
-    'annet'          => 'Annet',
 ];
 
 $dataformat_options = [
@@ -201,16 +195,7 @@ if (is_wp_error($temagrupper)) $temagrupper = [];
 
         <div class="grid lg:grid-cols-2 gap-4">
             <!-- Geografisk gyldighet -->
-            <div>
-                <label for="geografisk_gyldighet" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Geografisk gyldighet</label>
-                <select id="geografisk_gyldighet" name="geografisk_gyldighet"
-                        class="w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent">
-                    <option value="">Velg gyldighet</option>
-                    <?php foreach ($geo_options as $value => $label): ?>
-                    <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+            <?php bimverdi_geo_gyldighet_select(); ?>
 
             <!-- Dataformat -->
             <div>
@@ -224,6 +209,9 @@ if (is_wp_error($temagrupper)) $temagrupper = [];
                 </select>
             </div>
         </div>
+
+        <!-- Regionalt: fylke og kommuner (vises bare når «Regionalt» er valgt) -->
+        <?php bimverdi_geo_region_panel(); ?>
 
         <hr class="border-[#E5E0D5]">
         <h2 class="text-lg font-semibold text-[#111827]">Detaljer</h2>

@@ -3,7 +3,8 @@
  * Archive template for Kunnskapskilde (Knowledge Sources)
  *
  * Public knowledge source catalog with BIM Verdi design.
- * Filter on temagruppe and kilde-kategori (Trello #358: «Kategori» er slått sammen med «Kildetype»).
+ * Filter on temagruppe, kilde-kategori (Trello #358: «Kategori» er slått sammen med «Kildetype»)
+ * and geografi (nivå, og fylke for regionale kilder).
  * URL: /kunnskapskilder (from CPT rewrite slug)
  * Updated 2026-02-03: Replaced checkbox filters with compact dropdown filter bar.
  *
@@ -25,6 +26,11 @@ $kategori = isset($_GET['kategori']) && is_array($_GET['kategori'])
     : array();
 $kildetype = isset($_GET['kildetype']) && is_array($_GET['kildetype'])
     ? array_map('sanitize_text_field', $_GET['kildetype'])
+    : array();
+// Geografi filtreres bare i nettleseren (data-geo på kortene). Verdiene her
+// brukes til å vise valgte filtre i nedtrekksmenyen.
+$geo_filter = isset($_GET['geo']) && is_array($_GET['geo'])
+    ? array_map('sanitize_text_field', $_GET['geo'])
     : array();
 // Gamle lenker (?kategori=standard) peker nå på samme kilde-kategori.
 foreach ($kategori as $gammel_kategori) {
@@ -100,9 +106,26 @@ foreach (array_keys($temagruppe_options) as $slug) {
 }
 
 $kildetype_counts = array_fill_keys(array_keys($kildetype_options), 0);
+$geo_counts = array();
 foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids']) as $kilde_id_telling) {
     foreach (bimverdi_get_kildekategorier($kilde_id_telling) as $kildekategori_slug) {
         $kildetype_counts[$kildekategori_slug]++;
+    }
+    foreach (bimverdi_geo_filter_tokens(bimverdi_geo_get($kilde_id_telling)) as $geo_token) {
+        $geo_counts[$geo_token] = ($geo_counts[$geo_token] ?? 0) + 1;
+    }
+}
+
+// Geografi-filter: nivåene, og under «Regionalt» bare fylkene som har kilder.
+$geo_options = array();
+foreach (bimverdi_geo_gyldighet_valg() as $geo_slug => $geo_label) {
+    $geo_options[$geo_slug] = bimverdi_geo_niva_label($geo_slug);
+    if ($geo_slug === 'regionalt') {
+        foreach (bimverdi_geo_data()['fylker'] as $geo_fylke) {
+            if (!empty($geo_counts['fylke-' . $geo_fylke['nr']])) {
+                $geo_options['fylke-' . $geo_fylke['nr']] = 'Regionalt: ' . $geo_fylke['navn'];
+            }
+        }
     }
 }
 
@@ -145,6 +168,14 @@ foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish',
                 'counts'       => $kildetype_counts,
                 'filter_class' => 'filter-kildetype',
             ],
+            [
+                'name'         => 'geo[]',
+                'label'        => 'Geografi',
+                'options'      => $geo_options,
+                'selected'     => $geo_filter,
+                'counts'       => $geo_counts,
+                'filter_class' => 'filter-geo',
+            ],
         ];
 
         bimverdi_filter_bar([
@@ -173,6 +204,7 @@ foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish',
         while ($kunnskapskilder_query->have_posts()): $kunnskapskilder_query->the_post();
             $temagruppe_terms_post = wp_get_post_terms(get_the_ID(), 'temagruppe');
             $kildetype_val = bimverdi_get_kildekategorier(get_the_ID());
+            $geo_val = bimverdi_geo_get(get_the_ID());
             $items[] = [
                 'id'               => get_the_ID(),
                 'navn'             => get_field('kunnskapskilde_navn', get_the_ID()) ?: get_the_title(),
@@ -184,6 +216,9 @@ foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish',
                 'permalink'        => get_the_permalink(),
                 'temagruppe_terms' => $temagruppe_terms_post,
                 'temagruppe_slugs' => !empty($temagruppe_terms_post) ? implode(' ', wp_list_pluck($temagruppe_terms_post, 'slug')) : '',
+                'geo_tokens'       => bimverdi_geo_filter_tokens($geo_val),
+                'geo_fylker'       => array_filter(array_map('bimverdi_geo_fylke_navn', $geo_val['fylker'])),
+                'geo_tekst'        => implode('; ', bimverdi_geo_region_linjer($geo_val['fylker'], $geo_val['kommuner'])),
             ];
         endwhile; wp_reset_postdata();
 
@@ -213,7 +248,8 @@ foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish',
                data-title="<?php echo esc_attr(strtolower($item['navn'])); ?>"
                data-utgiver="<?php echo esc_attr(strtolower($item['utgiver'])); ?>"
                data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
-               data-kildetype="<?php echo esc_attr(implode(' ', $item['kildetype'])); ?>">
+               data-kildetype="<?php echo esc_attr(implode(' ', $item['kildetype'])); ?>"
+               data-geo="<?php echo esc_attr(implode(' ', $item['geo_tokens'])); ?>">
 
                 <!-- Icon Header -->
                 <div class="h-32 bg-[#FAFAF9] overflow-hidden flex items-center justify-center p-6">
@@ -235,6 +271,12 @@ foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish',
                             <?php echo esc_html(bimverdi_kildekategori_label($kildetype_slug)); ?>
                         </span>
                         <?php endforeach; ?>
+                        <?php if ($item['geo_fylker']): ?>
+                        <span class="inline-flex items-center gap-1 text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded" title="<?php echo esc_attr('Regionalt: ' . $item['geo_tekst']); ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <?php echo esc_html(implode(', ', $item['geo_fylker'])); ?>
+                        </span>
+                        <?php endif; ?>
                     </div>
 
                     <h3 class="text-lg font-bold text-[#111827] mb-1 group-hover:text-[#57534E] transition-colors line-clamp-2">
@@ -309,6 +351,7 @@ foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish',
                             data-utgiver="<?php echo esc_attr(strtolower($item['utgiver'])); ?>"
                             data-temagruppe="<?php echo esc_attr($item['temagruppe_slugs']); ?>"
                             data-kildetype="<?php echo esc_attr(implode(' ', $item['kildetype'])); ?>"
+                            data-geo="<?php echo esc_attr(implode(' ', $item['geo_tokens'])); ?>"
                             data-kildetype-label="<?php echo esc_attr(mb_strtolower(implode(', ', array_map('bimverdi_kildekategori_label', $item['kildetype'])))); ?>"
                             data-aar="<?php echo esc_attr($item['utgivelsesaar'] === 'eldre' ? '0' : (string) (int) $item['utgivelsesaar']); ?>">
                             <td class="px-4 py-3">
@@ -325,6 +368,12 @@ foreach (get_posts(['post_type' => 'kunnskapskilde', 'post_status' => 'publish',
                                     <?php echo esc_html(bimverdi_kildekategori_label($kildetype_slug)); ?>
                                 </span>
                                 <?php endforeach; ?>
+                                <?php if ($item['geo_fylker']): ?>
+                                <span class="inline-flex items-center gap-1 text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded whitespace-nowrap" title="<?php echo esc_attr('Regionalt: ' . $item['geo_tekst']); ?>">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    <?php echo esc_html(implode(', ', $item['geo_fylker'])); ?>
+                                </span>
+                                <?php endif; ?>
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-[#57534E]"><?php echo esc_html($item['utgiver']); ?></td>
@@ -410,7 +459,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var filterMap = {
             'temagruppe': '.filter-temagruppe:checked',
-            'kildetype': '.filter-kildetype:checked'
+            'kildetype': '.filter-kildetype:checked',
+            'geo': '.filter-geo:checked'
         };
         Object.keys(filterMap).forEach(function(key) {
             var checked = document.querySelectorAll('[data-multiselect] ' + filterMap[key]);
@@ -443,7 +493,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Restore checkboxes
         var filterMap = {
             'temagruppe': '.filter-temagruppe',
-            'kildetype': '.filter-kildetype'
+            'kildetype': '.filter-kildetype',
+            'geo': '.filter-geo'
         };
         Object.keys(filterMap).forEach(function(key) {
             var values = params.getAll(key);
@@ -470,6 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
         var selectedTemagruppe = Array.from(document.querySelectorAll('.filter-temagruppe:checked')).map(function(cb) { return cb.value; });
         var selectedKildetype = Array.from(document.querySelectorAll('.filter-kildetype:checked')).map(function(cb) { return cb.value; });
+        var selectedGeo = Array.from(document.querySelectorAll('.filter-geo:checked')).map(function(cb) { return cb.value; });
 
         // Filter all cards in both grid and list
         var allCards = document.querySelectorAll('.kunnskapskilde-card');
@@ -477,13 +529,15 @@ document.addEventListener('DOMContentLoaded', function() {
             var title = card.dataset.title || '';
             var cardTemagruppe = card.dataset.temagruppe || '';
             var cardKildetype = (card.dataset.kildetype || '').split(' ');
+            var cardGeo = (card.dataset.geo || '').split(' ');
 
             var utgiver = card.dataset.utgiver || '';
             var matchesSearch = !searchTerm || title.includes(searchTerm) || utgiver.includes(searchTerm);
             var matchesTemagruppe = selectedTemagruppe.length === 0 || selectedTemagruppe.some(function(t) { return cardTemagruppe.includes(t); });
             var matchesKildetype = selectedKildetype.length === 0 || selectedKildetype.some(function(k) { return cardKildetype.includes(k); });
+            var matchesGeo = selectedGeo.length === 0 || selectedGeo.some(function(g) { return cardGeo.includes(g); });
 
-            card.style.display = (matchesSearch && matchesTemagruppe && matchesKildetype) ? '' : 'none';
+            card.style.display = (matchesSearch && matchesTemagruppe && matchesKildetype && matchesGeo) ? '' : 'none';
         });
 
         // Count only from active (visible) container to avoid double-counting
