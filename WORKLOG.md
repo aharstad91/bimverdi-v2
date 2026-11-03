@@ -4,45 +4,89 @@
 
 ---
 date: 2026-11-03
-created_at: "2026-11-03T13:38:07Z"
-action: "Bårds startpakke bygget om etter modellen «på eget ansvar»: gate på serveren, engangskode per telefon, ruleset på main med php-lint. Astra-runde 3 rettet (PR #5). Ny pakke bygget, ikke aktivert."
+created_at: "2026-11-03T20:33:42Z"
+action: "START HER TORSDAG 05.11: Bårds startpakke er bygget om, reviewet av Astra, rettet og merget. Pakke bard-20261103-80cef44f ligger klar, IKKE aktivert. Kjøreplanen for torsdag står i detail."
 branch: "main"
 implementation_commit: "0c4da74"
-resume_focus: "Aktiver pakken rett før den sendes torsdag 05.11, les koden til Bård på telefon. Windows-kjøring er fortsatt uverifisert (bimverdi-82o)."
+resume_focus: "Torsdag: kjør smoke-testen, aktiver pakken rett før du sender den, les koden til Bård på telefon, si restrisikoene. Etterpå: sjekk at nøkkelen hans står i authorized_keys og les gateloggen etter første arbeidsdag."
 files:
-  - "_claude/bard-setup/server-gate.py (NY: tvungen kommando for Bårds nøkkel — logg, sperreliste, databasekopi, etterkontroll)"
-  - "_claude/bard-setup/server-enroll.py (engangskode, 5 forsøk, ansvar må bekreftes, binder til første nøkkel, finalize uten utløpssjekk)"
-  - "_claude/bard-setup/prepare-package.py (kun ZIP), activate-package.py (NY: server + kode), revoke-package.py (NY), common.py (NY)"
-  - "_claude/bard-setup/Setup-BIMVerdi.ps1 (ping, ansvarstekst JA, kode, finalize via engangsnøkkel), BIMVerdi.ps1 (Log, Backups, kode 77)"
-  - "_claude/bard-setup/CLAUDE.md, LES-MEG.txt, README.md (skrevet om), claude-settings.json (NY, mykt lag)"
-  - "_claude/bard-setup/tests/ (24 enhetstester) og tests/live-smoke.py (29 sjekker mot Servebolt)"
-  - ".github/workflows/php-lint.yml (NY), .github/.htaccess, .gitignore (!.github/)"
-  - "docs/plans/2026-11-03-bard-startpakke-review.md (status etter ombygging øverst; utenfor wp-content-repoet)"
-summary: "Andreas bestemte: Bård får full shell på prod på eget ansvar, Andreas godkjenner ikke PR-er. Vernet skal fange uhell, gjøre alt synlig og gjenopprettbart. Gjort: dagens engangsnøkkel bard-20261103-92f744c7 trukket tilbake (authorized_keys på prod er tom). Bård hadde ALLEREDE godtatt GitHub-invitasjonen, så ruleset på main (id 26451329: PR påkrevd uten godkjenner, påkrevd sjekk php-lint, ingen force-push/sletting, admin kan omgå) kom opp først. Gate installert på serveren (~/.bimverdi-gate/gate.py, data i ~/private/bard-gate/). Kopi av Bårds ti prod-plugins tatt lokalt (bimverdi-bol). PR #4 squash-merget til main (c1c572b), Servebolt deployet, HTTP 403 på _claude/ og .github/. Live-smoke 29/29 grønn: bygg, aktiver, feil kode avvist, Status uten kopi, wp db reset/git checkout/PHP i mu-plugins/scp/interaktivt skall sperret, skrivende kommando tar DB-kopi (25 MB gz, 3 s), gate-log, finalize, revoke. Ny pakke bard-20261103-80cef44f ligger i ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/, IKKE aktivert. Gamle pakker og smoke-mapper slettet. Astra (gpt-6-astra, xhigh) tredje runde fant 13 ting; de reelle er rettet i PR #5: -Quiet i Setup kastet bort serverens svar (oppsettet ville stoppet ved ping), feilklassifisering av --format=count/$(...)/gunzip/sort -o/db export til webroten, & i bakgrunnen slapp gjennom, cd+cp omgikk kodevernet, tilstand utenfor lås i revoke/activate, kopi-feil stopper nå databaseskriving (kode 76), gjenkjøring rydder engangsnøkkelen, find -cnewer, sluttlinje i logg ved avbrudd, falske utslag for git tag/git -C/(pwd), workflow linter alle sporede PHP-filer, tekstene justert. Ikke rettet med vilje: regex-sperren treffer tekst, kopien dekker bare databasen, gaten kan omgås av samme bruker. 28 enhetstester + 29 live-sjekker grønne etter rettingene."
+  - "_claude/bard-setup/README.md — les denne først: flyt for Andreas, serveroppsett, GitHub, tester, kjente begrensninger"
+  - "_claude/bard-setup/activate-package.py — aktiverer pakken på serveren og skriver ut engangskoden (kjøres torsdag)"
+  - "_claude/bard-setup/revoke-package.py — --list viser nøkler, --id trekker tilbake"
+  - "_claude/bard-setup/server-gate.py — tvungen kommando for Bårds nøkkel: logg, sperreliste, DB-kopi, etterkontroll"
+  - "_claude/bard-setup/server-enroll.py — engangskode, 5 forsøk, ansvar må bekreftes, binder pakken til første nøkkel"
+  - "_claude/bard-setup/Setup-BIMVerdi.ps1, BIMVerdi.ps1, Invoke-Ssh.ps1 — det som kjører på Bårds PC"
+  - "_claude/bard-setup/CLAUDE.md, LES-MEG.txt, claude-settings.json — instruksjoner og mykt lag i Bårds arbeidsmappe"
+  - "_claude/bard-setup/tests/ — 28 enhetstester; tests/live-smoke.py kjører hele flyten mot Servebolt (29 sjekker)"
+  - ".github/workflows/php-lint.yml — påkrevd sjekk på main (php -l på alle sporede PHP-filer, PHP 8.4)"
+  - "docs/plans/2026-11-03-bard-startpakke-review.md — gjennomgangen, beslutningen og status etter ombygging (utenfor wp-content-repoet)"
+summary: "BESLUTNING (Andreas 03.11): Bård får full shell på prod på eget ansvar. Andreas (9 t/mnd) godkjenner ikke PR-er. Vernet skal fange uhell, gjøre alt synlig og gjenopprettbart. GJORT: Dagens engangsnøkkel trukket tilbake; authorized_keys på prod er tom. Bård hadde ALLEREDE godtatt GitHub-invitasjonen, så ruleset på main kom først (id 26451329: PR påkrevd uten godkjenner, påkrevd sjekk php-lint, ingen force-push/sletting, admin omgår). Gate installert på serveren (~/.bimverdi-gate/gate.py, data i ~/private/bard-gate/). Bygg og aktivering delt; engangskode på 6 siffer leses per telefon, 5 feil sperrer pakken, 24 timers vindu. Kopi av Bårds ti prod-plugins tatt lokalt. PR #4 (c1c572b) og PR #5 (0c4da74) merget og deployet; HTTP 403 på _claude/ og .github/. Astra (gpt-6-astra, xhigh) fant 13 ting i tredje runde; de reelle er rettet i PR #5, viktigst: -Quiet i Setup kastet bort serverens svar så oppsettet ville stoppet hos Bård. Ikke rettet med vilje: regex-sperren treffer tekst, kopien dekker bare databasen, gaten kan omgås av samme bruker. 28 enhetstester + 29 live-sjekker grønne. Gaten på serveren er byte for byte lik main. Ny pakke bard-20261103-80cef44f i ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/, IKKE aktivert; gamle pakker slettet. bd: bimverdi-f31 lukket, bimverdi-82o (Windows-verifisering) og bimverdi-bol (plugins inn i repoet) åpne."
 status: waiting
-waiting_on: "Andreas: (1) lese status etter ombygging i docs/plans/2026-11-03-bard-startpakke-review.md; (2) torsdag 05.11: kjøre activate-package.py på bard-20261103-80cef44f med --hours 24, lese koden til Bård, sende ZIP; (3) si til Bård: eget ansvar, alt logges, gaten er uhellsvern, scp/sftp sperret, kode via PR + php-lint; (4) etter første arbeidsdag: lese ~/private/bard-gate/log/."
+waiting_on: "Andreas torsdag 05.11: følg KJØREPLAN i detail. Bård etterpå: kjøre pakken på Windows (bimverdi-82o)."
 detail: |
-  AKTIVERING (rett før sending)
-  cd wp-content
-  python3 _claude/bard-setup/activate-package.py ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/bard-20261103-80cef44f --hours 24
-  Koden skrives bare til terminalen. Send ZIP-en privat. Trekk tilbake: revoke-package.py --id bard-20261103-80cef44f.
+  KJØREPLAN TORSDAG 05.11
+  1. Før møtet (2 min): bekreft at alt fortsatt virker mot Servebolt. Lager ingen varig tilstand.
+     cd /Applications/MAMP/htdocs/bimverdi-v2/wp-content
+     python3 _claude/bard-setup/tests/live-smoke.py          # forvent «29 av 29 sjekker besto»
+     python3 _claude/bard-setup/revoke-package.py --list     # forvent «Totalt 0 linje(r)»
+  2. Rett før du sender ZIP-en (ikke før; vinduet er 24 timer):
+     python3 _claude/bard-setup/activate-package.py ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/bard-20261103-80cef44f --hours 24
+     Skriver ut: pakke-id, utløp og «Engangskode: NNNNNN». Koden står bare i terminalen. Noter den.
+  3. Send ZIP-en privat (ikke e-post med kode i): ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/BIMVerdi-Windows-bard-20261103-80cef44f.zip
+     Les koden til Bård på telefon. Han følger LES-MEG.txt: pakk ut, dobbeltklikk Start-BIMVerdi.cmd, skriv JA, skriv koden, vent på «Ferdig».
+  4. Si dette til Bård (står også i LES-MEG og i ansvarsteksten han må svare JA på):
+     - Tilgangen går rett til bimverdi.no, på hans eget ansvar. Du godkjenner ikke endringer på forhånd.
+     - Alt han og agenten gjør på serveren logges. Loggen er bevis, ikke sperre.
+     - Gaten sperrer noen få farlige ting og tar databasekopi før endringer i databasen. Kopien dekker ikke filer.
+     - scp/sftp er sperret. Kode går via Git og PR; php-lint må være grønn; han merger selv. Grønn lint = riktig syntaks, ikke at siden virker.
+     - Hvis gaten sperrer noe han trenger, ringer han deg. Ikke omgå.
+  5. Etter at han har kjørt pakken:
+     python3 _claude/bard-setup/revoke-package.py --list     # forvent én linje: restrict,command="... gate.py bimverdi-bard-bard-20261103-80cef44f" ssh-ed25519 … bimverdi-bard-bard-20261103-80cef44f
+     Engangsnøkkelen skal være borte (finalize). Hvis den står igjen, utløper den av seg selv etter 24 t.
+  6. Hvis han ikke rekker å kjøre pakken innen 24 timer: kjør activate-package.py på nytt. Ny kode, nytt utløp, nullstilte forsøk. ZIP-en er den samme.
 
-  GITHUB-KONTO (sideeffekt av ruleset)
-  Mac-ens SSH-nøkkel autentiserer som andreasharstad91 (write, ikke admin). Ruleset-et blokkerer derfor direkte push til main med SSH-remote.
-  Repoets remote er satt til https://aharstad91@github.com/aharstad91/bimverdi-v2.git. En repo-lokal credential-helper henter token med `gh auth token --user aharstad91`
-  (~/.gitconfig nullstiller helper-lista for github.com, så osxkeychain hjelper ikke). Verifisert: push til main gikk gjennom (8525dfc).
-  Hvis push til main gir 403: sjekk `git config --local --get-all credential.https://github.com.helper`, eller gå via PR.
+  HVIS OPPSETTET STOPPER HOS BÅRD
+  - «Serveren svarte ikke» / «Engangstilgangen mangler»: pakken er ikke aktivert, eller utløpt. Kjør activate på nytt.
+  - «Wrong one-time code (N attempts left)»: feil kode. Etter 5 feil er pakken sperret; aktiver på nytt.
+  - «already bound to another key»: noen andre har brukt pakken først. Trekk tilbake (--id) og bygg ny pakke (prepare-package.py).
+  - Windows mangler OpenSSH / ingen admin: Setup prøver Add-WindowsCapability med UAC. Uten admin stopper det; da må IT installere OpenSSH Client.
+  - Status feiler etter registrering: nøkkelen hans virker likevel. Be ham kjøre Start-BIMVerdi.cmd en gang til; finalize kjøres da.
+  - Alt annet: be om feilmeldingen (den siste røde linjen) og se README.md «Verifisering». Windows er fortsatt uverifisert (bimverdi-82o).
 
-  RESTRISIKOER (si til Bård)
+  ETTER FØRSTE ARBEIDSDAG
+  ssh bimver_28287@jana-osl.servebolt.cloud 'ls ~/private/bard-gate/log/; tail -n 50 ~/private/bard-gate/log/$(date +%F).jsonl'
+  Hver kommando har en start- og en sluttlinje (call_id) med hele skriptet, klasse (read/write/denied), kopi og varsler.
+  Bård kan se det samme med BIMVerdi.ps1 -Action Log og -Action Backups. Databasekopier: ~/private/bard-gate/db/ (gunzip -c <fil> | wp db import -).
+  Trekk tilbake alt på ett sekund: python3 _claude/bard-setup/revoke-package.py --id bard-20261103-80cef44f
+
+  SLIK HENGER DET SAMMEN (kort)
+  - prepare-package.py lager en død ZIP (skript, CLAUDE.md, engangsnøkkel, ingen kode, ingen utløp).
+  - activate-package.py legger enroll.py + gate.py på serveren, engangsnøkkelen i authorized_keys med utløp, og kodehash i enrollment.json.
+  - Setup på Windows: ping → ansvarstekst (JA) → kode → enroll (binder pakken til Bårds nøkkel, legger den inn med gate.py som tvungen kommando) → Status → finalize (fjerner engangsnøkkelen).
+  - Gaten: sh -s med skript på stdin. Logger alt. Sperrer: wp db reset/drop, wp site empty, rm -r, find -delete, DROP/TRUNCATE/DELETE uten WHERE,
+    skrivende git, .ssh/authorized_keys, wp-config.php, .htaccess, environment.json, gaten/loggen, chmod -R/777, scp/sftp, &/nohup, utgående ssh,
+    skriving rett inn i themes/, mu-plugins/, plugins/bim-verdi-core/. Skrivende skript: DB-dump først (maks 1 per 10 min, 10 siste + dagens første i 7 dager),
+    etterpå php -l på nye PHP-filer, varsel om endringer i Git-styrte mapper, flytting av SQL-dumper fra webroten, HTTP-sjekk av wp-login.php og forsiden.
+  - GitHub: Bård (baardkr, write) må via PR; php-lint påkrevd; ingen godkjenner; han merger selv; merge til main = deploy.
+
+  GITHUB-KONTO (sideeffekt av ruleset, allerede håndtert)
+  Mac-ens SSH-nøkkel autentiserer som andreasharstad91 (write, ikke admin). Ruleset-et ville blokkert dine direkte push til main.
+  Repoets remote er derfor https://aharstad91@github.com/aharstad91/bimverdi-v2.git med en repo-lokal credential-helper som henter token via
+  `gh auth token --user aharstad91`. Verifisert: push til main virker (8525dfc, 3342253). Hvis push gir 403: gå via PR, eller
+  sjekk `git config --local --get-all credential.https://github.com.helper`. Admin-API-kall: GH_TOKEN=$(gh auth token --user aharstad91) gh api …
+
+  RESTRISIKOER (bevisst akseptert)
   - Gaten kjører som samme Linux-bruker som Bård. Den kan redigeres og omgås. Loggen er bevis, ikke sperre.
-  - Sperrelisten er regex og best effort. Falske positive kan skje; be Andreas hvis noe nødvendig sperres.
+  - Sperrelisten er regex. Falske positive kan skje (grep 'rm -rf' fil). Da ringer Bård.
   - ~/environment.json (Servebolt-API-nøkkel) og ~/.ssh/id_ed25519 (deploy-nøkkel) er lesbare for kontoen.
-  - scp/sftp er sperret med vilje. Filer hentes med tar|base64 via Run.
+  - Kopien dekker bare databasen. Filer dekkes av Git (kode) og Servebolts backuper (uploads).
+  - Bårds ti plugins ligger bare på prod; kopi fra 03.11 i ~/.codex/artifacts/bimverdi-bard-setup-20261103/prod-plugins-backup/ (bimverdi-bol).
 
   KJENTE RESTER
-  - Windows-kjøring er fortsatt ikke verifisert (bimverdi-82o).
-  - Bårds plugins inn i repoet (bimverdi-bol).
-  - Staging-miljø kan vente (lagring 4,2 GB ledig).
+  - Windows-kjøring er ikke verifisert (bimverdi-82o). Første ekte kjøring er hos Bård.
+  - Bårds plugins inn i repoet, én per PR (bimverdi-bol). Bårds agent kan gjøre det selv; CLAUDE.md i pakken forklarer hvordan.
+  - Staging-miljø kan vente (4,2 GB ledig på bolten).
+  - Halvor-pakke: samme verktøy, `prepare-package.py --name halvor`. Ikke bygget.
 
 ---
 date: 2026-11-03
