@@ -122,6 +122,26 @@ if ($hovedkontakt_id) {
     $tilleggskontakter_count = $user_count;
 }
 
+// Navn på tilleggskontakter vises kun for administratorer (Trello #362 pkt 7).
+// Ny nøkkel (bimverdi_company_id) vinner over legacy (bim_verdi_company_id).
+$tilleggskontakter_navn = array();
+if (current_user_can('manage_options')) {
+    $kandidater = get_users(array(
+        'meta_query' => array(
+            'relation' => 'OR',
+            array('key' => 'bimverdi_company_id', 'value' => $company_id),
+            array('key' => 'bim_verdi_company_id', 'value' => $company_id),
+        ),
+    ));
+    foreach ($kandidater as $kandidat) {
+        $kandidat_foretak = get_user_meta($kandidat->ID, 'bimverdi_company_id', true)
+            ?: get_user_meta($kandidat->ID, 'bim_verdi_company_id', true);
+        if ((int) $kandidat_foretak === (int) $company_id && (int) $kandidat->ID !== (int) $hovedkontakt_id) {
+            $tilleggskontakter_navn[] = $kandidat;
+        }
+    }
+}
+
 // Sjekk om besøkende bruker tilhører dette foretaket
 $current_user_company_id = get_user_meta(get_current_user_id(), 'bim_verdi_company_id', true);
 $is_own_company = ($current_user_company_id == $company_id);
@@ -652,6 +672,22 @@ $company_kunnskapskilder = get_posts(array(
                                 Tilleggskontakter
                             </dt>
                             <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $tilleggskontakter_count; ?> personer</dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($tilleggskontakter_navn)): ?>
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">Navn på tilleggskontakter (kun synlig for admin)</dt>
+                            <dd class="text-sm text-[#111827] pl-[22px]">
+                                <ul class="list-none m-0 p-0 space-y-1">
+                                    <?php foreach ($tilleggskontakter_navn as $kontakt): ?>
+                                    <li>
+                                        <a href="<?php echo esc_url(get_edit_user_link($kontakt->ID)); ?>" class="text-[#FF8B5E] hover:underline"><?php echo esc_html($kontakt->display_name); ?></a>
+                                        <span class="text-[#57534E]">· <?php echo esc_html($kontakt->user_email); ?></span>
+                                    </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </dd>
                         </div>
                         <?php endif; ?>
                     </dl>

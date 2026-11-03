@@ -19,7 +19,7 @@
  *
  * OPPSETT (wp-config.php)
  *   define('BYGGCHAT_PRIVATE_KEY_FILE', '/sti/utenfor/webroten/byggchat-private.pem');
- *   define('BYGGCHAT_SSO_URL', 'https://bim-mvp.onrender.com/sso');   // valgfri
+ *   define('BYGGCHAT_SSO_URL', 'https://byggchat.bimverdi.no/sso');   // valgfri
  *
  * Offentlig nøkkel for ByggChat (JWKS):
  *   https://bimverdi.no/wp-json/bimverdi/v1/byggchat/jwks
@@ -42,7 +42,7 @@ const BV_BYGGCHAT_TOKEN_LEVETID = 60;
 
 /** Adressen på ByggChat-siden som tar imot kortet. */
 function bimverdi_byggchat_sso_url() {
-    return defined('BYGGCHAT_SSO_URL') && BYGGCHAT_SSO_URL ? BYGGCHAT_SSO_URL : 'https://bim-mvp.onrender.com/sso';
+    return defined('BYGGCHAT_SSO_URL') && BYGGCHAT_SSO_URL ? BYGGCHAT_SSO_URL : 'https://byggchat.bimverdi.no/sso';
 }
 
 /** Utsteder (iss): prod-domenet, ikke localhost, så ByggChat ser én fast verdi. */
