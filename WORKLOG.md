@@ -4,6 +4,47 @@
 
 ---
 date: 2026-11-03
+created_at: "2026-11-03T13:38:07Z"
+action: "Bårds startpakke bygget om etter modellen «på eget ansvar»: gate på serveren, engangskode per telefon, ruleset på main med php-lint. Ny pakke bygget, ikke aktivert."
+branch: "main"
+implementation_commit: "c1c572b"
+resume_focus: "Les Astras tredje runde (scratchpad astra-review-v2.md) og rett reelle funn. Aktiver pakken rett før den sendes torsdag 05.11, les koden til Bård på telefon."
+files:
+  - "_claude/bard-setup/server-gate.py (NY: tvungen kommando for Bårds nøkkel — logg, sperreliste, databasekopi, etterkontroll)"
+  - "_claude/bard-setup/server-enroll.py (engangskode, 5 forsøk, ansvar må bekreftes, binder til første nøkkel, finalize uten utløpssjekk)"
+  - "_claude/bard-setup/prepare-package.py (kun ZIP), activate-package.py (NY: server + kode), revoke-package.py (NY), common.py (NY)"
+  - "_claude/bard-setup/Setup-BIMVerdi.ps1 (ping, ansvarstekst JA, kode, finalize via engangsnøkkel), BIMVerdi.ps1 (Log, Backups, kode 77)"
+  - "_claude/bard-setup/CLAUDE.md, LES-MEG.txt, README.md (skrevet om), claude-settings.json (NY, mykt lag)"
+  - "_claude/bard-setup/tests/ (24 enhetstester) og tests/live-smoke.py (29 sjekker mot Servebolt)"
+  - ".github/workflows/php-lint.yml (NY), .github/.htaccess, .gitignore (!.github/)"
+  - "docs/plans/2026-11-03-bard-startpakke-review.md (status etter ombygging øverst; utenfor wp-content-repoet)"
+summary: "Andreas bestemte: Bård får full shell på prod på eget ansvar, Andreas godkjenner ikke PR-er. Vernet skal fange uhell, gjøre alt synlig og gjenopprettbart. Gjort: dagens engangsnøkkel bard-20261103-92f744c7 trukket tilbake (authorized_keys på prod er tom). Bård hadde ALLEREDE godtatt GitHub-invitasjonen, så ruleset på main (id 26451329: PR påkrevd uten godkjenner, påkrevd sjekk php-lint, ingen force-push/sletting, admin kan omgå) kom opp først. Gate installert på serveren (~/.bimverdi-gate/gate.py, data i ~/private/bard-gate/). Kopi av Bårds ti prod-plugins tatt lokalt (bimverdi-bol). PR #4 squash-merget til main (c1c572b), Servebolt deployet, HTTP 403 på _claude/ og .github/. Live-smoke 29/29 grønn: bygg, aktiver, feil kode avvist, Status uten kopi, wp db reset/git checkout/PHP i mu-plugins/scp/interaktivt skall sperret, skrivende kommando tar DB-kopi (25 MB gz, 3 s), gate-log, finalize, revoke. Ny pakke bard-20261103-8ce1f759 ligger i ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/, IKKE aktivert. Gamle pakker og smoke-mapper slettet. Astra (gpt-6-astra, xhigh) kjører tredje runde på resultatet."
+status: waiting
+waiting_on: "Andreas: (1) lese Astras tredje runde og godkjenne eventuelle rettinger; (2) torsdag 05.11: kjøre activate-package.py på bard-20261103-8ce1f759 med --hours 24, lese koden til Bård, sende ZIP; (3) si til Bård: eget ansvar, alt logges, gaten er uhellsvern, scp/sftp sperret, kode via PR + php-lint; (4) etter første arbeidsdag: lese ~/private/bard-gate/log/."
+detail: |
+  AKTIVERING (rett før sending)
+  cd wp-content
+  python3 _claude/bard-setup/activate-package.py ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/bard-20261103-8ce1f759 --hours 24
+  Koden skrives bare til terminalen. Send ZIP-en privat. Trekk tilbake: revoke-package.py --id bard-20261103-8ce1f759.
+
+  GITHUB-KONTO (sideeffekt av ruleset)
+  Mac-ens SSH-nøkkel autentiserer som andreasharstad91 (write, ikke admin). Ruleset-et blokkerer derfor direkte push til main med SSH-remote.
+  Repoets remote er satt til https://aharstad91@github.com/aharstad91/bimverdi-v2.git med eier-token i macOS-nøkkelring (git credential-osxkeychain).
+  Hvis push til main gir 403: kjør `gh auth switch --user aharstad91` eller gå via PR.
+
+  RESTRISIKOER (si til Bård)
+  - Gaten kjører som samme Linux-bruker som Bård. Den kan redigeres og omgås. Loggen er bevis, ikke sperre.
+  - Sperrelisten er regex og best effort. Falske positive kan skje; be Andreas hvis noe nødvendig sperres.
+  - ~/environment.json (Servebolt-API-nøkkel) og ~/.ssh/id_ed25519 (deploy-nøkkel) er lesbare for kontoen.
+  - scp/sftp er sperret med vilje. Filer hentes med tar|base64 via Run.
+
+  KJENTE RESTER
+  - Windows-kjøring er fortsatt ikke verifisert (bimverdi-82o).
+  - Bårds plugins inn i repoet (bimverdi-bol).
+  - Staging-miljø kan vente (lagring 4,2 GB ledig).
+
+---
+date: 2026-11-03
 created_at: "2026-11-03T12:45:21Z"
 action: "ByggChat-innlogging testet ende-til-ende mot byggchat.bimverdi.no: Deltaker slipper inn, Gratisbruker avvises"
 branch: "main"
