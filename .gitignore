@@ -37,6 +37,7 @@ shared-context/
 # GitHub Actions (php-lint på pull requests)
 !.github/
 !.github/**
+.github/copilot-instructions.md
 
 # Claude Code config (versjonskontrollert)
 !.claude/
