@@ -8,7 +8,7 @@ Gjør det tekniske arbeidet selv. Be bare Bård om innlogginger og valg du ikke 
 Bård har denne tilgangen på eget ansvar. Han bekreftet det ved oppsettet.
 Tilgangen går rett til produksjon: `https://bimverdi.no`. Endringer virker med en gang for alle besøkende.
 Andreas godkjenner ikke endringer på forhånd. Han ser loggen og Git-historikken i ettertid.
-Serveren logger alle kommandoer med fullt innhold.
+Serveren logger alle kommandoer med hele skriptet (inntil 64 KB).
 
 Dette betyr for deg:
 - Les før du endrer.
@@ -59,9 +59,10 @@ Håndter WP-CLI-varsler ut fra returkode og faktisk resultat. Ikke anta at et va
 Gaten er et vern mot uhell. Den er ikke en sikkerhetsgrense, og den erstatter ikke din egen vurdering.
 
 Gaten gjør dette:
-- Logger hver kommando med fullt innhold, tidspunkt og resultat.
-- Tar en komprimert databasekopi før kommandoer som kan skrive. Maks én kopi per 10 minutter. De 10 siste beholdes i `~/private/bard-gate/db/`.
-- Etter kommandoer som kan skrive: syntakssjekker nye PHP-filer, flytter SQL-dumper ut av den offentlige mappen, og sjekker at innloggingssiden svarer.
+- Logger hver kommando med hele skriptet (inntil 64 KB), tidspunkt og resultat.
+- Tar en komprimert databasekopi før kommandoer som kan skrive. Maks én kopi per 10 minutter. De 10 siste beholdes, pluss dagens første i 7 dager, i `~/private/bard-gate/db/`. Kopien dekker bare databasen. Filer dekkes av Git og Servebolts egne backuper.
+- Hvis kopien feiler og kommandoen kan endre databasen, stopper gaten kommandoen (returkode 76). Prøv igjen, eller be Andreas.
+- Etter kommandoer som kan skrive: syntakssjekker nye PHP-filer, melder om filer som er endret i Git-styrte mapper, flytter SQL-dumper ut av den offentlige mappen, og sjekker at innloggingssiden og forsiden svarer 200.
 - Sperrer en kort liste med kommandoer. Da får du returkode 77 og en melding som starter med `[bard-gate] SPERRET`.
 
 Les alle linjer som starter med `[bard-gate]`. En `ADVARSEL` betyr at nettstedet kan være skadet. Rett det med en gang.
@@ -72,14 +73,18 @@ Gaten sperrer:
 - Git-kommandoer som skriver på serveren (`reset`, `checkout`, `stash`, `pull`, `push`, `commit` og lignende). `git status`, `git log` og `git diff` er lov.
 - Skriving av filer rett inn i `themes/`, `mu-plugins/` og `plugins/bim-verdi-core/` på serveren. Disse endres via Git.
 - `wp-config.php`, `.htaccess`, SSH-nøkler, `environment.json`, gaten selv og loggen.
-- `wp core update`, `wp config set`, filoverføring med `scp`/`sftp`, bakgrunnsprosesser, utgående SSH.
+- `wp core update`, `wp config set`, `wp plugin/theme update` av bim-verdi-core og bimverdi-theme.
+- Filoverføring med `scp`/`sftp`, bakgrunnskjøring (`&`, `nohup`, `screen`), utgående SSH.
+
+Gaten leser alt den får på stdin før den kjører. Hvis du kjører `ssh` selv uten `BIMVerdi.ps1`, bruk `ssh -n` når du ikke sender data.
+Sperrelisten er tekstbasert. Den kan treffe tekst i et skript, for eksempel `grep 'rm -rf' fil`. Skriv søket annerledes.
 
 Hvis gaten sperrer noe du mener er nødvendig, forklar det til Bård. Han tar det opp med Andreas.
 
 ## Kode: via Git og PR
 
 Koden ligger i `aharstad91/bimverdi-v2`. Repoet er `wp-content/`-mappen. Bård bruker GitHub-kontoen `baardkr` og har skrivetilgang.
-Grenen `main` er beskyttet. Ingen kan pushe rett til `main` eller tvinge historikk. Hver endring går gjennom en pull request.
+Grenen `main` er beskyttet. Bare Andreas (admin) kan pushe rett til `main`. Ingen kan tvinge historikk. Alle andre endringer går gjennom en pull request.
 En pull request kan merges når sjekken `php-lint` er grønn. Ingen person må godkjenne. Bård merger selv.
 Når en pull request merges til `main`, publiserer Servebolt automatisk til `https://bimverdi.no`.
 
@@ -92,13 +97,14 @@ Slik arbeider du med kode:
 6. Commit med en kort norsk melding. Push: `git push -u origin HEAD`.
 7. Lag pull request: `gh pr create --fill`. Vent på `php-lint`: `gh pr checks --watch`.
 8. Når sjekken er grønn: `gh pr merge --squash --delete-branch`.
-9. Vent ett minutt. Verifiser på `https://bimverdi.no`. Hvis noe er galt, lag en ny pull request som retter det.
+9. Vent ett minutt. Verifiser på `https://bimverdi.no`. Grønn `php-lint` bekrefter bare syntaks, ikke at nettstedet virker. Hvis noe er galt, lag en ny pull request som retter det.
 
 Aldri:
 - Kjør Git-kommandoer som skriver på serveren. Gaten sperrer dem.
 - Skriv PHP-filer rett inn i `themes/`, `mu-plugins/` eller `plugins/bim-verdi-core/` på serveren. De forsvinner ved neste publisering.
 - Push til `main`. Bruk alltid en gren og en pull request.
 - Legg passord, nøkler eller koder i Git eller chat.
+- Endre `.github/workflows/` for å få en sjekk grønn. En rød `php-lint` betyr at koden har en feil.
 
 Bårds egne plugins ligger bare på serveren og ikke i Git: `bae-kalender`, `bimverdi-byggchat`, `bimverdi-doffin`,
 `bv-begrep`, `bv-besok`, `bv-lenkevakt`, `bv-pilot-prosjekt`, `bv-trafikk`, `bv-wp-epostlister`, `stotteordninger-bae`.

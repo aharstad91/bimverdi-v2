@@ -39,7 +39,8 @@ if ($Action -eq 'Status') {
     Invoke-BIMVerdiSsh -ConfigPath $config -Alias bimverdi-prod -RemoteArguments $remoteArguments -InputText $remote
     $exitCode = $script:BIMVerdiSshExitCode
 }
-if ($exitCode -eq 77) { throw 'Serveren sperret kommandoen. Les meldingen fra [bard-gate] over, og velg en annen vei.' }
+if ($exitCode -eq 77) { throw 'Serveren sperret trolig kommandoen (kode 77). Les meldingen fra [bard-gate] over, og velg en annen vei.' }
+if ($exitCode -eq 76) { throw 'Serveren stoppet kommandoen fordi databasekopi ikke kunne tas (kode 76). Prøv igjen, eller be Andreas.' }
 if ($exitCode -ne 0) { throw "Serverkommandoen feilet (kode $exitCode)." }
 if ($Action -eq 'Status') {
     foreach ($marker in @('SSH_OK', 'DATABASE_OK', 'CODE_OK')) {
