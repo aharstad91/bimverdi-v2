@@ -7,7 +7,7 @@ date: 2026-11-03
 created_at: "2026-11-03T13:38:07Z"
 action: "Bårds startpakke bygget om etter modellen «på eget ansvar»: gate på serveren, engangskode per telefon, ruleset på main med php-lint. Astra-runde 3 rettet (PR #5). Ny pakke bygget, ikke aktivert."
 branch: "main"
-implementation_commit: "c1c572b"
+implementation_commit: "0c4da74"
 resume_focus: "Aktiver pakken rett før den sendes torsdag 05.11, les koden til Bård på telefon. Windows-kjøring er fortsatt uverifisert (bimverdi-82o)."
 files:
   - "_claude/bard-setup/server-gate.py (NY: tvungen kommando for Bårds nøkkel — logg, sperreliste, databasekopi, etterkontroll)"
