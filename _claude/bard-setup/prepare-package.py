@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Prepare a private Windows bundle and provision its expiring SSH bootstrap."""
+"""Build a private Windows bundle for Bård. Nothing is provisioned on the server.
+
+The bundle is inert until `activate-package.py` is run right before it is handed over:
+activation registers the bootstrap key on the server with a short expiry and prints the
+one-time code that Andreas reads to Bård by phone.
+"""
 
 import argparse
-import base64
 import datetime as dt
 import io
 import json
@@ -12,23 +16,18 @@ import subprocess
 import tarfile
 import zipfile
 
+from common import (GATE_PATH, ONBOARDING_DIR, PACKAGE_VERSION, SOURCE, gate_command, label_for,
+                    trusted_host_key, write_admin_state)
 
-SOURCE = Path(__file__).resolve().parent
-HOST = 'bimver_28287@jana-osl.servebolt.cloud'
-HOSTNAME = 'jana-osl.servebolt.cloud'
-REMOTE_HOME = '/cust/0/bimver_15781/bimver_28287/home'
-
-
-def ssh(command, content=None):
-    return subprocess.run(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', HOST, command],
-                          input=content, text=True, capture_output=True, check=True).stdout
+BUNDLE_FILES = ('Start-BIMVerdi.cmd', 'Setup-BIMVerdi.ps1', 'BIMVerdi.ps1', 'Invoke-Ssh.ps1',
+                'CLAUDE.md', 'LES-MEG.txt')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--context-repo', type=Path)
-    parser.add_argument('--days', type=int, default=7, choices=range(1, 15))
+    parser.add_argument('--output', type=Path, required=True, help='Folder outside the web root')
+    parser.add_argument('--context-repo', type=Path, help='Local clone of baardkr/bimverdi-context')
+    parser.add_argument('--name', default='bard', help='Short name of the recipient (used in the package id)')
     args = parser.parse_args()
     output = args.output.expanduser().resolve()
     if output.is_relative_to(SOURCE.parents[2]):
@@ -36,59 +35,25 @@ def main():
     output.mkdir(parents=True, exist_ok=True, mode=0o700)
     output.chmod(0o700)
     now = dt.datetime.now(dt.timezone.utc)
-    enrollment_id = 'bard-' + now.strftime('%Y%m%d') + '-' + secrets.token_hex(4)
+    enrollment_id = args.name + '-' + now.strftime('%Y%m%d') + '-' + secrets.token_hex(4)
     folder = output / enrollment_id
     folder.mkdir(mode=0o700)
     key = folder / '.enrollment_key'
     subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', enrollment_id, '-f', str(key)], check=True)
     key.chmod(0o600)
     public_key = ' '.join(key.with_suffix('.pub').read_text().split()[:2])
-    expires = now + dt.timedelta(days=args.days)
-    remote_dir = REMOTE_HOME + '/.bimverdi-onboarding/' + enrollment_id
+    remote_dir = ONBOARDING_DIR + '/' + enrollment_id
     manifest = {
-        'id': enrollment_id, 'created_at': now.isoformat(), 'expires_at': expires.isoformat(),
-        'bootstrap_key': public_key, 'remote_helper': remote_dir + '/enroll.py',
+        'id': enrollment_id, 'package_version': PACKAGE_VERSION, 'created_at': now.isoformat(timespec='seconds'),
+        'remote_helper': remote_dir + '/enroll.py', 'label': label_for(enrollment_id),
     }
-    known = subprocess.run(['ssh-keygen', '-F', HOSTNAME], text=True, capture_output=True, check=True).stdout
-    host_keys = [line for line in known.splitlines() if line and not line.startswith('#')
-                 and line.split()[1] == 'ssh-ed25519']
-    if len(host_keys) != 1:
-        raise RuntimeError('Expected one trusted Ed25519 host key in known_hosts')
-    host_key = HOSTNAME + ' ' + ' '.join(host_keys[0].split()[1:3]) + '\n'
-    helper = (SOURCE / 'server-enroll.py').read_bytes()
-    force = '/usr/bin/python3 ' + remote_dir + '/enroll.py'
-    entry = ('restrict,expiry-time="' + expires.strftime('%Y%m%d%H%M%SZ')
-             + '",command="' + force + '" ' + public_key + ' ' + enrollment_id)
-    # All interpolated values are Python literals, never shell command fragments.
-    provision = f'''import base64,fcntl,json,os,tempfile
-from pathlib import Path
-p=Path({remote_dir!r})
-p.mkdir(parents=True,exist_ok=False,mode=0o700)
-p.parent.chmod(0o700)
-(p/'enroll.py').write_bytes(base64.b64decode({base64.b64encode(helper).decode()!r}))
-(p/'enroll.py').chmod(0o600)
-(p/'enrollment.json').write_text({json.dumps(manifest, indent=2)!r}+'\\n')
-(p/'enrollment.json').chmod(0o600)
-auth=Path.home()/'.ssh/authorized_keys'
-with (auth.parent/'.bimverdi-keys.lock').open('a') as lock:
- fcntl.flock(lock,fcntl.LOCK_EX)
- old=auth.read_text() if auth.exists() else ''
- if old and not old.endswith('\\n'): old+='\\n'
- fd,name=tempfile.mkstemp(dir=auth.parent,prefix='.authorized_keys-')
- with os.fdopen(fd,'w') as stream:
-  stream.write(old+{entry!r}+'\\n')
-  stream.flush()
-  os.fsync(stream.fileno())
- os.replace(name,auth)
-print('Enrollment provisioned')
-'''
-    files = {name: (SOURCE / name).read_bytes() for name in (
-        'Start-BIMVerdi.cmd', 'Setup-BIMVerdi.ps1', 'BIMVerdi.ps1', 'Invoke-Ssh.ps1', 'CLAUDE.md', 'LES-MEG.txt')}
+    files = {name: (SOURCE / name).read_bytes() for name in BUNDLE_FILES}
     # Windows PowerShell 5.1 needs a BOM to read UTF-8 Norwegian text correctly.
     for name in list(files):
         if name.endswith('.ps1'):
             files[name] = b'\xef\xbb\xbf' + files[name]
-    files['known_hosts'] = host_key.encode()
+    files['.claude/settings.json'] = (SOURCE / 'claude-settings.json').read_bytes()
+    files['known_hosts'] = trusted_host_key().encode()
     files['enrollment.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
     files['.enrollment_key'] = key.read_bytes()
     files['.gitignore'] = b'*\n'
@@ -101,25 +66,20 @@ print('Enrollment provisioned')
                 if member.isfile() and member.name.endswith('.md'):
                     files['kontekst/' + member.name] = source.extractfile(member).read()
         files['kontekst/KILDE.txt'] = ('Kilde: baardkr/bimverdi-context\nGren: BV-2.0-main\nCommit: '
-                                      + commit + '\nHentet: ' + now.isoformat() + '\n').encode()
+                                      + commit + '\nHentet: ' + now.isoformat(timespec='seconds') + '\n').encode()
     bundle = output / ('BIMVerdi-Windows-' + enrollment_id + '.zip')
     with zipfile.ZipFile(bundle, 'w', compression=zipfile.ZIP_DEFLATED) as target:
         for name, content in files.items():
             target.writestr('BIMVerdi-startpakke/' + name, content)
     bundle.chmod(0o600)
-    try:
-        ssh('python3 -', provision)
-    except Exception:
-        bundle.unlink(missing_ok=True)
-        raise
-    receipt = {
-        'id': enrollment_id, 'bundle': str(bundle), 'expires_at': manifest['expires_at'],
-        'remote_helper': manifest['remote_helper'], 'bootstrap_key': public_key,
-        'revoke_hint': 'Remove the authorized_keys line containing this bootstrap public key; keep all other lines.',
-    }
-    (folder / 'admin-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
-    (folder / 'admin-receipt.json').chmod(0o600)
-    print(json.dumps({'bundle': str(bundle), 'expires_at': manifest['expires_at'], 'id': enrollment_id}))
+    write_admin_state(folder / 'admin-package.json', {
+        'id': enrollment_id, 'package_version': PACKAGE_VERSION, 'bundle': str(bundle),
+        'created_at': manifest['created_at'], 'bootstrap_public_key': public_key,
+        'bootstrap_private_key': str(key), 'remote_dir': remote_dir, 'label': manifest['label'],
+        'gate_path': GATE_PATH, 'gate_command': gate_command(enrollment_id), 'activations': [],
+    })
+    print(json.dumps({'bundle': str(bundle), 'id': enrollment_id, 'folder': str(folder),
+                      'next': 'python3 _claude/bard-setup/activate-package.py ' + str(folder)}, indent=2))
 
 
 if __name__ == '__main__':

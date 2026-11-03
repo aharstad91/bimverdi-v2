@@ -1,27 +1,44 @@
 BIM VERDI I CLAUDE CODE
 
 1. Pakk ut ZIP-filen i en mappe på din egen PC.
-2. Dobbeltklikk Start-BIMVerdi.cmd.
-3. Vent til vinduet viser «Ferdig».
-4. Åpne Code i Claude. Velg mappen som oppsettet viser.
-5. Lim inn teksten som oppsettet kopierte, og send den til Claude.
+2. Ha engangskoden klar. Andreas leser den til deg på telefon. Koden virker i 24 timer.
+3. Dobbeltklikk Start-BIMVerdi.cmd.
+4. Les ansvarsteksten i vinduet. Skriv JA for å godta.
+5. Skriv engangskoden når vinduet spør.
+6. Vent til vinduet viser «Ferdig».
+7. Åpne Code i Claude. Velg mappen som oppsettet viser.
+8. Lim inn teksten som oppsettet kopierte, og send den til Claude.
 
-Oppsettet lager en SSH-nøkkel på din PC og registrerer den på serveren.
+ANSVAR
+
+Tilgangen går rett til produksjonsnettstedet bimverdi.no.
+Endringer virker med en gang for alle besøkende.
+Du bruker tilgangen på eget ansvar. Andreas godkjenner ikke endringene på forhånd.
+Serveren logger alle kommandoer med fullt innhold.
+Serveren sperrer noen få farlige kommandoer og tar databasekopi før endringer.
+Det er et vern mot uhell, ikke en garanti.
+
+HVA OPPSETTET GJØR
+
+Det lager en SSH-nøkkel på din PC og registrerer den på serveren.
 Det tester tilgangen til nettstedets kode og WordPress-database.
 Det legger en snarvei med navnet «BIM Verdi» på skrivebordet.
-Du kan kjøre oppsettet igjen hvis det blir avbrutt.
+Du kan kjøre oppsettet igjen hvis det blir avbrutt. Du trenger ikke ny kode da.
 
-For å lagre kodeendringer i GitHub, godta invitasjonen til koderepoet:
-https://github.com/aharstad91/bimverdi-v2/invitations
-Bruk GitHub-kontoen baardkr. Claude hjelper med resten ved første kodeoppgave.
+KODE GÅR VIA GITHUB
+
+Kontoen baardkr har skrivetilgang til github.com/aharstad91/bimverdi-v2.
+Hovedgrenen main er beskyttet. Alle endringer går gjennom en pull request.
+En automatisk sjekk (php-lint) må være grønn. Så merger du selv. Da publiseres koden.
+Claude kjenner flyten fra CLAUDE.md og gjør det tekniske.
+
+HVIS NOE STOPPER
 
 Hvis Windows ber om tillatelse til å installere OpenSSH Client, godkjenn installasjonen.
 Hvis oppsettet stopper, vis feilmeldingen til Claude eller Andreas.
+Feil kode fem ganger sperrer pakken. Da må Andreas lage en ny.
 
-Pakken inneholder en engangstilgang. Send pakken direkte til Bård gjennom en privat kanal.
-Engangstilgangen utløper etter datoen i enrollment.json.
-Etter vellykket oppsett fungerer Bårds egen nøkkel videre.
+ETTERPÅ
+
 Slett ZIP-filen og den utpakkede startpakken når oppsettet er ferdig.
 Behold arbeidsmappen som oppsettet opprettet.
-
-Tilgangen gjelder det offentlige nettstedet. Endringer kan få virkning med en gang.

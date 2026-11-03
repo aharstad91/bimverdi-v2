@@ -33,31 +33,29 @@ function Invoke-Keygen([string]$Arguments) {
     return $output.Trim()
 }
 
-function Invoke-Enrollment([string]$Action, [string]$PublicKey, [string]$Alias) {
-    $json = @{ action = $Action; public_key = $PublicKey } | ConvertTo-Json -Compress
-    if ($Alias -eq 'bimverdi-enroll') {
-        $remoteArguments = @('enroll')
-    } else {
-        $remoteArguments = @('/usr/bin/python3', $manifest.remote_helper)
-    }
-    $output = Invoke-BIMVerdiSsh -ConfigPath (Join-Path $workspace 'ssh_config') -Alias $Alias -RemoteArguments $remoteArguments -InputText $json
-    if ($script:BIMVerdiSshExitCode -ne 0) { throw "Registrering feilet: $output" }
-    $response = ($output -join "`n") | ConvertFrom-Json
-    if (-not $response.ok) { throw 'Serveren avviste registreringen.' }
+function Invoke-Enrollment([hashtable]$Request) {
+    # Always through the one-time key: its forced command is enroll.py. The permanent key only reaches the gate.
+    $json = $Request | ConvertTo-Json -Compress
+    $output = Invoke-BIMVerdiSsh -ConfigPath (Join-Path $workspace 'ssh_config') -Alias bimverdi-enroll -RemoteArguments @($Request.action) -InputText $json -Quiet
+    $text = ($output -join "`n").Trim()
+    if (-not $text) { throw "Serveren svarte ikke (kode $script:BIMVerdiSshExitCode). Er engangstilgangen aktivert?" }
+    try { $response = $text | ConvertFrom-Json } catch { throw "Uventet svar fra serveren: $text" }
+    if (-not $response.ok) { throw "Serveren avviste forespørselen: $($response.error)" }
+    return $response
 }
 
 try {
     Write-Host 'Setter opp BIM Verdi for Claude Code.'
     if (-not (Test-Path $ssh) -or -not (Test-Path $keygen)) {
-        Write-Host 'Windows mangler OpenSSH Client. Godkjenn installasjonen hvis Windows spor.'
+        Write-Host 'Windows mangler OpenSSH Client. Godkjenn installasjonen hvis Windows spør.'
         $install = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -ArgumentList @(
             '-NoProfile', '-Command', 'Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0 -ErrorAction Stop'
         )
         if ($install.ExitCode -ne 0 -or -not (Test-Path $ssh)) { throw 'Windows kunne ikke installere OpenSSH Client.' }
     }
-    New-Item -ItemType Directory -Force -Path $workspace, $sshDir | Out-Null
+    New-Item -ItemType Directory -Force -Path $workspace, $sshDir, (Join-Path $workspace '.claude') | Out-Null
     $manifest = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'enrollment.json') | ConvertFrom-Json
-    foreach ($name in @('BIMVerdi.ps1', 'Invoke-Ssh.ps1', 'CLAUDE.md', 'LES-MEG.txt', 'known_hosts')) {
+    foreach ($name in @('BIMVerdi.ps1', 'Invoke-Ssh.ps1', 'CLAUDE.md', 'LES-MEG.txt', 'known_hosts', '.claude\settings.json')) {
         $source = Join-Path $PSScriptRoot $name
         $destination = Join-Path $workspace $name
         if ([IO.Path]::GetFullPath($source) -ne [IO.Path]::GetFullPath($destination)) {
@@ -70,7 +68,7 @@ try {
     }
     Set-Content -Encoding ASCII -LiteralPath (Join-Path $workspace '.gitignore') -Value '*'
     if (-not (Test-Path $keyPath)) {
-        Write-Host 'Lager din egen SSH-nokkel pa denne PC-en.'
+        Write-Host 'Lager din egen SSH-nøkkel på denne PC-en.'
         Invoke-Keygen ('-q -t ed25519 -N "" -C bimverdi-bard -f "' + $keyPath + '"') | Out-Null
     }
     Protect-PrivateFile $keyPath
@@ -101,10 +99,9 @@ Host bimverdi-prod bimverdi-enroll
     Invoke-BIMVerdiSsh -ConfigPath (Join-Path $workspace 'ssh_config') -Alias bimverdi-prod -RemoteArguments @('sh', '-s') -InputText 'true' -Quiet
     $alreadyConnected = $script:BIMVerdiSshExitCode -eq 0
     $sourceKey = Join-Path $PSScriptRoot '.enrollment_key'
-    $expired = [DateTimeOffset]::UtcNow -ge [DateTimeOffset]::Parse($manifest.expires_at)
-    $needsEnrollment = (Test-Path $sourceKey) -and -not $expired
+    $needsEnrollment = (-not $alreadyConnected) -and (Test-Path $sourceKey)
     if (-not $alreadyConnected -and -not $needsEnrollment) {
-        throw 'Engangstilgangen mangler eller har utlopt. Be Andreas lage en ny pakke.'
+        throw 'Engangstilgangen mangler. Be Andreas om en ny pakke.'
     }
     if ($needsEnrollment) {
         Protect-PrivateFile $sourceKey
@@ -112,13 +109,35 @@ Host bimverdi-prod bimverdi-enroll
             Copy-Item -Force -LiteralPath $sourceKey -Destination $bootstrap
         }
         Protect-PrivateFile $bootstrap
-        Write-Host 'Registrerer SSH-nokkelen og tester forbindelsen.'
-        if ($alreadyConnected) { Invoke-Enrollment 'enroll' $publicKey 'bimverdi-prod' }
-        else { Invoke-Enrollment 'enroll' $publicKey 'bimverdi-enroll' }
+        $ping = Invoke-Enrollment @{ action = 'ping' }
+        if ($ping.revoked) { throw 'Denne pakken er trukket tilbake. Be Andreas om en ny.' }
+        if ($ping.expired) { throw 'Engangstilgangen har utløpt. Be Andreas aktivere pakken på nytt.' }
+        $expires = ([DateTimeOffset]::Parse($ping.expires_at)).ToLocalTime().ToString('dd.MM.yyyy HH:mm')
+        Write-Host ''
+        Write-Host "Pakken $($ping.id) er aktiv til $expires." -ForegroundColor Cyan
+        Write-Host ''
+        Write-Host 'ANSVAR' -ForegroundColor Yellow
+        Write-Host 'Denne tilgangen går rett til produksjonsnettstedet bimverdi.no.'
+        Write-Host 'Endringer virker med en gang for alle besøkende.'
+        Write-Host 'Du bruker tilgangen på eget ansvar. Andreas godkjenner ikke endringene dine på forhånd.'
+        Write-Host 'Alle kommandoer på serveren logges med fullt innhold.'
+        Write-Host 'Serveren sperrer noen få farlige kommandoer og tar databasekopi før endringer.'
+        Write-Host 'Det er et vern mot uhell, ikke en garanti.'
+        Write-Host ''
+        $answer = Read-Host 'Skriv JA for å bekrefte at du har lest og godtar dette'
+        if ($answer.Trim().ToUpperInvariant() -ne 'JA') { throw 'Oppsettet er avbrutt. Ingen tilgang er opprettet.' }
+        $code = Read-Host 'Engangskode fra Andreas (6 siffer)'
+        Write-Host 'Registrerer SSH-nøkkelen din på serveren.'
+        $enrolled = Invoke-Enrollment @{
+            action = 'enroll'; public_key = $publicKey; code = $code.Trim()
+            accepted_responsibility = $true; client_name = ($env:COMPUTERNAME + '\' + $env:USERNAME)
+        }
+        Write-Host "Nøkkelen er registrert. Fingeravtrykk: $($enrolled.fingerprint)" -ForegroundColor Green
     }
     & (Join-Path $workspace 'BIMVerdi.ps1') -Action Status
     if ($needsEnrollment) {
-        Invoke-Enrollment 'finalize' $publicKey 'bimverdi-prod'
+        Invoke-Enrollment @{ action = 'finalize'; public_key = $publicKey } | Out-Null
+        Write-Host 'Engangstilgangen er slettet på serveren. Bare din egen nøkkel gjelder nå.'
     }
     foreach ($path in @($bootstrap, (Join-Path $PSScriptRoot '.enrollment_key'))) {
         if (Test-Path $path) { Remove-Item -Force -LiteralPath $path }
@@ -130,7 +149,7 @@ Host bimverdi-prod bimverdi-enroll
     $shortcut.Save()
     Set-Clipboard -Value 'Les CLAUDE.md. Sjekk tilgangen til BIM Verdi og forklar hva du kan hjelpe meg med.'
     Write-Host ''
-    Write-Host 'Ferdig. Apne Code i Claude og velg denne mappen:' -ForegroundColor Green
+    Write-Host 'Ferdig. Åpne Code i Claude og velg denne mappen:' -ForegroundColor Green
     Write-Host $workspace
     Write-Host 'Lim inn teksten som oppsettet har kopiert til utklippstavlen.'
     Start-Process explorer.exe -ArgumentList ('"' + $workspace + '"')
