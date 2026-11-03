@@ -4,6 +4,34 @@
 
 ---
 date: 2026-11-03
+created_at: "2026-11-03T09:24:55Z"
+action: "UKE 44 (#362): forsidebilde-krav, tilleggskontakter for admin, bulk-publisering og ByggChat-adresse er live. DNS for byggchat.bimverdi.no lagt inn. Statuskommentar på kortet."
+branch: "main"
+implementation_commit: "ff29335"
+resume_focus: "Vent på Alexander (aktiverer domenet hos Render), test ByggChat-innlogging som Deltaker, test bulk-menyen med ett utkast"
+files:
+  - "mu-plugins/bimverdi-artikkel-submission.php (nye artikler må ha forsidebilde, feilkode missing_image; redigering uendret)"
+  - "themes/bimverdi-theme/parts/minside/artikler-skriv.php (forsidebilde påkrevd i skjema og i JS-sjekk)"
+  - "themes/bimverdi-theme/single-foretak.php (admin ser navn, e-post og lenke til tilleggskontakter)"
+  - "mu-plugins/bimverdi-bulk-publiser.php (NY: «Publiser» i bulk-menyen for verktøy og artikler)"
+  - "mu-plugins/bimverdi-byggchat-sso.php (standard mottaksadresse er https://byggchat.bimverdi.no/sso)"
+summary: "Commit ff29335 på main er en cherry-pick av 6d17c09 fra feat/bard-windows-agent-setup. Branchen har to andre commits (Bårds agentoppsett) som ikke er i main og ikke deployet. Prod deployer fra main. Alle fem filene er identiske med main på Servebolt (md5), og forsiden og /logg-inn/ svarer 200. AVLYST: valget finnes allerede i ACF-feltet arrangement_status (Planlagt/Avlyst), både i group_arrangement_info.json og på prod. Bårds skjermbilde viser lista åpen med valget markert i blått uten synlig tekst. Ingen kode endret. Tilleggskontakter: 2 brukere på prod har bare bimverdi_company_id, og 2 har ulik verdi i de to nøklene, så admin-lista bruker begge nøklene og lar den nye vinne. BULK-PUBLISERING: gjelder bare utkast og ventende poster, sjekker publish_post per post. Artikler går pending → publish via wp_update_post, så «Artikkelen din er publisert»-varselet går ut som ved enkeltpublisering (gaten er åpen på prod siden 02.10). Verktøy har ingen publiseringsvarsel. BYGGCHAT: Alexander (Maud) meldte 30.10 at mottaket er klart. Claude i Chrome la inn CNAME byggchat → bim-mvp-4lfv.onrender.com i Domeneshop (TTL 1 time). Verifisert med dig mot ns1–ns3.hyp.net og 1.1.1.1. Andre DNS-poster er uendret (A, MX, TXT, Resend, SPF, DMARC). Prod wp-config har ingen BYGGCHAT_SSO_URL, så standardverdien i koden gjelder. /byggchat-alfa/ er publisert og åpen, men har ingen lenke til ?byggchat_go=1, så en adresse som ikke svarer rammer bare den som skriver lenken selv. Andreas har sendt svar til Alexander på e-post. Trello: statuskommentar på #362 (tagget baardkr og baardk). Den sier «testes før publisering», og det er nå utdatert."
+status: waiting
+waiting_on: "Alexander: aktivere byggchat.bimverdi.no hos Render. Andreas: (1) teste bimverdi.no/?byggchat_go=1 som Deltaker i privat vindu (bruk Demo Konsulenter, ikke ekte hovedkontakt); (2) teste «Publiser» med ett utkast i wp-admin før bred bruk, bulk-menyen er ikke prøvd i nettleser (MAMP lå nede); (3) lese databehandleravtalen ByggChat ALFA PILOT når Bård sender den som e-postvedlegg (SharePoint-lenken åpnes ikke); (4) avgjøre med Bård om gratisbrukere skal slippe inn i ByggChat. Åpent på UKE 44: 1.1 bekrefte at medredaktør-prosjekter vises (ligger under «Om foretaket», ikke øverst), 9.2 Convert to blocks, 5 kunnskapskilder med lenkesjekk og stempel, 3 plugin i kjernekoden (venter på Bårds oppsett), 6 SEO-plan. Åpent fra 22.10 står uendret (DB-passord og salter, image-backup.zip, CSV til Bård)."
+detail: |
+  ROLLBACK
+  git revert ff29335 på main og push. Gjelder alle fem filene.
+  Bare ByggChat-adressen: sett define('BYGGCHAT_SSO_URL', 'https://bim-mvp.onrender.com/sso') i prod wp-config og kjør clear_opcache (site 28287).
+
+  MØTE 03.11 (ad hoc med Bård)
+  Bård vil ha organisasjoner inn i ByggChat mot slutten av måneden. Halvor (pensjonert leder NT rammeavtale) hjelper med bransjekunnskap. Startpakke for Bårds Claude kommer via zip og instruksjonsfil. Møte med Halvor torsdag. Maks 1 artikkel per 3. dag blir ikke automatikk: Bård lager kalenderpåminnelse og ber APX holde seg til to i uka.
+
+  KJENTE RESTER
+  - Branchen feat/bard-windows-agent-setup står to commits foran main. Slå dem ikke sammen uten å se på innholdet (_claude/bard-setup, worklog).
+  - Bulk-publisering av artikler kan sende e-post til forfattere. Test med ett utkast uten ekte forfatter først.
+
+---
+date: 2026-11-03
 created_at: "2026-11-03T09:04:18Z"
 action: "Startpakke for Bårds Claude Code på Windows: SSH, prosjektinstruksjoner og tilgang til WordPress-data"
 branch: "feat/bard-windows-agent-setup"
