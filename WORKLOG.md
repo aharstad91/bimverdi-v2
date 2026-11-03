@@ -3,6 +3,127 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-11-03
+created_at: "2026-11-03T09:04:18Z"
+action: "Startpakke for Bårds Claude Code på Windows: SSH, prosjektinstruksjoner og tilgang til WordPress-data"
+branch: "feat/bard-windows-agent-setup"
+implementation_commit: "a1b20a13a4881f5bab5d25802a3335da2ca4a266"
+resume_focus: "Følge opp at Bård kjører startpakken på Windows og godtar GitHub-invitasjonen"
+files:
+  - "_claude/bard-setup/README.md — bygging, tilgangsmodell, tilbakekalling og verifisering"
+  - "_claude/bard-setup/prepare-package.py — lager privat ZIP og registrerer engangstilgang på Servebolt"
+  - "_claude/bard-setup/server-enroll.py — binder engangstilgangen til én permanent offentlig nøkkel"
+  - "_claude/bard-setup/Start-BIMVerdi.cmd og Setup-BIMVerdi.ps1 — oppsett på Bårds PC"
+  - "_claude/bard-setup/Invoke-Ssh.ps1 og BIMVerdi.ps1 — SSH-transport, helsesjekk og serverkommandoer"
+  - "_claude/bard-setup/CLAUDE.md og LES-MEG.txt — agentinstruksjoner og korte brukersteg"
+  - "_claude/bard-setup/tests/ — seks tester av registrering og én test av PowerShell-transport"
+  - "_claude/.htaccess — sperrer HTTP-tilgang til interne oppsettfiler ved eventuell publisering"
+  - ".beads/issues.jsonl — bimverdi-9et er lukket; bimverdi-82o følger opp kjøring på Windows"
+summary: "Andreas ba om et mest mulig automatisk oppsett for Bård. Han bekreftet at Bård bruker Windows og har Claude Code i appen. Serverdelen og ZIP-pakken er klargjort. Kildekoden er committet og pushet til egen gren. Registrering, nøkkelbytte og WordPress-tilgang besto test mot Servebolt. Bårds PC har ikke kjørt oppsettet i denne sesjonen. GitHub-invitasjonen for skrivetilgang ventet fortsatt på aksept ved siste kontroll."
+status: waiting
+waiting_on: "Bård: kjøre startpakken, velge arbeidsmappen i Claude Code og godta GitHub-invitasjonen. Oppfølging ligger i bd-sak bimverdi-82o."
+detail: |
+  BRUKERENS MÅL OG AVKLARINGER
+  Andreas ønsket at Bårds agent skal arbeide direkte med nettstedet, koden og databasen.
+  Han ønsket et komplett oppsett med minst mulig manuelt, teknisk arbeid.
+  Han ba uttrykkelig om å klargjøre SSH-nøkler og instruksjoner i denne sesjonen.
+  Valget av engangstilgang og lokal nøkkelgenerering var agentens tekniske løsning på dette ønsket.
+
+  HVA SOM ER KLART
+  Start-BIMVerdi.cmd starter Windows PowerShell med innstillinger som bare gjelder denne prosessen.
+  Oppsettet installerer OpenSSH Client hvis komponenten mangler. Windows kan kreve at Bård godkjenner installasjonen.
+  Oppsettet lager Bårds permanente nøkkel i %USERPROFILE%\.ssh\bimverdi_bard_ed25519.
+  Det registrerer den offentlige nøkkelen via engangstilgangen, tester forbindelsen og fjerner engangstilgangen.
+  Den private permanente nøkkelen blir på Bårds PC.
+  Arbeidsmappen blir %LOCALAPPDATA%\BIMVerdi. Oppsettet lager en snarvei på skrivebordet.
+  CLAUDE.md beskriver serveren, produksjonsmiljøet, arbeidsmåten og kommandoene agenten kan bruke.
+  BIMVerdi.ps1 støtter Status, Run og Wp. WP-CLI får riktig WordPress-mappe automatisk.
+  Pakken har også en datert kopi av 21 krav- og kontekstdokumenter fra origin/BV-2.0-main.
+  Denne kopien støtter første oppstart. Gjeldende krav ligger fortsatt i baardkr/bimverdi-context, under bedrift/.
+
+  HVORFOR DENNE LØSNINGEN
+  Claude Code i appen kan kjøre kommandoene. Det dekker behovet uten en ny MCP-tjeneste.
+  En lokal permanent nøkkel gir Bård egen tilgang. Andreas sin private SSH-nøkkel blir ikke delt.
+  Engangstilgangen gjør at Andreas slipper å motta og registrere Bårds offentlige nøkkel manuelt.
+  Engangsnøkkelen kan bare kjøre registreringsprogrammet. Den utløper etter sju dager.
+  Registreringen binder pakken til den første permanente nøkkelen. Gjentatte forsøk med samme nøkkel er tillatt.
+  Låsing og atomiske filbytter bevarer andre nøkler når flere prosesser arbeider samtidig.
+  SSH-oppsettet kontrollerer serverens kjente offentlige nøkkel. Det slår ikke av vertskontrollen.
+  WP-CLI bruker WordPress på serveren. Oppsettet trenger derfor ingen offentlig databaseport.
+  ZIP-filen og private nøkler ligger utenfor webroten og Git. Lokal tilgang til ZIP-filen har filmodus 600.
+
+  PRODUKSJONSTILGANG OG OMFANG
+  Server: jana-osl.servebolt.cloud:22. Nettstedskonto: bimver_28287.
+  WordPress: /cust/0/bimver_15781/bimver_28287/home/site/public.
+  Bård får egen nøkkel til den eksisterende nettstedskontoen. Dette oppretter ingen egen Linux-bruker.
+  Tilgangen omfatter produksjonens filer og data. Den gir ingen root-tilgang.
+  Nøkkelvalget restrict slår av port-, agent- og X11-videresending samt PTY. Vanlige kommandoer fungerer.
+  Pakken oppretter ingen lokal WordPress-installasjon, egen testdatabase eller WordPress-innlogging i nettleseren.
+  Agentinstruksjonene beskriver dette omfanget og at direkte produksjonsendringer virker med en gang.
+  Instruksjonene sier også at kodeendringer skal lagres i Git. Prosjektet beskriver automatisk publisering fra main.
+  Kodegrenen er pushet til origin/feat/bard-windows-agent-setup. Den er ikke slått sammen med main.
+  Servertilgangen er klargjort separat og er ikke avhengig av at denne grenen publiseres til nettstedet.
+
+  GJELDENDE LEVERING — MASKINLOKAL OG PRIVAT
+  ZIP på Andreas sin Mac:
+  /Users/andreasharstad/.codex/artifacts/bimverdi-bard-setup-20261103/levering/BIMVerdi-Windows-bard-20261103-92f744c7.zip
+  Gjeldende pakke-ID: bard-20261103-92f744c7.
+  Engangstilgangen utløper 10.11.2026 kl. 09:55 CET, tilsvarende 2026-11-10T08:55:16Z.
+  Ved siste kontroll var engangstilgangen ubrukt. Pakken var ikke kjørt på Bårds PC i denne sesjonen.
+  Serveren lagrer registreringsprogram og tilstand i ~/.bimverdi-onboarding/<pakke-id>/.
+  README.md beskriver hvordan tilgangen trekkes tilbake og hvordan en ny pakke bygges.
+  Bygging har en sideeffekt: programmet registrerer en ny engangsnøkkel på serveren.
+  Testpakker og en erstattet leveringspakke fikk tilgangen tilbakekalt. Bare ZIP-filen nevnt over er gjeldende levering.
+  ZIP-filen må deles privat. Ingen private nøkler, tilgangstokens eller databasekopier er lagt i denne loggen eller Git.
+
+  GITHUB
+  Bårds konto er baardkr. Koderepoet er aharstad91/bimverdi-v2.
+  GitHub CLI sto først på andreasharstad91. Forsøket på å gi skrivetilgang svarte 404.
+  Jeg byttet til den allerede innloggede repo-eieren aharstad91. GitHub opprettet da en invitasjon med write-tilgang.
+  Invitasjons-ID: 341217497. Bård må godta den før skrivetilgangen gjelder.
+  Lenke: https://github.com/aharstad91/bimverdi-v2/invitations.
+  Tilgangsvisningen før aksept viste read. For et offentlig repo beviser dette ikke et eksisterende samarbeidermedlemskap.
+  Invitasjonen gir skrivetilgang til kode. SSH-oppsettet fungerer uavhengig av denne aksepten.
+
+  TESTER OG RETTINGER
+  Sju lokale tester besto: registrering, gjenkjøring, nøkkelbinding, utløp, ugyldig input, samtidige forsøk og PowerShell-transport.
+  Den første testen av registrering feilet fordi funksjonen ennå manglet. Testene besto etter implementering.
+  En test mot Servebolt bekreftet at engangsnøkkelen bare kunne kjøre registreringsprogrammet.
+  Testen registrerte en midlertidig klientnøkkel, prøvde gjenkjøring og bekreftet tilgang til WordPress-databasen.
+  Status, Run og Wp besto med ekte PowerShell på Mac mot serveren.
+  Testen dekket norske tegn, anførselstegn og filstier med mellomrom.
+  Etter avslutning av registreringen avviste serveren engangsnøkkelen. Den permanente testnøkkelen virket fortsatt.
+  Testnøklene ble fjernet fra serveren. Andreas sin eksisterende SSH-tilgang virket etterpå.
+  PowerShell-parseren godkjente alle tre skriptene. git diff --check var ren.
+  Gjennomgangen fant to Windows-feil knyttet til CRLF. Begge ble rettet før levering.
+  Invoke-Ssh.ps1 sender nå UTF-8 direkte til prosessens stdin og gjør Windows-linjeskift om til Linux-linjeskift.
+  Transporttesten feilet med eksplisitt CRLF før rettingen og besto etterpå.
+  En full ce-code-review med åtte perspektiver endte med Ready to merge og ingen gjenværende funn.
+  Den midlertidige rapporten ligger i /tmp/compound-engineering-501/ce-code-review/20261103-094547-aebc553f/.
+  Denne /tmp-rapporten kan forsvinne. Kildekode, tester og README ligger i Git.
+
+  BEGRENSNINGER OG NESTE SESJON
+  Oppfølgingen ligger i bimverdi-82o. Klargjøringen ligger i den lukkede saken bimverdi-9et.
+  Windows-spesifikke deler gjenstår: eventuell installasjon av OpenSSH, NTFS-rettigheter, snarvei, utklippstavle og mappevalg i Claude Code.
+  Første kjøring, avbrutt oppsett og gjenkjøring trenger også bekreftelse fra Bårds faktiske PC.
+  Neste naturlige steg er å følge Bård gjennom startpakken og lese resultatet fra Status.
+  Hvis pakken har utløpt, beskriver README.md hvordan agenten lager en ny privat pakke.
+  Oppsettfila CLAUDE.md gjelder Bårds Windows-arbeidsplass. Den er en leveranse, ikke oppstartsinstruks for Andreas sin Mac.
+
+  EKSISTERENDE LOKALT ARBEID
+  Disse filene var allerede endret før oppsettet og er ikke med i oppsett-committen:
+  mu-plugins/bimverdi-artikkel-submission.php
+  mu-plugins/bimverdi-byggchat-sso.php
+  themes/bimverdi-theme/parts/minside/artikler-skriv.php
+  themes/bimverdi-theme/single-foretak.php
+  mu-plugins/bimverdi-bulk-publiser.php var allerede uregistrert i Git.
+  Jeg verifiserte filinnholdet med SHA-256 før og etter lagring og push. Arbeidet var uendret.
+  En eldre stash fantes før arbeidet. Den ble beholdt.
+  git pull --rebase stoppet på de eksisterende lokale endringene. git pull --ff-only bekreftet at grenen var oppdatert mot main.
+  Ingen stash eller rebase var nødvendig. Commit a1b20a1 og origin-grenen hadde samme SHA etter push.
+  Denne bd-versjonen har ikke sync. Jeg brukte bd export -o .beads/issues.jsonl og committet oppgavesnapshotet.
+
+---
 date: 2026-10-22
 action: "Gjennomgang av åpne punkter etter 20.10: wp-config-backupene på prod lå åpent på nettet (fikset + sperre i .htaccess), avvisningsliste runde 2 laget, 20.10-leveransene verifisert live"
 files:
