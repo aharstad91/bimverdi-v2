@@ -4,6 +4,27 @@
 
 ---
 date: 2026-11-03
+created_at: "2026-11-03T12:45:21Z"
+action: "ByggChat-innlogging testet ende-til-ende mot byggchat.bimverdi.no: Deltaker slipper inn, Gratisbruker avvises"
+branch: "main"
+implementation_commit: "ff29335"
+resume_focus: "Svar Alexander, bytt knappen på byggchat-alfa når Bård vil, avgjør gratisbrukere med Bård"
+files: []
+summary: "Alexander aktiverte domenet hos Render 03.11 kl 11:13. Prod svarer med gyldig TLS, og /sso uten kort gir 400. Uten innlogging sender bimverdi.no/?byggchat_go=1 til /logg-inn/. Andreas la inn bimverdi_byggchat_sso_url() = https://byggchat.bimverdi.no/sso, bekreftet med wp eval på prod. Testet med ekte signerte kort laget på serveren og sendt til /sso (kort og cookie ble ikke vist). Bruker 1 (andreas@aharstad.no, foretak KONSULENT HARSTAD, nivå Deltaker): 303 til / og cookie byggchat_session (HttpOnly, Secure, 30 dager). Bruker 2 (Claude AI, foretak Demo Konsulenter AS, nivå Gratisbruker): 303 til /sso?feil=medlem, altså avvist som avtalt. Selve museklikket i nettleser som innlogget bruker er ikke prøvd. Det bruker samme kode som sender kortet. Demo Konsulenter finnes ikke som egen bruker på prod. Bruk Claude AI (id 2) som Gratisbruker-test og Andreas (id 1) som Deltaker-test. Andreas sender svar til Alexander."
+status: done
+detail: |
+  TESTBRUKERE PÅ PROD
+  id 1 andreas@aharstad.no — Deltaker via foretak 1204
+  id 2 Claude AI — Gratisbruker via foretak 98 (Demo Konsulenter AS)
+  id 398 aharstad@hotmail.com — medlem uten foretak, Gratisbruker
+
+  KJENTE RESTER
+  - Knappen på /byggchat-alfa/ lenker ikke til ?byggchat_go=1 ennå. Det er ikke bygd.
+  - Gratisbrukere slipper ikke inn. Bård avgjør om det skal endres (Alexander kan endre på sin side).
+  - Databehandleravtalen ByggChat ALFA PILOT: Bård må sende filen som e-postvedlegg.
+
+---
+date: 2026-11-03
 created_at: "2026-11-03T09:24:55Z"
 action: "UKE 44 (#362): forsidebilde-krav, tilleggskontakter for admin, bulk-publisering og ByggChat-adresse er live. DNS for byggchat.bimverdi.no lagt inn. Statuskommentar på kortet."
 branch: "main"
@@ -17,7 +38,7 @@ files:
   - "mu-plugins/bimverdi-byggchat-sso.php (standard mottaksadresse er https://byggchat.bimverdi.no/sso)"
 summary: "Commit ff29335 på main er en cherry-pick av 6d17c09 fra feat/bard-windows-agent-setup. Branchen har to andre commits (Bårds agentoppsett) som ikke er i main og ikke deployet. Prod deployer fra main. Alle fem filene er identiske med main på Servebolt (md5), og forsiden og /logg-inn/ svarer 200. AVLYST: valget finnes allerede i ACF-feltet arrangement_status (Planlagt/Avlyst), både i group_arrangement_info.json og på prod. Bårds skjermbilde viser lista åpen med valget markert i blått uten synlig tekst. Ingen kode endret. Tilleggskontakter: 2 brukere på prod har bare bimverdi_company_id, og 2 har ulik verdi i de to nøklene, så admin-lista bruker begge nøklene og lar den nye vinne. BULK-PUBLISERING: gjelder bare utkast og ventende poster, sjekker publish_post per post. Artikler går pending → publish via wp_update_post, så «Artikkelen din er publisert»-varselet går ut som ved enkeltpublisering (gaten er åpen på prod siden 02.10). Verktøy har ingen publiseringsvarsel. BYGGCHAT: Alexander (Maud) meldte 30.10 at mottaket er klart. Claude i Chrome la inn CNAME byggchat → bim-mvp-4lfv.onrender.com i Domeneshop (TTL 1 time). Verifisert med dig mot ns1–ns3.hyp.net og 1.1.1.1. Andre DNS-poster er uendret (A, MX, TXT, Resend, SPF, DMARC). Prod wp-config har ingen BYGGCHAT_SSO_URL, så standardverdien i koden gjelder. /byggchat-alfa/ er publisert og åpen, men har ingen lenke til ?byggchat_go=1, så en adresse som ikke svarer rammer bare den som skriver lenken selv. Andreas har sendt svar til Alexander på e-post. Trello: statuskommentar på #362 (tagget baardkr og baardk). Den sier «testes før publisering», og det er nå utdatert."
 status: waiting
-waiting_on: "Alexander: aktivere byggchat.bimverdi.no hos Render. Andreas: (1) teste bimverdi.no/?byggchat_go=1 som Deltaker i privat vindu (bruk Demo Konsulenter, ikke ekte hovedkontakt); (2) teste «Publiser» med ett utkast i wp-admin før bred bruk, bulk-menyen er ikke prøvd i nettleser (MAMP lå nede); (3) lese databehandleravtalen ByggChat ALFA PILOT når Bård sender den som e-postvedlegg (SharePoint-lenken åpnes ikke); (4) avgjøre med Bård om gratisbrukere skal slippe inn i ByggChat. Åpent på UKE 44: 1.1 bekrefte at medredaktør-prosjekter vises (ligger under «Om foretaket», ikke øverst), 9.2 Convert to blocks, 5 kunnskapskilder med lenkesjekk og stempel, 3 plugin i kjernekoden (venter på Bårds oppsett), 6 SEO-plan. Åpent fra 22.10 står uendret (DB-passord og salter, image-backup.zip, CSV til Bård)."
+waiting_on: "Andreas: (1) ByggChat er ferdig testet og aktivert, se innførselen over (12:45); (2) teste «Publiser» med ett utkast i wp-admin før bred bruk, bulk-menyen er ikke prøvd i nettleser (MAMP lå nede); (3) lese databehandleravtalen ByggChat ALFA PILOT når Bård sender den som e-postvedlegg (SharePoint-lenken åpnes ikke); (4) avgjøre med Bård om gratisbrukere skal slippe inn i ByggChat. Åpent på UKE 44: 1.1 bekrefte at medredaktør-prosjekter vises (ligger under «Om foretaket», ikke øverst), 9.2 Convert to blocks, 5 kunnskapskilder med lenkesjekk og stempel, 3 plugin i kjernekoden (venter på Bårds oppsett), 6 SEO-plan. Åpent fra 22.10 står uendret (DB-passord og salter, image-backup.zip, CSV til Bård)."
 detail: |
   ROLLBACK
   git revert ff29335 på main og push. Gjelder alle fem filene.
