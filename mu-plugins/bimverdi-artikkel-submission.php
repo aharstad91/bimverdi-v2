@@ -190,6 +190,13 @@ add_action('init', function () {
         }
     }
 
+    // Nye artikler må ha forsidebilde (Trello #362 pkt 9.1). Redigering er
+    // uendret: eldre artikler uten bilde kan fortsatt rettes uten opplasting.
+    if (!$is_edit && (!$thumbnail_id || is_wp_error($thumbnail_id))) {
+        wp_redirect(add_query_arg('bv_error', 'missing_image', $redirect_error));
+        exit;
+    }
+
     // --- EDIT MODE ---
     if ($is_edit) {
         $artikkel_id = intval($_POST['artikkel_id'] ?? 0);

@@ -36,6 +36,7 @@ $error_messages = [
     'missing_temagruppe'   => 'Du må velge minst én temagruppe.',
     'missing_verktoykategori' => 'Du må velge minst én verktøykategori.',
     'missing_kunnskapskilde'  => 'Du må velge minst én kunnskapskilde.',
+    'missing_image'        => 'Du må laste opp et forsidebilde.',
     'invalid_file_type'    => 'Ugyldig filtype. Tillatte: JPG, PNG, WebP.',
     'file_too_large'       => 'Bildet er for stort. Maks 2 MB.',
     'upload_failed'        => 'Kunne ikke laste opp bildet. Prøv igjen.',
@@ -119,16 +120,17 @@ $kunnskapskilder = get_posts([
     <!-- Forsidebilde -->
     <div class="mb-6">
         <label for="artikkel_image" class="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-            <?php _e('Forsidebilde (valgfritt)', 'bimverdi'); ?>
+            <?php _e('Forsidebilde', 'bimverdi'); ?> <span class="text-red-600">*</span>
         </label>
         <input
             type="file"
             id="artikkel_image"
             name="artikkel_image"
+            required
             accept=".jpg,.jpeg,.png,.webp"
             class="w-full text-sm text-[#5A5A5A] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#F5F5F4] file:text-[#1A1A1A] hover:file:bg-[#E7E5E4] file:cursor-pointer"
         >
-        <p class="mt-1 text-xs text-[#5A5A5A]"><?php _e('JPG, PNG eller WebP. Maks 2 MB. Tomt = vi viser en fargeblokk.', 'bimverdi'); ?></p>
+        <p class="mt-1 text-xs text-[#5A5A5A]"><?php _e('JPG, PNG eller WebP. Maks 2 MB.', 'bimverdi'); ?></p>
     </div>
 
     <!-- Brødtekst (wp_editor) -->
@@ -329,6 +331,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var content = getEditorContent('artikkel_content');
         if (getPlainTextLength(content) < 100) {
             errors.push('Brødteksten må være minst 100 tegn.');
+        }
+
+        var image = document.getElementById('artikkel_image');
+        if (!image || !image.files || image.files.length === 0) {
+            errors.push('Du må laste opp et forsidebilde.');
         }
 
         if (!form.querySelector('input[name="temagrupper[]"]:checked')) {
