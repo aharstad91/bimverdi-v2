@@ -1,0 +1,37 @@
+name: php-lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  php-lint:
+    name: php-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - name: Syntakssjekk av alle PHP-filer i tema, mu-plugins og bim-verdi-core
+        run: |
+          fail=0
+          count=0
+          while IFS= read -r -d '' file; do
+            count=$((count + 1))
+            if ! php -l "$file" >/dev/null 2>&1; then
+              php -l "$file" || true
+              fail=1
+            fi
+          done < <(find themes mu-plugins plugins/bim-verdi-core -name '*.php' \
+                     -not -path '*/node_modules/*' -not -path '*/vendor/*' -print0)
+          echo "Sjekket $count PHP-filer."
+          exit $fail
+      - name: Ingen private filer i Git
+        run: |
+          if git ls-files | grep -E '(^|/)(\.enrollment_key|admin-package\.json|admin-receipt\.json|enrollment\.json)$|\.zip$|\.sql(\.gz)?$'; then
+            echo 'Private filer, pakker eller databasekopier må ikke ligge i Git.'
+            exit 1
+          fi
