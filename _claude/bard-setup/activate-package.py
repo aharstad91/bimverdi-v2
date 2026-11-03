@@ -54,38 +54,41 @@ def main():
     gate = base64.b64encode((SOURCE / 'server-gate.py').read_bytes()).decode()
     # Every interpolated value is a Python literal; nothing is passed through a shell.
     program = REMOTE_KEYS_LIB + f'''
-import base64, json, os
-from pathlib import Path
+import base64, datetime
 remote_dir = Path({state['remote_dir']!r})
+package_id = {state['id']!r}
 force = {args.force!r}
-existing = remote_dir / 'enrollment.json'
-if existing.exists():
-    old = json.loads(existing.read_text())
-    if old.get('registered_key') and not force:
-        raise SystemExit('Pakken er allerede bundet til en nøkkel. Bruk revoke-package.py, eller --force.')
+with keys_lock():
+    existing = remote_dir / 'enrollment.json'
+    old = json.loads(existing.read_text()) if existing.exists() else {{}}
     if old.get('revoked'):
         raise SystemExit('Pakken er trukket tilbake. Bygg en ny pakke.')
-remote_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
-remote_dir.parent.chmod(0o700)
-remote_dir.chmod(0o700)
-(remote_dir / 'enroll.py').write_bytes(base64.b64decode({enroll!r}))
-(remote_dir / 'enroll.py').chmod(0o600)
-(remote_dir / 'enrollment.json').write_text({json.dumps(manifest, indent=2)!r} + '\\n')
-(remote_dir / 'enrollment.json').chmod(0o600)
-gate_dir = Path({GATE_DIR!r})
-gate_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
-gate_dir.chmod(0o700)
-gate_path = gate_dir / 'gate.py'
-if gate_path.exists():
-    gate_path.chmod(0o600)
-gate_path.write_bytes(base64.b64decode({gate!r}))
-gate_path.chmod(0o500)
-for name in ('', 'log', 'db', 'moved'):
-    folder = Path({GATE_DATA_DIR!r}) / name
-    folder.mkdir(parents=True, exist_ok=True, mode=0o700)
-    folder.chmod(0o700)
-removed, added = edit_authorized_keys([{state['id']!r}], [{bootstrap_line!r}])
-print(json.dumps({{'removed': removed, 'added': added}}))
+    if old.get('registered_key') and not force:
+        raise SystemExit('Pakken er allerede bundet til en nøkkel. Bruk revoke-package.py, eller --force.')
+    dropped_blobs = set()
+    if old.get('registered_key'):
+        # --force: the earlier binding is replaced; its permanent key loses access right here.
+        dropped_blobs.add(old['registered_key'].split()[1])
+        (remote_dir / 'events.log').open('a').write(json.dumps({{
+            'ts': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),
+            'event': 'forced-reactivation', 'replaced_fingerprint': old.get('registered_fingerprint')}}) + '\\n')
+    remote_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    remote_dir.parent.chmod(0o700)
+    remote_dir.chmod(0o700)
+    atomic_write(remote_dir / 'enroll.py', base64.b64decode({enroll!r}), 0o600)
+    atomic_write(remote_dir / 'enrollment.json', {json.dumps(manifest, indent=2)!r} + '\\n', 0o600)
+    gate_dir = Path({GATE_DIR!r})
+    gate_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    gate_dir.chmod(0o700)
+    atomic_write(gate_dir / 'gate.py', base64.b64decode({gate!r}), 0o500)
+    for name in ('', 'log', 'db', 'moved'):
+        folder = Path({GATE_DATA_DIR!r}) / name
+        folder.mkdir(parents=True, exist_ok=True, mode=0o700)
+        folder.chmod(0o700)
+    def drop(options, blob, comment):
+        return comment == package_id or blob in dropped_blobs or ('.bimverdi-onboarding/' + package_id + '/') in options
+    removed, added = rewrite_authorized_keys(drop, [{bootstrap_line!r}])
+print(json.dumps({{'removed': removed, 'added': added, 'replaced_binding': bool(dropped_blobs)}}))
 '''
     print(ssh_python(program).strip())
     answer = ping(state)

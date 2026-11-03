@@ -14,9 +14,10 @@ ANSVAR
 Tilgangen går rett til produksjonsnettstedet bimverdi.no.
 Endringer virker med en gang for alle besøkende.
 Du bruker tilgangen på eget ansvar. Andreas godkjenner ikke endringene på forhånd.
-Serveren logger alle kommandoer med fullt innhold.
-Serveren sperrer noen få farlige kommandoer og tar databasekopi før endringer.
-Det er et vern mot uhell, ikke en garanti.
+Serveren logger alle kommandoer.
+Serveren sperrer noen få farlige kommandoer og tar databasekopi før endringer i databasen.
+Kopien dekker ikke filer. Det er et vern mot uhell, ikke en garanti.
+Et uhell kan slette innhold, lekke data eller kreve gjenoppretting der nyere endringer går tapt.
 
 HVA OPPSETTET GJØR
 
@@ -30,6 +31,7 @@ KODE GÅR VIA GITHUB
 Kontoen baardkr har skrivetilgang til github.com/aharstad91/bimverdi-v2.
 Hovedgrenen main er beskyttet. Alle endringer går gjennom en pull request.
 En automatisk sjekk (php-lint) må være grønn. Så merger du selv. Da publiseres koden.
+Grønn sjekk betyr riktig syntaks, ikke at nettstedet virker. Sjekk nettstedet etter publisering.
 Claude kjenner flyten fra CLAUDE.md og gjør det tekniske.
 
 HVIS NOE STOPPER

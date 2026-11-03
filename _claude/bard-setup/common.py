@@ -56,34 +56,59 @@ def write_admin_state(path, state):
     path.chmod(0o600)
 
 
-# Remote helper used by activate/revoke: edits authorized_keys under the shared lock.
-# It removes every line that matches a marker and appends the given lines.
+# Remote helpers used by activate/revoke. The lock is the same one enroll.py takes, so state and
+# key changes from the admin side never interleave with a running enrollment.
 REMOTE_KEYS_LIB = r'''
-import fcntl, os, tempfile
+import contextlib, fcntl, json, os, tempfile
 from pathlib import Path
 
-def edit_authorized_keys(remove_markers, add_lines):
-    ssh_dir = Path.home() / '.ssh'
-    ssh_dir.mkdir(mode=0o700, exist_ok=True)
-    auth = ssh_dir / 'authorized_keys'
-    with (ssh_dir / '.bimverdi-keys.lock').open('a') as lock:
+SSH_DIR = Path.home() / '.ssh'
+AUTH = SSH_DIR / 'authorized_keys'
+
+@contextlib.contextmanager
+def keys_lock():
+    SSH_DIR.mkdir(mode=0o700, exist_ok=True)
+    with (SSH_DIR / '.bimverdi-keys.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        lines = auth.read_text().splitlines(keepends=True) if auth.exists() else []
-        kept = [line for line in lines if not any(marker in line for marker in remove_markers)]
-        removed = len(lines) - len(kept)
-        if kept and not kept[-1].endswith('\n'):
-            kept[-1] += '\n'
-        content = ''.join(kept) + ''.join(line.rstrip('\n') + '\n' for line in add_lines)
-        fd, name = tempfile.mkstemp(dir=ssh_dir, prefix='.authorized_keys-')
-        try:
-            with os.fdopen(fd, 'w') as stream:
-                stream.write(content)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.chmod(name, 0o600)
-            os.replace(name, auth)
-        finally:
-            if os.path.exists(name):
-                os.unlink(name)
-        return removed, len(add_lines)
+        yield
+
+def atomic_write(path, content, mode=0o600):
+    path = Path(path)
+    fd, name = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name + '-')
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(content if isinstance(content, bytes) else content.encode())
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.chmod(name, mode)
+        os.replace(name, path)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+def key_line_parts(line):
+    """(options, key_blob, comment) for an authorized_keys line, or None."""
+    parts = line.split()
+    if len(parts) < 2:
+        return None
+    for index, part in enumerate(parts):
+        if part in ('ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'sk-ssh-ed25519@openssh.com') and index + 1 < len(parts):
+            return ' '.join(parts[:index]), parts[index + 1], ' '.join(parts[index + 2:])
+    return None
+
+def rewrite_authorized_keys(drop, add_lines):
+    """Caller holds keys_lock(). drop(options, blob, comment) -> True removes the line."""
+    lines = AUTH.read_text().splitlines(keepends=True) if AUTH.exists() else []
+    kept = []
+    for line in lines:
+        parsed = key_line_parts(line)
+        if parsed and drop(*parsed):
+            continue
+        kept.append(line)
+    removed = len(lines) - len(kept)
+    if kept and not kept[-1].endswith('\n'):
+        kept[-1] += '\n'
+    content = ''.join(kept) + ''.join(line.rstrip('\n') + '\n' for line in add_lines)
+    atomic_write(AUTH, content, 0o600)
+    return removed, len(add_lines)
 '''

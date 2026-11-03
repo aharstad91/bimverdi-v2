@@ -5,10 +5,10 @@
 ---
 date: 2026-11-03
 created_at: "2026-11-03T13:38:07Z"
-action: "Bårds startpakke bygget om etter modellen «på eget ansvar»: gate på serveren, engangskode per telefon, ruleset på main med php-lint. Ny pakke bygget, ikke aktivert."
+action: "Bårds startpakke bygget om etter modellen «på eget ansvar»: gate på serveren, engangskode per telefon, ruleset på main med php-lint. Astra-runde 3 rettet (PR #5). Ny pakke bygget, ikke aktivert."
 branch: "main"
 implementation_commit: "c1c572b"
-resume_focus: "Les Astras tredje runde (scratchpad astra-review-v2.md) og rett reelle funn. Aktiver pakken rett før den sendes torsdag 05.11, les koden til Bård på telefon."
+resume_focus: "Aktiver pakken rett før den sendes torsdag 05.11, les koden til Bård på telefon. Windows-kjøring er fortsatt uverifisert (bimverdi-82o)."
 files:
   - "_claude/bard-setup/server-gate.py (NY: tvungen kommando for Bårds nøkkel — logg, sperreliste, databasekopi, etterkontroll)"
   - "_claude/bard-setup/server-enroll.py (engangskode, 5 forsøk, ansvar må bekreftes, binder til første nøkkel, finalize uten utløpssjekk)"
@@ -18,19 +18,20 @@ files:
   - "_claude/bard-setup/tests/ (24 enhetstester) og tests/live-smoke.py (29 sjekker mot Servebolt)"
   - ".github/workflows/php-lint.yml (NY), .github/.htaccess, .gitignore (!.github/)"
   - "docs/plans/2026-11-03-bard-startpakke-review.md (status etter ombygging øverst; utenfor wp-content-repoet)"
-summary: "Andreas bestemte: Bård får full shell på prod på eget ansvar, Andreas godkjenner ikke PR-er. Vernet skal fange uhell, gjøre alt synlig og gjenopprettbart. Gjort: dagens engangsnøkkel bard-20261103-92f744c7 trukket tilbake (authorized_keys på prod er tom). Bård hadde ALLEREDE godtatt GitHub-invitasjonen, så ruleset på main (id 26451329: PR påkrevd uten godkjenner, påkrevd sjekk php-lint, ingen force-push/sletting, admin kan omgå) kom opp først. Gate installert på serveren (~/.bimverdi-gate/gate.py, data i ~/private/bard-gate/). Kopi av Bårds ti prod-plugins tatt lokalt (bimverdi-bol). PR #4 squash-merget til main (c1c572b), Servebolt deployet, HTTP 403 på _claude/ og .github/. Live-smoke 29/29 grønn: bygg, aktiver, feil kode avvist, Status uten kopi, wp db reset/git checkout/PHP i mu-plugins/scp/interaktivt skall sperret, skrivende kommando tar DB-kopi (25 MB gz, 3 s), gate-log, finalize, revoke. Ny pakke bard-20261103-8ce1f759 ligger i ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/, IKKE aktivert. Gamle pakker og smoke-mapper slettet. Astra (gpt-6-astra, xhigh) kjører tredje runde på resultatet."
+summary: "Andreas bestemte: Bård får full shell på prod på eget ansvar, Andreas godkjenner ikke PR-er. Vernet skal fange uhell, gjøre alt synlig og gjenopprettbart. Gjort: dagens engangsnøkkel bard-20261103-92f744c7 trukket tilbake (authorized_keys på prod er tom). Bård hadde ALLEREDE godtatt GitHub-invitasjonen, så ruleset på main (id 26451329: PR påkrevd uten godkjenner, påkrevd sjekk php-lint, ingen force-push/sletting, admin kan omgå) kom opp først. Gate installert på serveren (~/.bimverdi-gate/gate.py, data i ~/private/bard-gate/). Kopi av Bårds ti prod-plugins tatt lokalt (bimverdi-bol). PR #4 squash-merget til main (c1c572b), Servebolt deployet, HTTP 403 på _claude/ og .github/. Live-smoke 29/29 grønn: bygg, aktiver, feil kode avvist, Status uten kopi, wp db reset/git checkout/PHP i mu-plugins/scp/interaktivt skall sperret, skrivende kommando tar DB-kopi (25 MB gz, 3 s), gate-log, finalize, revoke. Ny pakke bard-20261103-80cef44f ligger i ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/, IKKE aktivert. Gamle pakker og smoke-mapper slettet. Astra (gpt-6-astra, xhigh) tredje runde fant 13 ting; de reelle er rettet i PR #5: -Quiet i Setup kastet bort serverens svar (oppsettet ville stoppet ved ping), feilklassifisering av --format=count/$(...)/gunzip/sort -o/db export til webroten, & i bakgrunnen slapp gjennom, cd+cp omgikk kodevernet, tilstand utenfor lås i revoke/activate, kopi-feil stopper nå databaseskriving (kode 76), gjenkjøring rydder engangsnøkkelen, find -cnewer, sluttlinje i logg ved avbrudd, falske utslag for git tag/git -C/(pwd), workflow linter alle sporede PHP-filer, tekstene justert. Ikke rettet med vilje: regex-sperren treffer tekst, kopien dekker bare databasen, gaten kan omgås av samme bruker. 28 enhetstester + 29 live-sjekker grønne etter rettingene."
 status: waiting
-waiting_on: "Andreas: (1) lese Astras tredje runde og godkjenne eventuelle rettinger; (2) torsdag 05.11: kjøre activate-package.py på bard-20261103-8ce1f759 med --hours 24, lese koden til Bård, sende ZIP; (3) si til Bård: eget ansvar, alt logges, gaten er uhellsvern, scp/sftp sperret, kode via PR + php-lint; (4) etter første arbeidsdag: lese ~/private/bard-gate/log/."
+waiting_on: "Andreas: (1) lese status etter ombygging i docs/plans/2026-11-03-bard-startpakke-review.md; (2) torsdag 05.11: kjøre activate-package.py på bard-20261103-80cef44f med --hours 24, lese koden til Bård, sende ZIP; (3) si til Bård: eget ansvar, alt logges, gaten er uhellsvern, scp/sftp sperret, kode via PR + php-lint; (4) etter første arbeidsdag: lese ~/private/bard-gate/log/."
 detail: |
   AKTIVERING (rett før sending)
   cd wp-content
-  python3 _claude/bard-setup/activate-package.py ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/bard-20261103-8ce1f759 --hours 24
-  Koden skrives bare til terminalen. Send ZIP-en privat. Trekk tilbake: revoke-package.py --id bard-20261103-8ce1f759.
+  python3 _claude/bard-setup/activate-package.py ~/.codex/artifacts/bimverdi-bard-setup-20261103/levering/bard-20261103-80cef44f --hours 24
+  Koden skrives bare til terminalen. Send ZIP-en privat. Trekk tilbake: revoke-package.py --id bard-20261103-80cef44f.
 
   GITHUB-KONTO (sideeffekt av ruleset)
   Mac-ens SSH-nøkkel autentiserer som andreasharstad91 (write, ikke admin). Ruleset-et blokkerer derfor direkte push til main med SSH-remote.
-  Repoets remote er satt til https://aharstad91@github.com/aharstad91/bimverdi-v2.git med eier-token i macOS-nøkkelring (git credential-osxkeychain).
-  Hvis push til main gir 403: kjør `gh auth switch --user aharstad91` eller gå via PR.
+  Repoets remote er satt til https://aharstad91@github.com/aharstad91/bimverdi-v2.git. En repo-lokal credential-helper henter token med `gh auth token --user aharstad91`
+  (~/.gitconfig nullstiller helper-lista for github.com, så osxkeychain hjelper ikke). Verifisert: push til main gikk gjennom (8525dfc).
+  Hvis push til main gir 403: sjekk `git config --local --get-all credential.https://github.com.helper`, eller gå via PR.
 
   RESTRISIKOER (si til Bård)
   - Gaten kjører som samme Linux-bruker som Bård. Den kan redigeres og omgås. Loggen er bevis, ikke sperre.

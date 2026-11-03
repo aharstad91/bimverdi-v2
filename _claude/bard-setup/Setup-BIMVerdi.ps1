@@ -36,7 +36,8 @@ function Invoke-Keygen([string]$Arguments) {
 function Invoke-Enrollment([hashtable]$Request) {
     # Always through the one-time key: its forced command is enroll.py. The permanent key only reaches the gate.
     $json = $Request | ConvertTo-Json -Compress
-    $output = Invoke-BIMVerdiSsh -ConfigPath (Join-Path $workspace 'ssh_config') -Alias bimverdi-enroll -RemoteArguments @($Request.action) -InputText $json -Quiet
+    # No -Quiet here: the JSON answer arrives on stdout and must be captured.
+    $output = Invoke-BIMVerdiSsh -ConfigPath (Join-Path $workspace 'ssh_config') -Alias bimverdi-enroll -RemoteArguments @($Request.action) -InputText $json
     $text = ($output -join "`n").Trim()
     if (-not $text) { throw "Serveren svarte ikke (kode $script:BIMVerdiSshExitCode). Er engangstilgangen aktivert?" }
     try { $response = $text | ConvertFrom-Json } catch { throw "Uventet svar fra serveren: $text" }
@@ -96,19 +97,20 @@ Host bimverdi-prod bimverdi-enroll
     GlobalKnownHostsFile none
 "@
     [IO.File]::WriteAllText((Join-Path $workspace 'ssh_config'), $config, (New-Object Text.UTF8Encoding($false)))
+    $sourceKey = Join-Path $PSScriptRoot '.enrollment_key'
+    if ((Test-Path $sourceKey) -and ([IO.Path]::GetFullPath($sourceKey) -ne [IO.Path]::GetFullPath($bootstrap))) {
+        Protect-PrivateFile $sourceKey
+        Copy-Item -Force -LiteralPath $sourceKey -Destination $bootstrap
+    }
+    if (Test-Path $bootstrap) { Protect-PrivateFile $bootstrap }
+    $bootstrapPresent = Test-Path $bootstrap
     Invoke-BIMVerdiSsh -ConfigPath (Join-Path $workspace 'ssh_config') -Alias bimverdi-prod -RemoteArguments @('sh', '-s') -InputText 'true' -Quiet
     $alreadyConnected = $script:BIMVerdiSshExitCode -eq 0
-    $sourceKey = Join-Path $PSScriptRoot '.enrollment_key'
-    $needsEnrollment = (-not $alreadyConnected) -and (Test-Path $sourceKey)
+    $needsEnrollment = (-not $alreadyConnected) -and $bootstrapPresent
     if (-not $alreadyConnected -and -not $needsEnrollment) {
         throw 'Engangstilgangen mangler. Be Andreas om en ny pakke.'
     }
     if ($needsEnrollment) {
-        Protect-PrivateFile $sourceKey
-        if ([IO.Path]::GetFullPath($sourceKey) -ne [IO.Path]::GetFullPath($bootstrap)) {
-            Copy-Item -Force -LiteralPath $sourceKey -Destination $bootstrap
-        }
-        Protect-PrivateFile $bootstrap
         $ping = Invoke-Enrollment @{ action = 'ping' }
         if ($ping.revoked) { throw 'Denne pakken er trukket tilbake. Be Andreas om en ny.' }
         if ($ping.expired) { throw 'Engangstilgangen har utløpt. Be Andreas aktivere pakken på nytt.' }
@@ -121,8 +123,9 @@ Host bimverdi-prod bimverdi-enroll
         Write-Host 'Endringer virker med en gang for alle besøkende.'
         Write-Host 'Du bruker tilgangen på eget ansvar. Andreas godkjenner ikke endringene dine på forhånd.'
         Write-Host 'Alle kommandoer på serveren logges med fullt innhold.'
-        Write-Host 'Serveren sperrer noen få farlige kommandoer og tar databasekopi før endringer.'
-        Write-Host 'Det er et vern mot uhell, ikke en garanti.'
+        Write-Host 'Serveren sperrer noen få farlige kommandoer og tar databasekopi før endringer i databasen.'
+        Write-Host 'Det er et vern mot uhell, ikke en garanti. Et uhell kan slette innhold, lekke data'
+        Write-Host 'eller kreve gjenoppretting der nyere endringer går tapt.'
         Write-Host ''
         $answer = Read-Host 'Skriv JA for å bekrefte at du har lest og godtar dette'
         if ($answer.Trim().ToUpperInvariant() -ne 'JA') { throw 'Oppsettet er avbrutt. Ingen tilgang er opprettet.' }
@@ -135,9 +138,15 @@ Host bimverdi-prod bimverdi-enroll
         Write-Host "Nøkkelen er registrert. Fingeravtrykk: $($enrolled.fingerprint)" -ForegroundColor Green
     }
     & (Join-Path $workspace 'BIMVerdi.ps1') -Action Status
-    if ($needsEnrollment) {
-        Invoke-Enrollment @{ action = 'finalize'; public_key = $publicKey } | Out-Null
-        Write-Host 'Engangstilgangen er slettet på serveren. Bare din egen nøkkel gjelder nå.'
+    if ($bootstrapPresent) {
+        # Also on a re-run after an interrupted first run: finalize is idempotent and bound to this key.
+        try {
+            Invoke-Enrollment @{ action = 'finalize'; public_key = $publicKey } | Out-Null
+            Write-Host 'Engangstilgangen er slettet på serveren. Bare din egen nøkkel gjelder nå.'
+        } catch {
+            Write-Host ('Engangstilgangen kunne ikke ryddes nå: ' + $_.Exception.Message) -ForegroundColor Yellow
+            Write-Host 'Den utløper av seg selv. Din egen nøkkel virker.' -ForegroundColor Yellow
+        }
     }
     foreach ($path in @($bootstrap, (Join-Path $PSScriptRoot '.enrollment_key'))) {
         if (Test-Path $path) { Remove-Item -Force -LiteralPath $path }

@@ -15,19 +15,20 @@ jobs:
         with:
           php-version: '8.4'
           coverage: none
-      - name: Syntakssjekk av alle PHP-filer i tema, mu-plugins og bim-verdi-core
+      - name: Syntakssjekk av alle sporede PHP-filer
         run: |
           fail=0
           count=0
           while IFS= read -r -d '' file; do
+            case "$file" in */node_modules/*|*/vendor/*) continue;; esac
             count=$((count + 1))
             if ! php -l "$file" >/dev/null 2>&1; then
               php -l "$file" || true
               fail=1
             fi
-          done < <(find themes mu-plugins plugins/bim-verdi-core -name '*.php' \
-                     -not -path '*/node_modules/*' -not -path '*/vendor/*' -print0)
+          done < <(git ls-files -z -- '*.php')
           echo "Sjekket $count PHP-filer."
+          if [ "$count" -eq 0 ]; then echo 'Fant ingen PHP-filer. Noe er galt med utsjekkingen.'; exit 1; fi
           exit $fail
       - name: Ingen private filer i Git
         run: |
