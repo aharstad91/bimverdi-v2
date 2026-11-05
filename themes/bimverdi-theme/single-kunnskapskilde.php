@@ -393,6 +393,54 @@ $kilde_created = get_the_date('d.m.Y');
                 </section>
 
                 <?php
+                // LENKESJEKK (Bård 05.11.2026). Viser resultatet fra pluginen bv-lenkevakt,
+                // som sjekker alle kunnskapskilder hver søndag kl. 06:00. Vi leser bare
+                // metadataene den lagrer; ingen ny sjekk kjøres her.
+                $lv_status  = (string) get_post_meta(get_the_ID(), '_lenkevakt_status', true);
+                $lv_kode    = (int) get_post_meta(get_the_ID(), '_lenkevakt_http_kode', true);
+                $lv_melding = (string) get_post_meta(get_the_ID(), '_lenkevakt_melding', true);
+                $lv_sist    = (string) get_post_meta(get_the_ID(), '_lenkevakt_sist_sjekket', true);
+                $lv_dato    = $lv_sist ? mysql2date('d.m.Y', $lv_sist) : '';
+                $lv_visning = array(
+                    'ok'            => array('OK – lenken virker', 'bg-[#DCFCE7] text-[#166534]'),
+                    'oppdatert'     => array('OK – lenken er flyttet og rettet', 'bg-[#DCFCE7] text-[#166534]'),
+                    'midlertidig'   => array('Midlertidig feil', 'bg-[#FEF9C3] text-[#854D0E]'),
+                    'advarsel'      => array('Advarsel', 'bg-[#FEF9C3] text-[#854D0E]'),
+                    'brutt'         => array('Brutt – lenken virker ikke', 'bg-[#FEE2E2] text-[#991B1B]'),
+                    'mangler_lenke' => array('Mangler lenke', 'bg-[#FEE2E2] text-[#991B1B]'),
+                    'ikke_sjekkbar' => array('Kan ikke sjekkes automatisk', 'bg-[#FEF9C3] text-[#854D0E]'),
+                );
+                list($lv_tekst, $lv_klasse) = $lv_visning[$lv_status] ?? array('Ikke sjekket ennå', 'bg-[#FEF9C3] text-[#854D0E]');
+                ?>
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-6">Lenkesjekk</h3>
+
+                    <dl class="space-y-6">
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">Resultat</dt>
+                            <dd>
+                                <span class="inline-block text-xs font-medium <?php echo esc_attr($lv_klasse); ?> px-2.5 py-1 rounded">
+                                    <?php echo esc_html($lv_tekst); ?>
+                                </span>
+                                <?php if ($lv_status && $lv_status !== 'ok' && ($lv_melding || $lv_kode)): ?>
+                                <p class="text-sm text-[#57534E] mt-2">
+                                    <?php echo esc_html(trim(($lv_kode ? 'HTTP ' . $lv_kode . '. ' : '') . $lv_melding)); ?>
+                                </p>
+                                <?php endif; ?>
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Sist sjekket
+                            </dt>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($lv_dato ? $lv_dato . ' (automatisk, hver søndag)' : 'Ikke sjekket ennå'); ?></dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <?php
                 // BRUKSRETTIGHETER (Bård 05.11.2026). Viser lisens, maskinell bruk og
                 // når de sist ble sjekket. Automatisk sjekk: mu-plugins/bimverdi-rettighetssjekk.php.
                 $rs_lisens_valg   = function_exists('bimverdi_bruksrettigheter_valg') ? bimverdi_bruksrettigheter_valg() : array();
