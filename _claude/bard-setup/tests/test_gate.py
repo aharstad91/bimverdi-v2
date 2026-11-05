@@ -44,7 +44,7 @@ class GateTest(unittest.TestCase):
     def run_gate(self, original, script=None, **env):
         result = subprocess.run(
             [sys.executable, str(self.gate), 'bimverdi-bard-test'],
-            input=(script or '').encode(), capture_output=True,
+            input=script if isinstance(script, bytes) else (script or '').encode(), capture_output=True,
             env={**self.env, 'SSH_ORIGINAL_COMMAND': original, **env}, timeout=60)
         return result.returncode, result.stdout.decode(errors='replace'), result.stderr.decode(errors='replace')
 
@@ -74,6 +74,18 @@ class GateTest(unittest.TestCase):
         self.assertIn('SSH_OK', end['script'])
         self.assertEqual(end['label'], 'bimverdi-bard-test')
         self.assertFalse(end['script_truncated'])
+
+    def test_byte_order_mark_from_windows_is_removed(self):
+        # Windows PowerShell 5.1 on a UTF-8 console sends EF BB BF before the script.
+        code, out, err = self.run_gate('sh -s', b"\xef\xbb\xbfset -e\nprintf 'SSH_OK\\n'\nfalse\nprintf 'NOT_REACHED\\n'\n")
+        self.assertEqual(code, 1, err)
+        self.assertNotIn('not found', err)
+        self.assertIn('SSH_OK', out)
+        self.assertNotIn('NOT_REACHED', out)
+        end = self.last_end()
+        self.assertEqual(end['class'], 'read')
+        self.assertTrue(end['script'].startswith('set -e'))
+        self.assertEqual(self.dumps(), [])
 
     def test_writing_script_takes_backup_once_per_interval_and_rotates(self):
         code, out, err = self.run_gate('sh -s', 'wp post update 5 --post_title=x\n')

@@ -522,6 +522,10 @@ def run(label):
         # Everything that reaches the server is read first and logged. A caller that keeps stdin
         # open (plain `ssh host cmd` from a terminal) must use `ssh -n`.
         data = sys.stdin.buffer.read(MAX_SCRIPT_BYTES + 1)
+        # Windows PowerShell 5.1 on a UTF-8 console puts a byte order mark in front of child stdin.
+        # sh would read it as part of the first command ("﻿set: not found"), so set -e never ran.
+        if data.startswith(b'\xef\xbb\xbf'):
+            data = data[3:]
         if len(data) > MAX_SCRIPT_BYTES:
             return deny('too large', 'Skriptet er for stort (over 1 MB). Del det opp.')
         if stripped in ('sh -s', 'bash -s', '/bin/sh -s', '/bin/bash -s'):
