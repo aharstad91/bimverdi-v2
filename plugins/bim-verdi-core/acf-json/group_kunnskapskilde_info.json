@@ -374,10 +374,10 @@
         },
         {
             "key": "field_kunnskapskilde_rettigheter_kontrollert",
-            "label": "Rettigheter kontrollert",
+            "label": "Vilkår og bruksrett kontrollert (manuelt)",
             "name": "rettigheter_kontrollert",
             "type": "date_picker",
-            "instructions": "Når rettighetene sist ble sjekket.",
+            "instructions": "Når et menneske sist leste vilkårene og satte lisens/bruksrett. Vises offentlig.",
             "required": 0,
             "display_format": "d.m.Y",
             "return_format": "d.m.Y",
@@ -387,11 +387,37 @@
             }
         },
         {
+            "key": "field_kunnskapskilde_maskinell_bruk_sjekket",
+            "label": "Maskinell bruk sjekket (automatisk)",
+            "name": "maskinell_bruk_sjekket",
+            "type": "date_picker",
+            "instructions": "Settes av den ukentlige sjekken (søndag kl. 06:00) når kilden kunne leses. Vises offentlig.",
+            "required": 0,
+            "display_format": "d.m.Y",
+            "return_format": "d.m.Y",
+            "first_day": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_maskinell_bruk_funn",
+            "label": "Funn fra siste automatiske sjekk",
+            "name": "maskinell_bruk_funn",
+            "type": "textarea",
+            "instructions": "Skrives av den ukentlige sjekken. Endringer her blir overskrevet.",
+            "required": 0,
+            "rows": 2,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
             "key": "field_kunnskapskilde_rettigheter_notat",
             "label": "Notat om rettigheter (internt)",
             "name": "rettigheter_notat",
             "type": "textarea",
-            "instructions": "Funn fra kartleggingen, for eksempel hvilke AI-crawlere robots.txt stenger.",
+            "instructions": "Egne notater om vilkår og bruksrett. Den automatiske sjekken skriver ikke her.",
             "required": 0,
             "rows": 3
         },
