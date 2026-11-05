@@ -20,6 +20,8 @@ mu-plugins/_local-*.php
 plugins/*
 !plugins/bim-verdi-core/
 !plugins/bim-verdi-core/**
+!plugins/bv-lenkevakt/
+!plugins/bv-lenkevakt/**
 
 # Ignorer common files
 **/node_modules/
