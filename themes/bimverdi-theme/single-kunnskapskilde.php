@@ -411,6 +411,13 @@ $kilde_created = get_the_date('d.m.Y');
                     'ikke_sjekkbar' => array('Kan ikke sjekkes automatisk', 'bg-[#FEF9C3] text-[#854D0E]'),
                 );
                 list($lv_tekst, $lv_klasse) = $lv_visning[$lv_status] ?? array('Ikke sjekket ennå', 'bg-[#FEF9C3] text-[#854D0E]');
+                // Lenkevakten er av: vis det tydelig i stedet for et foreldet resultat.
+                $lv_aktiv = function_exists('bimverdi_lenkevakt_aktiv') ? bimverdi_lenkevakt_aktiv() : class_exists('BV_Lenkevakt');
+                if (!$lv_aktiv) {
+                    $lv_tekst   = 'Lenkesjekk er ikke aktiv';
+                    $lv_klasse  = 'bg-[#FEF9C3] text-[#854D0E]';
+                    $lv_status  = '';
+                }
                 ?>
                 <section class="bg-[#F5F5F4] rounded-lg p-5">
                     <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-6">Lenkesjekk</h3>
@@ -435,7 +442,13 @@ $kilde_created = get_the_date('d.m.Y');
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                 Sist sjekket
                             </dt>
-                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($lv_dato ? $lv_dato . ' (automatisk, hver søndag)' : 'Ikke sjekket ennå'); ?></dd>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php
+                                if (!$lv_aktiv) {
+                                    echo esc_html($lv_dato ? $lv_dato . ' (lenkesjekken er stoppet)' : 'Ikke sjekket');
+                                } else {
+                                    echo esc_html($lv_dato ? $lv_dato . ' (automatisk, hver søndag)' : 'Ikke sjekket ennå');
+                                }
+                            ?></dd>
                         </div>
                     </dl>
                 </section>
