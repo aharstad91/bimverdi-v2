@@ -237,6 +237,9 @@ foreach (bimverdi_geo_gyldighet_valg() as $geo_slug => $geo_label) {
         $default_icon = '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>';
         ?>
 
+        <!-- Fargekoder: lenke og bruksrett (Bård 05.11.2026) -->
+        <?php if (function_exists('bimverdi_kilde_fargekode_forklaring')) echo bimverdi_kilde_fargekode_forklaring(); ?>
+
         <!-- Grid View -->
         <div id="kunnskapskilde-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <?php foreach ($items as $item):
@@ -261,6 +264,7 @@ foreach (bimverdi_geo_gyldighet_valg() as $geo_slug => $geo_label) {
                 <!-- Content -->
                 <div class="p-5">
                     <div class="flex flex-wrap gap-2 mb-3">
+                        <?php if (function_exists('bimverdi_kilde_fargekode_firkant')) echo bimverdi_kilde_fargekode_firkant($item['id']); ?>
                         <?php if (!empty($item['temagruppe_terms'])): ?>
                         <span class="text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2 py-1 rounded">
                             <?php echo esc_html($item['temagruppe_terms'][0]->name); ?>
@@ -356,7 +360,10 @@ foreach (bimverdi_geo_gyldighet_valg() as $geo_slug => $geo_label) {
                             data-aar="<?php echo esc_attr($item['utgivelsesaar'] === 'eldre' ? '0' : (string) (int) $item['utgivelsesaar']); ?>">
                             <td class="px-4 py-3">
                                 <!-- Navnet lenker til detaljsiden (Bård, Trello #348 punkt 3.3) -->
-                                <a href="<?php echo esc_url($item['permalink']); ?>" class="font-medium text-[#111827] hover:underline"><?php echo esc_html($item['navn']); ?></a>
+                                <div class="flex items-center gap-2">
+                                    <?php if (function_exists('bimverdi_kilde_fargekode_firkant')) echo bimverdi_kilde_fargekode_firkant($item['id']); ?>
+                                    <a href="<?php echo esc_url($item['permalink']); ?>" class="font-medium text-[#111827] hover:underline"><?php echo esc_html($item['navn']); ?></a>
+                                </div>
                                 <?php if ($item['kort_beskrivelse']): ?>
                                 <div class="text-xs text-[#57534E] mt-0.5 line-clamp-1"><?php echo esc_html(wp_trim_words($item['kort_beskrivelse'], 12)); ?></div>
                                 <?php endif; ?>

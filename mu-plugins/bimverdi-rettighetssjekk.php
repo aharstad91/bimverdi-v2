@@ -326,3 +326,75 @@ if (defined('WP_CLI') && WP_CLI) {
         WP_CLI::success('Ferdig: ' . wp_json_encode($s['resultat'] ?? array()));
     });
 }
+
+/**
+ * Fargekode for en kunnskapskilde i katalogen (Bård 05.11.2026).
+ *
+ * - rod:   lenken er død (lenkevakten: brutt eller mangler lenke).
+ * - gronn: lenken virker, og verken lisens eller maskinell bruk har kjente begrensninger.
+ * - gul:   alt annet, dvs. noen begrensninger eller ikke ferdig avklart.
+ *
+ * Ukjent lisens regnes ikke som en begrensning, fordi nesten ingen kilder har lisens
+ * satt ennå. Ukjent maskinell bruk eller en lenke som ikke er sjekket gir gul.
+ *
+ * @return array{farge:string, tekst:string, grunner:string[]}
+ */
+function bimverdi_kilde_fargekode($id) {
+    $lenke    = trim((string) get_post_meta($id, 'ekstern_lenke', true));
+    $lv       = (string) get_post_meta($id, '_lenkevakt_status', true);
+    $maskinell = (string) get_post_meta($id, 'maskinell_bruk', true);
+    $lisens   = (string) get_post_meta($id, 'bruksrettigheter', true);
+
+    if ($lenke === '' || in_array($lv, array('brutt', 'mangler_lenke'), true)) {
+        return array('farge' => 'rod', 'tekst' => 'Lenken er død', 'grunner' => array('Lenken virker ikke'));
+    }
+
+    $grunner = array();
+    if (!in_array($lv, array('ok', 'oppdatert'), true)) {
+        $grunner[] = $lv === '' ? 'Lenken er ikke sjekket ennå' : 'Lenken svarer med advarsel (f.eks. sperret eller betalingsmur)';
+    }
+    if (in_array($maskinell, array('reservert', 'forbudt_vilkaar'), true)) {
+        $grunner[] = 'Scraping/AI-bruk er reservert eller forbudt';
+    } elseif (!in_array($maskinell, array('tillatt', 'ikke_reservert'), true)) {
+        $grunner[] = 'Maskinell bruk er ikke avklart';
+    }
+    if (in_array($lisens, array('aapen_ikke_kommers', 'aapen_ingen_bearb', 'vernet_egne_vilkaar', 'lisensiert'), true)) {
+        $grunner[] = 'Lisensen begrenser bruken';
+    }
+
+    if (empty($grunner)) {
+        return array('farge' => 'gronn', 'tekst' => 'Lenken virker, ingen kjente begrensninger', 'grunner' => array());
+    }
+    return array('farge' => 'gul', 'tekst' => 'Noen begrensninger eller ikke avklart', 'grunner' => $grunner);
+}
+
+/** Liten farget firkant med forklaring i title og for skjermlesere. */
+function bimverdi_kilde_fargekode_firkant($id) {
+    $k = bimverdi_kilde_fargekode($id);
+    $farger = array('gronn' => '#16A34A', 'gul' => '#EAB308', 'rod' => '#DC2626');
+    $tittel = $k['tekst'] . ($k['grunner'] && $k['farge'] === 'gul' ? ': ' . implode('. ', $k['grunner']) : '');
+    return sprintf(
+        '<span class="inline-block rounded-sm self-center" style="width:12px;height:12px;flex-shrink:0;background:%s" title="%s" role="img" aria-label="%s"></span>',
+        esc_attr($farger[$k['farge']]),
+        esc_attr($tittel),
+        esc_attr($tittel)
+    );
+}
+
+/** Forklaring av fargene, til toppen av katalogen. */
+function bimverdi_kilde_fargekode_forklaring() {
+    $rader = array(
+        array('#16A34A', 'Lenken virker, ingen kjente begrensninger i bruk eller scraping'),
+        array('#EAB308', 'Noen begrensninger (f.eks. scraping) eller ikke avklart'),
+        array('#DC2626', 'Lenken er død'),
+    );
+    $ut = '<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#57534E] mb-4">';
+    foreach ($rader as $r) {
+        $ut .= sprintf(
+            '<span class="inline-flex items-center gap-1"><span class="inline-block rounded-sm" style="width:12px;height:12px;flex-shrink:0;background:%s" aria-hidden="true"></span>%s</span>',
+            esc_attr($r[0]),
+            esc_html($r[1])
+        );
+    }
+    return $ut . '</div>';
+}
