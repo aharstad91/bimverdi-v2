@@ -18,6 +18,7 @@ $company_id = get_user_meta($user_id, 'bimverdi_company_id', true)
 $company = $company_id ? get_post($company_id) : null;
 
 require_once get_template_directory() . '/parts/components/kilde-kategori-felt.php';
+require_once get_template_directory() . '/parts/components/bruksrettigheter-felt.php';
 require_once get_template_directory() . '/parts/components/geo-gyldighet-felt.php';
 
 // Error handling
@@ -212,6 +213,9 @@ if (is_wp_error($temagrupper)) $temagrupper = [];
 
         <!-- Regionalt: fylke og kommuner (vises bare når «Regionalt» er valgt) -->
         <?php bimverdi_geo_region_panel(); ?>
+
+        <!-- Bruksrettigheter (lisens, maskinell bruk, vilkår) -->
+        <?php bimverdi_bruksrettigheter_felt(); ?>
 
         <hr class="border-[#E5E0D5]">
         <h2 class="text-lg font-semibold text-[#111827]">Detaljer</h2>

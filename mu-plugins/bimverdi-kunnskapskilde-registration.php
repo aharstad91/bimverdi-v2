@@ -137,6 +137,38 @@ add_filter('acf/validate_value/key=field_kunnskapskilde_kildetype', function ($v
 }, 10, 2);
 
 /**
+ * Bruksrettigheter (lisens) for kunnskapskilder. Bård 05.11.2026.
+ * Sier hva vi har lov til å gjøre med innholdet. Holdes adskilt fra «Tilgang»,
+ * som bare sier hva tilgangen koster.
+ */
+function bimverdi_bruksrettigheter_valg() {
+    return [
+        'fritt_ikke_vernet'   => 'Fritt – ikke vernet (lover, forskrifter, vedtak)',
+        'aapen_fri'           => 'Åpen lisens – fri bruk (CC0, CC BY, NLOD)',
+        'aapen_del_likt'      => 'Åpen lisens – del på samme vilkår (CC BY-SA, ODbL)',
+        'aapen_ikke_kommers'  => 'Åpen lisens – ikke kommersiell (CC BY-NC)',
+        'aapen_ingen_bearb'   => 'Åpen lisens – ingen bearbeiding (CC BY-ND)',
+        'vernet_fritt_tilgj'  => 'Vernet – fritt tilgjengelig, ingen lisens oppgitt',
+        'vernet_egne_vilkaar' => 'Vernet – egne bruksvilkår/avtale',
+        'lisensiert'          => 'Lisensiert/kommersiell (betalt lisens)',
+        'ukjent'              => 'Ukjent / ikke kartlagt',
+    ];
+}
+
+/**
+ * Maskinell bruk: scraping, tekst- og datautvinning (TDM) og AI-bruk.
+ */
+function bimverdi_maskinell_bruk_valg() {
+    return [
+        'tillatt'         => 'Uttrykkelig tillatt',
+        'ikke_reservert'  => 'Ikke reservert (ingen opt-out funnet)',
+        'reservert'       => 'Reservert maskinlesbart (robots.txt, TDMRep, noai)',
+        'forbudt_vilkaar' => 'Forbudt i bruksvilkår',
+        'ukjent'          => 'Ukjent / ikke kartlagt',
+    ];
+}
+
+/**
  * Handle kunnskapskilde registration/edit form submission
  */
 add_action('init', function () {
@@ -230,6 +262,16 @@ add_action('init', function () {
     $ant_anbefalte          = sanitize_text_field($_POST['ant_anbefalte_standarder'] ?? '');
     $anbefalte              = sanitize_text_field($_POST['anbefalte_standarder'] ?? '');
     $temagrupper            = array_map('sanitize_text_field', (array) ($_POST['temagrupper'] ?? []));
+    $bruksrettigheter       = sanitize_text_field($_POST['bruksrettigheter'] ?? '');
+    $maskinell_bruk         = sanitize_text_field($_POST['maskinell_bruk'] ?? '');
+    $vilkaar_lenke          = esc_url_raw($_POST['vilkaar_lenke'] ?? '');
+
+    if ($bruksrettigheter && !array_key_exists($bruksrettigheter, bimverdi_bruksrettigheter_valg())) {
+        $bruksrettigheter = '';
+    }
+    if ($maskinell_bruk && !array_key_exists($maskinell_bruk, bimverdi_maskinell_bruk_valg())) {
+        $maskinell_bruk = '';
+    }
 
     // --- Validate required fields ---
     if (empty($navn)) {
@@ -389,6 +431,19 @@ add_action('init', function () {
         update_field('ant_anbefalte_standarder', $ant_anbefalte, $post_id);
         update_field('anbefalte_standarder', $anbefalte, $post_id);
         update_field('registrert_av', $user_id, $post_id);
+
+        // Bruksrettigheter: oppdater kontrolldato bare når noe faktisk endres.
+        $rettigheter_endret = false;
+        foreach (['bruksrettigheter' => $bruksrettigheter, 'maskinell_bruk' => $maskinell_bruk, 'vilkaar_lenke' => $vilkaar_lenke] as $felt => $ny) {
+            $gammel = (string) get_post_meta($post_id, $felt, true);
+            if ($ny !== $gammel) {
+                update_field($felt, $ny, $post_id);
+                $rettigheter_endret = true;
+            }
+        }
+        if ($rettigheter_endret && ($bruksrettigheter || $maskinell_bruk)) {
+            update_field('rettigheter_kontrollert', current_time('Ymd'), $post_id);
+        }
 
         if ($company_id) {
             update_field('tilknyttet_bedrift', intval($company_id), $post_id);
