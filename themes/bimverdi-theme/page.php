@@ -24,6 +24,12 @@ get_header(); ?>
                     <?php if (has_excerpt()) : ?>
                         <p class="bv-page__excerpt"><?php echo get_the_excerpt(); ?></p>
                     <?php endif; ?>
+                    <?php
+                    // Foretak + medforfattere (mu-plugins/bimverdi-side-foretak-medforfattere.php)
+                    if (function_exists('bimverdi_side_byline')) {
+                        bimverdi_side_byline();
+                    }
+                    ?>
                 </div>
             </header>
 
