@@ -392,6 +392,65 @@ $kilde_created = get_the_date('d.m.Y');
                     </dl>
                 </section>
 
+                <?php
+                // BRUKSRETTIGHETER (Bård 05.11.2026). Viser lisens, maskinell bruk og
+                // når de sist ble sjekket. Automatisk sjekk: mu-plugins/bimverdi-rettighetssjekk.php.
+                $rs_lisens_valg   = function_exists('bimverdi_bruksrettigheter_valg') ? bimverdi_bruksrettigheter_valg() : array();
+                $rs_maskinell_valg = function_exists('bimverdi_maskinell_bruk_valg') ? bimverdi_maskinell_bruk_valg() : array();
+                $rs_lisens        = (string) get_post_meta(get_the_ID(), 'bruksrettigheter', true);
+                $rs_maskinell     = (string) get_post_meta(get_the_ID(), 'maskinell_bruk', true);
+                $rs_vilkaar       = (string) get_post_meta(get_the_ID(), 'vilkaar_lenke', true);
+                $rs_dato = function ($felt) {
+                    $raa = (string) get_post_meta(get_the_ID(), $felt, true);
+                    $d = $raa ? DateTime::createFromFormat('Ymd', $raa) : false;
+                    return $d ? $d->format('d.m.Y') : '';
+                };
+                $rs_auto   = $rs_dato('maskinell_bruk_sjekket');
+                $rs_manuel = $rs_dato('rettigheter_kontrollert');
+                ?>
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-6">Bruksrettigheter</h3>
+
+                    <dl class="space-y-6">
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">Lisens / bruksrett</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($rs_lisens_valg[$rs_lisens] ?? 'Ikke kartlagt'); ?></dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">Maskinell bruk (scraping/AI)</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($rs_maskinell_valg[$rs_maskinell] ?? 'Ikke kartlagt'); ?></dd>
+                        </div>
+
+                        <?php if ($rs_vilkaar): ?>
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">Vilkår</dt>
+                            <dd class="text-sm">
+                                <a href="<?php echo esc_url($rs_vilkaar); ?>" target="_blank" rel="noopener" class="text-[#111827] hover:underline">
+                                    <?php echo esc_html(parse_url($rs_vilkaar, PHP_URL_HOST) ?: $rs_vilkaar); ?>
+                                </a>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <div>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Maskinell bruk sjekket
+                            </dt>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($rs_auto ? $rs_auto . ' (automatisk, hver søndag)' : 'Ikke sjekket ennå'); ?></dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Vilkår og bruksrett kontrollert
+                            </dt>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo esc_html($rs_manuel ? $rs_manuel . ' (manuelt)' : 'Ikke kontrollert manuelt'); ?></dd>
+                        </div>
+                    </dl>
+                </section>
+
                 <!-- SNARVEIER Section -->
                 <section class="bg-[#F5F5F4] rounded-lg p-5">
                     <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-4">Snarveier</h3>
