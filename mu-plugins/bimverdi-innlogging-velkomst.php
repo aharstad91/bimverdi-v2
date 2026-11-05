@@ -93,13 +93,13 @@ add_action('acf/init', function () {
 function bimverdi_innlogging_velkomst_standard() {
     return [
         [
-            'sitat' => 'Jeg har brukt store deler av karrieren på å hjelpe byggenæringen med å ta i bruk ny teknologi og jobbe smartere. Med ByggChat som satsing får vi en spennende mulighet til å gjøre kunnskap og standarder lettere tilgjengelig, og bruke dem aktivt i praktiske problemstillinger. Det er nettopp i møtet mellom fagkunnskap, data og teknologi jeg tror vi kan skape stor verdi.',
+            'sitat' => 'Jeg har brukt store deler av karrieren på å hjelpe byggenæringen med å ta i bruk ny teknologi og jobbe smartere og brenner for å dele kunnskap i nettverk.',
             'navn'  => 'Halvor Jensen',
             'rolle' => 'Fagrådgiver BIM Verdi',
             'bilde' => 0,
         ],
         [
-            'sitat' => 'Læring skjer best i praktiske prosjekter - gjerne sammen med nettverkskollegaer. Vi er alle en liten del av en helhetlig løsning i en stadig mer sammensatt og kompleks verden. Min rolle er å forstå behov og utfordringer og finne kunder og samarbeidspartnere som ønsker å spille på lag - i nettverk.',
+            'sitat' => 'Sammen kan vi løse opp i digitale floker - i praktiske prosjekter, sammen med gode nettverkskollegaer.',
             'navn'  => 'Bård Krogshus',
             'rolle' => 'Nettverksleder i BIM Verdi og bygger av verdinettverk',
             'bilde' => 0,

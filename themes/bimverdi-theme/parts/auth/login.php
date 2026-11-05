@@ -172,6 +172,21 @@ $error_message = $error_messages[$error] ?? '';
             align-items: center;
         }
 
+        /* Velkomstboks over innloggingsboksen (Bård 05.11.2026) */
+        .auth-velkommen {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 0 var(--bv-space-md) 0;
+            padding: var(--bv-space-md) var(--bv-space-lg);
+            background: #FFF4EE;
+            border: 1px solid #F6D3C2;
+            border-radius: var(--bv-radius-lg);
+            font-size: var(--bv-text-sm);
+            line-height: 1.6;
+            color: var(--bv-text-primary);
+        }
+        .auth-velkommen strong { font-weight: 700; }
+
         .auth-card {
             background: var(--bv-bg-card);
             border-radius: var(--bv-radius-lg);
@@ -399,6 +414,7 @@ $error_message = $error_messages[$error] ?? '';
         </div>
 
         <div class="auth-form-wrapper">
+            <p class="auth-velkommen"><strong>Velkommen!</strong> Registrering/innlogging er nødvendig for å legge inn kunnskapskilder, bruke ByggChat ALFA (pilot) m.m.</p>
             <div class="auth-card">
                 <div class="auth-card-header">
                     <h2>Logg inn</h2>
