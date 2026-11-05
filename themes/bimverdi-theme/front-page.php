@@ -46,6 +46,7 @@ $total_companies = (new WP_Query([
         ],
     ],
 ]))->found_posts;
+$total_users     = count_users()['total_users'];
 $total_tools     = wp_count_posts('verktoy')->publish;
 $total_events    = wp_count_posts('arrangement')->publish;
 $total_sources   = wp_count_posts('kunnskapskilde')->publish;
@@ -1774,6 +1775,10 @@ $support = [
             <div>
                 <div class="bv3-cta__stat-num"><?php echo esc_html($total_companies); ?></div>
                 <div class="bv3-cta__stat-label">Deltakere</div>
+            </div>
+            <div>
+                <div class="bv3-cta__stat-num"><?php echo esc_html($total_users); ?></div>
+                <div class="bv3-cta__stat-label">Brukere</div>
             </div>
             <div>
                 <div class="bv3-cta__stat-num"><?php echo esc_html($total_tools); ?></div>
