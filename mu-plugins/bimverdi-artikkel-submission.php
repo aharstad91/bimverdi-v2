@@ -265,10 +265,23 @@ add_action('init', function () {
         // Ingress: use provided or auto-extract from content
         $ingress_value = !empty($ingress) ? $ingress : mb_substr(wp_strip_all_tags($content), 0, 200);
         update_field('artikkel_ingress', $ingress_value, $post_id);
-        // Foretaket settes ved innsending. Ved redigering beholdes det — ellers
-        // ville en admin eller medforfatter fra et annet foretak flyttet artikkelen.
-        if (!$is_edit || !get_post_meta($post_id, 'artikkel_bedrift', true)) {
+        // Foretak og medforfattere fra skjemaet (Bård 05.11.2026). Bare verdier
+        // fra utvalget godtas (deltakerforetak + det som allerede står på
+        // artikkelen) — se bimverdi-artikkel-foretak-medforfattere.php.
+        $afm = function_exists('bimverdi_afm_les_post')
+            ? bimverdi_afm_les_post($user_id, $is_edit ? $post_id : 0)
+            : ['foretak' => 0, 'medforfattere' => null];
+
+        if ($afm['foretak']) {
+            update_field('artikkel_bedrift', $afm['foretak'], $post_id);
+        } elseif (!$is_edit || !get_post_meta($post_id, 'artikkel_bedrift', true)) {
+            // Uten gyldig valg: eget foretak ved innsending; ved redigering beholdes
+            // det som står (ellers ville en admin eller medforfatter flyttet artikkelen).
             update_field('artikkel_bedrift', intval($company_id), $post_id);
+        }
+
+        if ($afm['medforfattere'] !== null) {
+            update_field('artikkel_medforfattere', $afm['medforfattere'], $post_id);
         }
     }
 

@@ -250,6 +250,14 @@ $kunnskapskilder = get_posts([
 
     <hr class="border-[#E5E0D8] my-8">
 
+    <?php
+    // Foretak + medforfattere (mu-plugins/bimverdi-artikkel-foretak-medforfattere.php)
+    if (function_exists('bimverdi_afm_render_felt')) {
+        bimverdi_afm_render_felt($user_id, 0);
+        echo '<hr class="border-[#E5E0D8] my-8">';
+    }
+    ?>
+
     <!-- Info boxes -->
     <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
         <?php _e('Etter du sender inn ser du status i listen din. Vi sjekker innsendte artikler manuelt før publisering.', 'bimverdi'); ?>
@@ -259,7 +267,7 @@ $kunnskapskilder = get_posts([
     <div class="mb-6 p-4 bg-[#F5F5F4] rounded-lg">
         <p class="text-xs text-[#5A5A5A] mb-1"><?php _e('Artikkelen publiseres med byline:', 'bimverdi'); ?></p>
         <p class="text-sm font-medium text-[#1A1A1A]">
-            <?php echo esc_html($current_user->display_name); ?>, <?php echo esc_html($company ? $company->post_title : ''); ?>
+            <?php echo esc_html($current_user->display_name); ?>, <span id="bv-byline-foretak"><?php echo esc_html($company ? $company->post_title : ''); ?></span>
         </p>
     </div>
 
