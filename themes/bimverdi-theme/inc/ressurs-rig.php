@@ -143,6 +143,53 @@ if (!function_exists('bv_rr_verktoy_blokk')) {
 }
 
 /**
+ * Bygg ett kunnskapskilde-kort (Standarder / Andre kunnskapskilder).
+ *
+ * @param array  $tax        tax_query for temagruppe(r).
+ * @param array  $meta_query Avgrensning på kilde-kategori.
+ * @param string $key        Blokk-nøkkel (data-block).
+ * @param string $heading    Kortoverskrift.
+ * @param string $icon       Ikon-navn.
+ * @param array  $slugs      Temagruppe-slugs (for arkiv-URL).
+ * @param array  $kildetyper Kilde-kategorier for «Se alle»-filteret i arkivet.
+ * @return array|null Blokk-array, eller null hvis tomt.
+ */
+if (!function_exists('bv_rr_kunnskap_blokk')) {
+    function bv_rr_kunnskap_blokk(array $tax, array $meta_query, $key, $heading, $icon, array $slugs, array $kildetyper) {
+        $q = new WP_Query([
+            'post_type' => 'kunnskapskilde', 'posts_per_page' => 3,
+            'orderby' => 'date', 'order' => 'DESC', 'tax_query' => $tax,
+            'meta_query' => $meta_query, 'no_found_rows' => false,
+        ]);
+        $blokk = null;
+        if ($q->found_posts > 0) {
+            $items = [];
+            foreach ($q->posts as $ks) {
+                $ekstern = get_field('ekstern_lenke', $ks->ID);
+                $items[] = [
+                    'title'    => get_the_title($ks->ID),
+                    'href'     => $ekstern ?: get_permalink($ks->ID),
+                    'external' => !empty($ekstern),
+                    'meta'     => bimverdi_kildekategorier_tekst($ks->ID),
+                    'icon'     => 'file-text',
+                ];
+            }
+            $arkiv_url = bv_rr_arkiv_url('kunnskapskilde', $slugs);
+            if ($arkiv_url) {
+                $arkiv_url = add_query_arg('kildetype', $kildetyper, $arkiv_url);
+            }
+            $blokk = [
+                'key' => $key, 'heading' => $heading, 'icon' => $icon,
+                'total' => (int) $q->found_posts, 'items' => $items,
+                'arkiv_url' => $arkiv_url,
+            ];
+        }
+        wp_reset_postdata();
+        return $blokk;
+    }
+}
+
+/**
  * Bygg matrise-blokkene for et sett temagruppe-termer (union).
  *
  * @param array $terms WP_Term-objekter (f.eks. fra wp_get_post_terms).
@@ -180,32 +227,26 @@ if (!function_exists('bv_ressurs_rig_build')) {
 
         $blocks = [];
 
-        // ── Kunnskapskilder ──
-        $q = new WP_Query([
-            'post_type' => 'kunnskapskilde', 'posts_per_page' => 3,
-            'orderby' => 'date', 'order' => 'DESC', 'tax_query' => $tax,
-            'no_found_rows' => false,
-        ]);
-        if ($q->found_posts > 0) {
-            $items = [];
-            foreach ($q->posts as $ks) {
-                $ekstern   = get_field('ekstern_lenke', $ks->ID);
-                $kildetype = bimverdi_kildekategorier_tekst($ks->ID);
-                $items[] = [
-                    'title'    => get_the_title($ks->ID),
-                    'href'     => $ekstern ?: get_permalink($ks->ID),
-                    'external' => !empty($ekstern),
-                    'meta'     => $kildetype,
-                    'icon'     => 'file-text',
-                ];
-            }
-            $blocks[] = [
-                'key' => 'kunnskapskilder', 'heading' => 'Kunnskapskilder', 'icon' => 'lightbulb',
-                'total' => $q->found_posts, 'items' => $items,
-                'arkiv_url' => bv_rr_arkiv_url('kunnskapskilde', $slugs),
-            ];
-        }
-        wp_reset_postdata();
+        // ── Standarder + Andre kunnskapskilder ──
+        // Standarder skilles ut i egen rute, først (Bård 05.11.2026). Kilder med
+        // kilde-kategori «standard» (også kombinert med en annen) vises KUN under
+        // Standarder, aldri under Andre kunnskapskilder.
+        $std_mq = bimverdi_kildekategori_meta_query(['standard']);
+        $blokk = bv_rr_kunnskap_blokk($tax, $std_mq, 'standarder', 'Standarder', 'book-open', $slugs, ['standard']);
+        if ($blokk) { $blocks[] = $blokk; }
+
+        $ikke_std_mq = [
+            'relation' => 'OR',
+            ['key' => 'kildetype', 'compare' => 'NOT EXISTS'],
+            [
+                'relation' => 'AND',
+                ['key' => 'kildetype', 'value' => 'standard', 'compare' => '!='],
+                ['key' => 'kildetype', 'value' => '"standard"', 'compare' => 'NOT LIKE'],
+            ],
+        ];
+        $andre_typer = array_values(array_diff(array_keys(bimverdi_kildekategori_valg()), ['standard']));
+        $blokk = bv_rr_kunnskap_blokk($tax, $ikke_std_mq, 'kunnskapskilder', 'Andre kunnskapskilder', 'lightbulb', $slugs, $andre_typer);
+        if ($blokk) { $blocks[] = $blokk; }
 
         // ── Verktøy (dual-source: taxonomy ∪ ACF formaalstema (kortnøkler)) ──
         // Splittet i to kort (møte m/ Bård 18.08.2026): deltakerregistrerte verktøy
