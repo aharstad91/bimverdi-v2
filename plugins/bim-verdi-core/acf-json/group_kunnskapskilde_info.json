@@ -309,6 +309,93 @@
             }
         },
         {
+            "key": "field_kunnskapskilde_tab_rettigheter",
+            "label": "Rettigheter",
+            "name": "",
+            "type": "tab",
+            "placement": "top"
+        },
+        {
+            "key": "field_kunnskapskilde_bruksrettigheter",
+            "label": "Lisens / bruksrett",
+            "name": "bruksrettigheter",
+            "type": "select",
+            "instructions": "Hva er lov å gjøre med innholdet? Uavhengig av «Tilgang», som bare sier hva tilgangen koster.",
+            "required": 0,
+            "choices": {
+                "fritt_ikke_vernet": "Fritt – ikke vernet (lover, forskrifter, vedtak)",
+                "aapen_fri": "Åpen lisens – fri bruk (CC0, CC BY, NLOD)",
+                "aapen_del_likt": "Åpen lisens – del på samme vilkår (CC BY-SA, ODbL)",
+                "aapen_ikke_kommers": "Åpen lisens – ikke kommersiell (CC BY-NC)",
+                "aapen_ingen_bearb": "Åpen lisens – ingen bearbeiding (CC BY-ND)",
+                "vernet_fritt_tilgj": "Vernet – fritt tilgjengelig, ingen lisens oppgitt",
+                "vernet_egne_vilkaar": "Vernet – egne bruksvilkår/avtale",
+                "lisensiert": "Lisensiert/kommersiell (betalt lisens)",
+                "ukjent": "Ukjent / ikke kartlagt"
+            },
+            "default_value": "ukjent",
+            "return_format": "value",
+            "allow_null": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_maskinell_bruk",
+            "label": "Maskinell bruk (scraping/AI)",
+            "name": "maskinell_bruk",
+            "type": "select",
+            "instructions": "Tillater kilden tekst- og datautvinning og AI-bruk?",
+            "required": 0,
+            "choices": {
+                "tillatt": "Uttrykkelig tillatt",
+                "ikke_reservert": "Ikke reservert (ingen opt-out funnet)",
+                "reservert": "Reservert maskinlesbart (robots.txt, TDMRep, noai)",
+                "forbudt_vilkaar": "Forbudt i bruksvilkår",
+                "ukjent": "Ukjent / ikke kartlagt"
+            },
+            "default_value": "ukjent",
+            "return_format": "value",
+            "allow_null": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_vilkaar_lenke",
+            "label": "Lenke til vilkår eller lisens",
+            "name": "vilkaar_lenke",
+            "type": "url",
+            "instructions": "Siden der bruksvilkårene eller lisensen står.",
+            "required": 0,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_rettigheter_kontrollert",
+            "label": "Rettigheter kontrollert",
+            "name": "rettigheter_kontrollert",
+            "type": "date_picker",
+            "instructions": "Når rettighetene sist ble sjekket.",
+            "required": 0,
+            "display_format": "d.m.Y",
+            "return_format": "d.m.Y",
+            "first_day": 1,
+            "wrapper": {
+                "width": "50"
+            }
+        },
+        {
+            "key": "field_kunnskapskilde_rettigheter_notat",
+            "label": "Notat om rettigheter (internt)",
+            "name": "rettigheter_notat",
+            "type": "textarea",
+            "instructions": "Funn fra kartleggingen, for eksempel hvilke AI-crawlere robots.txt stenger.",
+            "required": 0,
+            "rows": 3
+        },
+        {
             "key": "field_kunnskapskilde_tab_utvidet",
             "label": "Utvidet",
             "name": "",

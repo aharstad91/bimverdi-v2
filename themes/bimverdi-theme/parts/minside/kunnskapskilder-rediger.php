@@ -82,6 +82,7 @@ $kilde_updated = get_the_modified_date('d.m.Y', $kunnskapskilde_id);
 $kilde_type_label = bimverdi_kildekategorier_tekst($kunnskapskilde_id) ?: 'Ukategorisert';
 
 require_once get_template_directory() . '/parts/components/kilde-kategori-felt.php';
+require_once get_template_directory() . '/parts/components/bruksrettigheter-felt.php';
 require_once get_template_directory() . '/parts/components/geo-gyldighet-felt.php';
 
 // Error handling
@@ -297,6 +298,13 @@ if (is_wp_error($current_temagrupper)) $current_temagrupper = [];
 
         <!-- Regionalt: fylke og kommuner (vises bare når «Regionalt» er valgt) -->
         <?php bimverdi_geo_region_panel($current_geo, $current_geo_valg['fylker'], $current_geo_valg['kommuner']); ?>
+
+        <!-- Bruksrettigheter (lisens, maskinell bruk, vilkår) -->
+        <?php bimverdi_bruksrettigheter_felt(array(
+            'bruksrettigheter' => (string) get_post_meta($kunnskapskilde_id, 'bruksrettigheter', true),
+            'maskinell_bruk'   => (string) get_post_meta($kunnskapskilde_id, 'maskinell_bruk', true),
+            'vilkaar_lenke'    => (string) get_post_meta($kunnskapskilde_id, 'vilkaar_lenke', true),
+        )); ?>
 
         <hr class="border-[#E5E0D5]">
         <h2 class="text-lg font-semibold text-[#111827]">Detaljer</h2>
