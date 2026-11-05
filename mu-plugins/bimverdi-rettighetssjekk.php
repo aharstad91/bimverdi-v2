@@ -2,7 +2,9 @@
 /**
  * BIM Verdi - Ukentlig automatisk sjekk av maskinell bruk for kunnskapskilder
  *
- * Bård 05.11.2026: alle kunnskapskilder sjekkes hver søndag kl. 06:00 (Europe/Oslo).
+ * Bård 05.11.2026: alle kunnskapskilder sjekkes hver søndag kl. 07:00 (Europe/Oslo),
+ * en time etter BV lenkevakt (kl. 06:00). Da treffer ikke de to sjekkene de samme
+ * nettstedene samtidig, og flyttede lenker er allerede rettet av lenkevakten.
  *
  * Sjekken leser det som er maskinlesbart hos kilden:
  * - robots.txt (om AI-crawlere eller alle roboter er stengt for kildens sti)
@@ -32,26 +34,35 @@ const BIMVERDI_RS_PULJE  = 'bimverdi_rettighetssjekk_pulje';
 const BIMVERDI_RS_KO     = 'bimverdi_rettighetssjekk_ko';
 const BIMVERDI_RS_SIST   = 'bimverdi_rettighetssjekk_sist';
 const BIMVERDI_RS_STR    = 15;
+const BIMVERDI_RS_TIME   = 7;
 
 /** AI-crawlere vi ser etter i robots.txt. */
 function bimverdi_rs_roboter() {
     return array('GPTBot', 'ClaudeBot', 'anthropic-ai', 'CCBot', 'Google-Extended', 'PerplexityBot', 'Bytespider', 'Applebot-Extended', 'meta-externalagent');
 }
 
-/** Neste søndag kl. 06:00 norsk tid, som Unix-tid. */
+/** Neste søndag kl. 07:00 norsk tid, som Unix-tid. */
 function bimverdi_rs_neste_sondag() {
     $tz  = wp_timezone();
     $naa = new DateTimeImmutable('now', $tz);
-    $t   = $naa->modify('sunday')->setTime(6, 0);
+    $t   = $naa->modify('sunday')->setTime(BIMVERDI_RS_TIME, 0);
     if ($t <= $naa) {
         $t = $t->modify('+7 days');
     }
     return $t->getTimestamp();
 }
 
-/** Planlegg neste kjøring. Engangshendelse hver gang, så klokkeslettet holder over sommertid. */
+/**
+ * Planlegg neste kjøring. Engangshendelse hver gang, så klokkeslettet holder over sommertid.
+ * En hendelse som står på feil klokkeslett (f.eks. gamle 06:00) flyttes.
+ */
 add_action('init', function () {
-    if (!wp_next_scheduled(BIMVERDI_RS_START)) {
+    $neste = wp_next_scheduled(BIMVERDI_RS_START);
+    if ($neste && (int) wp_date('G', $neste) !== BIMVERDI_RS_TIME) {
+        wp_unschedule_event($neste, BIMVERDI_RS_START);
+        $neste = false;
+    }
+    if (!$neste) {
         wp_schedule_single_event(bimverdi_rs_neste_sondag(), BIMVERDI_RS_START);
     }
 });
@@ -339,9 +350,16 @@ if (defined('WP_CLI') && WP_CLI) {
  *
  * @return array{farge:string, tekst:string, grunner:string[]}
  */
+/** Er pluginen BV lenkevakt aktiv? Klassen finnes bare når pluginen er lastet. */
+function bimverdi_lenkevakt_aktiv() {
+    return class_exists('BV_Lenkevakt');
+}
+
 function bimverdi_kilde_fargekode($id) {
     $lenke    = trim((string) get_post_meta($id, 'ekstern_lenke', true));
-    $lv       = (string) get_post_meta($id, '_lenkevakt_status', true);
+    $lv_aktiv = bimverdi_lenkevakt_aktiv();
+    // Når lenkevakten er av, er de lagrede resultatene foreldet og brukes ikke.
+    $lv       = $lv_aktiv ? (string) get_post_meta($id, '_lenkevakt_status', true) : '';
     $maskinell = (string) get_post_meta($id, 'maskinell_bruk', true);
     $lisens   = (string) get_post_meta($id, 'bruksrettigheter', true);
 
@@ -350,7 +368,9 @@ function bimverdi_kilde_fargekode($id) {
     }
 
     $grunner = array();
-    if (!in_array($lv, array('ok', 'oppdatert'), true)) {
+    if (!$lv_aktiv) {
+        $grunner[] = 'Lenkesjekk er ikke aktiv';
+    } elseif (!in_array($lv, array('ok', 'oppdatert'), true)) {
         $grunner[] = $lv === '' ? 'Lenken er ikke sjekket ennå' : 'Lenken svarer med advarsel (f.eks. sperret eller betalingsmur)';
     }
     if (in_array($maskinell, array('reservert', 'forbudt_vilkaar'), true)) {
