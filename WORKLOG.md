@@ -3,6 +3,27 @@
 <!-- Each entry is a YAML block. Most recent first. -->
 
 ---
+date: 2026-11-05
+created_at: "2026-11-05T09:30:00Z"
+action: "Bård er i gang: pakken kjørt på Windows i møtet, nøkkelen hans står bak gaten, og han merget sin første PR selv (#6, antall brukere på forsiden). Tre Windows-feil og BOM-feilen i gaten er rettet."
+branch: "main"
+resume_focus: "Følg med på gateloggen etter Bårds første arbeidsdager. Neste store oppgave: Bårds ti prod-plugins inn i repoet (bimverdi-bol)."
+files:
+  - "_claude/bard-setup/Setup-BIMVerdi.ps1 — icacls i stedet for Set-Acl; offentlig nøkkel uten kommentar"
+  - "_claude/bard-setup/Start-BIMVerdi.cmd — stopper med forklaring når den kjøres rett fra ZIP-en"
+  - "_claude/bard-setup/server-gate.py — fjerner BOM foran stdin; installert på serveren (sha256 63f168134d7a34a9…)"
+  - "_claude/bard-setup/tests/test_windows_regressions.py, tests/test_gate.py — tester for de fire feilene"
+summary: "Smoke-test 29/29 før møtet. Pakke bard-20261103-80cef44f aktivert 08:59 (utløp 06.11 08:59). Oppsettet stoppet to ganger på Windows og ble rettet i møtet ved å bytte Setup-BIMVerdi.ps1 i samme ZIP (samme pakke og kode): (1) Set-Acl krever SeSecurityPrivilege, nå icacls; (2) Windows ssh-keygen -y skriver kommentar bak nøkkelen, og enroll.py avviste den før kodesjekken (ingen forsøk brukt). Bård dobbeltklikket også Start-BIMVerdi.cmd inne i ZIP-en; cmd-filen sjekker nå det. Registrert 09:25 UTC fra X1-13-BK\\BårdKrogshus, finalize ok, attempts 0, én linje i authorized_keys. Bårds agent fant selv BOM-feilen: PowerShell 5.1 på UTF-8-konsoll sender EF BB BF foran stdin, så første linje (set -e) feilet og gaten klassifiserte alt som skriving (unødvendige DB-kopier). Rettet i gaten på serveren, testet mot prod med ekte BOM-skript (set -e virker). PR #6 fra baardkr merget av ham selv etter grønn php-lint, uten godkjenner; bimverdi.no viser «Brukere» i tallraden, HTTP 200. 32 enhetstester og 29 live-sjekker grønne."
+status: done
+detail: |
+  Bård bør si til agenten sin at BOM-feilen er rettet, så den slutter å legge inn en tom første linje.
+  Klientsiden sender fortsatt BOM; gaten fjerner den. Ikke rettet i Invoke-Ssh.ps1 med vilje: kan ikke testes uten Windows, og serverrettelsen dekker alt.
+  Gammel ZIP-kopi (.bak-setacl) slettet. Leveringsmappen har også en utpakket BIMVerdi-startpakke/ fra 09:26 (Finder). Engangsnøkkelen i den er død etter finalize.
+  GitHub: PR uten godkjenner virker som planlagt. Andreas trenger ikke gjøre noe. Skru eventuelt Watch ned til «Participating and @mentions».
+  Les gateloggen: ssh bimver_28287@jana-osl.servebolt.cloud 'tail -n 50 ~/private/bard-gate/log/$(date +%F).jsonl'
+  Én testlinje i dagens logg har label bimverdi-bard-bomtest-andreas (BOM-testen mot prod). Den er fra Andreas, ikke Bård.
+
+---
 date: 2026-11-03
 created_at: "2026-11-03T20:33:42Z"
 action: "START HER TORSDAG 05.11: Bårds startpakke er bygget om, reviewet av Astra, rettet og merget. Pakke bard-20261103-80cef44f ligger klar, IKKE aktivert. Kjøreplanen for torsdag står i detail."

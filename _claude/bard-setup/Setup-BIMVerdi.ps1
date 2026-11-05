@@ -9,12 +9,12 @@ $ssh = Join-Path $env:WINDIR 'System32\OpenSSH\ssh.exe'
 $keygen = Join-Path $env:WINDIR 'System32\OpenSSH\ssh-keygen.exe'
 
 function Protect-PrivateFile([string]$Path) {
-    $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
-    $acl = New-Object System.Security.AccessControl.FileSecurity
-    $acl.SetOwner($sid)
-    $acl.SetAccessRuleProtection($true, $false)
-    $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule($sid, 'FullControl', 'Allow')))
-    Set-Acl -LiteralPath $Path -AclObject $acl
+    # icacls, not Set-Acl: Set-Acl also writes the audit section, which needs SeSecurityPrivilege (admin only).
+    # Removes inherited access and leaves full control for the current user only. SID form works in every Windows language.
+    $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    $icacls = Join-Path $env:WINDIR 'System32\icacls.exe'
+    $output = & $icacls $Path /inheritance:r /grant:r ('*' + $sid + ':F')
+    if ($LASTEXITCODE -ne 0) { throw "Kunne ikke låse tilgangen til ${Path}: $output" }
 }
 
 function Invoke-Keygen([string]$Arguments) {
@@ -73,7 +73,8 @@ try {
         Invoke-Keygen ('-q -t ed25519 -N "" -C bimverdi-bard -f "' + $keyPath + '"') | Out-Null
     }
     Protect-PrivateFile $keyPath
-    $publicKey = Invoke-Keygen ('-y -P "" -f "' + $keyPath + '"')
+    # Windows ssh-keygen -y adds the comment; the server accepts only "ssh-ed25519 <blob>".
+    $publicKey = ((Invoke-Keygen ('-y -P "" -f "' + $keyPath + '"')) -split '\s+')[0..1] -join ' '
     Set-Content -Encoding ASCII -LiteralPath ($keyPath + '.pub') -Value $publicKey
     $bootstrap = Join-Path $workspace '.enrollment_key'
     $knownHosts = (Join-Path $workspace 'known_hosts').Replace('\', '/')

@@ -86,4 +86,13 @@ python3 -m unittest discover -s _claude/bard-setup/tests -v
   i Setup mot en falsk ssh, og parsing av skriptene (trenger `pwsh`).
 - `tests/live-smoke.py` kjører hele flyten mot Servebolt med en engangspakke og rydder etter seg.
 
-Windows-rettigheter, installasjon av OpenSSH og skrivebordssnarveien må verifiseres på Bårds PC (bimverdi-82o).
+- `test_windows_regressions.py`: de tre feilene fra Bårds PC 05.11.2026 (se under).
+
+Verifisert på Bårds PC (Windows 11, PowerShell 5.1) 05.11.2026: oppsett, registrering, statussjekk, gate og PR-flyt.
+Tre Windows-feil kom fram og er rettet:
+- `Set-Acl` krever SeSecurityPrivilege (admin). Setup låser nøkkelfilene med `icacls` i stedet.
+- `ssh-keygen -y` på Windows skriver kommentaren bak nøkkelen. Setup sender bare type og nøkkel.
+- Et dobbeltklikk på `Start-BIMVerdi.cmd` inne i ZIP-en kopierer bare den filen til Temp. Den stopper nå med en forklaring.
+
+Windows PowerShell 5.1 på en UTF-8-konsoll legger en BOM (EF BB BF) foran stdin til ssh. Gaten fjerner den
+før skriptet kjører. Uten det feilet første linje (`set -e`) stille.
