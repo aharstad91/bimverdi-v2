@@ -48,6 +48,30 @@
             "placeholder": "Standard Norge"
         },
         {
+            "key": "field_kunnskapskilde_utgiver_kontaktperson",
+            "label": "Utgivers kontaktperson",
+            "name": "utgiver_kontaktperson",
+            "type": "text",
+            "instructions": "Navn eller funksjon hos utgiver (f.eks. Kundeservice). Vises bare for admin.",
+            "required": 0
+        },
+        {
+            "key": "field_kunnskapskilde_utgiver_epost",
+            "label": "Utgivers e-post",
+            "name": "utgiver_epost",
+            "type": "email",
+            "instructions": "E-post til utgiver. Vises bare for admin.",
+            "required": 0
+        },
+        {
+            "key": "field_kunnskapskilde_utgiver_kontakt_kilde",
+            "label": "Kilde for kontaktinfo",
+            "name": "utgiver_kontakt_kilde",
+            "type": "text",
+            "instructions": "Hvor kontaktinfoen ble funnet (URL og dato). Fylles av automatisk kartlegging.",
+            "required": 0
+        },
+        {
             "key": "field_kunnskapskilde_tab_klassifisering",
             "label": "Klassifisering",
             "name": "",

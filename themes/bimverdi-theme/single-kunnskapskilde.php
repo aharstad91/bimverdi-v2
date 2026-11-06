@@ -554,6 +554,41 @@ $kilde_created = get_the_date('d.m.Y');
                 </section>
                 <?php endif; ?>
 
+                <?php
+                // KONTAKT UTGIVER (Bård 06.11.2026). Bare for administratorer.
+                if (current_user_can('manage_options')):
+                    $ku_person = (string) get_post_meta(get_the_ID(), 'utgiver_kontaktperson', true);
+                    $ku_epost  = (string) get_post_meta(get_the_ID(), 'utgiver_epost', true);
+                    $ku_kilde  = (string) get_post_meta(get_the_ID(), 'utgiver_kontakt_kilde', true);
+                ?>
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-6">Kontakt utgiver (kun admin)</h3>
+
+                    <dl class="space-y-6">
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">Kontaktperson</dt>
+                            <dd class="text-sm text-[#111827]"><?php echo esc_html($ku_person ?: 'Ikke registrert'); ?></dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">E-post</dt>
+                            <dd class="text-sm">
+                                <?php if ($ku_epost): ?>
+                                <a href="mailto:<?php echo esc_attr($ku_epost); ?>" class="text-[#111827] hover:underline"><?php echo esc_html($ku_epost); ?></a>
+                                <?php else: ?>
+                                <span class="text-[#111827]">Ikke registrert</span>
+                                <?php endif; ?>
+                            </dd>
+                        </div>
+                        <?php if ($ku_kilde): ?>
+                        <div>
+                            <dt class="text-sm text-[#57534E] mb-1.5">Funnet</dt>
+                            <dd class="text-sm text-[#57534E]" style="overflow-wrap:anywhere"><?php echo esc_html($ku_kilde); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                    </dl>
+                </section>
+                <?php endif; ?>
+
                 <!-- SNARVEIER Section -->
                 <section class="bg-[#F5F5F4] rounded-lg p-5">
                     <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-4">Snarveier</h3>

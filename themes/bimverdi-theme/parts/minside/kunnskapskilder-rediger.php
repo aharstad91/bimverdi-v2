@@ -343,6 +343,11 @@ if (is_wp_error($current_temagrupper)) $current_temagrupper = [];
             </div>
         </div>
 
+        <?php bimverdi_utgiver_kontakt_felt(array(
+            'utgiver_kontaktperson' => (string) get_post_meta($kunnskapskilde_id, 'utgiver_kontaktperson', true),
+            'utgiver_epost'         => (string) get_post_meta($kunnskapskilde_id, 'utgiver_epost', true),
+        )); ?>
+
         <div class="grid sm:grid-cols-2 gap-4">
             <!-- Lovpålagte standarder -->
             <div>
