@@ -16,7 +16,13 @@ if (have_posts()) : while (have_posts()) : the_post();
 $kunnskapskilde_navn = get_field('kunnskapskilde_navn') ?: get_the_title();
 $kort_beskrivelse = get_field('kort_beskrivelse');
 $detaljert_beskrivelse = get_field('detaljert_beskrivelse');
-$ekstern_lenke = get_field('ekstern_lenke');
+// Innlogging kreves for lenken, bruksrettigheter og lenkesjekk (Bård 06.11.2026).
+// Selve siden er åpen, så Google fortsatt finner den.
+// Samme regel i archive-kunnskapskilde.php, inc/ressurs-rig.php og temagruppe-malene.
+$har_ekstern_lenke = (bool) get_field('ekstern_lenke');
+$lenke_tilgang = is_user_logged_in();
+$ekstern_lenke = $lenke_tilgang ? get_field('ekstern_lenke') : '';
+$logg_inn_url = home_url('/logg-inn/?redirect_to=' . rawurlencode(get_permalink()));
 $utgiver = get_field('utgiver');
 $spraak = get_field('spraak');
 $versjon = get_field('versjon');
@@ -139,6 +145,13 @@ $kilde_created = get_the_date('d.m.Y');
                     'icon' => 'external-link',
                     'href' => $ekstern_lenke,
                     'target' => '_blank'
+                ]); ?>
+                <?php elseif ($har_ekstern_lenke): ?>
+                <?php bimverdi_button([
+                    'text' => 'Logg inn for å åpne kilden',
+                    'variant' => 'primary',
+                    'icon' => 'log-in',
+                    'href' => $logg_inn_url,
                 ]); ?>
                 <?php endif; ?>
             </div>
@@ -321,6 +334,15 @@ $kilde_created = get_the_date('d.m.Y');
                                 </a>
                             </dd>
                         </div>
+                        <?php elseif ($har_ekstern_lenke): ?>
+                        <div class="grid grid-cols-2 py-6 gap-4">
+                            <dt class="text-sm text-[#57534E]">Ekstern lenke</dt>
+                            <dd class="text-sm">
+                                <a href="<?php echo esc_url($logg_inn_url); ?>" class="text-[#111827] hover:underline">
+                                    Logg inn for å se lenken
+                                </a>
+                            </dd>
+                        </div>
                         <?php endif; ?>
 
                     </dl>
@@ -392,6 +414,7 @@ $kilde_created = get_the_date('d.m.Y');
                     </dl>
                 </section>
 
+                <?php if ($lenke_tilgang): ?>
                 <?php
                 // LENKESJEKK (Bård 05.11.2026). Viser resultatet fra pluginen bv-lenkevakt,
                 // som sjekker alle kunnskapskilder hver søndag kl. 06:00. Vi leser bare
@@ -511,6 +534,25 @@ $kilde_created = get_the_date('d.m.Y');
                         </div>
                     </dl>
                 </section>
+                <?php else: ?>
+                <!-- Utlogget: lenke, lenkesjekk og bruksrettigheter krever innlogging -->
+                <section class="bg-[#F5F5F4] rounded-lg p-5">
+                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-4">Kun for innloggede</h3>
+                    <p class="text-sm text-[#57534E] mb-4">
+                        Logg inn for å åpne kilden og se bruksrettigheter og lenkesjekk. Det er gratis å opprette konto.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="<?php echo esc_url($logg_inn_url); ?>"
+                           class="px-4 py-2 text-sm font-medium text-center text-white bg-[#111827] rounded-lg hover:bg-[#1F2937] transition-colors">
+                            Logg inn
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/registrer/')); ?>"
+                           class="px-4 py-2 text-sm font-medium text-center text-[#111827] bg-white rounded-lg hover:bg-[#E7E5E4] transition-colors">
+                            Opprett konto
+                        </a>
+                    </div>
+                </section>
+                <?php endif; ?>
 
                 <!-- SNARVEIER Section -->
                 <section class="bg-[#F5F5F4] rounded-lg p-5">
@@ -523,6 +565,11 @@ $kilde_created = get_the_date('d.m.Y');
                            rel="noopener"
                            class="block py-3 text-sm text-[#111827] hover:text-[#F97316] transition-colors">
                             Åpne ekstern kilde
+                        </a>
+                        <?php elseif ($har_ekstern_lenke): ?>
+                        <a href="<?php echo esc_url($logg_inn_url); ?>"
+                           class="block py-3 text-sm text-[#111827] hover:text-[#F97316] transition-colors">
+                            Logg inn for å åpne kilden
                         </a>
                         <?php endif; ?>
 

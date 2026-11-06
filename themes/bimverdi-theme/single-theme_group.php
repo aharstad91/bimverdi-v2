@@ -108,7 +108,7 @@ if ($tg_tax) {
     ]);
     $items = [];
     foreach ($q->posts as $ks) {
-        $ekstern  = get_field('ekstern_lenke', $ks->ID);
+        $ekstern  = is_user_logged_in() ? get_field('ekstern_lenke', $ks->ID) : ''; // Lenke kun for innloggede (Bård 06.11.2026)
         $kildetype = bimverdi_kildekategorier_tekst($ks->ID);
         $items[] = [
             'title'    => get_the_title($ks->ID),
