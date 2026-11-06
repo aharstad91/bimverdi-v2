@@ -393,12 +393,31 @@ function bimverdi_kilde_fargekode_firkant($id) {
     $k = bimverdi_kilde_fargekode($id);
     $farger = array('gronn' => '#16A34A', 'gul' => '#EAB308', 'rod' => '#DC2626');
     $tittel = $k['tekst'] . ($k['grunner'] && $k['farge'] === 'gul' ? ': ' . implode('. ', $k['grunner']) : '');
-    return sprintf(
+    $firkant = sprintf(
         '<span class="inline-block rounded-sm self-center" style="width:12px;height:12px;flex-shrink:0;background:%s" title="%s" role="img" aria-label="%s"></span>',
         esc_attr($farger[$k['farge']]),
         esc_attr($tittel),
         esc_attr($tittel)
     );
+    // Blå firkant i tillegg: åpenbart betalbar tjeneste (Bård 06.11.2026).
+    if (bimverdi_kilde_er_betalt($id)) {
+        $bla = 'Betalbar tjeneste (f.eks. standard eller kurs)';
+        $firkant = '<span class="inline-flex items-center gap-1 self-center">' . $firkant . sprintf(
+            '<span class="inline-block rounded-sm" style="width:12px;height:12px;flex-shrink:0;background:#2563EB" title="%s" role="img" aria-label="%s"></span>',
+            esc_attr($bla),
+            esc_attr($bla)
+        ) . '</span>';
+    }
+    return $firkant;
+}
+
+/** Er kilden en åpenbart betalbar tjeneste? Bygger på feltet «Tilgang» (betalt/abonnement). */
+function bimverdi_kilde_er_betalt($id) {
+    $tilgang = get_post_meta($id, 'tilgang', true);
+    if (is_array($tilgang)) {
+        $tilgang = reset($tilgang);
+    }
+    return in_array((string) $tilgang, array('betalt', 'abonnement'), true);
 }
 
 /** Forklaring av fargene, til toppen av katalogen. */
@@ -407,6 +426,7 @@ function bimverdi_kilde_fargekode_forklaring() {
         array('#16A34A', 'Lenken virker, ingen kjente begrensninger i bruk eller scraping'),
         array('#EAB308', 'Noen begrensninger (f.eks. scraping) eller ikke avklart'),
         array('#DC2626', 'Lenken er død'),
+        array('#2563EB', 'Betalbar tjeneste (f.eks. standard eller kurs)'),
     );
     $ut = '<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#57534E] mb-4">';
     foreach ($rader as $r) {

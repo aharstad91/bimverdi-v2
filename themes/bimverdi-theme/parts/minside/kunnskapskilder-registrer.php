@@ -250,6 +250,8 @@ if (is_wp_error($temagrupper)) $temagrupper = [];
             </div>
         </div>
 
+        <?php bimverdi_utgiver_kontakt_felt(); ?>
+
         <div class="grid sm:grid-cols-2 gap-4">
             <!-- Lovpålagte standarder -->
             <div>

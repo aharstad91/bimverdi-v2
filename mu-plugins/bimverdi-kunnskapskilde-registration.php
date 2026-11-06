@@ -265,6 +265,8 @@ add_action('init', function () {
     $bruksrettigheter       = sanitize_text_field($_POST['bruksrettigheter'] ?? '');
     $maskinell_bruk         = sanitize_text_field($_POST['maskinell_bruk'] ?? '');
     $vilkaar_lenke          = esc_url_raw($_POST['vilkaar_lenke'] ?? '');
+    $utgiver_kontaktperson  = sanitize_text_field($_POST['utgiver_kontaktperson'] ?? '');
+    $utgiver_epost          = sanitize_email($_POST['utgiver_epost'] ?? '');
 
     if ($bruksrettigheter && !array_key_exists($bruksrettigheter, bimverdi_bruksrettigheter_valg())) {
         $bruksrettigheter = '';
@@ -414,6 +416,9 @@ add_action('init', function () {
         update_field('detaljert_beskrivelse', $detaljert_beskrivelse, $post_id);
         update_field('ekstern_lenke', $ekstern_lenke, $post_id);
         update_field('utgiver', $utgiver, $post_id);
+        // Utgivers kontaktinfo (Bård 06.11.2026). Bare når feltene finnes i skjemaet.
+        if (isset($_POST['utgiver_kontaktperson'])) update_field('utgiver_kontaktperson', $utgiver_kontaktperson, $post_id);
+        if (isset($_POST['utgiver_epost'])) update_field('utgiver_epost', $utgiver_epost, $post_id);
         if ($spraak) update_field('spraak', $spraak, $post_id);
         update_field('versjon', $versjon, $post_id);
         if ($utgivelsesaar) update_field('utgivelsesaar', $utgivelsesaar, $post_id);

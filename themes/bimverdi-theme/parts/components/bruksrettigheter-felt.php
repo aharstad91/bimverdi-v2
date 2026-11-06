@@ -60,3 +60,36 @@ function bimverdi_bruksrettigheter_felt($verdier = array()) {
     </div>
     <?php
 }
+
+/**
+ * Utgivers kontaktperson og e-post (Bård 06.11.2026).
+ * Vises bare for admin på kildesiden. Brukes til å kontakte utgiver om bruk av innholdet.
+ *
+ * @param array $verdier ['utgiver_kontaktperson' => '', 'utgiver_epost' => ''].
+ */
+function bimverdi_utgiver_kontakt_felt($verdier = array()) {
+    $verdier = wp_parse_args($verdier, array(
+        'utgiver_kontaktperson' => '',
+        'utgiver_epost'         => '',
+    ));
+    $input_class = 'w-full px-4 py-3 border border-[#E5E0D5] rounded-lg text-[#1A1A1A] placeholder:text-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent';
+    ?>
+    <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+            <label for="utgiver_kontaktperson" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Utgivers kontaktperson</label>
+            <input type="text" id="utgiver_kontaktperson" name="utgiver_kontaktperson"
+                   value="<?php echo esc_attr($verdier['utgiver_kontaktperson']); ?>"
+                   placeholder="Navn eller funksjon, f.eks. Kundeservice"
+                   class="<?php echo esc_attr($input_class); ?>">
+        </div>
+        <div>
+            <label for="utgiver_epost" class="block text-sm font-semibold text-[#1A1A1A] mb-2">Utgivers e-post</label>
+            <input type="email" id="utgiver_epost" name="utgiver_epost"
+                   value="<?php echo esc_attr($verdier['utgiver_epost']); ?>"
+                   placeholder="F.eks. post@utgiver.no"
+                   class="<?php echo esc_attr($input_class); ?>">
+        </div>
+    </div>
+    <p class="text-xs text-[#888888]">Kontaktinformasjonen vises bare for BIM Verdi-administratorer.</p>
+    <?php
+}
