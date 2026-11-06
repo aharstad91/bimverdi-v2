@@ -209,7 +209,11 @@ foreach (bimverdi_geo_gyldighet_valg() as $geo_slug => $geo_label) {
                 'id'               => get_the_ID(),
                 'navn'             => get_field('kunnskapskilde_navn', get_the_ID()) ?: get_the_title(),
                 'kort_beskrivelse' => get_field('kort_beskrivelse', get_the_ID()),
-                'ekstern_lenke'    => get_field('ekstern_lenke', get_the_ID()),
+                // Lenken til kilden vises bare for innloggede (Bård 06.11.2026).
+                'ekstern_lenke'    => is_user_logged_in() ? get_field('ekstern_lenke', get_the_ID()) : '',
+                'logg_inn_url'     => (!is_user_logged_in() && get_field('ekstern_lenke', get_the_ID()))
+                    ? home_url('/logg-inn/?redirect_to=' . rawurlencode(get_the_permalink()))
+                    : '',
                 'utgiver'          => get_field('utgiver', get_the_ID()),
                 'kildetype'        => $kildetype_val,
                 'utgivelsesaar'    => get_field('utgivelsesaar', get_the_ID()),
@@ -318,6 +322,12 @@ foreach (bimverdi_geo_gyldighet_valg() as $geo_slug => $geo_label) {
                            class="px-4 py-2 text-sm font-medium text-center text-white bg-[#111827] rounded-lg hover:bg-[#1F2937] transition-colors">
                             Besøk
                         </a>
+                        <?php elseif (!empty($item['logg_inn_url'])): ?>
+                        <a href="<?php echo esc_url($item['logg_inn_url']); ?>"
+                           class="px-4 py-2 text-sm font-medium text-center text-white bg-[#111827] rounded-lg hover:bg-[#1F2937] transition-colors"
+                           title="Logg inn for å åpne kilden">
+                            Logg inn
+                        </a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -399,6 +409,10 @@ foreach (bimverdi_geo_gyldighet_valg() as $geo_slug => $geo_label) {
                                     <?php if (!empty($item['ekstern_lenke'])): ?>
                                     <a href="<?php echo esc_url($item['ekstern_lenke']); ?>" target="_blank" rel="noopener" class="text-[#111827] hover:text-[#57534E] transition-colors" title="Besøk ekstern kilde">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    </a>
+                                    <?php elseif (!empty($item['logg_inn_url'])): ?>
+                                    <a href="<?php echo esc_url($item['logg_inn_url']); ?>" class="text-[#111827] hover:text-[#57534E] transition-colors" title="Logg inn for å åpne kilden" aria-label="Logg inn for å åpne kilden">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                     </a>
                                     <?php endif; ?>
                                 </div>

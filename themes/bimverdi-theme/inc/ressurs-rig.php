@@ -165,7 +165,7 @@ if (!function_exists('bv_rr_kunnskap_blokk')) {
         if ($q->found_posts > 0) {
             $items = [];
             foreach ($q->posts as $ks) {
-                $ekstern = get_field('ekstern_lenke', $ks->ID);
+                $ekstern = is_user_logged_in() ? get_field('ekstern_lenke', $ks->ID) : ''; // Lenke kun for innloggede (Bård 06.11.2026)
                 $items[] = [
                     'title'    => get_the_title($ks->ID),
                     'href'     => $ekstern ?: get_permalink($ks->ID),

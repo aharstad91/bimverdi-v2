@@ -62,7 +62,7 @@ if (empty($kunnskapskilder)) {
         <?php foreach ($kunnskapskilder as $kilde) :
             $kilde_id = $kilde->ID;
             $kort_beskrivelse = get_field('kort_beskrivelse', $kilde_id);
-            $ekstern_lenke = get_field('ekstern_lenke', $kilde_id);
+            $ekstern_lenke = is_user_logged_in() ? get_field('ekstern_lenke', $kilde_id) : ''; // Lenke kun for innloggede (Bård 06.11.2026)
             $utgiver = get_field('utgiver', $kilde_id);
             $kildetype = bimverdi_get_kildekategorier($kilde_id);
             $utgivelsesaar = get_field('utgivelsesaar', $kilde_id);
