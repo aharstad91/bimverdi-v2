@@ -97,12 +97,16 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
         <thead>
             <tr class="border-b border-[#E7E5E4]">
                 <th class="py-3 pr-4 text-xs font-medium text-[#57534E]"><?php _e('Artikkel', 'bimverdi'); ?></th>
-                <th class="px-4 py-3 text-xs font-medium text-[#57534E]"><?php _e('Status', 'bimverdi'); ?></th>
-                <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden sm:table-cell"><?php _e('Dato', 'bimverdi'); ?></th>
+                <th class="px-4 py-3 text-xs font-medium text-[#57534E]" data-sort-col="1" aria-sort="none">
+                    <button type="button" class="bv-sort-knapp"><?php _e('Status', 'bimverdi'); ?> <span class="bv-sort-pil" aria-hidden="true">↕</span></button>
+                </th>
+                <th class="px-4 py-3 text-xs font-medium text-[#57534E] hidden sm:table-cell" data-sort-col="2" aria-sort="none">
+                    <button type="button" class="bv-sort-knapp"><?php _e('Dato', 'bimverdi'); ?> <span class="bv-sort-pil" aria-hidden="true">↕</span></button>
+                </th>
                 <th class="pl-4 py-3 text-xs font-medium text-[#57534E] text-right"><?php _e('Handlinger', 'bimverdi'); ?></th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="bv-artikler-tbody">
             <?php foreach ($user_articles as $article):
                 $status = get_post_status($article->ID);
                 $status_map = [
@@ -113,6 +117,9 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
                 ];
                 [$status_class, $status_label] = $status_map[$status] ?? $status_map['draft'];
                 $date = get_the_date('d.m.Y', $article->ID);
+                $date_sort = (int) get_post_time('U', true, $article->ID);
+                // Rekkefølge ved sortering på status: det som krever handling først
+                $status_rang = ['pending' => 1, 'publish' => 2, 'draft' => 3, 'private' => 4][$status] ?? 3;
                 $kan_redigere = bimverdi_artikkel_kan_redigere($article->ID, $user_id)
                     && bimverdi_artikkel_kan_redigeres_status($article->ID);
                 $laast = $kan_redigere && bimverdi_artikkel_er_laast($article->ID);
@@ -161,14 +168,14 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
                 </td>
 
                 <!-- Status -->
-                <td class="px-4 py-4 align-middle">
+                <td class="px-4 py-4 align-middle" data-sort="<?php echo (int) $status_rang; ?>">
                     <span class="inline-block text-xs font-medium <?php echo $status_class; ?> px-2.5 py-1 rounded-full whitespace-nowrap">
                         <?php echo $status_label; ?>
                     </span>
                 </td>
 
                 <!-- Dato -->
-                <td class="px-4 py-4 hidden sm:table-cell align-middle text-sm text-[#57534E]">
+                <td class="px-4 py-4 hidden sm:table-cell align-middle text-sm text-[#57534E]" data-sort="<?php echo $date_sort; ?>">
                     <?php echo $date; ?>
                 </td>
 
@@ -222,7 +229,42 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
             border: 1px solid #E7E5E4; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
         #bv-miniatyr-preview img { display: block; width: 100%; height: auto; border-radius: 6px; }
         @media (hover: none) { #bv-miniatyr-preview { display: none !important; } }
+        .bv-sort-knapp { display: inline-flex; align-items: center; gap: 4px; font: inherit; color: inherit;
+            background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+        .bv-sort-knapp:hover { color: #111827; }
+        .bv-sort-pil { color: #A8A29E; }
+        th[aria-sort="ascending"] .bv-sort-pil, th[aria-sort="descending"] .bv-sort-pil { color: #111827; }
     </style>
+    <script>
+    (function () {
+        var tbody = document.getElementById('bv-artikler-tbody');
+        if (!tbody) return;
+        var heads = document.querySelectorAll('th[data-sort-col]');
+        // Dato faller nyest først som tiebreaker
+        function verdi(rad, col) { return parseInt(rad.children[col].getAttribute('data-sort'), 10) || 0; }
+        heads.forEach(function (th) {
+            th.querySelector('button').addEventListener('click', function () {
+                var col = parseInt(th.getAttribute('data-sort-col'), 10);
+                var naa = th.getAttribute('aria-sort');
+                // Første klikk: dato nyest først, status «venter» først
+                var stigende = naa === 'none' ? col === 1 : naa === 'descending';
+                var rader = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                rader.sort(function (a, b) {
+                    var d = verdi(a, col) - verdi(b, col);
+                    if (!stigende) d = -d;
+                    return d || (verdi(b, 2) - verdi(a, 2));
+                });
+                rader.forEach(function (r) { tbody.appendChild(r); });
+                heads.forEach(function (h) {
+                    h.setAttribute('aria-sort', 'none');
+                    h.querySelector('.bv-sort-pil').textContent = '↕';
+                });
+                th.setAttribute('aria-sort', stigende ? 'ascending' : 'descending');
+                th.querySelector('.bv-sort-pil').textContent = stigende ? '↑' : '↓';
+            });
+        });
+    })();
+    </script>
     <div id="bv-miniatyr-preview" aria-hidden="true"><img alt=""></div>
     <script>
     (function () {
