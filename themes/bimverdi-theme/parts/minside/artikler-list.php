@@ -126,9 +126,10 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
                     <div class="flex items-center gap-3">
                     <?php if (has_post_thumbnail($article->ID)): ?>
                         <?php echo get_the_post_thumbnail($article->ID, 'thumbnail', [
-                            'class'   => 'w-16 h-12 rounded object-cover flex-shrink-0',
-                            'alt'     => '',
-                            'loading' => 'lazy',
+                            'class'        => 'w-16 h-12 rounded object-cover flex-shrink-0 bv-artikkel-miniatyr',
+                            'alt'          => '',
+                            'loading'      => 'lazy',
+                            'data-preview' => get_the_post_thumbnail_url($article->ID, 'medium_large'),
                         ]); ?>
                     <?php else: ?>
                         <div class="w-16 h-12 rounded bg-[#F5F5F4] flex items-center justify-center flex-shrink-0" aria-hidden="true">
@@ -212,6 +213,42 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
             <?php endforeach; ?>
         </tbody>
     </table>
+
+    <!-- Forhåndsvisning av fremhevet bilde ved mouseover -->
+    <style>
+        .bv-artikkel-miniatyr { cursor: zoom-in; }
+        #bv-miniatyr-preview { position: fixed; z-index: 1000; display: none; pointer-events: none;
+            width: 360px; max-width: calc(100vw - 32px); background: #fff; padding: 4px;
+            border: 1px solid #E7E5E4; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+        #bv-miniatyr-preview img { display: block; width: 100%; height: auto; border-radius: 6px; }
+        @media (hover: none) { #bv-miniatyr-preview { display: none !important; } }
+    </style>
+    <div id="bv-miniatyr-preview" aria-hidden="true"><img alt=""></div>
+    <script>
+    (function () {
+        var box = document.getElementById('bv-miniatyr-preview');
+        if (!box) return;
+        var img = box.querySelector('img');
+        function place(e) {
+            var w = box.offsetWidth, h = box.offsetHeight, gap = 16;
+            var x = e.clientX + gap, y = e.clientY - h / 2;
+            if (x + w > window.innerWidth - 8) x = e.clientX - w - gap;
+            y = Math.max(8, Math.min(y, window.innerHeight - h - 8));
+            box.style.left = x + 'px';
+            box.style.top = y + 'px';
+        }
+        document.querySelectorAll('.bv-artikkel-miniatyr[data-preview]').forEach(function (t) {
+            t.addEventListener('mouseenter', function (e) {
+                img.onload = function () { place(e); };
+                img.src = t.getAttribute('data-preview');
+                box.style.display = 'block';
+                place(e);
+            });
+            t.addEventListener('mousemove', place);
+            t.addEventListener('mouseleave', function () { box.style.display = 'none'; });
+        });
+    })();
+    </script>
 
     <!-- Article count -->
     <div class="flex justify-end py-3 text-xs text-[#57534E]">
