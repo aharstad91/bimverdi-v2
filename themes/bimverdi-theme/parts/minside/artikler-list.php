@@ -123,6 +123,18 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
             <tr class="border-b border-[#E7E5E4] hover:bg-[#F5F5F4] transition-colors">
                 <!-- Tittel -->
                 <td class="py-4 pr-4">
+                    <div class="flex items-center gap-3">
+                    <?php if (has_post_thumbnail($article->ID)): ?>
+                        <?php echo get_the_post_thumbnail($article->ID, 'thumbnail', [
+                            'class'   => 'w-16 h-12 rounded object-cover flex-shrink-0',
+                            'alt'     => '',
+                            'loading' => 'lazy',
+                        ]); ?>
+                    <?php else: ?>
+                        <div class="w-16 h-12 rounded bg-[#F5F5F4] flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-[#A8A29E]"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                        </div>
+                    <?php endif; ?>
                     <div class="min-w-0">
                         <?php if ($status === 'publish'): ?>
                             <a href="<?php echo get_permalink($article->ID); ?>" class="font-medium text-[#111827] hover:text-[#FF8B5E] transition-colors block leading-tight">
@@ -143,6 +155,7 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
                         <?php if ($forfatter_navn): ?>
                             <p class="text-xs text-[#57534E] mt-0.5"><?php printf(esc_html__('Skrevet av %s', 'bimverdi'), esc_html($forfatter_navn)); ?></p>
                         <?php endif; ?>
+                    </div>
                     </div>
                 </td>
 
