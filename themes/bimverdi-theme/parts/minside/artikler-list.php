@@ -117,7 +117,8 @@ $user_articles = bimverdi_artikler_for_bruker($user_id);
                 ];
                 [$status_class, $status_label] = $status_map[$status] ?? $status_map['draft'];
                 $date = get_the_date('d.m.Y', $article->ID);
-                $date_sort = (int) get_post_time('U', true, $article->ID);
+                // Lokal post_date: GMT-datoen er tom for ikke-publiserte artikler
+                $date_sort = (int) get_post_time('U', false, $article->ID);
                 // Rekkefølge ved sortering på status: det som krever handling først
                 $status_rang = ['pending' => 1, 'publish' => 2, 'draft' => 3, 'private' => 4][$status] ?? 3;
                 $kan_redigere = bimverdi_artikkel_kan_redigere($article->ID, $user_id)
