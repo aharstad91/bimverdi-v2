@@ -82,6 +82,24 @@ if (empty($user_kunnskapskilder)) {
 </div>
 <?php endif; ?>
 
+<?php if (!empty($user_kunnskapskilder)): ?>
+<!-- Fritekstsøk (filtrerer tabellen i nettleseren) -->
+<div class="mb-4 max-w-md">
+    <label for="kunnskapskilder-sok" class="sr-only"><?php _e('Søk i kunnskapskilder', 'bimverdi'); ?></label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <input type="search"
+               id="kunnskapskilder-sok"
+               data-kilde-sok
+               class="w-full !pl-12 !pr-4 text-sm border border-[#D6D1C6] !rounded-lg bg-white placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[#FF8B5E] focus:border-transparent"
+               placeholder="<?php esc_attr_e('Søk på navn, beskrivelse, kildetype eller utgiver …', 'bimverdi'); ?>"
+               autocomplete="off" />
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Kunnskapskilder Table -->
 <div class="overflow-x-auto">
     <table class="w-full text-left text-sm">
@@ -125,8 +143,18 @@ if (empty($user_kunnskapskilder)) {
                 $ekstern_lenke = get_field('ekstern_lenke', $kilde->ID);
 
                 $kildetype_label = bimverdi_kildekategorier_tekst($kilde->ID);
+                $kort_beskrivelse = get_field('kort_beskrivelse', $kilde->ID);
+
+                // Tekst som fritekstsøket matcher mot.
+                $sok_tekst = wp_strip_all_tags(implode(' ', array_filter([
+                    $kilde->post_title,
+                    is_string($kort_beskrivelse) ? $kort_beskrivelse : '',
+                    is_string($kildetype_label) ? $kildetype_label : '',
+                    is_string($utgiver) ? $utgiver : '',
+                    $status_label,
+                ])));
             ?>
-            <tr class="border-b border-[#E7E5E4] hover:bg-[#F5F5F4] transition-colors group">
+            <tr class="border-b border-[#E7E5E4] hover:bg-[#F5F5F4] transition-colors group" data-kilde-rad data-sok="<?php echo esc_attr(mb_strtolower($sok_tekst)); ?>">
                 <!-- Navn & Beskrivelse -->
                 <td class="py-4 pr-4">
                     <div class="flex items-start gap-3">
@@ -137,9 +165,7 @@ if (empty($user_kunnskapskilder)) {
                             <a href="<?php echo get_permalink($kilde->ID); ?>" class="font-medium text-[#111827] hover:text-[#F97316] transition-colors block leading-tight">
                                 <?php echo esc_html($kilde->post_title); ?>
                             </a>
-                            <?php
-                            $kort_beskrivelse = get_field('kort_beskrivelse', $kilde->ID);
-                            if ($kort_beskrivelse): ?>
+                            <?php if ($kort_beskrivelse): ?>
                             <p class="text-xs text-[#57534E] mt-0.5 line-clamp-1"><?php echo esc_html(wp_trim_words($kort_beskrivelse, 10)); ?></p>
                             <?php endif; ?>
                         </div>
@@ -195,17 +221,55 @@ if (empty($user_kunnskapskilder)) {
                 </td>
             </tr>
             <?php endforeach; ?>
+            <tr data-kilde-ingen-treff hidden>
+                <td colspan="7" class="py-8 text-center text-[#57534E]">
+                    <?php _e('Ingen kunnskapskilder passer søket.', 'bimverdi'); ?>
+                </td>
+            </tr>
             <?php endif; ?>
         </tbody>
     </table>
 
     <?php if (!empty($user_kunnskapskilder)): ?>
     <!-- Count -->
-    <div class="flex justify-end py-3 text-xs text-[#57534E]">
-        <?php printf(_n('Viser %d av %d kunnskapskilde', 'Viser %d av %d kunnskapskilder', count($user_kunnskapskilder), 'bimverdi'), count($user_kunnskapskilder), count($user_kunnskapskilder)); ?>
+    <div class="flex justify-end py-3 text-xs text-[#57534E]" aria-live="polite">
+        <span data-kilde-antall data-total="<?php echo (int) count($user_kunnskapskilder); ?>">
+            <?php printf(_n('Viser %d av %d kunnskapskilde', 'Viser %d av %d kunnskapskilder', count($user_kunnskapskilder), 'bimverdi'), count($user_kunnskapskilder), count($user_kunnskapskilder)); ?>
+        </span>
     </div>
     <?php endif; ?>
 </div>
+
+<?php if (!empty($user_kunnskapskilder)): ?>
+<script>
+(function () {
+    var input = document.querySelector('[data-kilde-sok]');
+    if (!input) return;
+    var rader = Array.prototype.slice.call(document.querySelectorAll('[data-kilde-rad]'));
+    var ingenTreff = document.querySelector('[data-kilde-ingen-treff]');
+    var antall = document.querySelector('[data-kilde-antall]');
+    var total = antall ? parseInt(antall.getAttribute('data-total'), 10) : rader.length;
+
+    function filtrer() {
+        var ord = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+        var synlige = 0;
+        rader.forEach(function (rad) {
+            var tekst = rad.getAttribute('data-sok') || '';
+            var treff = ord.every(function (o) { return tekst.indexOf(o) !== -1; });
+            rad.hidden = !treff;
+            if (treff) synlige++;
+        });
+        if (ingenTreff) ingenTreff.hidden = synlige !== 0;
+        if (antall) {
+            antall.textContent = 'Viser ' + synlige + ' av ' + total + (total === 1 ? ' kunnskapskilde' : ' kunnskapskilder');
+        }
+    }
+
+    input.addEventListener('input', filtrer);
+    input.addEventListener('search', filtrer);
+})();
+</script>
+<?php endif; ?>
 
 <?php if (empty($user_kunnskapskilder)): ?>
 <!-- Empty State -->
