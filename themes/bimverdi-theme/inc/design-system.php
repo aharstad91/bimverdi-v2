@@ -50,7 +50,7 @@ class BIM_Verdi_Design_System {
                 --color-divider-light: rgba(231, 229, 228, 0.6); /* Subtle divider */
 
                 /* ---- Temagruppe palette ---- */
-                --color-tg-orange: #FF8B5E;      /* Modellkvalitet */
+                --color-tg-orange: #FF8B5E;      /* SirkBIM */
                 --color-tg-blue: #005898;        /* ByggesaksBIM */
                 --color-tg-green: #6B9B37;       /* ProsjektBIM */
                 --color-tg-purple: #5E36FE;      /* EiendomsBIM */
