@@ -1,0 +1,82 @@
+[
+  {
+    "id": 201,
+    "kategori": "Klimagass",
+    "sporsmal": "Vi skal legge inn klimadata for trekledning i NOBB, men EPD-en oppgir GWP per m². Hvordan regner jeg det om til løpemeter?",
+    "fasit": "Treindustriens veileder for omregning av EPD-resultater (revidert nov. 2024): For EPD-er med funksjonell enhet i m² (panel, kledning) må man ta hensyn til overlapp og regne om til løpemeter ut fra kledningsprofilens dekkende bredde. Formlene er en ren geometrisk omregning; tykkelse og bredde oppgis i meter (mm delt på 1000). For profilert kledning brukes tykkeste punkt, men for skråskåret kledning brukes midttykkelsen. Veilederen anbefaler forenklede formler også for impregnert og overflatebehandlet trelast. En eldre EPD med bare «GWP» må først justeres ved å fjerne biogent karbon.",
+    "forventet_kilde_url": "https://www.treindustrien.no/contentassets/f4cdae92f55e4f58b1f95651ed8518c4/20241118-veileder-omregning-av-epd-resultater-til-prisenheter-og-enkeltprodukter.pdf | http://localhost:8888/bimverdi-v2/kunnskapskilder/klimagassresultater-veileder-til-omregning-av-epd-resultater-til-prisenheter-og-enkeltprodukter/",
+    "type": "ekstern"
+  },
+  {
+    "id": 202,
+    "kategori": "Digitalisering",
+    "sporsmal": "Hva er greia med de digitale lommebøkene fra EU – og når må landene ha dem på plass?",
+    "fasit": "Regjeringens forenklingsstrategi «Enklere, mindre, bedre» (2026): Digitale lommebøker lar personer og virksomheter oppbevare og dele verifiserbare digitale bevis, f.eks. førerkort, vitnemål, firmaattester, skatteattester og miljøsertifiseringer. Det juridiske rammeverket er eIDAS 2.0 (vedtatt februar 2024, i kraft mai 2024). EU-landene må tilby en gratis personlig lommebok innen november 2026, og de fleste brukersteder må akseptere dem innen fjerde kvartal 2027. EU-kommisjonen har også foreslått virksomhetslommebøker (European Business Wallet), med en mulig gevinst på opptil 150 milliarder euro årlig i redusert administrativ byrde.",
+    "forventet_kilde_url": "https://www.regjeringen.no/contentassets/97952fe7319b4dbfa7ab5403b8f57c80/no/pdfs/forenklingsstategi.pdf | http://localhost:8888/bimverdi-v2/kunnskapskilder/enklere-mindre-bedre-strategi-for-forenklinger-for-naeringslivet/",
+    "type": "ekstern"
+  },
+  {
+    "id": 203,
+    "kategori": "Ombruk",
+    "sporsmal": "Vi har startet en liten ombrukssentral. Finnes det et nettverk vi kan bli med i, og hvordan fungerer det?",
+    "fasit": "Ja, Nettverk for ombrukssentraler (NfO) under kunnskapsarenaen for ombruk (Sirkulær Ressurssentral). Formålet er å dele kunnskap om ombrukssentraler i Norge og samle dem som jobber med slike initiativ. Nettverket samles digitalt én gang i måneden rundt lunsjtid: ett initiativ presenteres i ca. 10 minutter, så er det diskusjon og tid til andre temaer. Det har også et nyhetsbrev, og man melder seg på via nettsiden.",
+    "forventet_kilde_url": "https://sites.google.com/ressurssentral.no/nfo/hjem | http://localhost:8888/bimverdi-v2/kunnskapskilder/kunnskapsbanken-for-ombruk-i-byggenaeringen/",
+    "type": "ekstern"
+  },
+  {
+    "id": 204,
+    "kategori": "Klimagass",
+    "sporsmal": "Har noen kommuner laget et verktøy for å vurdere klimakonsekvenser i plansaker?",
+    "fasit": "Ja. Oslo kommune (Plan- og bygningsetaten) og Bergen kommune har sammen laget en veileder for klimavurderinger i plansaker, som et Klimasats-prosjekt (tilskudd 500 000 kr, juni 2020 – mars 2022). Veilederen er først og fremst for plan- og byggesaksbehandlere i kommunen. Oslo hadde fra før et klimakriteriesett for hva som skal vurderes, men ikke hvordan. Bergen krever klimagassregnskap for alle større byggeprosjekter. Kommunene har også startet et nettverk med flere store byer.",
+    "forventet_kilde_url": "https://www.miljodirektoratet.no/ansvarsomrader/klima/for-myndigheter/kutte-utslipp-av-klimagasser/klimasats/2020/klimavurderinger-i-plansaksbehandling/ | http://localhost:8888/bimverdi-v2/kunnskapskilder/veileder-for-vurdering-av-klimakonsekvenser-i-plan-og-byggesaksbehandling-klimasats/",
+    "type": "ekstern"
+  },
+  {
+    "id": 205,
+    "kategori": "Prosjektgjennomføring",
+    "sporsmal": "Vi vurderer samspillsentreprise på neste prosjekt. Hvilke samspillselementer mener erfarne folk i bransjen er viktigst?",
+    "fasit": "Prosjekt Norges samspillstudie (BAE-programmet, AP2 kvantitativ del, 2025) viser til Hosseini m.fl. (2020): Det mest anbefalte samspillselementet blant erfarne aktører er tidlig kontrahering av entreprenør. Nest mest anbefalt er målpris med deling av bonus/malus, deretter å ta med rådgivere i samspillsgruppen og samlokalisering av samspillsgruppen. Thune (2015) nevner i tillegg underentreprenører og arkitekt i samspillsgruppen og kontinuerlige workshops. Byggherren må selv vurdere hvilke elementer som passer prosjektet.",
+    "forventet_kilde_url": "https://prosjektnorge.no/wp-content/uploads/2025/08/Arbeidsrapport-Prosjekt-Norge-Samspillstudien-AP2-kvantitativ-v.1.2-22.08.2025.pdf | http://localhost:8888/bimverdi-v2/kunnskapskilder/bae-programmet-bygg-anlegg-og-eiendom/",
+    "type": "ekstern"
+  },
+  {
+    "id": 206,
+    "kategori": "Planprosess",
+    "sporsmal": "Må vi levere reguleringsplanforslaget i 3D nå som Plan 5.0 er kommet? Og kan vi fortsatt sende SOSI-fil?",
+    "fasit": "NPAD del 3.2 Reguleringsplan (juli 2026): Plan 5.0 gjør det mulig å bruke 3D-geometri på noen objekttyper, men det er ikke et generelt krav. Kommunene velger selv om de vil motta planforslag med 3D-geometri. Muligheten kom etter press fra større bykommuner med fortetting. Med den nye modellen utgår utveksling i SOSI-format, og GML-formatet erstatter det. En ny validator erstatter SOSI-kontroll.",
+    "forventet_kilde_url": "https://www.regjeringen.no/contentassets/cfbae09e59fa48698e454ed58639c154/npaddel3.2reguleringsplan-0726_plan5.0.pdf | http://localhost:8888/bimverdi-v2/kunnskapskilder/npad-del-3-2-reguleringsplan-sosi-plan-5-0/",
+    "type": "ekstern"
+  },
+  {
+    "id": 207,
+    "kategori": "Krav/anbefaling",
+    "sporsmal": "Vi skal bygge boliger i Oslo. Er utearealnormen et absolutt krav, eller er det mer en anbefaling?",
+    "fasit": "Det kommer an på planen. Oslo kommunes normer er i seg selv ikke juridisk bindende, men de forventes fulgt, og det er vanlig å ta dem inn i planbestemmelsene i reguleringsplanen. Når utearealnormen er en del av reguleringsplanen, er den juridisk bindende. Der planen ikke har egne bestemmelser om uteareal, er normen veiledende og retningsgivende for å forstå kravene i plan- og bygningsloven. Avvik må komme tydelig fram og begrunnes i planbeskrivelsen eller byggesaken. Vesentlige avvik kan føre til at kommunen avviser planforslaget eller byggesøknaden. Svaret skal skille mellom bindende krav og anbefaling.",
+    "forventet_kilde_url": "https://www.oslo.kommune.no/get-file/110897/795a2ad5c90615e3b10bf30ccaa74a68c6308a0df942ea962786a1a6c3d61aa7 | https://www.oslo.kommune.no/plan-bygg-og-eiendom/planer-normer-og-veiledere/kommunale-normer/ | http://localhost:8888/bimverdi-v2/kunnskapskilder/kommunale-normer-i-plan-og-byggesaksbehandlingen-oslo-kommune/",
+    "type": "ekstern"
+  },
+  {
+    "id": 208,
+    "kategori": "Artikkel",
+    "sporsmal": "Vi vurderer prefabrikerte avløpsrør fra rørleverandøren. Har BIM Verdi noen erfaringer med det – hvorfor var det ikke bare å bytte ut BIM-objektene?",
+    "fasit": "BIM Verdi-artikkelen om piloten på Heiergården Terrasse i Rakkestad (Pipelife, Askim & Mysen Rør og NTI): Prosjekteringen var allerede gjort med generiske objekter (pp-biblioteket i standard Autodesk-programvare). NTI måtte reprosjektere til Pipelifes Smartline-objekter. Å bytte objekter gikk ikke rett fram: koblinger ble brutt, ting måtte flyttes og verdier justeres. Standardbibliotekene gir ikke data som kan brukes til plukk-, kapp- og pakklister på rørfabrikken. Lærdommen er å velge rørleverandør så tidlig som mulig, før prosjekteringen.",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/artikler/5186-2/",
+    "type": "intern"
+  },
+  {
+    "id": 209,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hvilke U-verdier krever passivhusstandarden NS 3700 for yttervegger, tak og vinduer?",
+    "fasit": "Kildene nevner NS 3700 (Kriterier for passivhus og lavenergibygninger – Boligbygninger), men gjengir ikke U-verdiene. Standarden er reservert og finnes ikke i kildene. Chatten skal si fra om manglende dekning og ikke oppgi tall for NS 3700. Hvis den nevner minstekravene i TEK17, må den tydelig skille dem fra passivhuskravene.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  },
+  {
+    "id": 210,
+    "kategori": "Avgrensning",
+    "sporsmal": "Vi vil fly drone over byggeplassen for å lage punktsky. Trenger vi droneførerbevis eller tillatelse fra Luftfartstilsynet?",
+    "fasit": "Kildene dekker ikke droneregelverket (dronekategorier, kompetansebevis, tillatelser). Chatten skal si fra om manglende dekning og ikke dikte opp regler. Den kan gjerne vise til at temaet ligger utenfor kunnskapskildene.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  }
+]

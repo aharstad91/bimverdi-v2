@@ -1,0 +1,242 @@
+[
+  {
+    "id": 1,
+    "kategori": "Ombruk",
+    "sporsmal": "Jeg er entreprenør og jobber med et ombruksprosjekt. Hvordan kan jeg resertifisere betongdragere?",
+    "fasit": "ROT-veilederen viser til NS 3682 Ombruk av prefabrikkerte betongelementer. Den gir føringer for kartlegging, demontering, testing og dokumentasjon, med krav til inspeksjon, prøvetaking, vurdering av bæreevne og dokumentasjon av restlevetid. Resirqel-rapporten for DiBK anbefaler destruktiv testing av et utvalg elementer (NS-ISO 2859) for betong- og armeringskvalitet, og deretter ikke-destruktiv testing av resten; opprinnelig dokumentasjon er viktig.",
+    "forventet_kilde_url": "https://www.nhobyggenaringen.no/siteassets/dokumenter/260206_rotveilederen.pdf | https://www.dibk.no/globalassets/02.-om-oss/rapporter-og-publikasjoner/forsvarlig-ombruk-av-byggevarer_resirqel-2019.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 2,
+    "kategori": "Ombruk",
+    "sporsmal": "Finnes det en norsk standard for ombruk av bærende konstruksjoner i tre?",
+    "fasit": "Ja. ROT-veilederen viser til NS 3691 Ombruk av konstruksjonstre. Den gir rammer for vurdering og dokumentasjon av bærende treelementer, med krav til tilstand, styrke, fukt og sporbarhet.",
+    "forventet_kilde_url": "https://www.nhobyggenaringen.no/siteassets/dokumenter/260206_rotveilederen.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 3,
+    "kategori": "Klimagass",
+    "sporsmal": "Hvor mye lavere klimagassutslipp gir rehabilitering sammenlignet med nybygg?",
+    "fasit": "Ifølge ROT-veilederen har nybygg typisk et klimagassfotavtrykk på rundt 300 kg CO2e per m2 BTA. Rehabiliteringsprosjekter ligger ofte 20–50 % lavere, avhengig av omfang og tiltak.",
+    "forventet_kilde_url": "https://www.nhobyggenaringen.no/siteassets/dokumenter/260206_rotveilederen.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 4,
+    "kategori": "Rehabilitering",
+    "sporsmal": "Hvilke trinn følger ROT-veilederen når man planlegger et rehabiliteringsprosjekt?",
+    "fasit": "Seks trinn: 1) kartlegging av behov / dagens ytelse og tilstand, 2) analyse av forbedringspotensial, 3) ombrukskartlegging, 4) klimagassberegning og vurdering av tiltak, 5) prioritering og beslutning, 6) beslutningsstøtte i dialog med tiltakshaver eller ledelse.",
+    "forventet_kilde_url": "https://www.nhobyggenaringen.no/siteassets/dokumenter/260206_rotveilederen.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 5,
+    "kategori": "Ombruk",
+    "sporsmal": "Mister betonghulldekker styrke etter mange år som etasjeskiller, slik at de ikke kan ombrukes?",
+    "fasit": "Resirqel-rapporten viser til den nederlandske rapporten Reuse of HCS: hulldekker mister ikke styrke ved normal bruk som etasjeskiller. Bare ved overbelastning er det risiko for redusert styrke.",
+    "forventet_kilde_url": "https://www.dibk.no/globalassets/02.-om-oss/rapporter-og-publikasjoner/forsvarlig-ombruk-av-byggevarer_resirqel-2019.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 6,
+    "kategori": "Dokumentasjon",
+    "sporsmal": "Hvor lenge må ansvarlig foretak oppbevare produktdokumentasjon for et bygg?",
+    "fasit": "Resirqel-rapporten oppgir at ansvarlig foretak bare har krav om å oppbevare produktdokumentasjon i 5 år (SAK10 § 12-6 (2)). Det er en utfordring for senere ombruk.",
+    "forventet_kilde_url": "https://www.dibk.no/globalassets/02.-om-oss/rapporter-og-publikasjoner/forsvarlig-ombruk-av-byggevarer_resirqel-2019.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 7,
+    "kategori": "Klimagass",
+    "sporsmal": "Når vi ombruker byggevarer fra et annet bygg, hvem får klimagassutslippet fra den opprinnelige produksjonen?",
+    "fasit": "Donorbygget (første bruker) får produksjonsutslippet. Mottakerbygget får ikke noe av det opprinnelige produksjonsutslippet, men får utslipp fra aktiviteter som klargjør varen til ombruk.",
+    "forventet_kilde_url": "https://www.byggalliansen.no/kunnskapssenter/fagmateriell/anbefalt-metode-for-beregning-av-klimagassutslipp-ved-ombruk",
+    "type": "ekstern"
+  },
+  {
+    "id": 8,
+    "kategori": "Klimagass",
+    "sporsmal": "Hva er forskjellen på brutto og netto klimaeffekt ved ombruk?",
+    "fasit": "Brutto klimaeffekt er utslippene man unngår ved ikke å produsere et nytt produkt, altså fotavtrykket til produktet som erstattes. Netto klimaeffekt trekker fra utslipp fra bearbeiding, transport osv. av ombruksvaren.",
+    "forventet_kilde_url": "https://www.byggalliansen.no/kunnskapssenter/fagmateriell/anbefalt-metode-for-beregning-av-klimagassutslipp-ved-ombruk",
+    "type": "ekstern"
+  },
+  {
+    "id": 9,
+    "kategori": "Ombruk",
+    "sporsmal": "Regnes det som omsetning når brukte byggevarer flyttes fra et bygg til et annet?",
+    "fasit": "Ifølge Grønn Byggallianses metodeveileder regnes det som omsetning hvis donorbygget og mottakerbygget eies av to ulike virksomheter (organisasjonsnummer).",
+    "forventet_kilde_url": "https://www.byggalliansen.no/kunnskapssenter/fagmateriell/anbefalt-metode-for-beregning-av-klimagassutslipp-ved-ombruk",
+    "type": "ekstern"
+  },
+  {
+    "id": 10,
+    "kategori": "Klimagass",
+    "sporsmal": "Når kom kravet om klimagassregnskap for boligblokker og yrkesbygg, og hvor i regelverket står det?",
+    "fasit": "Kravet ble innført 1. juli 2022 med ett års overgangsperiode. Det står i TEK17 § 17-1. DiBKs veileder (publisert 18. august 2023) viser hvordan kravet oppfylles.",
+    "forventet_kilde_url": "https://www.dibk.no/byggtekniske-omrader/veileder-om-klimagassregnskap",
+    "type": "ekstern"
+  },
+  {
+    "id": 11,
+    "kategori": "Byggesak",
+    "sporsmal": "Kan vi ta et nytt bygg i bruk før kommunen har gitt ferdigattest?",
+    "fasit": "Nei, ikke før kommunen har gitt ferdigattest eller midlertidig brukstillatelse. Kommunen skal gi ferdigattest innen 3 uker; hvis fristen overskrides, kan bygget tas i bruk når vilkårene er til stede.",
+    "forventet_kilde_url": "https://www.dibk.no/regelverk/sak/2/8/8-1",
+    "type": "ekstern"
+  },
+  {
+    "id": 12,
+    "kategori": "Byggesak",
+    "sporsmal": "Hvilke søknadspliktige tiltak skal ikke avsluttes med ferdigattest?",
+    "fasit": "SAK10 § 8-1: a) opprettelse av ny eiendom, festegrunn eller arealoverføring, b) midlertidige bygninger, konstruksjoner eller anlegg som ikke skal brukes til varig opphold, c) skilt- og reklameinnretninger med tillatelse for et bestemt tidsrom.",
+    "forventet_kilde_url": "https://www.dibk.no/regelverk/sak/2/8/8-1",
+    "type": "ekstern"
+  },
+  {
+    "id": 13,
+    "kategori": "Regelverk",
+    "sporsmal": "Hva regulerer byggevareforskriften (DOK), og hvilken EU-forordning gjennomfører den?",
+    "fasit": "DOK regulerer dokumentasjon og omsetning av byggevarer, løfteinnretninger og varmtvannskjeler. Kapittel II gjennomfører byggevareforordningen (EU) nr. 305/2011 om CE-merking; kapittel III stiller krav til byggevarer som ikke er CE-merket.",
+    "forventet_kilde_url": "https://www.dibk.no/regelverk/dok",
+    "type": "ekstern"
+  },
+  {
+    "id": 14,
+    "kategori": "Digitalisering",
+    "sporsmal": "Hva er Building Topology Ontology (BOT)?",
+    "fasit": "BOT er en minimal OWL DL-ontologi fra W3C Linked Building Data Community Group. Den beskriver topologiske relasjoner mellom delene av en bygning, f.eks. soner som bygg, etasjer og rom, og er ment å utvides med mer domenespesifikke ontologier.",
+    "forventet_kilde_url": "https://w3c-lbd-cg.github.io/bot/",
+    "type": "ekstern"
+  },
+  {
+    "id": 15,
+    "kategori": "Materialvalg",
+    "sporsmal": "Hva er Grønn materialguide, og hva er nytt i siste versjon?",
+    "fasit": "En tidligfaseveileder for miljøriktig materialvalg for arkitekter, rådgivere og utbyggere. Versjon 5.0 (våren 2026) har oppdaterte data og et nytt miljøtema: plast, med egne indikatorer for plastinnhold og risiko for plastlekkasje.",
+    "forventet_kilde_url": "https://www.byggalliansen.no/kunnskapssenter/fagmateriell/gronn-materialguide",
+    "type": "ekstern"
+  },
+  {
+    "id": 16,
+    "kategori": "Klassifikasjon",
+    "sporsmal": "Hvordan klassifiseres et kombinert bygg, f.eks. bolig og næring, i SSBs bygningstypestandard?",
+    "fasit": "Standarden klassifiserer bygg etter funksjon. Kombinerte bygg grupperes etter den funksjonen som har størst andel av bruksarealet.",
+    "forventet_kilde_url": "https://www.ssb.no/klass/klassifikasjoner/31",
+    "type": "ekstern"
+  },
+  {
+    "id": 17,
+    "kategori": "BIM-krav",
+    "sporsmal": "Hva er SIMBA, og hvilken versjon gjelder for nye prosjekter?",
+    "fasit": "SIMBA er Statsbyggs BIM-krav. SIMBA 2.1 gjelder alle nye prosjekter fra 1. juli 2022 og bygger på IFC4-modeller med maskinvaliderbare krav. SIMBA 2.1.1 er et minimumskravsett for små eller enkle prosjekter.",
+    "forventet_kilde_url": "https://simba.statsbygg.no/kravene",
+    "type": "ekstern"
+  },
+  {
+    "id": 18,
+    "kategori": "Arbeidsmiljø",
+    "sporsmal": "Hvor mange toaletter skal det være per ansatt på en arbeidsplass?",
+    "fasit": "Arbeidsplassforskriften § 3-7 krever passende antall, atskilte toaletter for kvinner og menn og håndvask. Arbeidstilsynet anbefaler minst ett toalett per 15 kvinner og ett per 20 menn når det finnes urinaler.",
+    "forventet_kilde_url": "https://www.arbeidstilsynet.no/regelverk/forskrifter/arbeidsplassforskriften/",
+    "type": "ekstern"
+  },
+  {
+    "id": 19,
+    "kategori": "Sirkulærøkonomi",
+    "sporsmal": "Hvor mange bygningsdeler må ha sirkulære tiltak for å oppfylle FutureBuilt Sirkulær?",
+    "fasit": "Minst fem bygningsdeler (2-sifret nivå i bygningsdelstabellen) skal ha tiltak for ombruk, ombrukbarhet, gjenvinning og gjenvinnbarhet i stort omfang, og fem del-indekser skal oppfylle minimumskravet for sirkularitet.",
+    "forventet_kilde_url": "https://www.futurebuilt.no/assets/originals/PDFer-2026/Kriterier/Sirkul%C3%A6re-bygg/FutureBuilt-Sirkul%C3%A6r-kriterier-for-sirkul%C3%A6re-bygg-v3.1_14.11.25.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 20,
+    "kategori": "Rehabilitering",
+    "sporsmal": "Hvilke myter gjør at byggeiere velger å rive i stedet for å rehabilitere?",
+    "fasit": "Grønn Byggallianses tipshefte «Tenk deg om før du river» nevner blant annet: at det koster mer å rehabilitere enn å rive og bygge nytt, at bare nye bygg kan være grønne og miljøsertifiserte, at det er vanskelig å utnytte arealer effektivt i gamle bygg, og at det er vanskelig å oppfylle moderne krav til inneklima.",
+    "forventet_kilde_url": "https://www.byggalliansen.no/kunnskapssenter/fagmateriell/tenk-deg-om-for-du-river",
+    "type": "ekstern"
+  },
+  {
+    "id": 21,
+    "kategori": "Begrep",
+    "sporsmal": "Hva er forskjellen på ombruk og gjenbruk?",
+    "fasit": "Ombruk er å bruke noe på nytt til samme formål; det er fortsatt ombruk om komponenten vaskes, males, kappes eller repareres. Brukes materialet til noe annet (f.eks. vindusglass som kontorskillevegg), er det gjenbruk. Overskuddsvarer er ikke ombruk.",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/?p=6205",
+    "type": "intern"
+  },
+  {
+    "id": 22,
+    "kategori": "Begrep",
+    "sporsmal": "Hva betyr MMI i en BIM-modell?",
+    "fasit": "Modellmodenhetsindeks: norsk metode for å angi hvor modent hvert objekt er, fra MMI 100 (skisse) til MMI 500 (som bygget). Utviklet av EBA, RIF og Arkitektbedriftene.",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/?p=6107",
+    "type": "intern"
+  },
+  {
+    "id": 23,
+    "kategori": "Opphavsrett",
+    "sporsmal": "Har jeg lov til å laste opp en standard jeg har kjøpt, til ChatGPT?",
+    "fasit": "Ikke uten videre. Du kjøper en lisens til eget bruk, ikke retten til å kopiere eller dele. Standard Norge forbeholder seg rettighetene til tekst- og datautvinning, og ISOs kontraktsvilkår forbyr i dag bruk av KI direkte.",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/artikler/har-du-lov-til-a-laste-standarden-din-opp-i-chatgpt/",
+    "type": "intern"
+  },
+  {
+    "id": 24,
+    "kategori": "Temagruppe",
+    "sporsmal": "Hva jobber temagruppen SirkBIM med i BIM Verdi?",
+    "fasit": "SirkBIM samler aktører som jobber med ombruk og transformasjon av bygg, inkludert resirkulering av byggevarer og bygningsdeler. Gruppen bruker åpen BIM og KI, deler erfaringer, utvikler felles løsninger og deltar med brukercase i ByggChat-prosjektet.",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/temagruppe/sirkbim/",
+    "type": "intern"
+  },
+  {
+    "id": 25,
+    "kategori": "Begrep",
+    "sporsmal": "Hva er LOIN, og hvilken standard beskriver det?",
+    "fasit": "Level of Information Need: metode for å angi hvilken informasjon som trengs i hver leveranse ut fra formål, fase og aktør. Beskrevet i NS-EN ISO 7817-1 (tidligere NS-EN 17412-1).",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/?p=6106",
+    "type": "intern"
+  },
+  {
+    "id": 26,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hva koster det å leie en 20-tonns gravemaskin per dag i Trondheim?",
+    "fasit": "Skal si tydelig at kildene ikke dekker dette, uten å finne på priser.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  },
+  {
+    "id": 27,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hvem vant Champions League i 2019?",
+    "fasit": "Skal si at dette ikke finnes i kunnskapskildene.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  },
+  {
+    "id": 28,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hva står det i punkt 20 i NS 8407 om varsling av endringer?",
+    "fasit": "Standardteksten er reservert mot maskinell bruk og finnes ikke i kildene. Skal si fra om manglende dekning og ikke gjengi eller dikte opp standardtekst.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  },
+  {
+    "id": 29,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hva er rentesatsen på byggelån i DNB akkurat nå?",
+    "fasit": "Skal si at kildene ikke dekker dette, uten å oppgi en rente.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  },
+  {
+    "id": 30,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hvilke krav stiller Boverket i Sverige til brannceller i flerbostadshus?",
+    "fasit": "Svensk regelverk finnes ikke i kildene. Skal si fra om manglende dekning og ikke bruke norske krav som om de gjaldt i Sverige.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  }
+]
