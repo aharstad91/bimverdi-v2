@@ -38,8 +38,23 @@ class BIM_Verdi_Post_Types {
         add_action('manage_arrangement_posts_custom_column', array($this, 'arrangement_admin_column_content'), 10, 2);
         add_filter('manage_edit-arrangement_sortable_columns', array($this, 'arrangement_sortable_columns'));
         add_action('pre_get_posts', array($this, 'arrangement_default_sort'));
+
+        // Tak på antall revisjoner for egne innleggstyper
+        add_filter('wp_revisions_to_keep', array($this, 'limit_revisions'), 10, 2);
     }
-    
+
+    /**
+     * Behold maks 20 revisjoner per innlegg for BIM Verdis egne innleggstyper.
+     * Sider, innlegg og blokker beholder WordPress-standarden (ubegrenset).
+     */
+    public function limit_revisions($num, $post) {
+        $types = array('foretak', 'verktoy', 'kunnskapskilde', 'arrangement', 'case', 'prosjekt', 'theme_group', 'artikkel', 'demo', 'arkivside');
+        if ($post instanceof WP_Post && in_array($post->post_type, $types, true)) {
+            return 20;
+        }
+        return $num;
+    }
+
     /**
      * Register all custom post types
      */
