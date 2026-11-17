@@ -197,12 +197,14 @@ function bimverdi_artikkel_meta_query_deltaker($deltaker = true) {
  * @param array $statuser   Poststatuser å ta med.
  * @return array{deltaker: int[], andre: int[]}
  */
-function bimverdi_artikler_gruppert($per_gruppe = 3, $statuser = array('publish')) {
+function bimverdi_artikler_gruppert($per_gruppe = 3, $statuser = array('publish'), $orderby = 'modified') {
+    // $orderby: 'modified' (sist endret, standard) eller 'date' (registrert dato).
+    // Nyhetsbrevet bruker 'date' så gamle artikler som redigeres ikke dukker opp (Bård 17.11.2026).
     $felles = array(
         'post_type'              => 'artikkel',
         'post_status'            => $statuser,
         'fields'                 => 'ids',
-        'orderby'                => 'modified',
+        'orderby'                => ($orderby === 'date') ? 'date' : 'modified',
         'order'                  => 'DESC',
         'update_post_term_cache' => false,
     );
