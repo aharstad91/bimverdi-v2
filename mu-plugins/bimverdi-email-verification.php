@@ -89,6 +89,16 @@ class BIMVerdi_Email_Verification {
             exit;
         }
 
+        // Krav 20: avvis generelle e-postdomener (gmail, hotmail osv.) og engangsdomener.
+        // Listene vedlikeholdes under Innstillinger → BIM Verdi domener.
+        // Ingen ventende registrering opprettes og ingen e-post sendes.
+        $is_general    = function_exists('bimverdi_is_general_domain') && bimverdi_is_general_domain($email);
+        $is_disposable = function_exists('bimverdi_is_disposable_domain') && bimverdi_is_disposable_domain($email);
+        if ($is_general || $is_disposable) {
+            wp_redirect(add_query_arg(array('bv_error' => 'general_domain', 'email' => urlencode($email)), $redirect_base));
+            exit;
+        }
+
         // Rate limiting: max 3 per email per hour (check before any user lookup)
         $rate_key = 'bv_signup_' . md5($email);
         $attempts = (int) get_transient($rate_key);
