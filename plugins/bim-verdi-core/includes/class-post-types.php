@@ -76,7 +76,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Foretak', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'thumbnail', 'custom-fields'),
+            'supports'              => array('title', 'thumbnail', 'custom-fields', 'revisions'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -113,7 +113,7 @@ class BIM_Verdi_Post_Types {
             // 'editor' = redigerbar topp i wp-admin (Bård, synk 06.08). Selve
             // verktøybeskrivelsen ligger i ACF og eies av deltakeren; dette er
             // en redaksjonell blokk på toppen, se inc/redigerbar-topp.php.
-            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
+            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields', 'revisions'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -150,7 +150,7 @@ class BIM_Verdi_Post_Types {
             // 'editor' = redigerbar topp i wp-admin (Bård, synk 06.08). Kildens
             // egen beskrivelse ligger i ACF og eies av den som registrerte den;
             // dette er en redaksjonell blokk på toppen.
-            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
+            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields', 'revisions'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -180,7 +180,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Arrangement', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'custom-fields', 'thumbnail'),
+            'supports'              => array('title', 'editor', 'custom-fields', 'thumbnail', 'revisions'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -233,7 +233,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Prosjektidé', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'custom-fields'),
+            'supports'              => array('title', 'editor', 'custom-fields', 'revisions'),
             'public'                => false,  // Private - only visible to owner and admin
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -265,7 +265,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Prosjekt', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields'),
+            'supports'              => array('title', 'editor', 'thumbnail', 'custom-fields', 'revisions'),
             'public'                => false,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -299,7 +299,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Temagruppe', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'page-attributes'),
+            'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'page-attributes', 'revisions'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
@@ -374,7 +374,7 @@ class BIM_Verdi_Post_Types {
         $args = array(
             'label'                 => __('Demo', 'bim-verdi-core'),
             'labels'                => $labels,
-            'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields'),
+            'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions'),
             'public'                => true,
             'show_ui'               => true,
             'show_in_menu'          => true,
