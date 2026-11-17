@@ -30,7 +30,8 @@ $error_messages = array(
     'system'        => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
     // Krav 20: generelle e-postdomener (gmail, hotmail osv.) og engangsdomener avvises.
     // Pakket i én <div>: .alert er et grid, og flere direkte barn havner i hver sin kolonne.
-    'general_domain' => '<div><p><strong>BIM Verdi er et bedriftsnettverk</strong><br>'
+    'general_domain' => '<div><p style="color: #166534; font-weight: 700; font-size: 1.1em; margin-bottom: 0.75em;">Du må bruke en annen e-post-adresse.<br><span lang="en">You need to use a different email address.</span></p>'
+        . '<p><strong>BIM Verdi er et bedriftsnettverk</strong><br>'
         . 'For å registrere deg må du være tilknyttet et foretak som er registrert i Norge. '
         . 'Bruk e-postadressen fra jobben din. Generelle e-postadresser som Gmail, Hotmail og Outlook kan ikke brukes.<br>'
         . 'Har du ikke en jobb-e-post? Bruk <a href="' . esc_url(home_url('/tilbakemelding/')) . '" style="text-decoration: underline; font-weight: 700;">SKJEMAET FOR MANUELL BEHANDLING</a>, så hjelper vi deg.</p>'
