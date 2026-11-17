@@ -28,6 +28,15 @@ $error_messages = array(
     'rate_limit'    => 'For mange forsøk. Vent litt og prøv igjen.',
     'nonce'         => 'Noe gikk galt. Vennligst prøv igjen.',
     'system'        => 'En teknisk feil oppstod. Vennligst prøv igjen senere.',
+    // Krav 20: generelle e-postdomener (gmail, hotmail osv.) og engangsdomener avvises.
+    'general_domain' => '<p><strong>BIM Verdi er et bedriftsnettverk</strong><br>'
+        . 'For å registrere deg må du være tilknyttet et foretak som er registrert i Norge. '
+        . 'Bruk e-postadressen fra jobben din. Generelle e-postadresser som Gmail, Hotmail og Outlook kan ikke brukes.<br>'
+        . 'Har du ikke en jobb-e-post? Bruk <a href="' . esc_url(home_url('/tilbakemelding/')) . '">skjemaet for manuell behandling</a>, så hjelper vi deg.</p>'
+        . '<p lang="en" style="margin-top: 0.75em;"><strong>BIM Verdi is a business network</strong><br>'
+        . 'To register, you must be connected to a company registered in Norway. '
+        . 'Please use your work email address. Personal email addresses such as Gmail, Hotmail and Outlook are not accepted.<br>'
+        . 'Don\'t have a work email? Use <a href="' . esc_url(home_url('/tilbakemelding/')) . '">our form for manual processing</a> and we will help you.</p>',
 );
 $error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
 
@@ -532,6 +541,7 @@ if ($invitation_error && isset($invitation_error_messages[$invitation_error])) {
                                    value="<?php echo esc_attr($prefill_email); ?>"
                                    class="form-input<?php echo $error ? ' has-error' : ''; ?>"
                                    autocomplete="email">
+                            <p class="form-helper">Bruk e-postadressen fra jobben. / Use your work email address.</p>
                             <p class="form-helper">Vi sender deg en lenke for å fullføre registreringen.</p>
                         </div>
 
