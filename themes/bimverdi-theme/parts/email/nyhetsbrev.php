@@ -66,6 +66,22 @@ if ($bv_nb_ingress !== '') {
 $muted = 'color:#8A8578;';
 
 /**
+ * Byline med foretaksnavnet lenket til foretaksprofilen (Bård 17.11.2026).
+ * Returnerer ferdig escaped HTML. Faller tilbake til ren tekst.
+ */
+$bv_nb_byline = function ($item) {
+    $av      = (string) ($item['av'] ?? '');
+    $foretak = (string) ($item['av_foretak'] ?? '');
+    $url     = (string) ($item['av_url'] ?? '');
+    if ($av === '' || $foretak === '' || $url === '' || substr($av, -strlen($foretak)) !== $foretak) {
+        return esc_html($av);
+    }
+    $foran = substr($av, 0, -strlen($foretak));
+    return esc_html($foran)
+        . '<a href="' . esc_url($url) . '" style="color:inherit;text-decoration:underline;">' . esc_html($foretak) . '</a>';
+};
+
+/**
  * NY/OPPDATERT-pille. Returnerer ferdig escaped HTML eller ''.
  */
 $bv_nb_badge = function ($status) {
@@ -290,7 +306,7 @@ $bv_nb_kort_header = function ($seksjon) {
                                     <?php echo esc_html($item['tittel']); ?>
                                 </a>
                                 <?php if (!empty($item['av'])): ?>
-                                <div class="nb-muted" style="margin-top:6px;font-size:13px;<?php echo $muted; ?>"><?php echo esc_html($item['av']); ?></div>
+                                <div class="nb-muted" style="margin-top:6px;font-size:13px;<?php echo $muted; ?>"><?php echo $bv_nb_byline($item); ?></div>
                                 <?php endif; ?>
                                 <?php if (!empty($item['datoer'])): /* Artikler: registrert + sist oppdatert (Bård 17.11.2026) */ ?>
                                 <div class="nb-muted" style="margin-top:3px;font-size:12px;<?php echo $muted; ?>"><?php echo esc_html($item['datoer']); ?></div>
@@ -337,7 +353,7 @@ $bv_nb_kort_header = function ($seksjon) {
                                     <?php echo esc_html($item['tittel']); ?>
                                 </a>
                                 <?php if (!empty($item['av'])): ?>
-                                <div class="nb-muted" style="margin-top:3px;font-size:13px;<?php echo $muted; ?>"><?php echo esc_html($item['av']); ?></div>
+                                <div class="nb-muted" style="margin-top:3px;font-size:13px;<?php echo $muted; ?>"><?php echo $bv_nb_byline($item); ?></div>
                                 <?php endif; ?>
                                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
                                     <tr>
@@ -362,7 +378,7 @@ $bv_nb_kort_header = function ($seksjon) {
                                     <?php echo esc_html($item['tittel']); ?>
                                 </a>
                                 <?php if (!empty($item['av'])): ?>
-                                <div class="nb-muted" style="margin-top:3px;font-size:13px;<?php echo $muted; ?>"><?php echo esc_html($item['av']); ?></div>
+                                <div class="nb-muted" style="margin-top:3px;font-size:13px;<?php echo $muted; ?>"><?php echo $bv_nb_byline($item); ?></div>
                                 <?php endif; ?>
                                 <?php if (!empty($item['datoer'])): /* Artikler: registrert + sist oppdatert (Bård 17.11.2026) */ ?>
                                 <div class="nb-muted" style="margin-top:3px;font-size:12px;<?php echo $muted; ?>"><?php echo esc_html($item['datoer']); ?></div>
@@ -387,6 +403,11 @@ $bv_nb_kort_header = function ($seksjon) {
                 <p class="nb-text" style="margin:0;font-size:15px;line-height:1.6;color:#3A3A3A;">
                     Nettverkshilsner fra<br>
                     <strong style="color:#1A1A1A;"><?php echo esc_html($context['avsender_tittel']); ?></strong>
+                </p>
+                <?php /* Meldingslenke (Bård 17.11.2026) */ ?>
+                <p class="nb-text" style="margin:14px 0 0 0;font-size:14px;line-height:1.6;color:#3A3A3A;">
+                    Har du tips, innspill eller spørsmål?
+                    <a href="<?php echo esc_url(home_url('/tilbakemelding/')); ?>" style="color:#FF8B5E;font-weight:600;text-decoration:underline;">Send oss en melding&nbsp;→</a>
                 </p>
             </td>
         </tr>

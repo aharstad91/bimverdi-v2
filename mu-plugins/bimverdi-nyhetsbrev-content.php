@@ -354,6 +354,7 @@ function bimverdi_nyhetsbrev_artikler($limit = 3, $gruppe = null, $med_hero = tr
                 $foretak['navn']
             ),
             'av_url'     => $foretak['url'],
+            'av_foretak' => $foretak['navn'], // Lenkes til foretaksprofilen i malen (Bård 17.11.2026)
             'utdrag'     => bimverdi_nyhetsbrev_tekst($ingress, $is_hero ? 30 : 18),
             'lenke'      => get_permalink($id),
             'meta'       => '',
@@ -472,6 +473,7 @@ function bimverdi_nyhetsbrev_verktoy($limit = 3) {
             'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('verktoy_navn', $id)),
             'av'         => $foretak['navn'],
             'av_url'     => $foretak['url'],
+            'av_foretak' => $foretak['navn'], // Lenkes til foretaksprofilen i malen (Bård 17.11.2026)
             'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id), 18),
             'lenke'      => get_permalink($id),
             'meta'       => '',
@@ -503,6 +505,7 @@ function bimverdi_nyhetsbrev_kunnskapskilder($limit = 3) {
             'tittel'     => bimverdi_nyhetsbrev_plain(get_the_title($id) ?: get_field('kunnskapskilde_navn', $id)),
             'av'         => bimverdi_nyhetsbrev_byline($person, $foretak['navn']),
             'av_url'     => $foretak['url'],
+            'av_foretak' => $foretak['navn'], // Lenkes til foretaksprofilen i malen (Bård 17.11.2026)
             'utdrag'     => bimverdi_nyhetsbrev_tekst(get_field('kort_beskrivelse', $id), 18),
             'lenke'      => get_permalink($id),
             'meta'       => '',
