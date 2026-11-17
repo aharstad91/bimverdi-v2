@@ -292,6 +292,9 @@ $bv_nb_kort_header = function ($seksjon) {
                                 <?php if (!empty($item['av'])): ?>
                                 <div class="nb-muted" style="margin-top:6px;font-size:13px;<?php echo $muted; ?>"><?php echo esc_html($item['av']); ?></div>
                                 <?php endif; ?>
+                                <?php if (!empty($item['datoer'])): /* Artikler: registrert + sist oppdatert (Bård 17.11.2026) */ ?>
+                                <div class="nb-muted" style="margin-top:3px;font-size:12px;<?php echo $muted; ?>"><?php echo esc_html($item['datoer']); ?></div>
+                                <?php endif; ?>
                                 <?php if (!empty($item['utdrag'])): ?>
                                 <p class="nb-text" style="margin:10px 0 0 0;font-size:15px;line-height:1.6;color:#3A3A3A;"><?php echo esc_html($item['utdrag']); ?></p>
                                 <?php endif; ?>
@@ -360,6 +363,9 @@ $bv_nb_kort_header = function ($seksjon) {
                                 </a>
                                 <?php if (!empty($item['av'])): ?>
                                 <div class="nb-muted" style="margin-top:3px;font-size:13px;<?php echo $muted; ?>"><?php echo esc_html($item['av']); ?></div>
+                                <?php endif; ?>
+                                <?php if (!empty($item['datoer'])): /* Artikler: registrert + sist oppdatert (Bård 17.11.2026) */ ?>
+                                <div class="nb-muted" style="margin-top:3px;font-size:12px;<?php echo $muted; ?>"><?php echo esc_html($item['datoer']); ?></div>
                                 <?php endif; ?>
                             </td>
                         </tr>

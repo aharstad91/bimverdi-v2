@@ -309,7 +309,9 @@ function bimverdi_nyhetsbrev_artikler($limit = 3, $gruppe = null, $med_hero = tr
         if (!function_exists('bimverdi_artikler_gruppert')) {
             return [];
         }
-        $ids = bimverdi_artikler_gruppert($limit)[$gruppe] ?? [];
+        // Artikler sorteres på registrert dato, ikke sist endret (Bård 17.11.2026):
+        // gamle artikler som redigeres skal ikke dukke opp i nyhetsbrevet.
+        $ids = bimverdi_artikler_gruppert($limit, array('publish'), 'date')[$gruppe] ?? [];
 
         // Tom gruppe MÅ kortsluttes: 'post__in' => [] blir ignorert av
         // WP_Query, og spørringen ville da returnert alle artiklene.
@@ -322,7 +324,7 @@ function bimverdi_nyhetsbrev_artikler($limit = 3, $gruppe = null, $med_hero = tr
             'orderby'  => 'post__in',
         ]);
     } else {
-        $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('artikkel', $limit);
+        $poster = bimverdi_nyhetsbrev_hent_nytt_og_oppdatert('artikkel', $limit, ['orderby' => 'date']);
     }
 
     $items = [];
@@ -361,6 +363,12 @@ function bimverdi_nyhetsbrev_artikler($limit = 3, $gruppe = null, $med_hero = tr
             'bilde_h'    => $bilde['h'],
             'hero'       => $is_hero,
             'status'     => $post->bv_nb_status ?? '',
+            // To datoer per artikkel (Bård 17.11.2026).
+            'datoer'     => sprintf(
+                'Registrert %s · Sist oppdatert %s',
+                get_the_date('d.m.Y', $id),
+                get_the_modified_date('d.m.Y', $id)
+            ),
         ];
     }
     wp_reset_postdata();
