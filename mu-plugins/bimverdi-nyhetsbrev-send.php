@@ -385,9 +385,10 @@ function bimverdi_nyhetsbrev_send_en($post_id, $email, $subject_prefix = '') {
     $flett_id = $bruker ? $bruker->ID : get_current_user_id();
     $html     = bimverdi_nyhetsbrev_personaliser_html($html, $bruker ? $bruker->ID : 0, $flett_id);
 
-    // E-postemner er ren tekst — dekod HTML-entiteter fra get_the_title (&#038; → &).
+    // E-postemner er ren tekst — dekod ALLE HTML-entiteter fra get_the_title
+    // (&#038; → &, &#8211; → –). wp_specialchars_decode tok ikke tankestreken (Bård 17.11.2026).
     $subject = $subject_prefix . bimverdi_nyhetsbrev_flett(
-        wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES),
+        html_entity_decode(get_the_title($post_id), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
         bimverdi_nyhetsbrev_flettefelt_verdier($flett_id),
         false
     );
@@ -623,7 +624,7 @@ function bimverdi_nyhetsbrev_utsendelse_start($post_id) {
         'startet_av'      => ($bruker && $bruker->exists()) ? $bruker->user_login : 'system/cli',
         // Emne fryses HER (post-tittelen er redigerbar frem til sent_at) —
         // send-stien leser ALDRI get_the_title(). Entitets-dekodet for e-post.
-        'subject'         => wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES),
+        'subject'         => html_entity_decode(get_the_title($post_id), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
         'from'            => sprintf(
             '%s <%s>',
             defined('BIMVERDI_RESEND_FROM_NAME') ? BIMVERDI_RESEND_FROM_NAME : 'BIM Verdi',
@@ -1563,7 +1564,7 @@ add_action('admin_post_bimverdi_nyhetsbrev_bekreft', function () {
     }
 
     $antall  = count(bimverdi_nyhetsbrev_mottakere());
-    $emne    = wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES);
+    $emne    = html_entity_decode(get_the_title($post_id), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $preview = add_query_arg('bimverdi_nyhetsbrev_preview', $post_id, home_url('/'));
 
     nocache_headers();
