@@ -33,11 +33,11 @@ $error_messages = array(
     'general_domain' => '<div><p><strong>BIM Verdi er et bedriftsnettverk</strong><br>'
         . 'For å registrere deg må du være tilknyttet et foretak som er registrert i Norge. '
         . 'Bruk e-postadressen fra jobben din. Generelle e-postadresser som Gmail, Hotmail og Outlook kan ikke brukes.<br>'
-        . 'Har du ikke en jobb-e-post? Bruk <a href="' . esc_url(home_url('/tilbakemelding/')) . '">skjemaet for manuell behandling</a>, så hjelper vi deg.</p>'
+        . 'Har du ikke en jobb-e-post? Bruk <a href="' . esc_url(home_url('/tilbakemelding/')) . '" style="text-decoration: underline; font-weight: 700;">SKJEMAET FOR MANUELL BEHANDLING</a>, så hjelper vi deg.</p>'
         . '<p lang="en" style="margin-top: 0.75em;"><strong>BIM Verdi is a business network</strong><br>'
         . 'To register, you must be connected to a company registered in Norway. '
         . 'Please use your work email address. Personal email addresses such as Gmail, Hotmail and Outlook are not accepted.<br>'
-        . 'Don\'t have a work email? Use <a href="' . esc_url(home_url('/tilbakemelding/')) . '">our form for manual processing</a> and we will help you.</p></div>',
+        . 'Don\'t have a work email? Use <a href="' . esc_url(home_url('/tilbakemelding/')) . '" style="text-decoration: underline; font-weight: 700;">OUR FORM FOR MANUAL PROCESSING</a> and we will help you.</p></div>',
 );
 $error_text = isset($error_messages[$error]) ? $error_messages[$error] : '';
 
