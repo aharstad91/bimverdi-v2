@@ -33,6 +33,7 @@ $show_sidenav = $args['show_sidenav'] ?? true;
     'title' => $title,
     'description' => $description,
     'actions' => $actions,
+    'center_link' => $args['center_link'] ?? null,
 ]); ?>
 <?php endif; ?>
 

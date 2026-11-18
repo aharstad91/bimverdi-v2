@@ -44,6 +44,7 @@ $display_name = bim_get_user_display_name($user_id);
 <!-- Account Layout with Sidenav -->
 <?php get_template_part('parts/components/account-layout', null, [
     'title' => __('Min profil', 'bimverdi'),
+    'center_link' => ['text' => 'Prøv ByggChat ALFA', 'url' => 'https://byggchat.bimverdi.no/'],
     'description' => __('Dine personlige innstillinger og informasjon', 'bimverdi'),
     'actions' => [
         ['text' => __('Rediger profil', 'bimverdi'), 'url' => bimverdi_minside_url('profil/rediger'), 'variant' => 'primary'],

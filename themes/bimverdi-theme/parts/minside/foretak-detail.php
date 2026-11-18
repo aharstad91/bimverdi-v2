@@ -81,6 +81,7 @@ if ($bv_error && isset($oppgradering_errors[$bv_error])):
 <!-- Account Layout with Sidenav -->
 <?php get_template_part('parts/components/account-layout', null, [
     'title' => __('Mitt foretak', 'bimverdi'),
+    'center_link' => ['text' => 'Prøv ByggChat ALFA', 'url' => 'https://byggchat.bimverdi.no/'],
     'description' => $company ? get_the_title($company_id) : __('Administrer foretaksinformasjon', 'bimverdi'),
     'actions' => $company && $is_hovedkontakt ? [
         ['text' => __('Rediger foretak', 'bimverdi'), 'url' => bimverdi_minside_url('foretak/rediger'), 'variant' => 'primary'],
