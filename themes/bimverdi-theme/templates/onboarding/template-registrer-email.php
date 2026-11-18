@@ -543,7 +543,7 @@ if ($invitation_error && isset($invitation_error_messages[$invitation_error])) {
                                    value="<?php echo esc_attr($prefill_email); ?>"
                                    class="form-input<?php echo $error ? ' has-error' : ''; ?>"
                                    autocomplete="email">
-                            <p class="form-helper">Bruk e-postadressen fra jobben. / Use your work email address.</p>
+                            <p class="form-helper">Bruk e-postadressen fra jobben – generiske e-postdomener vil ikke virke. / Use your work email address – generic email addresses are rejected.</p>
                             <p class="form-helper">Vi sender deg en lenke for å fullføre registreringen.</p>
                         </div>
 
