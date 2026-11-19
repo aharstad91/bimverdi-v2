@@ -46,7 +46,20 @@ $primary_route = bimverdi_get_primary_route();
                     <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/bimverdi-logo.png'); ?>" alt="BIM Verdi" style="height: 36px; width: auto;">
                 </a>
             </div>
-            
+
+            <!-- ByggChat ALFA: hjelpemiddel, åpnes i ny fane -->
+            <style>
+                .bv-byggchat-link{display:flex;align-items:center;gap:0.75rem;color:#FF8B5E;font-weight:700;font-size:0.875rem;line-height:1.25;text-decoration:underline;}
+                .bv-byggchat-link:hover{color:#E67A4E;}
+                .bv-byggchat-link img{height:48px;width:auto;flex-shrink:0;}
+                .bv-byggchat-link span{max-width:16rem;}
+                @media (max-width:767px){.bv-byggchat-link span{display:none;}.bv-byggchat-link img{height:40px;}}
+            </style>
+            <a class="bv-byggchat-link" href="https://byggchat.bimverdi.no/" target="_blank" rel="noopener" title="Åpner ByggChat i ny fane">
+                <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/byggchat-alfa-logo.png'); ?>" alt="ByggChat ALFA – åpne kilder">
+                <span>Søk i utvalgte krav, standarder, veiledninger, verktøy.</span>
+            </a>
+
             <!-- Right side: Back link + Logout (desktop) + Hamburger (mobile) -->
             <div class="flex items-center gap-6">
                 <a href="<?php echo esc_url(home_url('/')); ?>" class="hidden md:flex items-center gap-2 text-sm font-medium text-[#57534E] hover:text-[#111827] transition-colors">

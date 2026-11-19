@@ -44,12 +44,6 @@ $display_name = bim_get_user_display_name($user_id);
 <!-- Account Layout with Sidenav -->
 <?php get_template_part('parts/components/account-layout', null, [
     'title' => __('Min profil', 'bimverdi'),
-    'center_link' => [
-        'text'     => 'Søk i utvalgte krav, standarder, veiledninger, verktøy.',
-        'url'      => 'https://byggchat.bimverdi.no/',
-        'logo'     => get_template_directory_uri() . '/assets/img/byggchat-alfa-logo.png',
-        'logo_alt' => 'ByggChat ALFA – åpne kilder',
-    ],
     'description' => __('Dine personlige innstillinger og informasjon', 'bimverdi'),
     'actions' => [
         ['text' => __('Rediger profil', 'bimverdi'), 'url' => bimverdi_minside_url('profil/rediger'), 'variant' => 'primary'],
