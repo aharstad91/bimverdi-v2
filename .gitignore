@@ -20,6 +20,8 @@ mu-plugins/_local-*.php
 plugins/*
 !plugins/bim-verdi-core/
 !plugins/bim-verdi-core/**
+!plugins/bv-hurtigreg/
+!plugins/bv-hurtigreg/**
 !plugins/bv-lenkevakt/
 !plugins/bv-lenkevakt/**
 !plugins/bumblebee/

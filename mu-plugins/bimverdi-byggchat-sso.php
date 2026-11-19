@@ -28,6 +28,11 @@
  * family_name, foretak {id, navn, orgnr} eller null, nivaa, iat, exp
  * (60 sekunder), jti (unik ID, så kortet bare kan brukes én gang).
  *
+ * Hurtigbrukere (plugins/bv-hurtigreg) har nivaa «Hurtigbruker», foretak null
+ * og i tillegg feltet hurtig: {status: ubekreftet|bekreftet|utlopt, kvote,
+ * kampanje, opprettet, utloper, fullfor_url, slett_url}. Filter:
+ * bimverdi_byggchat_claims.
+ *
  * Beskrivelsen for ByggChat-siden: docs/plans/2026-10-27-byggchat-sso-for-alexander.md
  *
  * @package BIMVerdi
@@ -94,7 +99,7 @@ function bimverdi_byggchat_claims(WP_User $u) {
     }
 
     $na = time();
-    return [
+    $claims = [
         'iss'         => bimverdi_byggchat_utsteder(),
         'aud'         => 'byggchat',
         'sub'         => (string) $u->ID,
@@ -108,6 +113,17 @@ function bimverdi_byggchat_claims(WP_User $u) {
         'exp'         => $na + BV_BYGGCHAT_TOKEN_LEVETID,
         'jti'         => wp_generate_uuid4(),
     ];
+
+    /**
+     * Andre plugins kan legge til felter. bv-hurtigreg setter nivaa til
+     * «Hurtigbruker» og legger til feltet hurtig {status, kvote, …}.
+     * Kortets ramme (iss, aud, sub, iat, exp, jti) kan ikke overstyres.
+     */
+    $filtrert = apply_filters('bimverdi_byggchat_claims', $claims, $u);
+    if (is_array($filtrert)) {
+        $claims = array_merge($filtrert, array_intersect_key($claims, array_flip(['iss', 'aud', 'sub', 'iat', 'exp', 'jti'])));
+    }
+    return $claims;
 }
 
 /**
