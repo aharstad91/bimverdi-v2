@@ -71,6 +71,8 @@ class BBEE_Retriever {
 			)
 		);
 
+		$results = $this->drop_closed( $results );
+
 		$caps = $this->type_caps( $query );
 		if ( ! empty( $caps ) ) {
 			$results = $this->apply_type_caps( $results, $caps );
@@ -83,6 +85,122 @@ class BBEE_Retriever {
 		}
 		$this->last_timing['totalt_ms'] = (int) round( ( microtime( true ) - $t0 ) * 1000 );
 		return $results;
+	}
+
+	/**
+	 * Kildetyper med tekst hentet fra eksterne nettsteder: sider bak
+	 * kunnskapskilder («kilde») og crawlede adresser («url»).
+	 */
+	const HENTET_TEKST_TYPER = array( 'kilde', 'url' );
+
+	/**
+	 * Skal søket bruke tekst hentet fra eksterne nettsteder?
+	 * Standard er nei: Bumblebee svarer bare fra innhold på bimverdi.no
+	 * (beslutning Bård og Andreas 19.11.2026). Teksten blir liggende i
+	 * indeksen, så valget kan snus uten ny henting.
+	 *
+	 * @return bool
+	 */
+	public static function bruk_hentet_tekst() {
+		$settings = BBEE_Plugin::get_settings();
+		return ! empty( $settings['bruk_hentet_tekst'] );
+	}
+
+	/**
+	 * SQL-tillegg som utelater hentet tekst når den er slått av.
+	 *
+	 * @return string
+	 */
+	protected function source_sql() {
+		if ( self::bruk_hentet_tekst() ) {
+			return '';
+		}
+		return " AND source_type NOT IN ('" . implode( "','", self::HENTET_TEKST_TYPER ) . "')";
+	}
+
+	/**
+	 * Bit-ID-er som meningssøket kan bruke, eller null for alle.
+	 * Hentes én gang per forespørsel.
+	 *
+	 * @return array|null chunk_id => true
+	 */
+	protected function allowed_chunk_ids() {
+		if ( self::bruk_hentet_tekst() ) {
+			return null;
+		}
+		if ( null === $this->allowed_ids ) {
+			global $wpdb;
+			$table = BBEE_Indexer::table_name();
+			// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.DirectDatabaseQuery
+			$ids               = $wpdb->get_col( "SELECT id FROM {$table} WHERE 1=1{$this->source_sql()}" );
+			$this->allowed_ids = array_fill_keys( array_map( 'intval', (array) $ids ), true );
+		}
+		return $this->allowed_ids;
+	}
+
+	/**
+	 * @var array|null
+	 */
+	protected $allowed_ids = null;
+
+	/**
+	 * Sikkerhetsnett: fjern treff fra innhold som ikke lenger kan være med, selv
+	 * om indeksen er gammel. Eksempler: et pilotprosjekt som er gjort privat, en
+	 * side som har fått passord, en innholdstype som er tatt ut av listen, eller
+	 * en kunnskapskilde som ikke lenger er «ikke_reservert».
+	 * Nabobiter hentes bare for treff som har passert her.
+	 *
+	 * @param array $results Treff.
+	 * @return array
+	 */
+	protected function drop_closed( $results ) {
+		if ( ! self::bruk_hentet_tekst() ) {
+			$results = array_values(
+				array_filter(
+					$results,
+					function ( $r ) {
+						return ! in_array( $r['source_type'], self::HENTET_TEKST_TYPER, true );
+					}
+				)
+			);
+		}
+		$ids = array();
+		foreach ( $results as $r ) {
+			if ( in_array( $r['source_type'], array( 'post', 'kilde' ), true ) && $r['post_id'] > 0 ) {
+				$ids[] = (int) $r['post_id'];
+			}
+		}
+		if ( empty( $ids ) ) {
+			return $results;
+		}
+		$ids = array_values( array_unique( $ids ) );
+		_prime_post_caches( $ids, false, true );
+
+		$types = BBEE_Indexer::post_types();
+		$ok    = array();
+		foreach ( $ids as $id ) {
+			$p = get_post( $id );
+			if ( ! $p instanceof WP_Post || 'publish' !== $p->post_status || ! BBEE_Indexer::post_kan_indekseres( $p ) ) {
+				$ok[ $id ] = array( 'post' => false, 'kilde' => false );
+				continue;
+			}
+			$ok[ $id ] = array(
+				'post'  => in_array( $p->post_type, $types, true ),
+				'kilde' => BBEE_Indexer::KILDE_POST_TYPE === $p->post_type && BBEE_Indexer::kilde_kan_hentes( $id ),
+			);
+		}
+
+		return array_values(
+			array_filter(
+				$results,
+				function ( $r ) use ( $ok ) {
+					if ( ! in_array( $r['source_type'], array( 'post', 'kilde' ), true ) || $r['post_id'] <= 0 ) {
+						return true;
+					}
+					return ! empty( $ok[ (int) $r['post_id'] ][ $r['source_type'] ] );
+				}
+			)
+		);
 	}
 
 	/**
@@ -243,7 +361,7 @@ class BBEE_Retriever {
 		$t     = microtime( true );
 		$model = $embed->model_id();
 		if ( $this->vector_store_ready( $model ) ) {
-			$scores = BBEE_Vector_Store::search( $qvec, $model, $limit );
+			$scores = BBEE_Vector_Store::search( $qvec, $model, $limit, 400, $this->allowed_chunk_ids() );
 			$rows   = $this->rows_by_ids( array_keys( $scores ) );
 			$out    = array();
 			foreach ( $scores as $id => $score ) {
@@ -427,7 +545,7 @@ class BBEE_Retriever {
 		// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.DirectDatabaseQuery
 		$total = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table} WHERE embedding IS NOT NULL AND embedding <> '' AND embed_model = %s",
+				"SELECT COUNT(*) FROM {$table} WHERE embedding IS NOT NULL AND embedding <> '' AND embed_model = %s{$this->source_sql()}",
 				$model_id
 			)
 		);
@@ -438,7 +556,7 @@ class BBEE_Retriever {
 				$wpdb->prepare(
 					"SELECT id, post_id, source_type, source_id, post_type, chunk_index, title, url, content, embedding
 					FROM {$table}
-					WHERE embedding IS NOT NULL AND embedding <> '' AND embed_model = %s",
+					WHERE embedding IS NOT NULL AND embedding <> '' AND embed_model = %s{$this->source_sql()}",
 					$model_id
 				),
 				ARRAY_A
@@ -455,7 +573,7 @@ class BBEE_Retriever {
 				"SELECT id, post_id, source_type, source_id, post_type, chunk_index, title, url, content, embedding
 				FROM {$table}
 				WHERE embed_model = %s AND embedding IS NOT NULL AND embedding <> ''
-					AND MATCH(content, title) AGAINST (%s IN BOOLEAN MODE)
+					AND MATCH(content, title) AGAINST (%s IN BOOLEAN MODE){$this->source_sql()}
 				ORDER BY MATCH(content, title) AGAINST (%s IN BOOLEAN MODE) DESC
 				LIMIT 400",
 				$model_id,
@@ -483,7 +601,7 @@ class BBEE_Retriever {
 			"SELECT id, post_id, source_type, source_id, post_type, chunk_index, title, url, content,
 				MATCH(content, title) AGAINST (%s IN BOOLEAN MODE) AS score
 			FROM {$table}
-			WHERE MATCH(content, title) AGAINST (%s IN BOOLEAN MODE)
+			WHERE MATCH(content, title) AGAINST (%s IN BOOLEAN MODE){$this->source_sql()}
 			ORDER BY score DESC
 			LIMIT %d",
 			$boolean,
@@ -521,7 +639,7 @@ class BBEE_Retriever {
 		$sql = $wpdb->prepare(
 			"SELECT id, post_id, source_type, source_id, post_type, chunk_index, title, url, content, 0 AS score
 			FROM {$table}
-			WHERE {$where_sql}
+			WHERE ({$where_sql}){$this->source_sql()}
 			LIMIT %d",
 			$params
 		);

@@ -56,15 +56,22 @@ class BBEE_Plugin {
 		return array(
 			'api_key'         => '',
 			'model'           => 'claude-sonnet-4-5',
-			'post_types'      => array( 'post', 'page' ),
+			// Alt internt innhold på bimverdi.no, som i ByggChat, pluss pilotprosjekter.
+			// Pilotprosjekter er bare med når alle innloggede kan lese dem.
+			'post_types'      => array( 'post', 'page', 'foretak', 'verktoy', 'kunnskapskilde', 'arrangement', 'theme_group', 'artikkel', 'bv_begrep', 'bv_pilot_prosjekt' ),
 			'max_sources'     => 6,
+
+			// Tekst hentet fra eksterne nettsteder (sider bak kunnskapskilder og crawlede
+			// adresser). Av: Bumblebee svarer bare fra innhold på bimverdi.no
+			// (beslutning 19.11.2026). Teksten blir liggende i indeksen.
+			'bruk_hentet_tekst' => false,
 			'max_tokens'      => 1500,
 
 			// Svarmodell når OpenAI brukes (konstanten BBEE_OPENAI_CHAT_MODEL i wp-config.php vinner).
 			'openai_chat_model'  => 'gpt-4.1-mini',
 			'openai_temperature' => 0.2,
 			'system_prompt'   => self::default_system_prompt(),
-			'welcome_message' => __( 'Hei! Still meg et spørsmål, så finner jeg svar i kunnskapskildene på nettstedet.', 'bumblebee' ),
+			'welcome_message' => __( 'Hei! Still meg et spørsmål, så finner jeg svar i innholdet på BIM Verdi: kunnskapskilder, artikler, verktøy, arrangementer og prosjekter.', 'bumblebee' ),
 			'assistant_name'  => 'Bumblebee',
 
 			// Gjenfinning: fulltext | semantic | hybrid.
@@ -302,6 +309,21 @@ class BBEE_Plugin {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Innholdstyper som kan velges for indeksen. Tar med typer som har egne
+	 * sider uten å være «public», f.eks. pilotprosjekter (publicly_queryable).
+	 * Uten dette fjerner lagring på innstillingssiden pilotprosjektene.
+	 *
+	 * @param string $output «names» eller «objects».
+	 * @return array
+	 */
+	public static function indexable_post_types( $output = 'names' ) {
+		return array_merge(
+			get_post_types( array( 'publicly_queryable' => true ), $output ),
+			get_post_types( array( 'public' => true ), $output )
+		);
 	}
 
 	/**

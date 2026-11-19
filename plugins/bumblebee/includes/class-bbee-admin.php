@@ -105,7 +105,7 @@ class BBEE_Admin {
 			$out['max_tokens'] = min( 4096, max( 256, (int) $input['max_tokens'] ) );
 		}
 
-		$valid_types = get_post_types( array( 'public' => true ), 'names' );
+		$valid_types = BBEE_Plugin::indexable_post_types( 'names' );
 		if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
 			$types = array();
 			foreach ( $input['post_types'] as $t ) {
@@ -592,7 +592,7 @@ class BBEE_Admin {
 		}
 		$settings     = BBEE_Plugin::get_settings();
 		$stats        = $this->indexer->stats();
-		$public_types = get_post_types( array( 'public' => true ), 'objects' );
+		$public_types = BBEE_Plugin::indexable_post_types( 'objects' );
 		$reindex_url  = wp_nonce_url( admin_url( 'admin-post.php?action=bbee_reindex' ), 'bbee_reindex' );
 		$embed_url    = wp_nonce_url( admin_url( 'admin-post.php?action=bbee_embed' ), 'bbee_embed' );
 		$next_nightly = wp_next_scheduled( 'bbee_nightly_reindex' );
