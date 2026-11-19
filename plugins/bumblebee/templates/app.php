@@ -33,7 +33,7 @@ $bbee_login = home_url( '/logg-inn/?redirect_to=' . rawurlencode( get_permalink(
 		</a>
 		<span class="bbee-app__name">Bumblebee <span class="bbee-app__tag"><?php esc_html_e( 'Test', 'bumblebee' ); ?></span></span>
 
-		<?php if ( is_user_logged_in() ) : ?>
+		<?php if ( ! post_password_required() && BBEE_Plugin::user_can_chat() ) : ?>
 			<button type="button" class="bbee-app__new" id="bbee-new" hidden>
 				<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
 				<span><?php esc_html_e( 'Ny samtale', 'bumblebee' ); ?></span>
@@ -42,12 +42,26 @@ $bbee_login = home_url( '/logg-inn/?redirect_to=' . rawurlencode( get_permalink(
 	</header>
 
 	<main class="bbee-app__main">
-		<?php if ( ! is_user_logged_in() ) : ?>
+		<?php if ( post_password_required() ) : ?>
+
+			<section class="bbee-app__hero bbee-app__col">
+				<h1 class="bbee-app__title"><?php esc_html_e( 'Siden er beskyttet med passord', 'bumblebee' ); ?></h1>
+				<?php echo get_the_password_form(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</section>
+
+		<?php elseif ( ! is_user_logged_in() ) : ?>
 
 			<section class="bbee-app__hero bbee-app__col">
 				<h1 class="bbee-app__title"><?php esc_html_e( 'Logg inn for å bruke Bumblebee', 'bumblebee' ); ?></h1>
 				<p class="bbee-app__lead"><?php esc_html_e( 'Bumblebee svarer på fagspørsmål fra kunnskapskildene på BIM Verdi. Chatten er bare åpen for innloggede brukere.', 'bumblebee' ); ?></p>
 				<a class="bbee-app__login" href="<?php echo esc_url( $bbee_login ); ?>"><?php esc_html_e( 'Logg inn', 'bumblebee' ); ?></a>
+			</section>
+
+		<?php elseif ( ! BBEE_Plugin::user_can_chat() ) : ?>
+
+			<section class="bbee-app__hero bbee-app__col">
+				<h1 class="bbee-app__title"><?php esc_html_e( 'Du har ikke tilgang ennå', 'bumblebee' ); ?></h1>
+				<p class="bbee-app__lead"><?php esc_html_e( 'Bumblebee er i test og er bare åpen for noen få brukere.', 'bumblebee' ); ?></p>
 			</section>
 
 		<?php else : ?>

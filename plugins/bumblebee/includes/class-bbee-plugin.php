@@ -118,6 +118,10 @@ class BBEE_Plugin {
 
 			// Ekstra sperrede domener for crawleren (ett per linje). Kommer i tillegg til standardlisten.
 			'blocked_domains'       => '',
+
+			// Hvem får bruke chatten. Tom = alle innloggede. Ellers ett brukernavn eller én e-post per linje.
+			// Administratorer har alltid tilgang.
+			'allowed_users'         => '',
 		);
 	}
 
@@ -225,6 +229,32 @@ class BBEE_Plugin {
 			}
 		}
 		return $settings;
+	}
+
+	/**
+	 * Får brukeren bruke chatten?
+	 *
+	 * Krever innlogging. Hvis listen «allowed_users» har innhold, må
+	 * brukernavnet eller e-posten stå i den. Administratorer har alltid tilgang.
+	 *
+	 * @param int $user_id Bruker-ID. 0 = gjeldende bruker.
+	 * @return bool
+	 */
+	public static function user_can_chat( $user_id = 0 ) {
+		$user = $user_id ? get_userdata( $user_id ) : wp_get_current_user();
+		if ( ! $user || ! $user->exists() ) {
+			return false;
+		}
+		if ( user_can( $user, 'manage_options' ) ) {
+			return true;
+		}
+		$settings = self::get_settings();
+		$raw      = trim( (string) ( isset( $settings['allowed_users'] ) ? $settings['allowed_users'] : '' ) );
+		if ( '' === $raw ) {
+			return true;
+		}
+		$list = array_filter( array_map( 'strtolower', array_map( 'trim', (array) preg_split( '/[\s,;]+/', $raw ) ) ) );
+		return in_array( strtolower( $user->user_login ), $list, true ) || in_array( strtolower( $user->user_email ), $list, true );
 	}
 
 	/**

@@ -93,7 +93,7 @@ class BBEE_Rest {
 			return new WP_Error( 'bbee_login_required', __( 'Du må være innlogget for å bruke Bumblebee.', 'bumblebee' ), array( 'status' => 401 ) );
 		}
 
-		$allowed = apply_filters( 'bbee_user_can_chat', true, $request );
+		$allowed = apply_filters( 'bbee_user_can_chat', BBEE_Plugin::user_can_chat(), $request );
 		if ( ! $allowed ) {
 			return new WP_Error( 'bbee_forbidden', __( 'Kontoen din har ikke tilgang til Bumblebee.', 'bumblebee' ), array( 'status' => 403 ) );
 		}

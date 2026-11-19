@@ -184,6 +184,9 @@ class BBEE_Admin {
 		if ( isset( $input['blocked_domains'] ) ) {
 			$out['blocked_domains'] = sanitize_textarea_field( $input['blocked_domains'] );
 		}
+		if ( isset( $input['allowed_users'] ) ) {
+			$out['allowed_users'] = sanitize_textarea_field( $input['allowed_users'] );
+		}
 
 		// Popup-boble.
 		$out['popup_enabled']         = ! empty( $input['popup_enabled'] );
@@ -936,6 +939,13 @@ class BBEE_Admin {
 								<?php esc_html_e( 'Ett domene per linje. Crawleren henter aldri innhold herfra, og svar bruker aldri tekst derfra. Disse er alltid sperret, fordi lisensierte standarder ikke kan gjengis uten avtale:', 'bumblebee' ); ?>
 								<code>standard.no, iso.org, cen.eu, cenelec.eu, iec.ch</code>
 							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="bbee_allowed_users"><?php esc_html_e( 'Hvem får bruke chatten', 'bumblebee' ); ?></label></th>
+						<td>
+							<textarea name="<?php echo esc_attr( BBEE_OPTION_KEY ); ?>[allowed_users]" id="bbee_allowed_users" rows="3" class="large-text code" placeholder="brukernavn eller e-post"><?php echo esc_textarea( isset( $settings['allowed_users'] ) ? $settings['allowed_users'] : '' ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'Ett brukernavn eller én e-post per linje. Hvis feltet er tomt, får alle innloggede bruke chatten. Administratorer har alltid tilgang.', 'bumblebee' ); ?></p>
 						</td>
 					</tr>
 					<tr>
