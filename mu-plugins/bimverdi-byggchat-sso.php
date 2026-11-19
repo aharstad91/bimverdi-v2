@@ -94,7 +94,7 @@ function bimverdi_byggchat_claims(WP_User $u) {
     }
 
     $na = time();
-    return [
+    $claims = [
         'iss'         => bimverdi_byggchat_utsteder(),
         'aud'         => 'byggchat',
         'sub'         => (string) $u->ID,
@@ -108,6 +108,12 @@ function bimverdi_byggchat_claims(WP_User $u) {
         'exp'         => $na + BV_BYGGCHAT_TOKEN_LEVETID,
         'jti'         => wp_generate_uuid4(),
     ];
+
+    /**
+     * Juster kortet. Hurtigregistreringen (krav 30) setter nivaa, hurtig_status
+     * og kvote for hurtigbrukere her.
+     */
+    return apply_filters('bimverdi_byggchat_claims', $claims, $u);
 }
 
 /**
@@ -142,12 +148,18 @@ add_action('template_redirect', function () {
     }
     nocache_headers();
 
-    if (!is_user_logged_in()) {
+    // Innlogget bruker, eller en hurtigbruker (krav 30) som ikke er innlogget
+    // på bimverdi.no, men har en gyldig hurtigcookie.
+    $bruker = is_user_logged_in()
+        ? wp_get_current_user()
+        : apply_filters('bimverdi_byggchat_sso_bruker', null);
+
+    if (!$bruker instanceof WP_User || !$bruker->exists()) {
         wp_safe_redirect(wp_login_url(home_url('/?byggchat_go=1')));
         exit;
     }
 
-    $token = bimverdi_byggchat_token(wp_get_current_user());
+    $token = bimverdi_byggchat_token($bruker);
     if (is_wp_error($token)) {
         error_log('[bimverdi-byggchat-sso] ' . $token->get_error_message());
         wp_die(
