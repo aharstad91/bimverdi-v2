@@ -43,6 +43,8 @@ Etter fullføring har brukeren samme `sub`, ordinært `nivaa` og ikke noe `hurti
 
 ### Dette må ByggChat gjøre
 
+Hele beskrivelsen til Alexander står i [`OVERLEVERING-BYGGCHAT.md`](OVERLEVERING-BYGGCHAT.md).
+
 - Godta `nivaa: "Hurtigbruker"`.
 - Håndheve `hurtig.kvote` som antall spørsmål. Ved `0` eller oppbrukt kvote vises meldingen «Du har brukt gratiskvoten. Fullfør registreringen for å fortsette – det tar ett minutt.» med knapp til `fullfor_url`.
 - Vise lenken «Fullfør registreringen» (`fullfor_url`) og «Slett kontoen» (`slett_url`).
