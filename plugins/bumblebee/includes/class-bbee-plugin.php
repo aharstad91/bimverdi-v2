@@ -66,7 +66,7 @@ class BBEE_Plugin {
 			'openai_chat_model'  => 'gpt-4.1-mini',
 			'openai_temperature' => 0.2,
 			'system_prompt'   => self::default_system_prompt(),
-			'welcome_message' => __( 'Hei! Still meg et spørsmål, så finner jeg svar i kunnskapskildene på nettstedet.', 'bumblebee' ),
+			'welcome_message' => __( 'Hei! Still meg et spørsmål, så finner jeg svar i innholdet på BIM Verdi: kunnskapskilder, artikler, verktøy, arrangementer og prosjekter.', 'bumblebee' ),
 			'assistant_name'  => 'Bumblebee',
 
 			// Gjenfinning: fulltext | semantic | hybrid.
