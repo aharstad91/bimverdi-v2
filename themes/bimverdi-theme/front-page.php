@@ -46,7 +46,9 @@ $total_companies = (new WP_Query([
         ],
     ],
 ]))->found_posts;
-$total_users     = count_users()['total_users'];
+$bv_brukertelling = count_users();
+// Hurtigbrukere fra ByggChat (krav 30) har ikke fullført registreringen og telles ikke.
+$total_users     = $bv_brukertelling['total_users'] - (int) ($bv_brukertelling['avail_roles']['byggchat_gjest'] ?? 0);
 $total_tools     = wp_count_posts('verktoy')->publish;
 $total_events    = wp_count_posts('arrangement')->publish;
 $total_sources   = wp_count_posts('kunnskapskilde')->publish;
