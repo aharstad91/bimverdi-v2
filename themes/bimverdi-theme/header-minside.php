@@ -55,7 +55,25 @@ $primary_route = bimverdi_get_primary_route();
                 .bv-byggchat-link span{max-width:16rem;}
                 @media (max-width:767px){.bv-byggchat-link span{display:none;}.bv-byggchat-link img{height:40px;}}
             </style>
-            <a class="bv-byggchat-link" href="https://byggchat.bimverdi.no/" target="_blank" rel="noopener" title="Åpner ByggChat i ny fane">
+            <script>
+                // Åpner ByggChat i et eget vindu på høyre del av skjermen, delvis over
+                // BIM Verdi-vinduet, slik at begge kan brukes samtidig.
+                // Mobil, Ctrl/Cmd-klikk og blokkerte popup-vinduer faller tilbake til ny fane.
+                function bvOpenByggChat(e, url) {
+                    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return true;
+                    if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) return true;
+                    var sw = screen.availWidth || 1280, sh = screen.availHeight || 800;
+                    var sl = (typeof screen.availLeft === 'number') ? screen.availLeft : 0;
+                    var st = (typeof screen.availTop === 'number') ? screen.availTop : 0;
+                    var w = Math.min(560, Math.round(sw * 0.4)), h = sh - 40;
+                    var left = sl + sw - w - 20, top = st + 20;
+                    var win = window.open(url, 'byggchat', 'popup=yes,width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+                    if (!win) return true;
+                    try { win.opener = null; win.focus(); } catch (err) {}
+                    return false;
+                }
+            </script>
+            <a class="bv-byggchat-link" href="https://byggchat.bimverdi.no/" target="_blank" rel="noopener" title="Åpner ByggChat i et eget vindu ved siden av" onclick="return bvOpenByggChat(event, this.href);">
                 <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/byggchat-alfa-logo.png'); ?>" alt="ByggChat ALFA – åpne kilder">
                 <span>Søk i utvalgte krav, standarder, veiledninger, verktøy.</span>
             </a>
