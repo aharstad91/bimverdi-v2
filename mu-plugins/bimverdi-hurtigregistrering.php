@@ -46,8 +46,9 @@
  *
  * Outlook Safe Links og lignende åpner lenkene i e-posten før mottakeren gjør
  * det. En lenke som ble brukt opp ved første GET, ville vært død når brukeren
- * klikket. Derfor gjør GET ingenting: siden sender seg selv videre med POST
- * (automatisk med JavaScript, knapp uten). Lenken brukes opp først ved POST.
+ * klikket. Derfor gjør GET ingenting: siden viser en knapp som sender POST.
+ * Den sendes ikke automatisk med JavaScript, for noen skannere (Defender Safe
+ * Links) kjører JavaScript. Lenken brukes opp først ved POST.
  *
  * @package BimVerdi
  */
@@ -453,8 +454,25 @@ function bimverdi_hurtig_send_paminnelse(WP_User $bruker, $dager_igjen) {
  * Hurtigbruker: lenke til ByggChat og fullføring. Vanlig bruker: innloggingslenke.
  */
 function bimverdi_hurtig_send_lenke_epost(WP_User $bruker) {
+    // Administratorer får aldri innloggingslenke på e-post. De logger inn med passord.
+    if (user_can($bruker, 'manage_options')) {
+        return false;
+    }
     if (!bimverdi_hurtig_epostgrense_ok($bruker->user_email)) {
         return false;
+    }
+
+    if (bimverdi_hurtig_er_hurtigbruker($bruker) && bimverdi_hurtig_status($bruker->ID) === 'deaktivert') {
+        $innhold = bimverdi_epost_avsnitt('Hei ' . esc_html($bruker->display_name) . ',')
+            . bimverdi_epost_avsnitt('Prøvetilgangen din til ByggChat er utløpt. Fullfør registreringen og koble deg til foretaket ditt, så får du tilgang igjen.');
+        $html = bimverdi_epost_dokument([
+            'tittel'    => 'Fullfør registreringen',
+            'innhold'   => $innhold,
+            'cta_url'   => bimverdi_hurtig_lag_lenke($bruker->ID, 'fullfor'),
+            'cta_tekst' => 'Fullfør registreringen',
+            'footer'    => bimverdi_hurtig_slett_footer($bruker->ID),
+        ]);
+        return bimverdi_hurtig_send($bruker->user_email, 'Fullfør registreringen hos BIM Verdi', $html);
     }
 
     if (bimverdi_hurtig_er_hurtigbruker($bruker)) {
@@ -767,15 +785,6 @@ function bimverdi_hurtig_behandle_skjema() {
         bimverdi_hurtig_tilbake($kode, 'vilkar');
     }
 
-    // HR-03 og B-035: generelle domener og engangsdomener avvises.
-    if (bimverdi_is_general_domain($epost) || bimverdi_is_disposable_domain($epost)) {
-        bimverdi_hurtig_tilbake($kode, 'generelt');
-    }
-    $domene = substr(strrchr($epost, '@'), 1);
-    if (!checkdnsrr($domene, 'MX')) {
-        bimverdi_hurtig_tilbake($kode, 'domene');
-    }
-
     if (!bimverdi_hurtig_turnstile_ok()) {
         bimverdi_hurtig_tilbake($kode, 'robot');
     }
@@ -784,10 +793,20 @@ function bimverdi_hurtig_behandle_skjema() {
     }
 
     // HR-05: adressen finnes fra før. Ingen ny bruker, og samme melding uansett.
+    // Sjekkes før domenet, så eksisterende brukere med f.eks. Gmail også får lenken.
     $finnes = get_user_by('email', $epost);
     if ($finnes) {
         bimverdi_hurtig_send_lenke_epost($finnes);
         bimverdi_hurtig_til_sendt();
+    }
+
+    // HR-03 og B-035: generelle domener og engangsdomener avvises.
+    if (bimverdi_is_general_domain($epost) || bimverdi_is_disposable_domain($epost)) {
+        bimverdi_hurtig_tilbake($kode, 'generelt');
+    }
+    $domene = substr(strrchr($epost, '@'), 1);
+    if (!checkdnsrr($domene, 'MX')) {
+        bimverdi_hurtig_tilbake($kode, 'domene');
     }
 
     $user_id = bimverdi_hurtig_opprett($navn, $epost, $kode);
@@ -855,6 +874,9 @@ function bimverdi_hurtig_behandle_ny_lenke() {
     if (!wp_verify_nonce($_POST['_bv_nonce'] ?? '', 'bv_hurtig_ny_lenke') || !empty($_POST['nettsted'])) {
         bimverdi_hurtig_til_sendt();
     }
+    if (bimverdi_hurtig_innstillinger()['modus'] === 'av') {
+        bimverdi_hurtig_til_sendt();
+    }
     $hurtig = bimverdi_hurtig_bruker_fra_cookie();
     $epost  = strtolower(sanitize_email(wp_unslash($_POST['epost'] ?? '')));
     $bruker = $hurtig ?: ($epost !== '' ? get_user_by('email', $epost) : null);
@@ -907,15 +929,20 @@ function bimverdi_hurtig_side_lenke() {
         if (bimverdi_hurtig_sjekk_lenke($user_id, $token, false) === null) {
             $ugyldig();
         }
-        $html = '<h1>Et øyeblikk …</h1>'
-            . '<form id="bv-lenke" method="post" action="' . esc_url(home_url('/chat/lenke/')) . '">'
+        $html = '<h1>Velkommen tilbake</h1>'
+            . '<form method="post" action="' . esc_url(home_url('/chat/lenke/')) . '">'
             . '<input type="hidden" name="u" value="' . (int) $user_id . '">'
             . '<input type="hidden" name="t" value="' . esc_attr($token) . '">'
             . '<button type="submit" class="knapp">Fortsett</button>'
-            . '</form>'
-            . '<script>document.getElementById("bv-lenke").submit();</script>';
-        bimverdi_hurtig_vis('Et øyeblikk', $html);
+            . '</form>';
+        bimverdi_hurtig_vis('Fortsett', $html);
         exit;
+    }
+
+    // Innloggings-CSRF: en annen side skal ikke kunne poste sin egen lenke og
+    // logge besøkeren inn på en konto angriperen eier.
+    if (!bimverdi_hurtig_fra_eget_nettsted()) {
+        $ugyldig();
     }
 
     $formal = bimverdi_hurtig_sjekk_lenke($user_id, $token, true);
@@ -925,7 +952,7 @@ function bimverdi_hurtig_side_lenke() {
 
     // Vanlig bruker fra HR-05: logg inn og gå til ByggChat.
     if ($formal === 'logginn') {
-        if (bimverdi_hurtig_er_hurtigbruker($bruker)) {
+        if (bimverdi_hurtig_er_hurtigbruker($bruker) || user_can($bruker, 'manage_options')) {
             $ugyldig();
         }
         wp_set_current_user($user_id);
@@ -945,6 +972,10 @@ function bimverdi_hurtig_side_lenke() {
     bimverdi_hurtig_bekreft($bruker);
     bimverdi_hurtig_sett_cookie($user_id);
 
+    // Utløpt tilgang: ikke ByggChat, men fullføring.
+    if ($formal === 'chat' && bimverdi_hurtig_status($user_id) === 'deaktivert') {
+        $formal = 'fullfor';
+    }
     $mal = [
         'chat'    => bimverdi_hurtig_byggchat_url(),
         'fullfor' => home_url('/chat/fullfor/'),
@@ -955,7 +986,19 @@ function bimverdi_hurtig_side_lenke() {
 }
 
 /**
- * Bekreft e-posten. En deaktivert hurtigbruker som bruker en ny lenke, får en ny periode.
+ * Kommer POST-en fra bimverdi.no? Nettleserne sender Origin på POST; Referer er reserve.
+ */
+function bimverdi_hurtig_fra_eget_nettsted() {
+    $kilde = $_SERVER['HTTP_ORIGIN'] ?? ($_SERVER['HTTP_REFERER'] ?? '');
+    if ($kilde === '' || $kilde === 'null') {
+        return false;
+    }
+    return strtolower((string) wp_parse_url($kilde, PHP_URL_HOST)) === strtolower((string) wp_parse_url(home_url(), PHP_URL_HOST));
+}
+
+/**
+ * Bekreft e-posten. En deaktivert hurtigbruker får ingen ny periode (B-037: tilgangen
+ * er tidsbegrenset), men kan fortsatt fullføre registreringen.
  */
 function bimverdi_hurtig_bekreft(WP_User $bruker) {
     $status = bimverdi_hurtig_status($bruker->ID);
@@ -963,15 +1006,8 @@ function bimverdi_hurtig_bekreft(WP_User $bruker) {
         update_user_meta($bruker->ID, 'bv_hurtig_status', 'bekreftet');
         update_user_meta($bruker->ID, 'bv_hurtig_bekreftet', time());
         bimverdi_hurtig_tell((string) get_user_meta($bruker->ID, 'bv_hurtig_kampanje', true), 'bekreftet');
-    } elseif ($status === 'deaktivert') {
-        update_user_meta($bruker->ID, 'bv_hurtig_status', 'bekreftet');
-        update_user_meta($bruker->ID, 'bv_hurtig_opprettet', time());
-        if (!get_user_meta($bruker->ID, 'bv_hurtig_bekreftet', true)) {
-            update_user_meta($bruker->ID, 'bv_hurtig_bekreftet', time());
-        }
-        delete_user_meta($bruker->ID, 'bv_hurtig_deaktivert');
-        delete_user_meta($bruker->ID, 'bv_hurtig_paminnelse_1');
-        delete_user_meta($bruker->ID, 'bv_hurtig_paminnelse_2');
+    } elseif ($status === 'deaktivert' && !get_user_meta($bruker->ID, 'bv_hurtig_bekreftet', true)) {
+        update_user_meta($bruker->ID, 'bv_hurtig_bekreftet', time());
     }
 }
 
@@ -998,7 +1034,9 @@ function bimverdi_hurtig_side_fullfor() {
     }
 
     $status = bimverdi_hurtig_status($bruker->ID);
-    if ($status !== 'bekreftet') {
+    $kan_fullfore = $status === 'bekreftet'
+        || ($status === 'deaktivert' && get_user_meta($bruker->ID, 'bv_hurtig_bekreftet', true));
+    if (!$kan_fullfore) {
         bimverdi_hurtig_vis('Bekreft e-posten', '<h1>Bekreft e-posten din først</h1>'
             . '<p>Vi har sendt en lenke til <strong>' . esc_html($bruker->user_email) . '</strong>. Klikk på den, så kan du fullføre registreringen.</p>'
             . bimverdi_hurtig_html_ny_lenke(false));
@@ -1103,6 +1141,8 @@ function bimverdi_hurtig_behandle_fullforing(WP_User $bruker) {
     }
 
     $deler = explode(' ', $navn, 2);
+    // WordPress sender ellers sin egen engelske «Password Changed»-e-post.
+    add_filter('send_password_change_email', '__return_false');
     $svar  = wp_update_user([
         'ID'           => $bruker->ID,
         'user_pass'    => $passord,
@@ -1236,7 +1276,7 @@ add_action('template_redirect', function () {
     if ($hurtig && bimverdi_hurtig_status($hurtig->ID) === 'deaktivert') {
         nocache_headers();
         bimverdi_hurtig_vis('Tilgangen er utløpt', '<h1>Tilgangen er utløpt</h1>'
-            . '<p>Prøvetilgangen din til ByggChat er utløpt. Vi sender deg en ny lenke, så får du en ny periode og kan fullføre registreringen.</p>'
+            . '<p>Prøvetilgangen din til ByggChat er utløpt. Fullfør registreringen og koble deg til foretaket ditt, så får du tilgang igjen. Vi sender deg en lenke.</p>'
             . bimverdi_hurtig_html_ny_lenke(false));
         exit;
     }
