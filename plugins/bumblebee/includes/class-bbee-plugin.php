@@ -56,7 +56,9 @@ class BBEE_Plugin {
 		return array(
 			'api_key'         => '',
 			'model'           => 'claude-sonnet-4-5',
-			'post_types'      => array( 'post', 'page' ),
+			// Alt internt innhold på bimverdi.no, som i ByggChat, pluss pilotprosjekter.
+			// Pilotprosjekter er bare med når alle innloggede kan lese dem.
+			'post_types'      => array( 'post', 'page', 'foretak', 'verktoy', 'kunnskapskilde', 'arrangement', 'theme_group', 'artikkel', 'bv_begrep', 'bv_pilot_prosjekt' ),
 			'max_sources'     => 6,
 			'max_tokens'      => 1500,
 
@@ -302,6 +304,21 @@ class BBEE_Plugin {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Innholdstyper som kan velges for indeksen. Tar med typer som har egne
+	 * sider uten å være «public», f.eks. pilotprosjekter (publicly_queryable).
+	 * Uten dette fjerner lagring på innstillingssiden pilotprosjektene.
+	 *
+	 * @param string $output «names» eller «objects».
+	 * @return array
+	 */
+	public static function indexable_post_types( $output = 'names' ) {
+		return array_merge(
+			get_post_types( array( 'publicly_queryable' => true ), $output ),
+			get_post_types( array( 'public' => true ), $output )
+		);
 	}
 
 	/**

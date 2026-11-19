@@ -71,6 +71,8 @@ class BBEE_Retriever {
 			)
 		);
 
+		$results = $this->drop_closed( $results );
+
 		$caps = $this->type_caps( $query );
 		if ( ! empty( $caps ) ) {
 			$results = $this->apply_type_caps( $results, $caps );
@@ -83,6 +85,56 @@ class BBEE_Retriever {
 		}
 		$this->last_timing['totalt_ms'] = (int) round( ( microtime( true ) - $t0 ) * 1000 );
 		return $results;
+	}
+
+	/**
+	 * Sikkerhetsnett: fjern treff fra innhold som ikke lenger kan være med, selv
+	 * om indeksen er gammel. Eksempler: et pilotprosjekt som er gjort privat, en
+	 * side som har fått passord, en innholdstype som er tatt ut av listen, eller
+	 * en kunnskapskilde som ikke lenger er «ikke_reservert».
+	 * Nabobiter hentes bare for treff som har passert her.
+	 *
+	 * @param array $results Treff.
+	 * @return array
+	 */
+	protected function drop_closed( $results ) {
+		$ids = array();
+		foreach ( $results as $r ) {
+			if ( in_array( $r['source_type'], array( 'post', 'kilde' ), true ) && $r['post_id'] > 0 ) {
+				$ids[] = (int) $r['post_id'];
+			}
+		}
+		if ( empty( $ids ) ) {
+			return $results;
+		}
+		$ids = array_values( array_unique( $ids ) );
+		_prime_post_caches( $ids, false, true );
+
+		$types = BBEE_Indexer::post_types();
+		$ok    = array();
+		foreach ( $ids as $id ) {
+			$p = get_post( $id );
+			if ( ! $p instanceof WP_Post || 'publish' !== $p->post_status || ! BBEE_Indexer::post_kan_indekseres( $p ) ) {
+				$ok[ $id ] = array( 'post' => false, 'kilde' => false );
+				continue;
+			}
+			$ok[ $id ] = array(
+				'post'  => in_array( $p->post_type, $types, true ),
+				'kilde' => BBEE_Indexer::KILDE_POST_TYPE === $p->post_type && BBEE_Indexer::kilde_kan_hentes( $id ),
+			);
+		}
+
+		return array_values(
+			array_filter(
+				$results,
+				function ( $r ) use ( $ok ) {
+					if ( ! in_array( $r['source_type'], array( 'post', 'kilde' ), true ) || $r['post_id'] <= 0 ) {
+						return true;
+					}
+					return ! empty( $ok[ (int) $r['post_id'] ][ $r['source_type'] ] );
+				}
+			)
+		);
 	}
 
 	/**

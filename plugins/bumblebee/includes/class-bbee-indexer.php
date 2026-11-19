@@ -68,15 +68,215 @@ class BBEE_Indexer {
 		add_action( 'edit_attachment', array( $this, 'on_save_attachment' ) );
 		add_action( 'delete_attachment', array( $this, 'on_delete_attachment' ) );
 		add_action( 'bbee_embed_pending', array( $this, 'run_embed_pending' ) );
+
+		// Pilotskjemaet lagrer feltene (også tilgangen) etter save_post.
+		// Derfor følger vi med på feltene og indekserer på nytt til slutt.
+		add_action( 'added_post_meta', array( $this, 'on_pilot_meta_change' ), 10, 3 );
+		add_action( 'updated_post_meta', array( $this, 'on_pilot_meta_change' ), 10, 3 );
+		add_action( 'deleted_post_meta', array( $this, 'on_pilot_meta_change' ), 10, 3 );
+		add_action( 'shutdown', array( $this, 'flush_pilot_queue' ) );
+	}
+
+	/* ---- Pilotprosjekter (bv_pilot_prosjekt) ---- */
+
+	const PILOT_POST_TYPE   = 'bv_pilot_prosjekt';
+	const PILOT_META_PREFIX = '_bvp_';
+	const PILOT_META_LEVEL  = '_bvp_tilgang';
+
+	/**
+	 * Pilotprosjekter som venter på ny indeksering i denne forespørselen.
+	 *
+	 * @var int[]
+	 */
+	protected $pilot_queue = array();
+
+	/**
+	 * Tilgangsnivåene i pilotskjemaet som alle innloggede brukere kan lese.
+	 * Bumblebee krever innlogging, så disse kan trygt være med i indeksen.
+	 * «privat» og «utvalgte» er aldri med.
+	 *
+	 * @return string[]
+	 */
+	public static function pilot_aapne_nivaer() {
+		return (array) apply_filters( 'bbee_pilot_aapne_nivaer', array( 'offentlig', 'deltakere' ) );
+	}
+
+	/**
+	 * Kan dette innlegget være med i indeksen? Gjelder i tillegg til listen over
+	 * innholdstyper. Innlegg med sidepassord er aldri med. Et pilotprosjekt er bare
+	 * med når alle innloggede kan lese det. Mangler tilgangen, regnes det som privat.
+	 *
+	 * @param WP_Post $post Post.
+	 * @return bool
+	 */
+	public static function post_kan_indekseres( $post ) {
+		if ( ! $post instanceof WP_Post ) {
+			return false;
+		}
+		// Innhold bak sidepassord er ikke for alle innloggede.
+		if ( '' !== (string) $post->post_password ) {
+			return false;
+		}
+		if ( self::PILOT_POST_TYPE === $post->post_type ) {
+			$nivaa = (string) get_post_meta( $post->ID, self::PILOT_META_LEVEL, true );
+			return in_array( $nivaa, self::pilot_aapne_nivaer(), true );
+		}
+		return true;
+	}
+
+	/**
+	 * Et felt på et pilotprosjekt er endret. Legg prosjektet i køen.
+	 *
+	 * @param int|int[] $meta_id   Meta-ID (ikke brukt).
+	 * @param int       $object_id Post-ID.
+	 * @param string    $meta_key  Feltnavn.
+	 */
+	public function on_pilot_meta_change( $meta_id, $object_id, $meta_key ) {
+		if ( 0 !== strpos( (string) $meta_key, self::PILOT_META_PREFIX ) ) {
+			return;
+		}
+		if ( self::PILOT_POST_TYPE !== get_post_type( (int) $object_id ) ) {
+			return;
+		}
+		$this->pilot_queue[ (int) $object_id ] = true;
+	}
+
+	/**
+	 * Indekser pilotprosjektene i køen én gang, etter at alle feltene er lagret.
+	 */
+	public function flush_pilot_queue() {
+		$ids               = array_keys( $this->pilot_queue );
+		$this->pilot_queue = array();
+		foreach ( $ids as $post_id ) {
+			$post = get_post( $post_id );
+			if ( ! $post instanceof WP_Post ) {
+				continue;
+			}
+			if ( 'publish' !== $post->post_status
+				|| ! in_array( $post->post_type, $this->indexed_post_types(), true ) ) {
+				$this->delete_post_chunks( $post_id );
+				continue;
+			}
+			$this->index_post( $post );
+		}
+	}
+
+	/**
+	 * Feltene fra pilotskjemaet som tekst. Listen er en hviteliste.
+	 * Personopplysninger (navn, e-post, team), meldinger til rådgiver og
+	 * interne valg kommer aldri med.
+	 *
+	 * @param WP_Post $post Post.
+	 * @return string
+	 */
+	protected function pilot_to_text( $post ) {
+		$fields = array(
+			'foretaksnavn'                             => 'Foretak',
+			'hvilke_temagruppe_r_er_de_dette_relevant' => 'Temagrupper',
+			'beskrivelse_av_pilot'                     => 'Beskrivelse av pilot',
+			'problem'                                  => 'Problem som skal løses',
+			'hvorfor_onskes_dette_lost'                => 'Hvorfor ønskes dette løst',
+			'beskrivelse_av_onsket_losning'            => 'Forslag til løsning',
+			'losning'                                  => 'Hvordan problemet skal løses',
+			'beskrivelse_2'                            => 'Mer beskrivelse',
+			'beskrivelse_2_2'                          => 'Mer beskrivelse',
+			'myndighetskrav'                           => 'Myndighetskrav',
+			'finn_standarder_i_kunnskapsbasen'         => 'Relevante standarder',
+			'finn_veiledninger_i_kunnskapsbasen'       => 'Veiledninger',
+			'legg_inn_andre'                           => 'Digitale verktøy og tjenester',
+			'verktoy_og_tjenester_som_onskes_men_som'  => 'Verktøy og tjenester som ønskes',
+			'byggchat'                                 => 'Relevans for ByggChat',
+			'riskbim_relevans'                         => 'Relevans for RiskBIM',
+			'skann_til_bim_for_ombruk_og_transformasj' => 'Skann til BIM for ombruk og transformasjon',
+			'soknadsprosess_for_skattefunn_etc'        => 'Søknadsprosess for SkatteFUNN',
+			'effekttyper'                              => 'Gevinster',
+			'effekt_samlet'                            => 'Samlet effekt',
+			'effekt_salg'                              => 'Effekter på salg',
+			'effekt_kostnader'                         => 'Effekter på kostnader',
+			'effekt_produktivitet'                     => 'Effekter på produktivitet',
+			'effekt_hms'                               => 'Effekter på HMS',
+			'effekt_miljo'                             => 'Miljøeffekter',
+			'hovedmalgrupper'                          => 'Målgrupper',
+			'kunde_bae_type'                           => 'Brukere og kunder som har nytte av løsningen',
+			'digital_losning'                          => 'Digital løsning',
+			'produsent'                                => 'Produsent eller leverandør',
+			'marked_geografi'                          => 'Marked',
+			'nyhetsgrad'                               => 'Det nye ved løsningen',
+			'stikkord'                                 => 'Stikkord',
+			'nettside_for_prosjektet'                  => 'Nettside',
+		);
+		$fields = apply_filters( 'bbee_pilot_felt', $fields, $post );
+
+		$lines = array();
+		foreach ( $fields as $key => $label ) {
+			$value = get_post_meta( $post->ID, self::PILOT_META_PREFIX . $key, true );
+			$text  = $this->pilot_value_to_text( $value );
+			if ( '' !== $text ) {
+				$lines[] = $label . ': ' . $text;
+			}
+		}
+		return implode( "\n", $lines );
+	}
+
+	/**
+	 * Gjør en verdi fra pilotskjemaet om til tekst. Oppslagsfelt lagrer
+	 * post-ID-er (som tall eller som array med «id» og «merker»). De blir til
+	 * titler, men bare for publisert innhold.
+	 *
+	 * @param mixed $value Metaverdi.
+	 * @return string
+	 */
+	protected function pilot_value_to_text( $value ) {
+		if ( ! is_array( $value ) ) {
+			return $this->flatten_meta( $value );
+		}
+		$out = array();
+		foreach ( $value as $item ) {
+			$id     = 0;
+			$merker = array();
+			if ( is_array( $item ) && isset( $item['id'] ) ) {
+				$id     = (int) $item['id'];
+				$merker = isset( $item['merker'] ) && is_array( $item['merker'] ) ? $item['merker'] : array();
+			} elseif ( is_int( $item ) || ( is_string( $item ) && ctype_digit( $item ) ) ) {
+				$id = (int) $item;
+			}
+			if ( $id > 0 ) {
+				// Bare titler som alle innloggede kan se: publisert og uten sidepassord.
+				if ( 'publish' !== get_post_status( $id ) || '' !== (string) get_post_field( 'post_password', $id ) ) {
+					continue;
+				}
+				$t = trim( html_entity_decode( wp_strip_all_tags( get_the_title( $id ) ), ENT_QUOTES, 'UTF-8' ) );
+				if ( '' === $t ) {
+					continue;
+				}
+				$m = $this->flatten_meta( array_values( $merker ) );
+				$out[] = '' !== $m ? $t . ' (' . $m . ')' : $t;
+				continue;
+			}
+			$t = $this->flatten_meta( $item );
+			if ( '' !== $t ) {
+				$out[] = $t;
+			}
+		}
+		return implode( ', ', $out );
+	}
+
+	/**
+	 * Innholdstypene som er valgt for indeksen.
+	 *
+	 * @return array
+	 */
+	public static function post_types() {
+		$settings = BBEE_Plugin::get_settings();
+		$types    = isset( $settings['post_types'] ) ? (array) $settings['post_types'] : array( 'post', 'page' );
+		return (array) apply_filters( 'bbee_indexed_post_types', $types );
 	}
 
 	/**
 	 * @return array
 	 */
 	protected function indexed_post_types() {
-		$settings = BBEE_Plugin::get_settings();
-		$types    = isset( $settings['post_types'] ) ? (array) $settings['post_types'] : array( 'post', 'page' );
-		return apply_filters( 'bbee_indexed_post_types', $types );
+		return self::post_types();
 	}
 
 	/**
@@ -423,6 +623,12 @@ class BBEE_Indexer {
 
 		$this->delete_post_chunks( $post->ID );
 
+		// Innhold som ikke alle innloggede kan lese (f.eks. private pilotprosjekter)
+		// skal aldri inn i indeksen. Gamle biter er alt slettet over.
+		if ( ! self::post_kan_indekseres( $post ) ) {
+			return 0;
+		}
+
 		$plain = $this->post_to_text( $post );
 		if ( '' === trim( $plain ) ) {
 			return 0;
@@ -676,7 +882,9 @@ class BBEE_Indexer {
 				'' !== $title ? $title : '',
 				$this->terms_to_text( $post ),
 				self::KILDE_POST_TYPE === $post->post_type ? $this->kunnskapskilde_to_text( $post ) : '',
-				$this->meta_to_text( $post ),
+				self::PILOT_POST_TYPE === $post->post_type ? $this->pilot_to_text( $post ) : '',
+				// Pilotprosjekter bruker bare hvitelisten i pilot_to_text, aldri de generelle metafeltene.
+				self::PILOT_POST_TYPE === $post->post_type ? '' : $this->meta_to_text( $post ),
 				trim( $excerpt ),
 				trim( $content ),
 			)
