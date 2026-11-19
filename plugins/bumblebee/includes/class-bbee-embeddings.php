@@ -442,9 +442,10 @@ class BBEE_Vector_Store {
 	 * @param string $model_id Modell-ID.
 	 * @param int    $limit    Antall treff.
 	 * @param int    $rescore  Antall kandidater fra grovsøket som får nøyaktig poeng.
+	 * @param array|null $allow Bare disse bit-ID-ene (chunk_id => true), eller null for alle.
 	 * @return array chunk_id => poeng, sortert synkende.
 	 */
-	public static function search( $qvec, $model_id, $limit, $rescore = 400 ) {
+	public static function search( $qvec, $model_id, $limit, $rescore = 400, $allow = null ) {
 		global $wpdb;
 		$vectors = self::table_name();
 		$qvec    = array_values( $qvec );
@@ -472,7 +473,7 @@ class BBEE_Vector_Store {
 			}
 			foreach ( $rows as $row ) {
 				$last = (int) $row[0];
-				if ( '' === $row[1] ) {
+				if ( '' === $row[1] || ( null !== $allow && ! isset( $allow[ $last ] ) ) ) {
 					continue;
 				}
 				$v = unpack( 'g*', $row[1] );

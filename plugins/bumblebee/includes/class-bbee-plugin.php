@@ -60,6 +60,11 @@ class BBEE_Plugin {
 			// Pilotprosjekter er bare med når alle innloggede kan lese dem.
 			'post_types'      => array( 'post', 'page', 'foretak', 'verktoy', 'kunnskapskilde', 'arrangement', 'theme_group', 'artikkel', 'bv_begrep', 'bv_pilot_prosjekt' ),
 			'max_sources'     => 6,
+
+			// Tekst hentet fra eksterne nettsteder (sider bak kunnskapskilder og crawlede
+			// adresser). Av: Bumblebee svarer bare fra innhold på bimverdi.no
+			// (beslutning 19.11.2026). Teksten blir liggende i indeksen.
+			'bruk_hentet_tekst' => false,
 			'max_tokens'      => 1500,
 
 			// Svarmodell når OpenAI brukes (konstanten BBEE_OPENAI_CHAT_MODEL i wp-config.php vinner).
