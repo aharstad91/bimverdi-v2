@@ -22,10 +22,14 @@ plugins/*
 !plugins/bim-verdi-core/**
 !plugins/bv-lenkevakt/
 !plugins/bv-lenkevakt/**
+!plugins/bumblebee/
+!plugins/bumblebee/**
 
 # Ignorer common files
 **/node_modules/
 **/vendor/
+!plugins/bumblebee/includes/vendor/
+!plugins/bumblebee/includes/vendor/**
 **/.DS_Store
 
 # Ignorer dist UNNTATT theme dist (kompilert CSS)

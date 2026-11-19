@@ -1,0 +1,122 @@
+[
+  {
+    "id": 101,
+    "kategori": "Materialvalg",
+    "sporsmal": "Vi vurderer å ta med FutureBuilt sine plastkriterier i et prosjekt. Er det noen typer plast som er helt utelukket?",
+    "fasit": "Ja. Kriterier for plast i bygg V2.0 (FutureBuilt, 2026) utelukker plast med stoffer på REACH-kandidatlisten, plast med stoffer på den norske Prioritetslisten, polykarbonat og epoxy. Forbildeprosjektene skal også bruke om lag 50 % mindre plast enn bransjestandard, med gradvis nedtrapping mot 2055.",
+    "forventet_kilde_url": "https://www.futurebuilt.no/assets/originals/PDFer-2026/Kriterier/Plast/Kriterier_plast_i_bygg_V2.0.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 102,
+    "kategori": "Digitalisering",
+    "sporsmal": "Hva er egentlig DiCon, og hvilke standarder bygger den på?",
+    "fasit": "DiCon (Digital Construction Ontologies) er et sett ontologier for semantisk samhandling mellom systemer i bygg og rehabilitering. De definerer begreper for byggverk, prosjektering og byggeplanlegging, og bygger på ISO 19650, ISO 16739-1 (IFC), ISO/IEC 21838-2 (BFO) og ISO 21597-1 (ICDD).",
+    "forventet_kilde_url": "https://digitalconstruction.github.io/v/0.5/",
+    "type": "ekstern"
+  },
+  {
+    "id": 103,
+    "kategori": "Regelverk",
+    "sporsmal": "Vi skal bygge boliger i et område med flomfare. Hvilken sikkerhetsklasse havner vi i, og hvor stor flom må vi tåle?",
+    "fasit": "Etter TEK17 § 7-2 hører boliger normalt til sikkerhetsklasse F2. Største nominelle årlige sannsynlighet er da 1/200, altså en 200-årsflom. F1 er 1/20 og F3 er 1/1000.",
+    "forventet_kilde_url": "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/7/7-2",
+    "type": "ekstern"
+  },
+  {
+    "id": 104,
+    "kategori": "Boligsalg",
+    "sporsmal": "Takstmannen vil bore hull i baderomsveggen før vi selger leiligheten. Må vi la ham gjøre det, og hva skjer hvis vi sier nei?",
+    "fasit": "Hovedregelen i forskrift til avhendingslova § 2-2 er at det skal bores hull for å måle fukt i våtrom, med unntak når det ikke er praktisk mulig eller er unødvendig. Den bygningssakkyndige kan ikke bore hvis eieren nekter, men da er tilstandsrapporten ikke i tråd med forskriften. Selgeren mister det reduserte ansvaret for skjulte feil og mangler.",
+    "forventet_kilde_url": "https://www.dibk.no/regelverk/forskrift-til-avhendingslova-tryggere-bolighandel",
+    "type": "ekstern"
+  },
+  {
+    "id": 105,
+    "kategori": "Digitalisering",
+    "sporsmal": "Hvorfor har digitaliseringen gått så tregt i byggenæringen? Er det noen som har sett på det?",
+    "fasit": "Digitalt veikart 2.0 (BNL, 2020) peker på at digitalisering ofte er overlatt til IT og spesialister, at språket har mange uforståelige forkortelser, og at man har løst enkeltoppgaver uten å se sammenhengene. Næringen er også stor, kompleks og fragmentert, med lite samarbeid på tvers («digitaliserer på hver sin tue»).",
+    "forventet_kilde_url": "https://www.nhobyggenaringen.no/siteassets/dokumenter/rapporter/digitaltveikart_2020_finale.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 106,
+    "kategori": "Planprosess",
+    "sporsmal": "Vi skal sende inn en privat reguleringsplan. Finnes det en anbefalt fasedeling for samarbeidet mellom utbygger og kommunen?",
+    "fasit": "Ja. Bygg21s fasenorm for reguleringsplan («Steg for steg») deler prosessen i fire faser: 1 Planinitiativ, 2 Oppstart plan, 3 Reguleringsplan og 4 Beslutning plan. Målet er gode planer på halve tiden, og Bygg21 anbefaler at partene inngår en forpliktende avtale som regulerer fasene.",
+    "forventet_kilde_url": "https://bygg21.no/rapporter-og-veiledere/steg-for-steg/ | https://bygg21.no/rapporter-og-veiledere/steg-for-steg/fasenorm-for-reguleringsplan/",
+    "type": "ekstern"
+  },
+  {
+    "id": 107,
+    "kategori": "Planprosess",
+    "sporsmal": "Hvor lang tid tar en reguleringsplan i snitt nå for tiden, og hvorfor har det blitt så tregt?",
+    "fasit": "Asplan Viak/NIBR-rapporten for KDD (2025) viser at gjennomsnittlig saksbehandlingstid har økt fra 577 dager i 2016 til 890 dager i 2023. Utbyggers tidsbruk er den største delen. Årsakene er blant annet mer komplekse plansystemer, innsigelser og klager, mange utredningskrav og manglende tillit mellom partene.",
+    "forventet_kilde_url": "https://www.regjeringen.no/contentassets/adbd9526d2a64adf8d6f1adbb1b82f13/asplan-viak-tidsbruken-i-planprosesser.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 108,
+    "kategori": "Miljøsertifisering",
+    "sporsmal": "Hvor mange poeng trenger vi for å nå BREEAM-NOR Excellent på et nybygg?",
+    "fasit": "Etter BREEAM-NOR v6.0 (SD 5076) må poengsummen være minst 70 % for Excellent. Andre nivåer: Pass ≥ 30, Good ≥ 45, Very Good ≥ 55 og Outstanding ≥ 85. Minstekravene må også være oppfylt.",
+    "forventet_kilde_url": "https://cdn.sanity.io/files/7bb09fed/production/495ac63b3fd5820241798243446799f43eac3d22.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 109,
+    "kategori": "Prosjektstyring",
+    "sporsmal": "Hva lærte de av Nytt sykehus i Drammen når det gjelder styring og usikkerhet?",
+    "fasit": "Læringsnotatet fra Bedre Megaprosjekter (15.09.2026) viser at usikkerhetsanalysen etter forprosjektet var for optimistisk, og at nye analyser først kom da kostnadsrammen var truet. Rapporteringen viste lave prognoser per kontrakt og lite pessimistiske scenarioer, som ga et svakt beslutningsgrunnlag. Læringspunktet er at prosjekteier skal etterspørre realistiske prognoser og konsekvensvurderinger, og bruke kvalitetssikring aktivt.",
+    "forventet_kilde_url": "https://bedremegaprosjekter.no/wp-content/uploads/2026/10/2026-09-15-Laeringsnotat-NSD-v1.1.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 110,
+    "kategori": "BIM-innføring",
+    "sporsmal": "Vi er et lite arkitektkontor på fem stykker. Hvorfor er det så tungt for små firma å komme i gang med BIM?",
+    "fasit": "EU BIM Task Group (Workshop XII «Scaling BIM Down», 2026) peker på at BIM ikke er lovpålagt, at standardene er for komplekse for små firma, og at kundene sjelden etterspør eller betaler for BIM. Høye kostnader til maskinvare og lisenser, lave marginer og uklar gevinst hemmer også. Mangel på kompetanse og ansatte med mange roller gjør overgangen vanskeligere.",
+    "forventet_kilde_url": "https://eubim.eu/wp-content/uploads/2026/05/48_20260226_Report-for-EU-BIM-Task-Group-Workshop-XII-SCALING-BIM-DOWN.pdf",
+    "type": "ekstern"
+  },
+  {
+    "id": 111,
+    "kategori": "Arrangement",
+    "sporsmal": "Jeg har hørt at Oslo kommune tester BIM-modeller i byggesak. Hva går det ut på?",
+    "fasit": "Plan- og bygningsetaten har et FoU-prosjekt, «BIM-modell til byggesak». Det tester hvordan 3D-modeller kan automatisere sjekklister, hente matrikkeldata og gi visuell støtte i saksbehandlingen, og om geometrien kan gjenbrukes i FKB Tiltak og matrikkelmeldinger. Resultatene skal gi innspill til DiBKs nasjonale standard for byggesaks-BIM (P13). Det ble presentert på ByggesaksBIM #1/26.",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/arrangement/20260312/",
+    "type": "intern"
+  },
+  {
+    "id": 112,
+    "kategori": "Artikkel",
+    "sporsmal": "Har BIM Verdi skrevet noe om hvordan man får sveisedokumentasjon for stål inn i BIM-modellen?",
+    "fasit": "Ja, artikkelen «Sveisedata i BIM-modellen – hvordan får vi det til» om Weld IT, et system for sveisedokumentasjon etter NS-EN 1090 og ISO 3834. Målet er å klikke på en bjelke i IFC-modellen og se utførelsesklasse, sveiser, NDT-resultat og materialsertifikat. NS 8360-3 og NS 8360-2 skal gi et felles språk, og det er åpent om koblingen skal gå via åpne standarder (IFC, NS 8360, bSDD) eller direkte integrasjoner.",
+    "forventet_kilde_url": "http://localhost:8888/bimverdi-v2/artikler/sveisedata-i-bim-modellen-hvordan-far-vi-det-til/",
+    "type": "intern"
+  },
+  {
+    "id": 113,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hvilke toleranser for planhet gir NS 3420 for et støpt betonggulv? Trenger tallene i mm for de ulike toleranseklassene.",
+    "fasit": "Standardteksten i NS 3420 er betalt/reservert og finnes ikke i kildene. Skal si fra om manglende dekning og ikke oppgi eller dikte opp toleranseverdier.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  },
+  {
+    "id": 114,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hva er karakteristisk snølast på mark for Tromsø etter det nasjonale tillegget til NS-EN 1991-1-3?",
+    "fasit": "Verdiene står i en reservert standard (Eurokode med nasjonalt tillegg) og finnes ikke i kildene. Skal si fra om manglende dekning og ikke oppgi et tall.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  },
+  {
+    "id": 115,
+    "kategori": "Avgrensning",
+    "sporsmal": "Hvordan søker jeg om foreldrepenger fra NAV når jeg er selvstendig næringsdrivende?",
+    "fasit": "Utenfor fagfeltet. Skal si at kildene ikke dekker dette, uten å gi en oppdiktet framgangsmåte.",
+    "forventet_kilde_url": "INGEN",
+    "type": "avgrensning"
+  }
+]
