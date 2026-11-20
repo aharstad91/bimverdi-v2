@@ -170,6 +170,10 @@ function bimverdi_maskinell_bruk_valg() {
 
 /**
  * Handle kunnskapskilde registration/edit form submission
+ *
+ * Prioritet 20: taksonomien «temagruppe» og posttypen registreres av bim-verdi-core
+ * på init 10. Mu-plugins lastes før vanlige plugins, så med prioritet 10 kjørte
+ * denne før registreringen, og wp_set_object_terms feilet stille (invalid_taxonomy).
  */
 add_action('init', function () {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -456,8 +460,16 @@ add_action('init', function () {
     }
 
     // --- Save taxonomies ---
-    if (!empty($temagrupper)) {
-        wp_set_object_terms($post_id, $temagrupper, 'temagruppe');
+    // Bare eksisterende temagrupper (slug), så skjemaet ikke kan opprette nye termer.
+    // Ved redigering tømmes temagruppene når alle er krysset bort.
+    $temagrupper = array_values(array_filter($temagrupper, function ($slug) {
+        return $slug !== '' && term_exists($slug, 'temagruppe');
+    }));
+    if (!empty($temagrupper) || $is_edit) {
+        $tg_resultat = wp_set_object_terms($post_id, $temagrupper, 'temagruppe');
+        if (is_wp_error($tg_resultat)) {
+            error_log('BIMVerdi kunnskapskilde temagruppe error (' . $post_id . '): ' . $tg_resultat->get_error_message());
+        }
     }
 
     // Clear rate limit
@@ -508,4 +520,4 @@ add_action('init', function () {
     $param = $is_edit ? 'updated' : 'registered';
     wp_redirect(add_query_arg($param, '1', home_url('/min-side/kunnskapskilder/')));
     exit;
-});
+}, 20);

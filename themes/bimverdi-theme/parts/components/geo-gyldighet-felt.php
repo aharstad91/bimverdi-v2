@@ -31,6 +31,9 @@ function bimverdi_geo_gyldighet_select($valgt = '') {
             <option value="<?php echo esc_attr($value); ?>" <?php selected((string) $valgt, $value); ?>><?php echo esc_html($label); ?></option>
             <?php endforeach; ?>
         </select>
+        <p id="geo-region-merknad" class="text-xs text-[#5A5A5A] mt-2" hidden>
+            Fylker og kommuner lagres bare når gyldigheten er «Regionalt». Valgene du har krysset av, blir ikke lagret.
+        </p>
     </div>
     <?php
 }
@@ -190,9 +193,15 @@ function bimverdi_geo_region_panel($niva = '', $fylker = array(), $kommuner = ar
             if (e.key === 'Enter') e.preventDefault();
         });
 
-        niva.addEventListener('change', function () {
+        var merknad = document.getElementById('geo-region-merknad');
+        function oppdaterNiva() {
             panel.hidden = niva.value !== 'regionalt';
-        });
+            // Si fra når fylker/kommuner er krysset av, men ikke blir lagret.
+            if (merknad) {
+                merknad.hidden = !panel.hidden || !panel.querySelector('input[type="checkbox"]:checked');
+            }
+        }
+        niva.addEventListener('change', oppdaterNiva);
 
         var skjema = panel.closest('form');
         if (skjema) {
@@ -207,6 +216,7 @@ function bimverdi_geo_region_panel($niva = '', $fylker = array(), $kommuner = ar
         }
 
         oppdaterFylker();
+        oppdaterNiva();
     })();
     </script>
     <?php
