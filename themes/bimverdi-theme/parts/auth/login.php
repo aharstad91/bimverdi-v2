@@ -181,7 +181,7 @@ $error_message = $error_messages[$error] ?? '';
             background: #FFF4EE;
             border: 1px solid #F6D3C2;
             border-radius: var(--bv-radius-lg);
-            font-size: var(--bv-text-sm);
+            font-size: var(--bv-text-base);
             line-height: 1.6;
             color: var(--bv-text-primary);
         }
@@ -414,7 +414,7 @@ $error_message = $error_messages[$error] ?? '';
         </div>
 
         <div class="auth-form-wrapper">
-            <p class="auth-velkommen"><strong>Velkommen!</strong> Registrering/innlogging er nødvendig for å legge inn kunnskapskilder, bruke ByggChat ALFA (pilot) m.m.</p>
+            <p class="auth-velkommen"><strong>Velkommen!</strong> Registrering/innlogging er nødvendig for å legge inn kunnskapskilder, bruke ByggChat ALFA (pilot), meldinger m.m.</p>
             <div class="auth-card">
                 <div class="auth-card-header">
                     <h2>Logg inn</h2>
