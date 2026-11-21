@@ -262,6 +262,7 @@ if (!$bruker_foretak && function_exists('bimverdi_pending_oppgave_status')) :
         $oppgave_label = $retry_status['oppgave']['label'] ?? 'registreringen';
         get_template_part('parts/components/block-vegg', null, [
             'oppgave_label' => $oppgave_label,
+            'tekst'         => (string) ($retry_status['oppgave']['context']['vegg_tekst'] ?? ''),
             'retry_url'     => home_url('/min-side/?retry=1#kobling-skjema'),
         ]);
     elseif ($retry_status && $retry_status['state'] === 'expired') : ?>

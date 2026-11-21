@@ -28,6 +28,8 @@ $oppgave_label = isset($args['oppgave_label']) && $args['oppgave_label'] !== ''
 $retry_url = isset($args['retry_url']) && $args['retry_url'] !== ''
     ? (string) $args['retry_url']
     : home_url('/min-side/?retry=1');
+// Valgfri egen første setning når «registrere deg på …» ikke passer (f.eks. lukkede meldinger).
+$tekst = isset($args['tekst']) ? trim((string) $args['tekst']) : '';
 $dashboard_url = home_url('/min-side/');
 ?>
 <section class="bv-block-vegg" data-block-type="foretak-required">
@@ -39,8 +41,12 @@ $dashboard_url = home_url('/min-side/');
         </h1>
 
         <p class="bv-block-vegg__body">
+            <?php if ($tekst !== '') : ?>
+                <?php echo esc_html($tekst); ?>
+            <?php else : ?>
             Vi trenger å vite hvilket foretak du tilhører før vi kan registrere deg
             på <?php echo esc_html($oppgave_label); ?>.
+            <?php endif; ?>
             Det tar to minutter og du blir sendt tilbake hit etterpå.
         </p>
 

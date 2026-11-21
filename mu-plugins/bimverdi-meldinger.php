@@ -1109,6 +1109,37 @@ add_action('template_redirect', function () {
 });
 
 /**
+ * Første setning i blokk-veggen (krav 22) for lukkede meldinger.
+ */
+function bv_meldinger_vegg_tekst() {
+    return __('Du må være koblet til et foretak for å sende og motta lukkede meldinger.', 'bimverdi');
+}
+
+/**
+ * Krav 22 «tilbake til oppgaven»: bruker uten foretakskobling på en meldingsside
+ * får blokk-veggen. Husk adressen før headeren tegnes (sesjonen må startes før
+ * utskrift), så foretakskoblingen sender brukeren rett tilbake hit.
+ */
+add_action('template_redirect', function () {
+    $rute = (string) get_query_var('minside_route');
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET'
+        || !in_array($rute, array('meldinger', 'meldinger/ny', 'meldinger/traad'), true)
+        || !is_user_logged_in()
+        || bv_meldinger_har_foretak(get_current_user_id())
+        || !function_exists('bimverdi_remember_pending_oppgave')) {
+        return;
+    }
+    $url = function_exists('bimverdi_minside_gjeldende_url')
+        ? bimverdi_minside_gjeldende_url()
+        : home_url('/min-side/' . $rute . '/');
+    bimverdi_remember_pending_oppgave(array(
+        'url'     => remove_query_arg(array('bv_feil', 'sendt', 'foretak_koblet'), $url),
+        'label'   => 'lukket melding',
+        'context' => array('type' => 'lukket_melding', 'vegg_tekst' => bv_meldinger_vegg_tekst()),
+    ));
+}, 9);
+
+/**
  * Marker samtalen som lest før headeren tegnes, så ulest-tallet i menyen
  * stemmer allerede på samme sidevisning.
  */
