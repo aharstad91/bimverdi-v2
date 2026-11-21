@@ -16,9 +16,14 @@
  *   Lokalt maskerer _local-email-blocker.php leveranser uansett.
  *   Alt annet enn strengen '1' = låst.
  *
- * RUNDE A
- *   Ingen knapp starter en samtale fra portalen ennå (kommer i runde B).
- *   En samtale kan startes via REST: POST /wp-json/bimverdi/v1/meldinger.
+ * RUNDE B (krav 31 v3)
+ *   «Lukket melding» = person til person (dette). «Åpen melding» = meldingsfeltet.
+ *   Startknapp (parts/components/lukket-melding-knapp.php) på artikkel og
+ *   foretaksprofil, søk på /min-side/meldinger/ny/, «Skjul samtale».
+ *   LANSERINGSBRYTER (fail-closed): til
+ *       wp option update bimverdi_meldinger_lansert 1
+ *   kan bare administratorer se startknappene og starte nye samtaler.
+ *   Svar i eksisterende samtaler er alltid tillatt.
  *
  * @package BimVerdi
  */
@@ -27,7 +32,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const BIMVERDI_MELDINGER_DB_VERSION  = '1';
+const BIMVERDI_MELDINGER_DB_VERSION  = '2'; // 2: skjult_a/skjult_b (runde B, «Skjul samtale»).
 const BIMVERDI_MELDINGER_MAKS_TEGN   = 5000;
 const BIMVERDI_MELDINGER_MAKS_PER_TIME = 20;
 const BIMVERDI_MELDINGER_EPOST_PAUSE = 1800; // 30 min mellom e-poster per samtale og mottaker.
@@ -64,6 +69,8 @@ function bv_meldinger_opprett_tabeller() {
         deltaker_b bigint(20) unsigned NOT NULL,
         opprettet datetime NOT NULL,
         siste_melding datetime NOT NULL,
+        skjult_a datetime NULL DEFAULT NULL,
+        skjult_b datetime NULL DEFAULT NULL,
         PRIMARY KEY  (id),
         UNIQUE KEY par (deltaker_a, deltaker_b),
         KEY deltaker_b (deltaker_b),
@@ -222,6 +229,8 @@ function bv_meldinger_feiltekst($kode, $mottaker_id = 0) {
             return 'Meldingen kan være maks 5 000 tegn.';
         case 'fant_ikke_traad':
             return 'Fant ikke samtalen.';
+        case 'ikke_lansert':
+            return 'Lukkede meldinger er ikke åpnet for alle ennå.';
         default:
             return 'Meldingen ble ikke sendt. Prøv igjen.';
     }
@@ -328,6 +337,11 @@ function bv_meldinger_send($avsender_id, $mottaker_id, $tekst) {
         return $tillatt;
     }
 
+    // Før lansering kan bare administratorer starte nye samtaler.
+    if (!bv_meldinger_kan_starte($avsender_id) && !bv_meldinger_traad_for_par($avsender_id, $mottaker_id)) {
+        return bv_meldinger_feil('ikke_lansert', 403);
+    }
+
     $na = current_time('mysql', true);
     $a  = min((int) $avsender_id, (int) $mottaker_id);
     $b  = max((int) $avsender_id, (int) $mottaker_id);
@@ -363,7 +377,12 @@ function bv_meldinger_send($avsender_id, $mottaker_id, $tekst) {
     }
     $melding_id = (int) $wpdb->insert_id;
 
-    $wpdb->update($traader, array('siste_melding' => $na), array('id' => (int) $traad->id), array('%s'), array('%d'));
+    // Ny melding gjør samtalen synlig igjen for den som har skjult den (krav 31 v2).
+    $wpdb->query($wpdb->prepare(
+        "UPDATE {$traader} SET siste_melding = %s, skjult_a = NULL, skjult_b = NULL WHERE id = %d",
+        $na,
+        (int) $traad->id
+    ));
 
     // Varsling skal aldri gjøre at en lagret melding rapporteres som feilet.
     try {
@@ -417,7 +436,7 @@ function bv_meldinger_traader($user_id) {
             (SELECT m.avsender_id FROM {$meldinger} m WHERE m.traad_id = t.id ORDER BY m.opprettet DESC, m.id DESC LIMIT 1) AS siste_avsender,
             (SELECT COUNT(*) FROM {$meldinger} m WHERE m.traad_id = t.id AND m.avsender_id <> %d AND m.lest_dato IS NULL) AS uleste
          FROM {$traader} t
-         WHERE t.deltaker_a = %d OR t.deltaker_b = %d
+         WHERE (t.deltaker_a = %d AND t.skjult_a IS NULL) OR (t.deltaker_b = %d AND t.skjult_b IS NULL)
          ORDER BY t.siste_melding DESC
          LIMIT 200",
         $user_id,
@@ -501,7 +520,7 @@ function bv_meldinger_antall_uleste($user_id) {
     return (int) $wpdb->get_var($wpdb->prepare(
         "SELECT COUNT(*) FROM {$meldinger} m
          INNER JOIN {$traader} t ON t.id = m.traad_id
-         WHERE (t.deltaker_a = %d OR t.deltaker_b = %d)
+         WHERE ((t.deltaker_a = %d AND t.skjult_a IS NULL) OR (t.deltaker_b = %d AND t.skjult_b IS NULL))
            AND m.avsender_id <> %d
            AND m.lest_dato IS NULL",
         $user_id,
@@ -525,6 +544,199 @@ function bv_meldinger_tid($utc) {
         return '';
     }
     return get_date_from_gmt($utc, 'd.m.Y \k\l. H:i');
+}
+
+/* =========================================================================
+ * RUNDE B: LANSERINGSBRYTER, STARTKNAPP, SØK OG SKJUL
+ * ========================================================================= */
+
+/**
+ * Er lukkede meldinger lansert for alle? Fail-closed: bare strengen '1'.
+ *     wp option update bimverdi_meldinger_lansert 1
+ * Før lansering ser bare administratorer startknappene og «Ny lukket melding».
+ */
+function bv_meldinger_lansert() {
+    return get_option('bimverdi_meldinger_lansert') === '1';
+}
+
+/**
+ * Kan gjeldende besøkende se startknappene nå?
+ */
+function bv_meldinger_start_synlig() {
+    return bv_meldinger_lansert() || current_user_can('manage_options');
+}
+
+/**
+ * Kan denne brukeren starte en ny samtale? Samme bryter, men for en gitt
+ * bruker (gjelder også REST og wp eval). Svar i eksisterende samtaler
+ * er alltid tillatt.
+ */
+function bv_meldinger_kan_starte($user_id) {
+    return bv_meldinger_lansert() || user_can((int) $user_id, 'manage_options');
+}
+
+/**
+ * Lenke til «Ny lukket melding», valgfritt til en bestemt mottaker.
+ */
+function bv_meldinger_ny_url($mottaker_id = 0) {
+    $url = home_url('/min-side/meldinger/ny/');
+    return $mottaker_id ? add_query_arg('til', (int) $mottaker_id, $url) : $url;
+}
+
+/**
+ * Hva knappen «Send lukket melding» skal gjøre for avsender → mottaker.
+ *
+ * @return array ['tilstand' => 'skjult'|'logg_inn'|'blokk'|'skriv', 'url' => string]
+ */
+function bv_meldinger_knapp_tilstand($avsender_id, $mottaker_id) {
+    $avsender_id = (int) $avsender_id;
+    $mottaker_id = (int) $mottaker_id;
+    $skjult      = array('tilstand' => 'skjult', 'url' => '');
+
+    if ($mottaker_id <= 0 || !bv_meldinger_start_synlig()) {
+        return $skjult;
+    }
+
+    // Kan mottakeren motta i det hele tatt? Ellers ingen knapp, uansett hvem som ser.
+    if (!get_userdata($mottaker_id) || !bv_meldinger_har_foretak($mottaker_id)) {
+        return $skjult;
+    }
+
+    if ($avsender_id <= 0) {
+        if (!bv_meldinger_tar_imot($mottaker_id)) {
+            return $skjult;
+        }
+        return array(
+            'tilstand' => 'logg_inn',
+            'url'      => home_url('/logg-inn/?redirect_to=' . rawurlencode(bv_meldinger_ny_url($mottaker_id))),
+        );
+    }
+
+    if ($avsender_id === $mottaker_id) {
+        return $skjult;
+    }
+
+    // Krav 22: knappen vises, trykk gir blokk-meldingen (ny-siden viser blokk-veggen).
+    if (!bv_meldinger_har_foretak($avsender_id)) {
+        return array('tilstand' => 'blokk', 'url' => bv_meldinger_ny_url($mottaker_id));
+    }
+
+    $traad = bv_meldinger_traad_for_par($avsender_id, $mottaker_id);
+    if (!bv_meldinger_tar_imot($mottaker_id) && !($traad && bv_meldinger_har_skrevet_i($traad->id, $mottaker_id))) {
+        return $skjult;
+    }
+
+    return array(
+        'tilstand' => 'skriv',
+        'url'      => $traad ? bv_meldinger_traad_url($traad->id) : bv_meldinger_ny_url($mottaker_id),
+    );
+}
+
+/**
+ * Søk etter mottakere på navn eller foretaksnavn.
+ *
+ * Bare brukere med foretakskobling som tar imot meldinger. Aldri e-post i
+ * søk eller treff. Avsender må selv ha foretakskobling.
+ *
+ * @return array[] [['id','navn','foretak'], …] maks 20, sortert på navn.
+ */
+function bv_meldinger_sok_mottakere($avsender_id, $sok) {
+    $avsender_id = (int) $avsender_id;
+    $sok         = trim(sanitize_text_field((string) $sok));
+
+    if (!bv_meldinger_har_foretak($avsender_id) || mb_strlen($sok, 'UTF-8') < 2) {
+        return array();
+    }
+    $sok = mb_substr($sok, 0, 60, 'UTF-8');
+
+    $kandidater = array(); // user_id => foretak_id som må stemme (0 = hvilket som helst)
+
+    // 1) Visningsnavn.
+    foreach (get_users(array(
+        'search'         => '*' . $sok . '*',
+        'search_columns' => array('display_name'),
+        'fields'         => 'ID',
+        'number'         => 60,
+    )) as $id) {
+        $kandidater[(int) $id] = 0;
+    }
+
+    // 2) Fornavn / etternavn.
+    foreach (get_users(array(
+        'meta_query' => array(
+            'relation' => 'OR',
+            array('key' => 'first_name', 'value' => $sok, 'compare' => 'LIKE'),
+            array('key' => 'last_name', 'value' => $sok, 'compare' => 'LIKE'),
+        ),
+        'fields'     => 'ID',
+        'number'     => 60,
+    )) as $id) {
+        $kandidater[(int) $id] = 0;
+    }
+
+    // 3) Foretaksnavn → brukere koblet til de foretakene.
+    $foretak_ids = get_posts(array(
+        'post_type'      => 'foretak',
+        'post_status'    => array('publish', 'pending', 'draft'),
+        's'              => $sok,
+        'fields'         => 'ids',
+        'posts_per_page' => 20,
+        'no_found_rows'  => true,
+    ));
+    if ($foretak_ids) {
+        $meta = array('relation' => 'OR');
+        foreach (array('bimverdi_company_id', 'bim_verdi_company_id', 'tilknyttet_foretak') as $nokkel) {
+            $meta[] = array('key' => $nokkel, 'value' => array_map('strval', $foretak_ids), 'compare' => 'IN');
+        }
+        foreach (get_users(array('meta_query' => $meta, 'fields' => 'ID', 'number' => 100)) as $id) {
+            if (!isset($kandidater[(int) $id])) {
+                $kandidater[(int) $id] = -1; // må faktisk tilhøre et av foretakene
+            }
+        }
+    }
+
+    $treff = array();
+    foreach ($kandidater as $id => $krav) {
+        if ($id === $avsender_id || !bv_meldinger_har_foretak($id) || !bv_meldinger_tar_imot($id)) {
+            continue;
+        }
+        $foretak_id = function_exists('bimverdi_resolve_user_foretak_id') ? (int) bimverdi_resolve_user_foretak_id($id) : 0;
+        if ($krav === -1 && !in_array($foretak_id, array_map('intval', $foretak_ids), true)) {
+            continue;
+        }
+        $treff[] = array(
+            'id'      => $id,
+            'navn'    => bv_meldinger_navn($id),
+            'foretak' => $foretak_id ? (string) get_the_title($foretak_id) : '',
+        );
+    }
+
+    usort($treff, function ($a, $b) {
+        return strcasecmp($a['navn'], $b['navn']);
+    });
+
+    return array_slice($treff, 0, 20);
+}
+
+/**
+ * Skjul en samtale i egen innboks (krav 31 v2). Motparten berøres ikke.
+ *
+ * @return true|WP_Error
+ */
+function bv_meldinger_skjul($user_id, $traad_id) {
+    global $wpdb;
+    $traad = bv_meldinger_hent_traad($traad_id);
+    if (!bv_meldinger_er_deltaker($traad, $user_id)) {
+        return bv_meldinger_feil('fant_ikke_traad', 404);
+    }
+    $kolonne = ((int) $traad->deltaker_a === (int) $user_id) ? 'skjult_a' : 'skjult_b';
+    $wpdb->query($wpdb->prepare(
+        "UPDATE " . bv_meldinger_tabell_traader() . " SET {$kolonne} = %s WHERE id = %d",
+        current_time('mysql', true),
+        (int) $traad->id
+    ));
+    bv_meldinger_marker_lest((int) $user_id, (int) $traad->id);
+    return true;
 }
 
 /* =========================================================================
@@ -566,16 +778,16 @@ function bv_meldinger_epost($mottaker_id, $avsender_id, $traad_id) {
     // Avsendernavn er brukerstyrt: fjern linjeskift i emnet (header-injection).
     $navn    = trim(preg_replace('/[\r\n]+/', ' ', html_entity_decode(bv_meldinger_navn($avsender_id), ENT_QUOTES, 'UTF-8')));
     $foretak = bv_meldinger_foretaksnavn($avsender_id);
-    $emne    = sprintf('Ny melding fra %s på bimverdi.no', $navn);
+    $emne    = sprintf('Ny lukket melding fra %s på bimverdi.no', $navn);
 
     $fra = $foretak !== ''
         ? sprintf('%s i %s', esc_html($navn), esc_html($foretak))
         : esc_html($navn);
 
     $innhold = '<p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">Hei ' . esc_html(bv_meldinger_navn($mottaker_id)) . ',</p>'
-        . '<p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">Du har fått en melding fra ' . $fra . '. Les og svar på Min Side.</p>';
+        . '<p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">Du har fått en lukket melding fra ' . $fra . '. Les og svar på Min Side.</p>';
 
-    $footer = '<p style="margin: 0;">Du får denne e-posten fordi noen sendte deg en melding på bimverdi.no. '
+    $footer = '<p style="margin: 0;">Du får denne e-posten fordi noen sendte deg en lukket melding på bimverdi.no. '
         . 'Vil du ikke ta imot nye samtaler, kan du slå det av på '
         . '<a href="' . esc_url(home_url('/min-side/profil/rediger/')) . '" style="color: #6B6B6B;">profilen din</a>.</p>';
 
@@ -629,6 +841,30 @@ add_action('rest_api_init', function () {
                 return is_wp_error($res) ? $res : new WP_REST_Response($res, 201);
             },
         ),
+    ));
+
+    register_rest_route('bimverdi/v1', '/meldinger/mottakere', array(
+        'methods'             => 'GET',
+        'permission_callback' => $innlogget,
+        'args'                => array(
+            'sok' => array('required' => true, 'type' => 'string'),
+        ),
+        'callback'            => function (WP_REST_Request $req) {
+            $bruker = get_current_user_id();
+            if (!bv_meldinger_kan_starte($bruker)) {
+                return bv_meldinger_feil('ikke_lansert', 403);
+            }
+            return rest_ensure_response(bv_meldinger_sok_mottakere($bruker, (string) $req['sok']));
+        },
+    ));
+
+    register_rest_route('bimverdi/v1', '/meldinger/(?P<id>\d+)/skjul', array(
+        'methods'             => 'POST',
+        'permission_callback' => $innlogget,
+        'callback'            => function (WP_REST_Request $req) {
+            $res = bv_meldinger_skjul(get_current_user_id(), (int) $req['id']);
+            return is_wp_error($res) ? $res : rest_ensure_response(array('skjult' => true));
+        },
     ));
 
     register_rest_route('bimverdi/v1', '/meldinger/uleste', array(
@@ -712,6 +948,82 @@ add_action('template_redirect', function () {
     delete_transient('bv_meld_utkast_' . $bruker . '_' . $traad_id);
     wp_safe_redirect(add_query_arg('sendt', '1', $tilbake) . '#siste');
     exit;
+});
+
+/**
+ * «Ny lukket melding» (/min-side/meldinger/ny/?til=ID) poster hit.
+ */
+add_action('template_redirect', function () {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || empty($_POST['bv_melding_ny'])) {
+        return;
+    }
+
+    $mottaker_id = (int) ($_POST['til'] ?? 0);
+    $tilbake     = bv_meldinger_ny_url($mottaker_id);
+
+    if (!is_user_logged_in()) {
+        wp_safe_redirect(home_url('/logg-inn/?redirect_to=' . rawurlencode($tilbake)));
+        exit;
+    }
+    if (!wp_verify_nonce($_POST['_wpnonce'] ?? '', 'bv_melding_ny_' . $mottaker_id)) {
+        wp_safe_redirect(add_query_arg('bv_feil', 'utlopt', $tilbake));
+        exit;
+    }
+
+    $bruker = get_current_user_id();
+    $res    = bv_meldinger_send($bruker, $mottaker_id, $_POST['tekst'] ?? '');
+
+    if (is_wp_error($res)) {
+        set_transient('bv_meld_utkast_ny_' . $bruker . '_' . $mottaker_id, wp_unslash((string) ($_POST['tekst'] ?? '')), 10 * MINUTE_IN_SECONDS);
+        $kode = str_replace('bv_melding_', '', $res->get_error_code());
+        wp_safe_redirect(add_query_arg('bv_feil', rawurlencode($kode), $tilbake));
+        exit;
+    }
+
+    delete_transient('bv_meld_utkast_ny_' . $bruker . '_' . $mottaker_id);
+    wp_safe_redirect(add_query_arg('sendt', '1', bv_meldinger_traad_url($res['traad_id'])) . '#siste');
+    exit;
+});
+
+/**
+ * Bekreftet «Skjul samtale» poster hit.
+ */
+add_action('template_redirect', function () {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || empty($_POST['bv_melding_skjul'])) {
+        return;
+    }
+    $traad_id = (int) ($_POST['traad_id'] ?? 0);
+    if (!is_user_logged_in()) {
+        wp_safe_redirect(home_url('/logg-inn/'));
+        exit;
+    }
+    if (!wp_verify_nonce($_POST['_wpnonce'] ?? '', 'bv_melding_skjul_' . $traad_id)) {
+        wp_safe_redirect(add_query_arg('bv_feil', 'utlopt', bv_meldinger_traad_url($traad_id)));
+        exit;
+    }
+    $res = bv_meldinger_skjul(get_current_user_id(), $traad_id);
+    $url = home_url('/min-side/meldinger/');
+    wp_safe_redirect(is_wp_error($res) ? $url : add_query_arg('skjult', '1', $url));
+    exit;
+});
+
+/**
+ * /min-side/meldinger/ny/?til=ID: finnes samtalen allerede, gå rett til den.
+ */
+add_action('template_redirect', function () {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET'
+        || get_query_var('minside_route') !== 'meldinger/ny'
+        || empty($_GET['til'])
+        || isset($_GET['bv_feil'])
+        || !is_user_logged_in()) {
+        return;
+    }
+    $bruker = get_current_user_id();
+    $traad  = bv_meldinger_traad_for_par($bruker, (int) $_GET['til']);
+    if ($traad && (int) $_GET['til'] !== $bruker) {
+        wp_safe_redirect(bv_meldinger_traad_url($traad->id) . '#siste');
+        exit;
+    }
 });
 
 /**

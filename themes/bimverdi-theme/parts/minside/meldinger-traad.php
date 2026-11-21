@@ -20,7 +20,7 @@ if (!function_exists('bv_meldinger_hent_traad')) {
 
 if (!bv_meldinger_har_foretak($bruker_id)) {
     get_template_part('parts/components/block-vegg', null, [
-        'oppgave_label' => 'meldinger',
+        'oppgave_label' => 'lukkede meldinger',
         'retry_url'     => home_url('/min-side/?retry=1'),
     ]);
     return;
@@ -32,10 +32,10 @@ $liste_url = home_url('/min-side/meldinger/');
 
 if (!bv_meldinger_er_deltaker($traad, $bruker_id)) : ?>
     <?php get_template_part('parts/components/page-header', null, [
-        'title' => __('Meldinger', 'bimverdi'),
+        'title' => __('Lukkede meldinger', 'bimverdi'),
     ]); ?>
     <p style="color: #5A5A5A;"><?php esc_html_e('Fant ikke samtalen.', 'bimverdi'); ?>
-        <a href="<?php echo esc_url($liste_url); ?>" style="color: #1A1A1A; text-decoration: underline;"><?php esc_html_e('Tilbake til meldinger', 'bimverdi'); ?></a></p>
+        <a href="<?php echo esc_url($liste_url); ?>" style="color: #1A1A1A; text-decoration: underline;"><?php esc_html_e('Tilbake til lukkede meldinger', 'bimverdi'); ?></a></p>
     <?php
     return;
 endif;
@@ -76,7 +76,7 @@ $undertittel = $motpart_foretak !== ''
     'title'       => $motpart_navn,
     'description' => $undertittel,
     'actions'     => [[
-        'text'    => __('Alle meldinger', 'bimverdi'),
+        'text'    => __('Alle lukkede meldinger', 'bimverdi'),
         'url'     => $liste_url,
         'variant' => 'secondary',
         'icon'    => 'arrow-left',
@@ -125,6 +125,27 @@ $undertittel = $motpart_foretak !== ''
             </button>
         </form>
     <?php endif; ?>
+
+    <!-- Skjul samtale (krav 31 v2): bekreftelse på samme side, ingen JS -->
+    <div class="bv-samtale__skjul">
+        <?php if (isset($_GET['skjul'])): ?>
+            <form method="post" action="" class="bv-samtale__bekreft">
+                <?php wp_nonce_field('bv_melding_skjul_' . $traad_id); ?>
+                <input type="hidden" name="bv_melding_skjul" value="1">
+                <input type="hidden" name="traad_id" value="<?php echo (int) $traad_id; ?>">
+                <p class="bv-samtale__bekreft-tekst">
+                    <?php echo esc_html(sprintf(
+                        __('Skjule samtalen med %1$s? Den forsvinner fra innboksen din. %1$s beholder sin kopi.', 'bimverdi'),
+                        $motpart_navn
+                    )); ?>
+                </p>
+                <button type="submit" class="bv-btn bv-btn--primary px-6 py-2.5 text-sm font-semibold rounded-lg"><?php esc_html_e('Skjul', 'bimverdi'); ?></button>
+                <a class="bv-samtale__avbryt" href="<?php echo esc_url(bv_meldinger_traad_url($traad_id)); ?>"><?php esc_html_e('Avbryt', 'bimverdi'); ?></a>
+            </form>
+        <?php else: ?>
+            <a class="bv-samtale__skjul-lenke" href="<?php echo esc_url(add_query_arg('skjul', '1', bv_meldinger_traad_url($traad_id)) . '#skjul'); ?>" id="skjul"><?php esc_html_e('Skjul samtale', 'bimverdi'); ?></a>
+        <?php endif; ?>
+    </div>
 </div>
 
 <style>
@@ -145,6 +166,11 @@ $undertittel = $motpart_foretak !== ''
 .bv-samtale__felt { display: block; width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid #E5E0D5; border-radius: 8px; font: inherit; color: #1A1A1A; }
 .bv-samtale__felt:focus { outline: 2px solid #FF8B5E; outline-offset: 0; border-color: transparent; }
 .bv-samtale__hjelp { margin: 6px 0 16px; font-size: 12px; color: #888888; }
+.bv-samtale__skjul { margin-top: 40px; padding-top: 16px; border-top: 1px solid #E5E0D5; }
+.bv-samtale__skjul-lenke, .bv-samtale__avbryt { font-size: 14px; color: #5A5A5A; text-decoration: underline; text-decoration-color: #D6D1C6; }
+.bv-samtale__skjul-lenke:hover, .bv-samtale__avbryt:hover { color: #1A1A1A; text-decoration-color: #1A1A1A; }
+.bv-samtale__bekreft { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.bv-samtale__bekreft-tekst { flex-basis: 100%; margin: 0; font-size: 15px; color: #1A1A1A; }
 @media (max-width: 600px) {
     .bv-samtale__melding--meg { padding-left: 12px; }
     .bv-samtale__tid { margin-left: 0; width: 100%; }

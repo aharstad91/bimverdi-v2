@@ -203,7 +203,7 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
 
 <section id="diskusjon" class="border-t border-[#E7E5E4] pt-10">
     <div class="flex items-center justify-between gap-6 mb-2">
-        <h2 class="text-lg font-bold text-[#111827]">Meldingsfelt</h2>
+        <h2 class="text-lg font-bold text-[#111827]">Åpne meldinger</h2>
         <?php if ($bv_abonnement && $innlogget): ?>
             <?php // Bårds «abonnér på aktivitet her» (kort #337). Vanlig POST-skjema,
                   // ikke JS: knappen må virke like godt for de som leser med

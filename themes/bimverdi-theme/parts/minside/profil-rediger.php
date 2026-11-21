@@ -287,10 +287,10 @@ if ($profile_image_id) {
             <!-- Divider -->
             <hr class="border-[#E5E0D5]">
 
-            <!-- Meldinger (krav 31) -->
+            <!-- Lukkede meldinger (krav 31) -->
             <fieldset>
                 <legend class="text-sm font-semibold text-[#1A1A1A] mb-1">
-                    <?php _e('Meldinger', 'bimverdi'); ?>
+                    <?php _e('Lukkede meldinger', 'bimverdi'); ?>
                 </legend>
                 <input type="hidden" name="bv_meldinger_innstilling" value="1">
                 <label class="flex items-start gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
@@ -300,8 +300,8 @@ if ($profile_image_id) {
                            <?php checked(bv_meldinger_tar_imot($user_id)); ?>
                            class="mt-0.5 w-4 h-4 rounded border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
                     <span>
-                        <span class="block text-sm text-[#1A1A1A]"><?php _e('Andre brukere kan sende meldinger til meg', 'bimverdi'); ?></span>
-                        <span class="block text-xs text-[#888888] mt-1"><?php _e('Slår du av, kan ingen starte nye samtaler med deg. Du kan fortsatt svare i samtaler du har skrevet i.', 'bimverdi'); ?></span>
+                        <span class="block text-sm text-[#1A1A1A]"><?php _e('Andre brukere kan sende lukkede meldinger til meg', 'bimverdi'); ?></span>
+                        <span class="block text-xs text-[#888888] mt-1"><?php _e('Slår du av, kan ingen starte nye samtaler med deg, og du vises ikke i søket etter mottakere. Du kan fortsatt svare i samtaler du har skrevet i.', 'bimverdi'); ?></span>
                     </span>
                 </label>
             </fieldset>

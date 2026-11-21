@@ -22,23 +22,37 @@ if (!function_exists('bv_meldinger_traader')) {
 
 if (!bv_meldinger_har_foretak($bruker_id)) {
     get_template_part('parts/components/block-vegg', null, [
-        'oppgave_label' => 'meldinger',
+        'oppgave_label' => 'lukkede meldinger',
         'retry_url'     => home_url('/min-side/?retry=1'),
     ]);
     return;
 }
 
 $traader = bv_meldinger_traader($bruker_id);
+
+$actions = [];
+if (function_exists('bv_meldinger_start_synlig') && bv_meldinger_start_synlig()) {
+    $actions[] = [
+        'text'    => __('Ny lukket melding', 'bimverdi'),
+        'url'     => bv_meldinger_ny_url(),
+        'variant' => 'primary',
+        'icon'    => 'plus',
+    ];
+}
 ?>
 
 <?php get_template_part('parts/components/page-header', null, [
-    'title'       => __('Meldinger', 'bimverdi'),
-    'description' => __('Samtalene dine med andre brukere på bimverdi.no.', 'bimverdi'),
+    'title'       => __('Lukkede meldinger', 'bimverdi'),
+    'description' => __('Samtaler mellom deg og én annen bruker. Bare dere to ser dem.', 'bimverdi'),
+    'actions'     => $actions,
 ]); ?>
 
 <div class="bv-meldinger">
+    <?php if (isset($_GET['skjult'])): ?>
+        <p class="bv-meldinger__ok" role="status"><?php esc_html_e('Samtalen er skjult.', 'bimverdi'); ?></p>
+    <?php endif; ?>
     <?php if (!$traader): ?>
-        <p class="bv-meldinger__tom"><?php esc_html_e('Du har ingen meldinger ennå.', 'bimverdi'); ?></p>
+        <p class="bv-meldinger__tom"><?php esc_html_e('Du har ingen lukkede meldinger ennå.', 'bimverdi'); ?></p>
     <?php else: ?>
         <ul class="bv-meldinger__liste">
             <?php foreach ($traader as $t): ?>
@@ -69,6 +83,7 @@ $traader = bv_meldinger_traader($bruker_id);
 
 <style>
 .bv-meldinger { max-width: 960px; }
+.bv-meldinger__ok { margin: 0 0 16px; color: #166534; font-size: 15px; }
 .bv-meldinger__tom { color: #5A5A5A; padding: 24px 0; border-top: 1px solid #E5E0D5; }
 .bv-meldinger__liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid #E5E0D5; }
 .bv-meldinger__rad { border-bottom: 1px solid #E5E0D5; }
