@@ -306,9 +306,30 @@ if (!function_exists('bimverdi_protect_minside')) {
         
         // Check if logged in
         if (!is_user_logged_in()) {
-            wp_redirect(home_url('/logg-inn/?redirect_to=' . urlencode(bimverdi_minside_url())));
+            wp_redirect(home_url('/logg-inn/?redirect_to=' . urlencode(bimverdi_minside_gjeldende_url())));
             exit;
         }
+    }
+}
+
+/**
+ * Adressen brukeren ba om på Min Side, til redirect_to ved innlogging.
+ *
+ * Tidligere sendte innloggingen alltid tilbake til /min-side/, så en lenke
+ * som /min-side/meldinger/traad/?id=1 (e-postvarsel, krav 31) endte på
+ * dashbordet etter innlogging. Faller tilbake til /min-side/ hvis adressen
+ * ikke er under Min Side.
+ *
+ * @return string
+ */
+if (!function_exists('bimverdi_minside_gjeldende_url')) {
+    function bimverdi_minside_gjeldende_url() {
+        $uri = isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '';
+        $sti = (string) wp_parse_url($uri, PHP_URL_PATH);
+        if ($sti === '' || strpos(trailingslashit($sti), '/min-side/') !== 0) {
+            return bimverdi_minside_url();
+        }
+        return home_url($uri);
     }
 }
 
