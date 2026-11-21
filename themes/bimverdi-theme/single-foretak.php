@@ -703,6 +703,8 @@ $company_kunnskapskilder = get_posts(array(
                         <a href="<?php echo esc_url($bv_logg_inn_url); ?>" class="text-[#FF8B5E] hover:underline">Logg inn</a>
                         for å se kontaktperson.
                     </p>
+                    <?php // Lukket melding (krav 31): utlogget gir «Logg inn for å sende lukket melding».
+                    get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => (int) $hovedkontakt_id]); ?>
                     <?php else: ?>
 
                     <div class="flex items-start gap-3">
