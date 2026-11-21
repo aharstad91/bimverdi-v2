@@ -466,20 +466,21 @@ $tool_updated = get_the_modified_date('d.m.Y');
 
                         <?php
                         // Lukket melding (krav 31) til den som registrerte verktøyet (post_author).
-                        // Raden vises bare når knappen har noe å gjøre: navnet blir ikke synlig for
-                        // utloggede (B-020), og ingenting endres før lanseringsbryteren er på.
+                        // Raden vises bare når knappen har noe å gjøre. Utloggede ser bare
+                        // «Logg inn for å sende lukket melding», ikke navnet (B-020).
+                        // Ingenting endres for andre enn admin før lanseringsbryteren er på.
                         $bv_reg_id = (int) get_post_field('post_author', get_the_ID());
                         $bv_reg_knapp = function_exists('bv_meldinger_knapp_tilstand')
                             ? bv_meldinger_knapp_tilstand(get_current_user_id(), $bv_reg_id)
                             : ['tilstand' => 'skjult'];
-                        if (in_array($bv_reg_knapp['tilstand'], ['skriv', 'blokk'], true)): ?>
+                        if (in_array($bv_reg_knapp['tilstand'], ['skriv', 'blokk', 'logg_inn'], true)): ?>
                         <div>
                             <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#57534E]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                                 Registrert av
                             </dt>
                             <dd class="text-sm text-[#111827] pl-[22px]">
-                                <?php echo esc_html(bv_meldinger_navn($bv_reg_id)); ?>
+                                <?php if ($bv_reg_knapp['tilstand'] !== 'logg_inn') echo esc_html(bv_meldinger_navn($bv_reg_id)); ?>
                                 <div><?php get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => $bv_reg_id]); ?></div>
                             </dd>
                         </div>
