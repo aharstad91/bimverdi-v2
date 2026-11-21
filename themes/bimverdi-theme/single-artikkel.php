@@ -131,6 +131,8 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                                     ?>
                                 </div>
                             <?php endif; ?>
+                            <?php // Lukket melding (krav 31): hovedforfatter her, medforfattere i «Om forfatteren» nederst.
+                            get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => $author_id]); ?>
                         </div>
                     </div>
 
