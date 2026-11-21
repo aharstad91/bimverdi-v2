@@ -82,6 +82,10 @@ $error_messages = [
     'missing_name'       => 'Verktøynavn er påkrevd.',
     'missing_kort_beskrivelse' => 'Kort beskrivelse er påkrevd.',
     'missing_anvendelser'=> 'Du må velge minst én anvendelse.',
+    'missing_temagruppe' => 'Du må velge temagruppe.',
+    'missing_bim'        => 'Du må velge BIM-kompatibilitet.',
+    'missing_ressurs'    => 'Du må velge type ressurs.',
+    'missing_teknologi'  => 'Du må velge teknologi.',
     'invalid_file_type'  => 'Ugyldig filtype. Tillatte: jpg, png, gif, webp, svg.',
     'file_too_large'     => 'Filen er for stor. Maks 2 MB.',
     'upload_failed'      => 'Kunne ikke laste opp logo. Vennligst prøv igjen.',
@@ -257,11 +261,11 @@ $anvendelser_options = [
 
         <!-- Formålstema -->
         <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">Formålstema</legend>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">Temagruppe <span class="text-red-500">*</span></legend>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <?php foreach ($formaalstema_options as $value => $label): ?>
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
-                    <input type="radio" name="formaalstema" value="<?php echo esc_attr($value); ?>"
+                    <input type="radio" required name="formaalstema" value="<?php echo esc_attr($value); ?>"
                            <?php checked($current_formaalstema, $value); ?>
                            class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
                     <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>
@@ -272,11 +276,11 @@ $anvendelser_options = [
 
         <!-- BIM-kompatibilitet -->
         <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">BIM-kompatibilitet</legend>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">BIM-kompatibilitet <span class="text-red-500">*</span></legend>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <?php foreach ($bim_options as $value => $label): ?>
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
-                    <input type="radio" name="bim_kompatibilitet" value="<?php echo esc_attr($value); ?>"
+                    <input type="radio" required name="bim_kompatibilitet" value="<?php echo esc_attr($value); ?>"
                            <?php checked($current_bim, $value); ?>
                            class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
                     <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>
@@ -287,11 +291,11 @@ $anvendelser_options = [
 
         <!-- Type ressurs -->
         <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">Type ressurs</legend>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">Type ressurs <span class="text-red-500">*</span></legend>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <?php foreach ($ressurs_options as $value => $label): ?>
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
-                    <input type="radio" name="type_ressurs" value="<?php echo esc_attr($value); ?>"
+                    <input type="radio" required name="type_ressurs" value="<?php echo esc_attr($value); ?>"
                            <?php checked($current_ressurs, $value); ?>
                            class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
                     <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>
@@ -302,11 +306,11 @@ $anvendelser_options = [
 
         <!-- Type teknologi -->
         <fieldset>
-            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">Type teknologi</legend>
+            <legend class="text-sm font-semibold text-[#1A1A1A] mb-3">Teknologi <span class="text-red-500">*</span></legend>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <?php foreach ($teknologi_options as $value => $label): ?>
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-[#E5E0D5] hover:border-[#FF8B5E] hover:bg-[#FFF8F5] transition-colors cursor-pointer has-[:checked]:border-[#FF8B5E] has-[:checked]:bg-[#FFF8F5]">
-                    <input type="radio" name="type_teknologi" value="<?php echo esc_attr($value); ?>"
+                    <input type="radio" required name="type_teknologi" value="<?php echo esc_attr($value); ?>"
                            <?php checked($current_teknologi, $value); ?>
                            class="w-4 h-4 border-[#D6D1C6] text-[#FF8B5E] focus:ring-[#FF8B5E]">
                     <span class="text-sm text-[#1A1A1A]"><?php echo esc_html($label); ?></span>

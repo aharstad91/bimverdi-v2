@@ -139,6 +139,24 @@ add_action('init', function () {
         $type_teknologi = '';
     }
 
+    // Kategoriene er påkrevd ved registrering og redigering (Bård, 21.11.2026):
+    // temagruppe, BIM-kompatibilitet, type ressurs, teknologi og formål
+    // (anvendelser, sjekkes under). Uten dem havner verktøyet utenfor
+    // filtrene i katalogen. Sjekkes etter whitelist-vasken over, så en
+    // ugyldig verdi regnes som tom.
+    $paakrevde_kategorier = [
+        'missing_temagruppe' => $formaalstema,
+        'missing_bim'        => $bim_kompatibilitet,
+        'missing_ressurs'    => $type_ressurs,
+        'missing_teknologi'  => $type_teknologi,
+    ];
+    foreach ($paakrevde_kategorier as $feilkode => $verdi) {
+        if ($verdi === '') {
+            wp_redirect(add_query_arg('bv_error', $feilkode, $redirect_error));
+            exit;
+        }
+    }
+
     $allowed_anvendelser = ['design', 'gis', 'dokumenter', 'prosjektledelse', 'kostnad', 'simulering', 'feltarbeid', 'fasilitets', 'barekraft', 'kommunikasjon', 'logistikk', 'kompetanse'];
     $anvendelser = array_intersect($anvendelser, $allowed_anvendelser);
 
