@@ -740,6 +740,88 @@ function bv_meldinger_skjul($user_id, $traad_id) {
 }
 
 /* =========================================================================
+ * OPPRYDDING (krav 31, avklart 21.11.2026, står i personvernerklæringen)
+ *
+ *   - Samtaler begge parter har skjult, slettes 30 dager etter siste skjuling.
+ *   - Alle samtaler slettes senest 3 år etter siste melding.
+ *
+ * Sletter tråd, meldinger og tilhørende 'ny_melding'-varsler for godt.
+ * Kjøres daglig via WP-cron. Tørrkjøring: wp eval 'print_r(bv_meldinger_opprydding(true));'
+ * ========================================================================= */
+
+const BIMVERDI_MELDINGER_SKJULT_DAGER = 30;
+const BIMVERDI_MELDINGER_MAKS_AAR     = 3;
+
+/**
+ * Finn og slett utløpte samtaler.
+ *
+ * @param bool $torr true = bare tell, slett ingenting.
+ * @return array{traader:int, meldinger:int, varsler:int, torr:bool}
+ */
+function bv_meldinger_opprydding($torr = false) {
+    global $wpdb;
+    $traader   = bv_meldinger_tabell_traader();
+    $meldinger = bv_meldinger_tabell_meldinger();
+    $na        = time();
+    $skjult_grense = gmdate('Y-m-d H:i:s', $na - BIMVERDI_MELDINGER_SKJULT_DAGER * DAY_IN_SECONDS);
+    $alder_grense  = gmdate('Y-m-d H:i:s', strtotime('-' . BIMVERDI_MELDINGER_MAKS_AAR . ' years', $na));
+
+    $ider = array_map('intval', (array) $wpdb->get_col($wpdb->prepare(
+        "SELECT id FROM {$traader}
+         WHERE (skjult_a IS NOT NULL AND skjult_b IS NOT NULL AND GREATEST(skjult_a, skjult_b) < %s)
+            OR siste_melding < %s
+         LIMIT 1000",
+        $skjult_grense,
+        $alder_grense
+    )));
+
+    $resultat = array('traader' => count($ider), 'meldinger' => 0, 'varsler' => 0, 'torr' => (bool) $torr);
+    if (!$ider) {
+        return $resultat;
+    }
+
+    $liste = implode(',', $ider); // Bare heltall fra databasen.
+    $resultat['meldinger'] = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$meldinger} WHERE traad_id IN ({$liste})");
+
+    // Varsler: payload starter alltid med traad_id (se bv_meldinger_send).
+    $varsel_tabell = function_exists('bv_varsler_tabell') ? bv_varsler_tabell() : '';
+    $varsel_vilkar = array();
+    foreach ($ider as $id) {
+        $varsel_vilkar[] = $wpdb->prepare('payload LIKE %s', '{"traad_id":' . $id . ',%');
+    }
+    $varsel_where = "type = 'ny_melding' AND (" . implode(' OR ', $varsel_vilkar) . ')';
+    if ($varsel_tabell !== '') {
+        $resultat['varsler'] = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$varsel_tabell} WHERE {$varsel_where}");
+    }
+
+    if ($torr) {
+        return $resultat;
+    }
+
+    $wpdb->query("DELETE FROM {$meldinger} WHERE traad_id IN ({$liste})");
+    if ($varsel_tabell !== '') {
+        $wpdb->query("DELETE FROM {$varsel_tabell} WHERE {$varsel_where}");
+    }
+    $wpdb->query("DELETE FROM {$traader} WHERE id IN ({$liste})");
+
+    error_log(sprintf(
+        '[bv-meldinger] Opprydding: slettet %d samtaler, %d meldinger, %d varsler.',
+        $resultat['traader'], $resultat['meldinger'], $resultat['varsler']
+    ));
+    return $resultat;
+}
+
+add_action('bv_meldinger_opprydding', function () {
+    bv_meldinger_opprydding(false);
+});
+
+add_action('init', function () {
+    if (!wp_next_scheduled('bv_meldinger_opprydding')) {
+        wp_schedule_event(strtotime('tomorrow 02:30 UTC'), 'daily', 'bv_meldinger_opprydding');
+    }
+}, 20);
+
+/* =========================================================================
  * E-POST (B-030, bak fail-closed gate)
  * ========================================================================= */
 
