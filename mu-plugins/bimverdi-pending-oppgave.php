@@ -23,7 +23,9 @@ const BIMVERDI_PENDING_OPPGAVE_KEY = 'bv_pending_oppgave';
  * og admin-sider trenger ikke denne mekanikken.
  */
 function bimverdi_maybe_start_session() {
-    if (is_admin() || (defined('DOING_CRON') && DOING_CRON) || (defined('REST_REQUEST') && REST_REQUEST)) {
+    // wp_ajax regnes som admin, men foretakskoblingen (bimverdi_save_bruker_foretak)
+    // går via admin-ajax og må kunne lese oppgaven for å sende brukeren tilbake.
+    if ((is_admin() && !wp_doing_ajax()) || (defined('DOING_CRON') && DOING_CRON) || (defined('REST_REQUEST') && REST_REQUEST)) {
         return false;
     }
     if (!is_user_logged_in()) {
@@ -46,6 +48,17 @@ function bimverdi_maybe_start_session() {
     }
     return session_status() === PHP_SESSION_ACTIVE;
 }
+
+/**
+ * Start sesjonen før utskrift når brukeren kommer til ?retry=1. Ellers kan
+ * dashboardet (som leser oppgaven midt i siden) finne at headere er sendt og
+ * feilaktig melde «Oppgaven du startet på har utløpt».
+ */
+add_action('template_redirect', function () {
+    if (isset($_GET['retry']) && $_GET['retry'] === '1') {
+        bimverdi_maybe_start_session();
+    }
+}, 1);
 
 /**
  * Lagre en pending oppgave i sesjonen.

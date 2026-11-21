@@ -23,6 +23,7 @@ if (!function_exists('bv_meldinger_traader')) {
 if (!bv_meldinger_har_foretak($bruker_id)) {
     get_template_part('parts/components/block-vegg', null, [
         'oppgave_label' => 'lukkede meldinger',
+        'tekst'         => bv_meldinger_vegg_tekst(),
         'retry_url'     => home_url('/min-side/?retry=1'),
     ]);
     return;
