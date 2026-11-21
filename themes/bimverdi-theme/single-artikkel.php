@@ -261,6 +261,7 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                                 Se foretakets profil
                             </a>
                         <?php endif; ?>
+                        <div><?php get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => $author_id]); ?></div>
                         <?php if (!empty($medforfattere_ids)) : ?>
                             <div class="mt-4 pt-4 border-t border-[#E5E0D8]">
                                 <h4 class="text-sm font-semibold text-[#57534E] mb-2">Medforfattere</h4>
@@ -272,7 +273,10 @@ $temagrupper = get_the_terms(get_the_ID(), 'temagruppe');
                                     ?>
                                     <div class="flex items-center gap-2">
                                         <img src="<?php echo esc_url($u_avatar); ?>" alt="<?php echo esc_attr($u->display_name); ?>" class="w-8 h-8 rounded-full bg-[#F5F5F4] object-cover">
-                                        <span class="text-sm text-[#57534E]"><?php echo esc_html($u->display_name); ?></span>
+                                        <div>
+                                            <span class="text-sm text-[#57534E]"><?php echo esc_html($u->display_name); ?></span>
+                                            <?php get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => (int) $uid]); ?>
+                                        </div>
                                     </div>
                                     <?php endforeach; ?>
                                 </div>

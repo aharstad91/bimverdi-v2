@@ -724,6 +724,7 @@ $company_kunnskapskilder = get_posts(array(
                                 <?php echo esc_html($hovedkontakt->user_email); ?>
                             </a>
                             <?php endif; ?>
+                            <div><?php get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => (int) $hovedkontakt_id]); ?></div>
                         </div>
                     </div>
                     <?php endif; ?>
