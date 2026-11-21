@@ -458,6 +458,10 @@ if (!function_exists('bimverdi_get_minside_routes')) {
 
             // Events
             'arrangementer'       => 'arrangementer-list',
+
+            // Meldinger (krav 31)
+            'meldinger'           => 'meldinger-list',
+            'meldinger/traad'     => 'meldinger-traad',
             
             // Company Colleagues (read-only for tilleggskontakter)
             'foretak/kolleger'    => 'foretak-team',
@@ -567,7 +571,19 @@ if (!function_exists('bimverdi_get_minside_nav')) {
                 'icon' => 'calendar',
                 'routes' => ['arrangementer'],
             ],
+            // Meldinger (krav 31): vises for alle innloggede. Uten foretak viser siden blokk-veggen.
+            'meldinger' => [
+                'label' => 'Meldinger',
+                'url' => bimverdi_minside_url('meldinger'),
+                'icon' => 'mail',
+                'badge' => function_exists('bv_meldinger_antall_uleste') ? (bv_meldinger_antall_uleste($user_id) ?: null) : null,
+                'routes' => ['meldinger', 'meldinger/traad'],
+            ],
         ];
+
+        if (!function_exists('bv_meldinger_traader')) {
+            unset($nav['meldinger']);
+        }
 
         // Filter nav for profil-users (no company)
         // Verktøy requires company, but kunnskapskilder is open for all users
