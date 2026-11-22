@@ -471,18 +471,14 @@ if (!$company && $bruker_foretak) : ?>
             <?php if (!empty($my_tools)): ?>
                 <div class="divide-y divide-[#E7E5E4]">
                     <?php foreach ($my_tools as $tool):
-                        $tool_logo = get_field('logo', $tool->ID);
-                        $tool_logo_url = '';
-                        if ($tool_logo) {
-                            $tool_logo_url = is_array($tool_logo) ? ($tool_logo['sizes']['thumbnail'] ?? $tool_logo['url'] ?? '') : (wp_get_attachment_image_url($tool_logo, 'thumbnail') ?: '');
-                        }
+                        $tool_logo_html = bv_get_verktoy_logo_html($tool->ID, 'medium');
                         $tool_cats = get_the_terms($tool->ID, 'verktoykategori');
                         $tool_cat_name = ($tool_cats && !is_wp_error($tool_cats)) ? $tool_cats[0]->name : '';
                         $tool_status = $tool->post_status;
                     ?>
                         <div class="flex items-center gap-3 py-3">
-                            <?php if ($tool_logo_url): ?>
-                                <img src="<?php echo esc_url($tool_logo_url); ?>" alt="" class="w-8 h-8 rounded object-cover flex-shrink-0">
+                            <?php if ($tool_logo_html !== ''): ?>
+                                <div class="w-8 h-8 rounded overflow-hidden flex items-center justify-center flex-shrink-0"><?php echo $tool_logo_html; // Bygd av wp_get_attachment_image(). ?></div>
                             <?php else: ?>
                                 <div class="w-8 h-8 rounded bg-[#F5F5F4] flex items-center justify-center flex-shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>

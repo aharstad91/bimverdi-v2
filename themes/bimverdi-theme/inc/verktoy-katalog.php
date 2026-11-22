@@ -572,3 +572,77 @@ function bv_verktoy_katalog_counts() {
         'total'      => count($index['ids']),
     );
 }
+
+/**
+ * Bilde-ID for et verktøy: ACF-feltet `verktoy_logo` først, så fremhevet bilde.
+ *
+ * Leser rå feltverdi (ingen ACF-formatering), så det blir ingen ekstra
+ * oppslag per kort. Feltet kan ha array, ID eller URL. En URL slås ikke opp
+ * (krever en spørring per kort) – da brukes fremhevet bilde.
+ *
+ * @param int $post_id Verktøyets post-ID.
+ * @return int Vedleggs-ID, eller 0.
+ */
+function bv_get_verktoy_logo_id($post_id) {
+    $post_id = (int) $post_id;
+    if (!$post_id) {
+        return 0;
+    }
+
+    $logo    = function_exists('get_field') ? get_field('verktoy_logo', $post_id, false) : get_post_meta($post_id, 'verktoy_logo', true);
+    $logo_id = 0;
+    if (is_array($logo)) {
+        $logo_id = (int) ($logo['ID'] ?? $logo['id'] ?? 0);
+    } elseif (is_numeric($logo)) {
+        $logo_id = (int) $logo;
+    }
+    if ($logo_id && wp_attachment_is_image($logo_id)) {
+        return $logo_id;
+    }
+
+    $thumb_id = (int) get_post_thumbnail_id($post_id);
+    return ($thumb_id && wp_attachment_is_image($thumb_id)) ? $thumb_id : 0;
+}
+
+/**
+ * Ferdig <img> for verktøykort, eller tom streng når verktøyet ikke har bilde.
+ *
+ * @param int    $post_id Verktøyets post-ID.
+ * @param string $size    Bildestørrelse. 'medium' beholder proporsjonene.
+ * @return string
+ */
+function bv_get_verktoy_logo_html($post_id, $size = 'medium') {
+    $attachment_id = bv_get_verktoy_logo_id($post_id);
+    if (!$attachment_id) {
+        return '';
+    }
+
+    return (string) wp_get_attachment_image($attachment_id, $size, false, array(
+        'class'   => 'w-full h-full object-contain',
+        'alt'     => get_the_title($post_id),
+        'loading' => 'lazy',
+    ));
+}
+
+/**
+ * Henter vedleggspostene for en liste verktøy i én spørring, før løkka.
+ *
+ * @param WP_Post[]|int[] $tools Verktøy (poster eller ID-er) med primet metacache.
+ */
+function bv_prime_verktoy_logo_cache($tools) {
+    $ids = array();
+    foreach ((array) $tools as $tool) {
+        $pid  = is_object($tool) ? (int) $tool->ID : (int) $tool;
+        $logo = get_post_meta($pid, 'verktoy_logo', true);
+        if (is_numeric($logo) && (int) $logo) {
+            $ids[] = (int) $logo;
+        }
+        $thumb = (int) get_post_meta($pid, '_thumbnail_id', true);
+        if ($thumb) {
+            $ids[] = $thumb;
+        }
+    }
+    if ($ids) {
+        _prime_post_caches(array_unique($ids), false, true);
+    }
+}
