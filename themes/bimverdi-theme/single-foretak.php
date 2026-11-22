@@ -196,6 +196,36 @@ if (!empty($all_article_ids)) {
     ));
 }
 
+// Totalt antall publiserte artikler (lista over viser bare de 6 nyeste).
+$article_total = 0;
+if (!empty($all_article_ids)) {
+    $article_total = count(get_posts(array(
+        'post_type' => 'artikkel',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'post__in' => $all_article_ids,
+        'fields' => 'ids',
+    )));
+}
+
+// Antall prosjekter fra Bårds plugin bv-pilot-prosjekt (eier + medredaktør).
+// Teller bare dem leseren får se i prosjektlista på siden: samme regel som
+// BVP_Foretaksside::visning() — kladder og private telles bare for dem som
+// har tilgang. Uten pluginen vises ikke raden.
+$project_count = 0;
+if (class_exists('BVP_Foretaksside') && class_exists('BVP_Access')
+    && method_exists('BVP_Foretaksside', 'prosjekter')) {
+    $bvp_grupper = BVP_Foretaksside::prosjekter($company_id);
+    foreach (array('eier', 'medredaktor') as $bvp_nokkel) {
+        foreach ((array) ($bvp_grupper[$bvp_nokkel] ?? array()) as $bvp_post) {
+            if (BVP_Access::can_view($bvp_post)
+                || ('publish' === $bvp_post->post_status && 'privat' !== BVP_Access::level($bvp_post->ID))) {
+                $project_count++;
+            }
+        }
+    }
+}
+
 // Hent kunnskapskilder
 $company_kunnskapskilder = get_posts(array(
     'post_type' => 'kunnskapskilde',
@@ -495,7 +525,7 @@ $company_kunnskapskilder = get_posts(array(
                         'nyhet' => 'Nyhet',
                         'kommentar' => 'Kommentar',
                     );
-                    $article_count = count($company_articles);
+                    $article_count = $article_total;
                 ?>
                 <section class="border-t border-[#E7E5E4] pt-10">
                     <div class="flex items-center justify-between mb-6">
@@ -652,6 +682,26 @@ $company_kunnskapskilder = get_posts(array(
                                 Verktøy
                             </dt>
                             <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $tool_count; ?> registrerte</dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if ($article_total > 0): ?>
+                        <div>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                                Artikler
+                            </dt>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $article_total; ?> publiserte</dd>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if ($project_count > 0): ?>
+                        <div>
+                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+                                Prosjekter
+                            </dt>
+                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $project_count; ?> <?php echo $project_count === 1 ? 'prosjekt' : 'prosjekter'; ?></dd>
                         </div>
                         <?php endif; ?>
 
