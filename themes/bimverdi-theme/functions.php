@@ -305,6 +305,11 @@ require_once get_template_directory() . '/inc/redigerbar-topp.php';
 require_once get_template_directory() . '/inc/verktoy-katalog.php';
 
 /**
+ * Foretakets oppføringer: felles telling for deltakerprofilen og ?deltaker=-filteret
+ */
+require_once get_template_directory() . '/inc/foretak-oppforinger.php';
+
+/**
  * Load ACF Field Groups (with graceful fallback if file missing)
  */
 $acf_temagruppe_fields = get_template_directory() . '/inc/acf/temagruppe-fields.php';

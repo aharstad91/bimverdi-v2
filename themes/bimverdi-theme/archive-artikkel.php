@@ -70,6 +70,15 @@ if (!empty($search)) {
     $args['s'] = $search;
 }
 
+// ?deltaker=<slug>: bare artikler fra foretaket (lenke fra deltakerprofilen).
+// Samme regel som tellingen på profilen: bv_foretak_artikkel_ids().
+$foretak_filter = bv_foretak_filter_fra_url();
+$foretak_slug   = $foretak_filter ? get_post_field('post_name', $foretak_filter) : '';
+if ($foretak_filter) {
+    $foretak_artikler = bv_foretak_artikkel_ids($foretak_filter);
+    $args['post__in'] = $foretak_artikler ? $foretak_artikler : array(0);
+}
+
 $tax_query = [];
 if (!empty($temagruppe_filter)) {
     $tax_query[] = ['taxonomy' => 'temagruppe', 'field' => 'slug', 'terms' => $temagruppe_filter];
@@ -166,6 +175,8 @@ $bv_deltaker_ramme = function (array $item, string $ellers = 'border border-[#E7
     ]); ?>
 
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <?php bv_foretak_filter_stripe($foretak_filter, 'artikler', get_post_type_archive_link('artikkel')); ?>
 
         <!-- Compact Filter Bar -->
         <?php
@@ -462,6 +473,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateURL() {
         var params = new URLSearchParams();
+        var foretak = <?php echo wp_json_encode($foretak_slug); ?>;
+        if (foretak) params.set('deltaker', foretak);
         var searchTerm = searchInput ? searchInput.value.trim() : '';
         if (searchTerm) params.set('s', searchTerm);
 

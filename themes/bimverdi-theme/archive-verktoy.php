@@ -41,6 +41,10 @@ foreach ($filters['kilde'] as $v) {
 if ($filters['search'] !== '') {
     $pagination_base_args['s'] = $filters['search'];
 }
+$foretak_slug = $filters['foretak'] ? get_post_field('post_name', $filters['foretak']) : '';
+if ($foretak_slug !== '') {
+    $pagination_base_args['deltaker'] = $foretak_slug;
+}
 ?>
 
 <div class="min-h-screen bg-white">
@@ -61,6 +65,8 @@ if ($filters['search'] !== '') {
     ]); ?>
 
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <?php bv_foretak_filter_stripe($filters['foretak'], 'verktøy', get_post_type_archive_link('verktoy')); ?>
 
         <!-- Compact Filter Bar -->
         <?php
@@ -242,7 +248,8 @@ document.addEventListener('DOMContentLoaded', function() {
             s: searchInput ? searchInput.value.trim() : '',
             temagruppe: selectedValues('[data-multiselect] .filter-temagruppe:checked'),
             type_ressurs: selectedValues('[data-multiselect] .filter-type:checked'),
-            kilde: selectedValues('.filter-kilde:checked')
+            kilde: selectedValues('.filter-kilde:checked'),
+            foretak: <?php echo wp_json_encode($foretak_slug); ?>
         };
     }
 
@@ -252,6 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ['temagruppe', 'type_ressurs', 'kilde'].forEach(function(key) {
             filters[key].forEach(function(v) { params.append(key, v); });
         });
+        if (filters.foretak) params.set('deltaker', filters.foretak);
         if (page > 1) params.set('paged', page);
         return params;
     }
