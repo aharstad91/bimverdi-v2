@@ -442,12 +442,21 @@ $kunnskapskilder_total = count(get_posts(array(
 
                     <?php if (!empty($company_tools)): ?>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <?php foreach ($company_tools as $tool): ?>
+                        <?php bv_prime_verktoy_logo_cache($company_tools); ?>
+                        <?php foreach ($company_tools as $tool):
+                            $tool_logo_html = bv_get_verktoy_logo_html($tool->ID, 'medium');
+                        ?>
                         <a href="<?php echo get_permalink($tool->ID); ?>" class="group block bg-white border border-[#E7E5E4] rounded-xl shadow-sm hover:shadow-md hover:border-[#D6D3D1] transition-all p-6">
-                            <!-- Icon -->
+                            <!-- Icon: verktøyets logo/bilde, ellers skiftenøkkel -->
+                            <?php if ($tool_logo_html !== ''): ?>
+                            <div class="w-16 h-16 overflow-hidden bg-white rounded-lg flex items-center justify-center mb-5">
+                                <?php echo $tool_logo_html; // Bygd av wp_get_attachment_image(). ?>
+                            </div>
+                            <?php else: ?>
                             <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mb-5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                             </div>
+                            <?php endif; ?>
 
                             <!-- Title -->
                             <h3 class="text-base font-semibold text-[#111827] mb-2 line-clamp-2 group-hover:text-[#1F2937]"><?php echo esc_html($tool->post_title); ?></h3>

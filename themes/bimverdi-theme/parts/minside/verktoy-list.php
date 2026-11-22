@@ -116,7 +116,7 @@ if ($company_id) {
         </thead>
         <tbody>
             <?php foreach ($user_tools as $tool): 
-                $logo = get_field('logo', $tool->ID);
+                $logo_html = bv_get_verktoy_logo_html($tool->ID, 'medium');
                 $tool_status = get_post_status($tool->ID);
                 $status_class = $tool_status === 'publish' ? 'bg-[#DCFCE7] text-[#166534]' : ($tool_status === 'pending' ? 'bg-[#FEF9C3] text-[#854D0E]' : 'bg-[#FEE2E2] text-[#991B1B]');
                 $status_label = $tool_status === 'publish' ? __('Aktiv', 'bimverdi') : ($tool_status === 'pending' ? __('Venter', 'bimverdi') : __('Kladd', 'bimverdi'));
@@ -127,8 +127,8 @@ if ($company_id) {
                 <td class="py-4 pr-4">
                     <div class="flex items-start gap-3">
                         <div class="w-10 h-10 bg-[#F5F5F4] rounded flex items-center justify-center flex-shrink-0 overflow-hidden self-center">
-                            <?php if ($logo): ?>
-                                <img src="<?php echo esc_url(is_array($logo) ? ($logo['sizes']['thumbnail'] ?? $logo['url']) : $logo); ?>" alt="" class="w-full h-full object-cover" />
+                            <?php if ($logo_html !== ''): ?>
+                                <?php echo $logo_html; // Bygd av wp_get_attachment_image(). ?>
                             <?php else: ?>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#A8A29E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
                             <?php endif; ?>
