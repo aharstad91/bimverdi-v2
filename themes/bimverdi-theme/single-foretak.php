@@ -620,19 +620,19 @@ $company_kunnskapskilder = get_posts(array(
             <div class="lg:col-span-1 space-y-6">
 
                 <!-- STATUS Section -->
-                <section class="bg-[#F5F5F4] rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-[#57534E] uppercase tracking-wider mb-6">Status</h3>
+                <section class="bg-[#FFF4EE] border rounded-lg p-5 shadow-sm" style="border-color:#F6D3C2">
+                    <h3 class="text-sm font-bold text-[#111827] uppercase tracking-wider mb-6">Status</h3>
 
                     <dl class="space-y-6">
                         <div class="flex justify-between items-center">
-                            <dt class="text-sm text-[#57534E]">BIM Verdi rolle</dt>
+                            <dt class="text-base text-[#57534E]">BIM Verdi rolle</dt>
                             <dd>
                                 <?php if ($er_aktiv_deltaker): ?>
-                                <span class="inline-block text-xs font-medium bg-[#DCFCE7] text-[#166534] px-2.5 py-1 rounded">
+                                <span class="inline-block text-sm font-medium bg-[#DCFCE7] text-[#166534] px-2.5 py-1 rounded">
                                     <?php echo esc_html($bv_rolle); ?>
                                 </span>
                                 <?php else: ?>
-                                <span class="inline-block text-xs font-medium bg-[#F5F5F4] text-[#57534E] px-2.5 py-1 rounded">
+                                <span class="inline-block text-sm font-medium bg-[#F5F5F4] text-[#57534E] px-2.5 py-1 rounded">
                                     Ikke deltaker
                                 </span>
                                 <?php endif; ?>
@@ -641,21 +641,21 @@ $company_kunnskapskilder = get_posts(array(
 
                         <?php if ($tool_count > 0): ?>
                         <div>
-                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                                 Verktøy
                             </dt>
-                            <dd class="text-sm pl-[22px]"><a href="<?php echo esc_url($tools_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $tool_count; ?> registrerte</a></dd>
+                            <dd class="text-base pl-6"><a href="<?php echo esc_url($tools_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $tool_count; ?> registrerte</a></dd>
                         </div>
                         <?php endif; ?>
 
                         <?php if ($article_total > 0): ?>
                         <div>
-                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                            <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
                                 Artikler
                             </dt>
-                            <dd class="text-sm pl-[22px]"><a href="<?php echo esc_url($articles_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $article_total; ?> publiserte</a></dd>
+                            <dd class="text-base pl-6"><a href="<?php echo esc_url($articles_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $article_total; ?> publiserte</a></dd>
                         </div>
                         <?php endif; ?>
 
@@ -665,42 +665,47 @@ $company_kunnskapskilder = get_posts(array(
                             'medredaktor' => 'Prosjekter/case fra invitasjon',
                         );
                         foreach ($project_rows as $project_key => $project_label):
-                            $n = $project_counts[$project_key];
-                            if ($n < 1) continue;
+                            // Vises også med 0 (Bård, 22.11.2026). Uten prosjekter finnes
+                            // ingen liste å hoppe til, så 0 vises uten lenke.
+                            $n = (int) $project_counts[$project_key];
+                            $project_text = $n . ' ' . ($n === 1 ? 'prosjekt/case' : 'prosjekter/case');
                         ?>
                         <div>
-                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+                            <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
                                 <?php echo esc_html($project_label); ?>
                             </dt>
-                            <dd class="text-sm pl-[22px]"><a href="#prosjekter" class="text-[#FF8B5E] hover:underline"><?php echo (int) $n; ?> <?php echo $n === 1 ? 'prosjekt/case' : 'prosjekter/case'; ?></a></dd>
+                            <?php if ($n > 0): ?>
+                            <dd class="text-base pl-6"><a href="#prosjekter" class="text-[#FF8B5E] hover:underline"><?php echo esc_html($project_text); ?></a></dd>
+                            <?php else: ?>
+                            <dd class="text-base text-[#111827] pl-6"><?php echo esc_html($project_text); ?></dd>
+                            <?php endif; ?>
                         </div>
                         <?php endforeach; ?>
 
                         <?php if ($antall_ansatte > 0): ?>
                         <div>
-                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                 Ansatte
                             </dt>
-                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $antall_ansatte; ?> personer</dd>
+                            <dd class="text-base text-[#111827] pl-6"><?php echo $antall_ansatte; ?> personer</dd>
                         </div>
                         <?php endif; ?>
 
-                        <?php if ($tilleggskontakter_count > 0): ?>
+                        <?php // Vises også med 0 (Bård, 22.11.2026). ?>
                         <div>
-                            <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                 Tilleggskontakter
                             </dt>
-                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $tilleggskontakter_count; ?> personer</dd>
+                            <dd class="text-base text-[#111827] pl-6"><?php echo (int) $tilleggskontakter_count; ?> <?php echo (int) $tilleggskontakter_count === 1 ? 'person' : 'personer'; ?></dd>
                         </div>
-                        <?php endif; ?>
 
                         <?php if (!empty($tilleggskontakter_navn)): ?>
                         <div>
-                            <dt class="text-sm text-[#57534E] mb-1.5">Navn på tilleggskontakter (kun synlig for admin)</dt>
-                            <dd class="text-sm text-[#111827] pl-[22px]">
+                            <dt class="text-base text-[#57534E] mb-1.5">Navn på tilleggskontakter (kun synlig for admin)</dt>
+                            <dd class="text-base text-[#111827] pl-6">
                                 <ul class="list-none m-0 p-0 space-y-1">
                                     <?php foreach ($tilleggskontakter_navn as $kontakt): ?>
                                     <li>
@@ -729,12 +734,22 @@ $company_kunnskapskilder = get_posts(array(
                     get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => (int) $hovedkontakt_id]); ?>
                     <?php else: ?>
 
+                    <?php
+                    // Profilbilde fra brukerprofilen (ACF profile_image), ellers forbokstav.
+                    // Bare opplastet bilde — ikke Gravatar-reserven i bim_get_user_profile_image_url().
+                    $hovedkontakt_bilde_id  = function_exists('get_field') ? get_field('profile_image', 'user_' . $hovedkontakt_id) : 0;
+                    $hovedkontakt_bilde_url = $hovedkontakt_bilde_id ? wp_get_attachment_image_url($hovedkontakt_bilde_id, 'thumbnail') : '';
+                    ?>
                     <div class="flex items-start gap-3">
+                        <?php if ($hovedkontakt_bilde_url): ?>
+                        <img src="<?php echo esc_url($hovedkontakt_bilde_url); ?>" alt="<?php echo esc_attr($hovedkontakt->display_name); ?>" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                        <?php else: ?>
                         <div class="w-12 h-12 bg-[#E7E5E4] rounded-full flex items-center justify-center flex-shrink-0">
                             <span class="text-base font-medium text-[#57534E]">
-                                <?php echo esc_html(strtoupper(substr($hovedkontakt->display_name, 0, 1))); ?>
+                                <?php echo esc_html(mb_strtoupper(mb_substr($hovedkontakt->display_name, 0, 1))); ?>
                             </span>
                         </div>
+                        <?php endif; ?>
                         <div class="min-w-0">
                             <div class="font-medium text-[#111827] text-sm"><?php echo esc_html($hovedkontakt->display_name); ?></div>
                             <?php
