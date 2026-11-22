@@ -263,6 +263,9 @@ function bv_verktoy_index() {
         }
     }
 
+    // Eier-ID trengs av foretaksfilteret (?deltaker=).
+    $index['eier_id'] = $eier_refs;
+
     // Alt uten AEC-markør er deltakerregistrert.
     foreach ($ids as $pid) {
         if (!isset($index['kilde'][$pid])) {
@@ -322,6 +325,8 @@ function bv_verktoy_katalog_filters($src = null) {
         'temagruppe' => $pick('temagruppe', array_keys(bv_verktoy_temagruppe_options())),
         'type'       => $pick('type_ressurs', array_keys(bv_verktoy_type_options())),
         'kilde'      => $pick('kilde', array_keys(bv_verktoy_kilde_options())),
+        // ?deltaker=<slug>: bare verktøy der foretaket er eier/leverandør (lenke fra deltakerprofilen).
+        'foretak'    => function_exists('bv_foretak_fra_param') ? bv_foretak_fra_param($src['deltaker'] ?? '') : 0,
         'paged'      => max(1, $paged),
     );
 }
@@ -349,6 +354,12 @@ function bv_verktoy_matching_ids(array $filters) {
         if (!empty($filters['type'])) {
             $type = isset($index['type'][$pid]) ? $index['type'][$pid] : array();
             if (empty(array_intersect($filters['type'], $type))) {
+                continue;
+            }
+        }
+        if (!empty($filters['foretak'])) {
+            $eier_id = isset($index['eier_id'][$pid]) ? $index['eier_id'][$pid] : 0;
+            if ($eier_id !== (int) $filters['foretak']) {
                 continue;
             }
         }

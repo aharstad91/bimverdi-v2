@@ -146,44 +146,9 @@ if (current_user_can('manage_options')) {
 $current_user_company_id = get_user_meta(get_current_user_id(), 'bim_verdi_company_id', true);
 $is_own_company = ($current_user_company_id == $company_id);
 
-// Hent artikler (bedrift-tilknyttede + medforfattere fra foretaket)
-$company_articles_by_bedrift = get_posts(array(
-    'post_type' => 'artikkel',
-    'post_status' => 'publish',
-    'posts_per_page' => -1,
-    'fields' => 'ids',
-    'meta_query' => array(
-        array(
-            'key' => 'artikkel_bedrift',
-            'value' => $company_id,
-        ),
-    ),
-));
-
-// Finn artikler der ansatte er medforfattere
-$company_articles_by_medforfattere = array();
-if (!empty($company_users)) {
-    $user_ids = wp_list_pluck($company_users, 'ID');
-    foreach ($user_ids as $uid) {
-        $medforfattere_articles = get_posts(array(
-            'post_type' => 'artikkel',
-            'post_status' => 'publish',
-            'posts_per_page' => -1,
-            'fields' => 'ids',
-            'meta_query' => array(
-                array(
-                    'key' => 'artikkel_medforfattere',
-                    'value' => '"' . $uid . '"',
-                    'compare' => 'LIKE',
-                ),
-            ),
-        ));
-        $company_articles_by_medforfattere = array_merge($company_articles_by_medforfattere, $medforfattere_articles);
-    }
-}
-
-// Kombiner og dedupliser
-$all_article_ids = array_unique(array_merge($company_articles_by_bedrift, $company_articles_by_medforfattere));
+// Hent artikler (bedrift-tilknyttede + medforfattere fra foretaket).
+// Felles regel med ?deltaker=-filteret i artikkelarkivet (inc/foretak-oppforinger.php).
+$all_article_ids = bv_foretak_artikkel_ids($company_id);
 $company_articles = array();
 if (!empty($all_article_ids)) {
     $company_articles = get_posts(array(
@@ -197,30 +162,29 @@ if (!empty($all_article_ids)) {
 }
 
 // Totalt antall publiserte artikler (lista over viser bare de 6 nyeste).
-$article_total = 0;
-if (!empty($all_article_ids)) {
-    $article_total = count(get_posts(array(
-        'post_type' => 'artikkel',
-        'post_status' => 'publish',
-        'posts_per_page' => -1,
-        'post__in' => $all_article_ids,
-        'fields' => 'ids',
-    )));
-}
+// Helperen returnerer bare publiserte, så antallet er lengden på lista.
+$article_total = count($all_article_ids);
 
-// Antall prosjekter fra Bårds plugin bv-pilot-prosjekt (eier + medredaktør).
+// Lenker fra statusfeltet til katalogene filtrert på foretaket.
+$company_slug = get_post_field('post_name', $company_id);
+$tools_filter_url    = add_query_arg('deltaker', $company_slug, get_post_type_archive_link('verktoy'));
+$articles_filter_url = add_query_arg('deltaker', $company_slug, get_post_type_archive_link('artikkel'));
+
+// Prosjekter/case fra Bårds plugin bv-pilot-prosjekt, delt i to:
+// - egenregistrerte: foretaket eier prosjektet (pluginens gruppe «eier»)
+// - fra invitasjon:  foretaket er invitert som medredaktør («medredaktor»)
 // Teller bare dem leseren får se i prosjektlista på siden: samme regel som
 // BVP_Foretaksside::visning() — kladder og private telles bare for dem som
-// har tilgang. Uten pluginen vises ikke raden.
-$project_count = 0;
+// har tilgang. Uten pluginen vises ikke radene.
+$project_counts = array('eier' => 0, 'medredaktor' => 0);
 if (class_exists('BVP_Foretaksside') && class_exists('BVP_Access')
     && method_exists('BVP_Foretaksside', 'prosjekter')) {
     $bvp_grupper = BVP_Foretaksside::prosjekter($company_id);
-    foreach (array('eier', 'medredaktor') as $bvp_nokkel) {
+    foreach (array_keys($project_counts) as $bvp_nokkel) {
         foreach ((array) ($bvp_grupper[$bvp_nokkel] ?? array()) as $bvp_post) {
             if (BVP_Access::can_view($bvp_post)
                 || ('publish' === $bvp_post->post_status && 'privat' !== BVP_Access::level($bvp_post->ID))) {
-                $project_count++;
+                $project_counts[$bvp_nokkel]++;
             }
         }
     }
@@ -448,7 +412,7 @@ $company_kunnskapskilder = get_posts(array(
                 $prosjekter_html = shortcode_exists('bv_foretak_prosjekter') ? do_shortcode('[bv_foretak_prosjekter]') : '';
                 if ($prosjekter_html !== ''):
                 ?>
-                <div class="border-t border-[#E7E5E4] pt-10">
+                <div id="prosjekter" class="border-t border-[#E7E5E4] pt-10">
                     <?php echo $prosjekter_html; // Escapet i pluginen. ?>
                 </div>
                 <?php endif; ?>
@@ -681,7 +645,7 @@ $company_kunnskapskilder = get_posts(array(
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                                 Verktøy
                             </dt>
-                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $tool_count; ?> registrerte</dd>
+                            <dd class="text-sm pl-[22px]"><a href="<?php echo esc_url($tools_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $tool_count; ?> registrerte</a></dd>
                         </div>
                         <?php endif; ?>
 
@@ -691,19 +655,27 @@ $company_kunnskapskilder = get_posts(array(
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
                                 Artikler
                             </dt>
-                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $article_total; ?> publiserte</dd>
+                            <dd class="text-sm pl-[22px]"><a href="<?php echo esc_url($articles_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $article_total; ?> publiserte</a></dd>
                         </div>
                         <?php endif; ?>
 
-                        <?php if ($project_count > 0): ?>
+                        <?php
+                        $project_rows = array(
+                            'eier'        => 'Egenregistrerte prosjekter/case',
+                            'medredaktor' => 'Prosjekter/case fra invitasjon',
+                        );
+                        foreach ($project_rows as $project_key => $project_label):
+                            $n = $project_counts[$project_key];
+                            if ($n < 1) continue;
+                        ?>
                         <div>
                             <dt class="text-sm text-[#57534E] flex items-center gap-2 mb-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
-                                Prosjekter
+                                <?php echo esc_html($project_label); ?>
                             </dt>
-                            <dd class="text-sm text-[#111827] pl-[22px]"><?php echo $project_count; ?> <?php echo $project_count === 1 ? 'prosjekt' : 'prosjekter'; ?></dd>
+                            <dd class="text-sm pl-[22px]"><a href="#prosjekter" class="text-[#FF8B5E] hover:underline"><?php echo (int) $n; ?> <?php echo $n === 1 ? 'prosjekt/case' : 'prosjekter/case'; ?></a></dd>
                         </div>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
 
                         <?php if ($antall_ansatte > 0): ?>
                         <div>
