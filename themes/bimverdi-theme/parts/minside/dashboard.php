@@ -334,7 +334,7 @@ if (!$company && $bruker_foretak) : ?>
     <div class="space-y-0">
 
         <!-- 1. Company Header -->
-        <div class="pb-8 border-b border-[#E7E5E4]">
+        <div class="pb-6 border-b border-[#E7E5E4]">
             <div class="flex items-start gap-4">
                 <?php if ($logo_url): ?>
                     <img src="<?php echo esc_url($logo_url); ?>" alt="" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
@@ -419,7 +419,7 @@ if (!$company && $bruker_foretak) : ?>
             : ($bv_rolle_dash === 'Ikke deltaker');
         ?>
         <?php if ($is_gratisbruker_dash): ?>
-            <div class="py-8 border-b border-[#E7E5E4]">
+            <div class="py-6 border-b border-[#E7E5E4]">
                 <div class="flex items-start gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     <div class="flex-1">
@@ -443,7 +443,7 @@ if (!$company && $bruker_foretak) : ?>
         <!-- 2. Description (if exists) -->
         <?php $beskrivelse = get_field('beskrivelse', $company_id); ?>
         <?php if ($beskrivelse): ?>
-        <div class="py-8 border-b border-[#E7E5E4]">
+        <div class="py-6 border-b border-[#E7E5E4]">
             <h3 class="text-lg font-semibold text-[#111827] mb-3"><?php _e('Om foretaket', 'bimverdi'); ?></h3>
             <div class="text-sm text-[#57534E] leading-relaxed prose prose-sm max-w-none">
                 <?php echo wp_kses_post($beskrivelse); ?>
@@ -453,7 +453,7 @@ if (!$company && $bruker_foretak) : ?>
 
         <!-- 3. Mine verktøy (only for active/paying companies) -->
         <?php if ($is_active): ?>
-        <div class="py-8 border-b border-[#E7E5E4]">
+        <div class="py-6 border-b border-[#E7E5E4]">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h3 class="text-lg font-semibold text-[#111827]"><?php _e('Mine verktøy', 'bimverdi'); ?></h3>
@@ -518,7 +518,7 @@ if (!$company && $bruker_foretak) : ?>
         <?php endif; ?>
 
         <!-- 4. Kunnskapskilder -->
-        <div class="py-8 border-b border-[#E7E5E4]">
+        <div class="py-6 border-b border-[#E7E5E4]">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h3 class="text-lg font-semibold text-[#111827]"><?php _e('Kunnskapskilder', 'bimverdi'); ?></h3>
@@ -573,7 +573,7 @@ if (!$company && $bruker_foretak) : ?>
 
         <!-- 4b. Mine artikler (betalende foretak inkl. Deltaker) -->
         <?php if (function_exists('bimverdi_can_access') && bimverdi_can_access('write_article')): ?>
-        <div class="py-8 border-b border-[#E7E5E4]">
+        <div class="py-6 border-b border-[#E7E5E4]">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h3 class="text-lg font-semibold text-[#111827]"><?php _e('Mine artikler', 'bimverdi'); ?></h3>
@@ -627,7 +627,7 @@ if (!$company && $bruker_foretak) : ?>
         <?php endif; ?>
 
         <!-- 5. Mine arrangementer -->
-        <div class="py-8 border-b border-[#E7E5E4]">
+        <div class="py-6 border-b border-[#E7E5E4]">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <h3 class="text-lg font-semibold text-[#111827]"><?php _e('Mine arrangementer', 'bimverdi'); ?></h3>
@@ -693,7 +693,7 @@ if (!$company && $bruker_foretak) : ?>
         ?>
 
         <?php if ($has_contact): ?>
-        <div class="pt-8">
+        <div class="pt-6">
             <h3 class="text-lg font-semibold text-[#111827] mb-4"><?php _e('Kontaktinformasjon', 'bimverdi'); ?></h3>
             <div class="divide-y divide-[#E7E5E4]">
 

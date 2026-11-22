@@ -255,7 +255,7 @@ $kunnskapskilder_total = count(get_posts(array(
 
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
-            <div class="flex <?php echo $logo_url ? 'flex-col items-start gap-6' : 'items-start gap-5'; ?>">
+            <div class="flex <?php echo $logo_url ? 'flex-col items-start gap-3' : 'items-start gap-5'; ?>">
                 <!-- Logo: over navnet, uten ramme. Tak på 160px høyde / 448px bredde fordi originalene varierer fra 70 til 2560px -->
                 <?php if ($logo_url): ?>
                     <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($company_title); ?>" class="block w-auto h-auto max-h-40 max-w-full md:max-w-md">
@@ -267,7 +267,7 @@ $kunnskapskilder_total = count(get_posts(array(
 
                 <div>
                     <div class="flex items-center gap-3 mb-1">
-                        <h1 class="text-3xl font-bold text-[#111827]"><?php echo esc_html($company_title); ?><?php echo bimverdi_admin_id_badge(); ?><?php echo bimverdi_admin_user_badge(); ?></h1>
+                        <h1 class="text-3xl font-bold text-[#111827]"><?php echo esc_html($company_title); ?></h1>
                         <?php if ($er_aktiv_deltaker): ?>
                             <span class="inline-flex items-center gap-1 text-xs font-medium text-[#166534] bg-[#DCFCE7] px-2.5 py-1 rounded-full">
                                 <span class="w-1.5 h-1.5 bg-[#166534] rounded-full"></span>
