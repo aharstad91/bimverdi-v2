@@ -202,6 +202,20 @@ $company_kunnskapskilder = get_posts(array(
         ),
     ),
 ));
+
+// Antall egenregistrerte kunnskapskilder (lista over viser maks 6).
+$kunnskapskilder_total = count(get_posts(array(
+    'post_type' => 'kunnskapskilde',
+    'post_status' => 'publish',
+    'posts_per_page' => -1,
+    'fields' => 'ids',
+    'meta_query' => array(
+        array(
+            'key' => 'tilknyttet_bedrift',
+            'value' => $company_id,
+        ),
+    ),
+)));
 ?>
 
 <main class="min-h-screen bg-white">
@@ -639,25 +653,42 @@ $company_kunnskapskilder = get_posts(array(
                             </dd>
                         </div>
 
-                        <?php if ($tool_count > 0): ?>
+                        <?php
+                        // Overskriftene lenker til registrering på Min side (Bård, 22.11.2026).
+                        // Radene vises også med 0, så lenken finnes også for foretak uten
+                        // oppføringer. Tallet lenker til filtrert katalog bare når det er > 0.
+                        ?>
                         <div>
                             <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                                Verktøy
+                                <a href="<?php echo esc_url(home_url('/min-side/registrer-verktoy/')); ?>" class="underline hover:text-[#111827]" title="Registrer verktøy">Verktøy</a>
                             </dt>
-                            <dd class="text-base pl-6"><a href="<?php echo esc_url($tools_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $tool_count; ?> registrerte</a></dd>
+                            <?php if ($tool_count > 0): ?>
+                            <dd class="text-base pl-6"><a href="<?php echo esc_url($tools_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo (int) $tool_count; ?> registrerte</a></dd>
+                            <?php else: ?>
+                            <dd class="text-base text-[#111827] pl-6">0 registrerte</dd>
+                            <?php endif; ?>
                         </div>
-                        <?php endif; ?>
 
-                        <?php if ($article_total > 0): ?>
                         <div>
                             <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-                                Artikler
+                                <a href="<?php echo esc_url(home_url('/min-side/artikler/skriv/')); ?>" class="underline hover:text-[#111827]" title="Skriv artikkel">Artikler</a>
                             </dt>
-                            <dd class="text-base pl-6"><a href="<?php echo esc_url($articles_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo $article_total; ?> publiserte</a></dd>
+                            <?php if ($article_total > 0): ?>
+                            <dd class="text-base pl-6"><a href="<?php echo esc_url($articles_filter_url); ?>" class="text-[#FF8B5E] hover:underline"><?php echo (int) $article_total; ?> publiserte</a></dd>
+                            <?php else: ?>
+                            <dd class="text-base text-[#111827] pl-6">0 publiserte</dd>
+                            <?php endif; ?>
                         </div>
-                        <?php endif; ?>
+
+                        <div>
+                            <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                <a href="<?php echo esc_url(home_url('/min-side/kunnskapskilder/registrer/')); ?>" class="underline hover:text-[#111827]" title="Registrer kunnskapskilde">Kunnskapskilder</a>
+                            </dt>
+                            <dd class="text-base text-[#111827] pl-6"><?php echo (int) $kunnskapskilder_total; ?> egenregistrerte</dd>
+                        </div>
 
                         <?php
                         $project_rows = array(
@@ -673,7 +704,11 @@ $company_kunnskapskilder = get_posts(array(
                         <div>
                             <dt class="text-base text-[#57534E] flex items-center gap-2 mb-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[#57534E]"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+                                <?php if ($project_key === 'eier'): ?>
+                                <a href="<?php echo esc_url(home_url('/tjenester-og-verktoy/prosjekt/?bvp_view=skjema')); ?>" class="underline hover:text-[#111827]" title="Registrer prosjekt/case"><?php echo esc_html($project_label); ?></a>
+                                <?php else: ?>
                                 <?php echo esc_html($project_label); ?>
+                                <?php endif; ?>
                             </dt>
                             <?php if ($n > 0): ?>
                             <dd class="text-base pl-6"><a href="#prosjekter" class="text-[#FF8B5E] hover:underline"><?php echo esc_html($project_text); ?></a></dd>
@@ -690,6 +725,7 @@ $company_kunnskapskilder = get_posts(array(
                                 Ansatte
                             </dt>
                             <dd class="text-base text-[#111827] pl-6"><?php echo $antall_ansatte; ?> personer</dd>
+                            <dd class="text-xs text-[#57534E] pl-6 mt-0.5">Hentet fra Brønnøysundregisteret</dd>
                         </div>
                         <?php endif; ?>
 
