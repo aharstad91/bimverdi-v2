@@ -29,7 +29,10 @@ $args        = $args ?? [];
 $mottaker_id = isset($args['mottaker_id']) ? (int) $args['mottaker_id'] : 0;
 $tekst       = isset($args['tekst']) && $args['tekst'] !== '' ? (string) $args['tekst'] : __('Send lukket melding', 'bimverdi');
 
-$knapp = bv_meldinger_knapp_tilstand(get_current_user_id(), $mottaker_id);
+// «Gjelder»: siden knappen står på følger med, så mottakeren ser hva det gjelder.
+$gjelder_id = isset($args['gjelder_id']) ? (int) $args['gjelder_id'] : (is_singular() ? (int) get_queried_object_id() : 0);
+
+$knapp = bv_meldinger_knapp_tilstand(get_current_user_id(), $mottaker_id, $gjelder_id);
 if ($knapp['tilstand'] === 'skjult') {
     return;
 }
