@@ -1215,6 +1215,37 @@ add_filter('the_content', function ($innhold) {
 }, 20);
 
 /**
+ * Begreper (ordlista): meldingsfeltet på pilot/prosjekt-sider er en «åpen
+ * melding» (alle med tilgang leser), ikke en lukket melding. Pluginen
+ * bv-pilot-prosjekt (bare på serveren) har faste tekster, så de byttes her.
+ */
+add_filter('the_content', function ($innhold) {
+    if (strpos($innhold, 'id="bvp-meldinger"') === false) {
+        return $innhold;
+    }
+    return strtr($innhold, array(
+        '<h3 class="bvp-section__title">Meldinger' => '<h3 class="bvp-section__title">Åpne meldinger',
+        'Dialog om denne registreringen. Alle som har tilgang til den, kan lese og skrive her.'
+            => 'Åpne meldinger om denne registreringen. Alle som har tilgang til den, kan lese og skrive her. Vil du skrive til bare én person, bruk «Send lukket melding».',
+        'Ingen meldinger ennå.'                     => 'Ingen åpne meldinger ennå.',
+        'for="bvp-melding-tekst">Ny melding</label>' => 'for="bvp-melding-tekst">Ny åpen melding</label>',
+        'class="bvp-button">Send melding</button>'  => 'class="bvp-button">Send åpen melding</button>',
+    ));
+}, 30);
+
+// E-posten fra samme felt (BVP_Mail::notify_melding).
+add_filter('wp_mail', function ($args) {
+    $emne = isset($args['subject']) ? (string) $args['subject'] : '';
+    if (strpos($emne, '[BIM Verdi] Ny melding: ') === 0) {
+        $args['subject'] = '[BIM Verdi] Ny åpen melding: ' . substr($emne, strlen('[BIM Verdi] Ny melding: '));
+        if (isset($args['message']) && is_string($args['message'])) {
+            $args['message'] = preg_replace('/ har skrevet en melding om /u', ' har skrevet en åpen melding om ', $args['message'], 1);
+        }
+    }
+    return $args;
+});
+
+/**
  * Første setning i blokk-veggen (krav 22) for lukkede meldinger.
  */
 function bv_meldinger_vegg_tekst() {
