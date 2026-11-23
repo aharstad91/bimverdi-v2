@@ -13,8 +13,14 @@
 
 <?php get_template_part('parts/components/announcement-bar'); ?>
 
-<!-- Public Header: Logo + Main Nav + Login button -->
-<header class="bg-white border-b border-[#E7E5E4] relative z-50">
+<!-- Public Header: Logo + Main Nav + Login button (fast øverst ved skrolling) -->
+<style>
+html { scroll-padding-top: 5rem; }
+@media (min-width: 601px) {
+    body.admin-bar .bv-site-header { top: var(--wp-admin--admin-bar--height, 32px); }
+}
+</style>
+<header class="bv-site-header bg-white border-b border-[#E7E5E4] sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             
