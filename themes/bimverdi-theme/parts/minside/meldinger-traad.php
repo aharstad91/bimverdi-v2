@@ -95,6 +95,9 @@ $undertittel = $motpart_foretak !== ''
                     <?php endif; ?>
                     <time class="bv-samtale__tid" datetime="<?php echo esc_attr(mysql2date('c', $m['opprettet'])); ?>"><?php echo esc_html(bv_meldinger_tid($m['opprettet'])); ?></time>
                 </div>
+                <?php if (!empty($m['gjelder_id']) && bv_meldinger_gjelder_gyldig($m['gjelder_id'], $bruker_id, $motpart_id)) {
+                    echo bv_meldinger_gjelder_html($m['gjelder_id'], 'bv-gjelder');
+                } ?>
                 <div class="bv-samtale__tekst"><?php echo nl2br(esc_html($m['tekst'])); ?></div>
             </li>
         <?php endforeach; ?>
@@ -107,10 +110,19 @@ $undertittel = $motpart_foretak !== ''
     <?php if ($sperre !== ''): ?>
         <p class="bv-samtale__sperre"><?php echo esc_html($sperre); ?></p>
     <?php else: ?>
-        <form method="post" action="" class="bv-samtale__skjema">
+        <form method="post" action="" class="bv-samtale__skjema" id="svar">
             <?php wp_nonce_field('bv_melding_svar_' . $traad_id); ?>
             <input type="hidden" name="bv_melding_svar" value="1">
             <input type="hidden" name="traad_id" value="<?php echo (int) $traad_id; ?>">
+            <?php
+            // «Gjelder»: kom brukeren fra en knapp på en side, følger siden med svaret.
+            $gjelder_id = (isset($_GET['fra']) && !isset($_GET['sendt']))
+                ? bv_meldinger_gjelder_gyldig((int) $_GET['fra'], $bruker_id, $motpart_id)
+                : 0;
+            if ($gjelder_id): ?>
+                <input type="hidden" name="gjelder" value="<?php echo (int) $gjelder_id; ?>">
+                <?php echo bv_meldinger_gjelder_html($gjelder_id, 'bv-gjelder bv-gjelder--skjema'); ?>
+            <?php endif; ?>
 
             <?php if ($feiltekst !== ''): ?>
                 <p class="bv-samtale__feil" role="alert"><?php echo esc_html($feiltekst); ?></p>
@@ -167,6 +179,10 @@ $undertittel = $motpart_foretak !== ''
 .bv-samtale__felt { display: block; width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid #E5E0D5; border-radius: 8px; font: inherit; color: #1A1A1A; }
 .bv-samtale__felt:focus { outline: 2px solid #FF8B5E; outline-offset: 0; border-color: transparent; }
 .bv-samtale__hjelp { margin: 6px 0 16px; font-size: 12px; color: #888888; }
+.bv-gjelder { margin: 0 0 6px; font-size: 14px; color: #5A5A5A; }
+.bv-gjelder--skjema { margin-bottom: 12px; }
+.bv-gjelder a { color: #1A1A1A; text-decoration: underline; text-decoration-color: #D6D1C6; }
+.bv-gjelder a:hover { text-decoration-color: #1A1A1A; }
 .bv-samtale__skjul { margin-top: 40px; padding-top: 16px; border-top: 1px solid #E5E0D5; }
 .bv-samtale__skjul-lenke, .bv-samtale__avbryt { font-size: 14px; color: #5A5A5A; text-decoration: underline; text-decoration-color: #D6D1C6; }
 .bv-samtale__skjul-lenke:hover, .bv-samtale__avbryt:hover { color: #1A1A1A; text-decoration-color: #1A1A1A; }

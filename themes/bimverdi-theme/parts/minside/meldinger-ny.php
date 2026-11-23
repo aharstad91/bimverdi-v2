@@ -56,6 +56,10 @@ if ($til) :
     $kan = bv_kan_sende_melding($bruker_id, $til);
     $mottaker_navn    = bv_meldinger_navn($til);
     $mottaker_foretak = bv_meldinger_foretaksnavn($til);
+    // «Gjelder»: siden knappen sto på. Vises bare hvis begge kan se siden.
+    $gjelder_id = function_exists('bv_meldinger_gjelder_gyldig')
+        ? bv_meldinger_gjelder_gyldig(isset($_GET['fra']) ? (int) $_GET['fra'] : 0, $bruker_id, $til)
+        : 0;
 
     $feilkode  = isset($_GET['bv_feil']) ? sanitize_key(wp_unslash($_GET['bv_feil'])) : '';
     $feiltekst = '';
@@ -87,6 +91,10 @@ if ($til) :
                 <?php wp_nonce_field('bv_melding_ny_' . $til); ?>
                 <input type="hidden" name="bv_melding_ny" value="1">
                 <input type="hidden" name="til" value="<?php echo (int) $til; ?>">
+                <?php if ($gjelder_id): ?>
+                    <input type="hidden" name="gjelder" value="<?php echo (int) $gjelder_id; ?>">
+                    <?php echo bv_meldinger_gjelder_html($gjelder_id, 'bv-gjelder bv-gjelder--skjema'); ?>
+                <?php endif; ?>
 
                 <?php if ($feiltekst !== ''): ?>
                     <p class="bv-ny__feil" role="alert"><?php echo esc_html($feiltekst); ?></p>
@@ -169,6 +177,9 @@ else :
 .bv-ny__foretak { font-size: 14px; color: #5A5A5A; }
 .bv-ny__lenke { font-size: 14px; font-weight: 500; color: #1A1A1A; text-decoration: underline; text-decoration-color: #D6D1C6; }
 .bv-ny__lenke:hover { text-decoration-color: #1A1A1A; }
+.bv-gjelder { margin: 0 0 16px; font-size: 14px; color: #5A5A5A; }
+.bv-gjelder a { color: #1A1A1A; text-decoration: underline; text-decoration-color: #D6D1C6; }
+.bv-gjelder a:hover { text-decoration-color: #1A1A1A; }
 @media (max-width: 600px) {
     .bv-ny__sokrad { flex-direction: column; }
 }
