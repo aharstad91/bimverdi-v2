@@ -35,8 +35,16 @@ $primary_route = bimverdi_get_primary_route();
 
 <?php get_template_part('parts/components/announcement-bar'); ?>
 
-<!-- Primary Header: Logo + Back Link + Logout -->
-<header class="bg-white border-b border-[#E7E5E4] sticky top-0 z-50">
+<!-- Primary Header: Logo + Back Link + Logout (fast øverst ved skrolling, sammen med fanemenyen under) -->
+<style>
+html { scroll-padding-top: 5rem; }
+@media (min-width: 768px) { html { scroll-padding-top: 8rem; } }
+@media (min-width: 601px) {
+    body.admin-bar .bv-minside-header { top: var(--wp-admin--admin-bar--height, 32px); }
+    body.admin-bar .bv-minside-subnav { top: calc(4rem + var(--wp-admin--admin-bar--height, 32px)); }
+}
+</style>
+<header class="bv-minside-header bg-white border-b border-[#E7E5E4] sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between h-16">
             
@@ -153,7 +161,7 @@ $primary_route = bimverdi_get_primary_route();
 </div>
 
 <!-- Secondary Navigation: Min Side menu with icons (hidden on mobile) -->
-<nav class="hidden md:block bg-white border-b border-[#E7E5E4]">
+<nav class="bv-minside-subnav hidden md:block bg-white border-b border-[#E7E5E4] sticky top-16 z-40">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between h-12">
             
