@@ -1109,6 +1109,33 @@ add_action('template_redirect', function () {
 });
 
 /**
+ * Pilot/prosjekt-sider (plugin bv-pilot-prosjekt, bare på serveren): knapp
+ * «Send lukket melding» til den som registrerte prosjektet (post_author),
+ * rett under linjen «Registrert av …». Pluginen skriver innholdet via
+ * the_content (prioritet 10). Vi legger knappen inn etterpå, så pluginen
+ * ikke må endres.
+ */
+add_filter('the_content', function ($innhold) {
+    if (!is_singular('bv_pilot_prosjekt') || !in_the_loop() || !is_main_query()
+        || strpos($innhold, 'class="bvp-meta"') === false) {
+        return $innhold;
+    }
+    $mottaker = (int) get_post_field('post_author', get_queried_object_id());
+    ob_start();
+    get_template_part('parts/components/lukket-melding-knapp', null, ['mottaker_id' => $mottaker]);
+    $knapp = trim((string) ob_get_clean());
+    if ($knapp === '') {
+        return $innhold;
+    }
+    return (string) preg_replace(
+        '#(<p class="bvp-meta">.*?</p>)#s',
+        '$1<div class="bvp-lukket-melding" style="margin:-4px 0 16px;">' . str_replace(['\\', '$'], ['\\\\', '\\$'], $knapp) . '</div>',
+        $innhold,
+        1
+    );
+}, 20);
+
+/**
  * Første setning i blokk-veggen (krav 22) for lukkede meldinger.
  */
 function bv_meldinger_vegg_tekst() {
