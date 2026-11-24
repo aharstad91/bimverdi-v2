@@ -32,6 +32,20 @@ class BBEE_OpenAI_Client {
 	protected $model;
 	/** @var int */
 	protected $max_tokens;
+
+	/** @var int Sekunder før kallet gir opp. */
+	protected $timeout = 60;
+
+	/**
+	 * Sett en egen tidsfrist, for eksempel for korte hjelpekall.
+	 *
+	 * @param int $seconds Sekunder.
+	 * @return $this
+	 */
+	public function set_timeout( $seconds ) {
+		$this->timeout = max( 1, (int) $seconds );
+		return $this;
+	}
 	/** @var float|null */
 	protected $temperature;
 
@@ -118,7 +132,7 @@ class BBEE_OpenAI_Client {
 		$response = wp_remote_post(
 			self::API_URL,
 			array(
-				'timeout' => 60,
+				'timeout' => $this->timeout,
 				'headers' => array(
 					'Content-Type'  => 'application/json',
 					'Authorization' => 'Bearer ' . $this->api_key,

@@ -24,6 +24,20 @@ class BBEE_Claude_Client {
 	/** @var int */
 	protected $max_tokens;
 
+	/** @var int Sekunder før kallet gir opp. */
+	protected $timeout = 60;
+
+	/**
+	 * Sett en egen tidsfrist, for eksempel for korte hjelpekall.
+	 *
+	 * @param int $seconds Sekunder.
+	 * @return $this
+	 */
+	public function set_timeout( $seconds ) {
+		$this->timeout = max( 1, (int) $seconds );
+		return $this;
+	}
+
 	/**
 	 * @param string $api_key    Nøkkel.
 	 * @param string $model      Modell.
@@ -62,7 +76,7 @@ class BBEE_Claude_Client {
 		$response = wp_remote_post(
 			self::API_URL,
 			array(
-				'timeout' => 60,
+				'timeout' => $this->timeout,
 				'headers' => array(
 					'Content-Type'      => 'application/json',
 					'x-api-key'         => $this->api_key,
