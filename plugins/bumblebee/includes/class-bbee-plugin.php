@@ -67,6 +67,10 @@ class BBEE_Plugin {
 			'bruk_hentet_tekst' => false,
 			'max_tokens'      => 1500,
 
+			// Oppfølgingsspørsmål skrives om til et selvstendig søkespørsmål før søket,
+			// så «Hvem må godkjenne et slikt fravik?» beholder temaet fra samtalen.
+			'omskriv_oppfolging' => true,
+
 			// Svarmodell når OpenAI brukes (konstanten BBEE_OPENAI_CHAT_MODEL i wp-config.php vinner).
 			'openai_chat_model'  => 'gpt-4.1-mini',
 			'openai_temperature' => 0.2,
