@@ -748,6 +748,7 @@ function bv_meldinger_sok_mottakere($avsender_id, $sok) {
         'post_type'      => 'foretak',
         'post_status'    => array('publish', 'pending', 'draft'),
         's'              => $sok,
+        'search_columns' => array('post_title'), // Bare foretaksnavnet, ikke beskrivelsen.
         'fields'         => 'ids',
         'posts_per_page' => 20,
         'no_found_rows'  => true,
@@ -776,7 +777,8 @@ function bv_meldinger_sok_mottakere($avsender_id, $sok) {
         $treff[] = array(
             'id'      => $id,
             'navn'    => bv_meldinger_navn($id),
-            'foretak' => $foretak_id ? (string) get_the_title($foretak_id) : '',
+            // Rå tekst (get_the_title gir HTML-entiteter som &#8211;). Escapes ved utskrift.
+            'foretak' => $foretak_id ? html_entity_decode((string) get_the_title($foretak_id), ENT_QUOTES, 'UTF-8') : '',
         );
     }
 

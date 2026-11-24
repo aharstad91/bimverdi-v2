@@ -133,9 +133,10 @@ else :
                        value="<?php echo esc_attr($sok); ?>" class="bv-ny__felt" autocomplete="off">
                 <button type="submit" class="bv-btn bv-btn--primary px-6 py-2.5 text-sm font-semibold rounded-lg"><?php esc_html_e('Søk', 'bimverdi'); ?></button>
             </div>
-            <p class="bv-ny__hjelp"><?php esc_html_e('Minst 2 tegn. Du finner bare personer som tar imot lukkede meldinger.', 'bimverdi'); ?></p>
+            <p class="bv-ny__hjelp"><?php esc_html_e('Minst 2 tegn. Treffene kommer mens du skriver. Du finner bare personer som tar imot lukkede meldinger.', 'bimverdi'); ?></p>
         </form>
 
+        <div id="bv-ny-resultat" aria-live="polite">
         <?php if ($sok !== ''): ?>
             <?php if (mb_strlen($sok, 'UTF-8') < 2): ?>
                 <p class="bv-ny__sperre"><?php esc_html_e('Skriv minst 2 tegn.', 'bimverdi'); ?></p>
@@ -158,7 +159,76 @@ else :
                 <?php endif; ?>
             <?php endif; ?>
         <?php endif; ?>
+        </div>
     </div>
+
+    <script>
+    // Treff mens du skriver (B-002: JS for interaksjon). Uten JS virker skjemaet som før.
+    (function () {
+        var felt = document.getElementById('bv-ny-sok');
+        var boks = document.getElementById('bv-ny-resultat');
+        if (!felt || !boks || !window.fetch) return;
+        var api   = <?php echo wp_json_encode(rest_url('bimverdi/v1/meldinger/mottakere')); ?>;
+        var nonce = <?php echo wp_json_encode(wp_create_nonce('wp_rest')); ?>;
+        var nyUrl = <?php echo wp_json_encode(bv_meldinger_ny_url()); ?>;
+        var tekst = {
+            skriv: <?php echo wp_json_encode(__('Skriv lukket melding', 'bimverdi')); ?>,
+            ingen: <?php echo wp_json_encode(__('Ingen treff på «%s».', 'bimverdi')); ?>,
+            mange: <?php echo wp_json_encode(__('Viser de 20 første treffene. Skriv mer for å snevre inn.', 'bimverdi')); ?>,
+            feil:  <?php echo wp_json_encode(__('Søket feilet. Trykk «Søk» for å prøve igjen.', 'bimverdi')); ?>
+        };
+        var tidtaker = null, siste = '';
+
+        function el(tag, klasse, innhold) {
+            var e = document.createElement(tag);
+            if (klasse) e.className = klasse;
+            if (innhold) e.textContent = innhold;
+            return e;
+        }
+        function vis(sok, treff) {
+            boks.innerHTML = '';
+            if (!treff.length) {
+                boks.appendChild(el('p', 'bv-ny__sperre', tekst.ingen.replace('%s', sok)));
+                return;
+            }
+            var ul = el('ul', 'bv-ny__treff');
+            treff.forEach(function (t) {
+                var li = el('li', 'bv-ny__rad'), span = el('span');
+                span.appendChild(el('span', 'bv-ny__navn', t.navn));
+                if (t.foretak) span.appendChild(el('span', 'bv-ny__foretak', t.foretak));
+                var a = el('a', 'bv-ny__lenke', tekst.skriv);
+                a.href = nyUrl + (nyUrl.indexOf('?') === -1 ? '?' : '&') + 'til=' + encodeURIComponent(t.id);
+                li.appendChild(span); li.appendChild(a); ul.appendChild(li);
+            });
+            boks.appendChild(ul);
+            if (treff.length >= 20) boks.appendChild(el('p', 'bv-ny__hjelp', tekst.mange));
+        }
+        function sok() {
+            var q = felt.value.trim();
+            if (q === siste) return;
+            siste = q;
+            if (q.length < 2) { boks.innerHTML = ''; return; }
+            fetch(api + (api.indexOf('?') === -1 ? '?' : '&') + 'sok=' + encodeURIComponent(q), {
+                credentials: 'same-origin',
+                headers: { 'X-WP-Nonce': nonce }
+            }).then(function (r) {
+                if (!r.ok) throw new Error(r.status);
+                return r.json();
+            }).then(function (data) {
+                if (felt.value.trim() !== q) return; // Utdatert svar.
+                vis(q, Array.isArray(data) ? data : []);
+                try { history.replaceState(null, '', nyUrl + '?sok=' + encodeURIComponent(q)); } catch (e) {}
+            }).catch(function () {
+                boks.innerHTML = '';
+                boks.appendChild(el('p', 'bv-ny__sperre', tekst.feil));
+            });
+        }
+        felt.addEventListener('input', function () {
+            clearTimeout(tidtaker);
+            tidtaker = setTimeout(sok, 300);
+        });
+    })();
+    </script>
 <?php endif; ?>
 
 <style>
