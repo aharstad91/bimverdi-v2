@@ -51,6 +51,7 @@ $total_tools     = wp_count_posts('verktoy')->publish;
 $total_events    = wp_count_posts('arrangement')->publish;
 $total_sources   = wp_count_posts('kunnskapskilde')->publish;
 $total_articles  = wp_count_posts('artikkel')->publish;
+$total_projects  = (int) wp_count_posts('bv_pilot_prosjekt')->publish;
 
 // Foretak for logo bar: alle deltakere og oppover, i tilfeldig rekkefølge.
 // Overskriften sier «Disse foretakene er med i nettverket», så et utvalg på
@@ -1297,7 +1298,7 @@ $theme_groups = [
     <div class="bv3-container">
         <div class="bv3-hero__inner">
             <div>
-                <span class="bv3-eyebrow">Bedriftsnettverk for økt produktivitet med BIM og KI</span>
+                <span class="bv3-eyebrow">Innovasjonsnettverk for økt produktivitet med BIM og KI</span>
                 <h1 class="bv3-h1">Økosystem for fornying og innovasjon i&nbsp;byggenæringen</h1>
                 <p class="bv3-subtitle">BIM Verdi gir deg forståelse for det digitale økosystemet med kunnskap, ressurser, partnere og verktøy — ikke bare enkeltdelene.</p>
                 <div class="bv3-hero__stats">
@@ -1306,6 +1307,7 @@ $theme_groups = [
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#6B9B37;"></span><strong><?php echo esc_html($total_sources); ?></strong> kilder</span>
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#0D9488;"></span><strong><?php echo esc_html($total_events); ?></strong> arrangementer</span>
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#EC4899;"></span><strong><?php echo esc_html($total_articles); ?></strong> artikler</span>
+                    <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#7C3AED;"></span><strong><?php echo esc_html($total_projects); ?></strong> prosjekter/case</span>
                 </div>
                 <div class="bv3-hero__actions">
                     <?php if (is_user_logged_in()): ?>
