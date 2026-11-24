@@ -1297,9 +1297,9 @@ $theme_groups = [
     <div class="bv3-container">
         <div class="bv3-hero__inner">
             <div>
-                <span class="bv3-eyebrow">Norges bransjenettverk for BIM</span>
-                <h1 class="bv3-h1">Kobler sammen byggenæringens digitale&nbsp;økosystem</h1>
-                <p class="bv3-subtitle">BIM Verdi kartlegger koblingene mellom verktøy, standarder, foretak og temagrupper. Forstå det digitale økosystemet — ikke bare enkeltdelene.</p>
+                <span class="bv3-eyebrow">Bedriftsnettverk for økt produktivitet med BIM og KI</span>
+                <h1 class="bv3-h1">Økosystem for fornying og innovasjon i&nbsp;byggenæringen</h1>
+                <p class="bv3-subtitle">BIM Verdi gir deg forståelse for det digitale økosystemet med kunnskap, ressurser, partnere og verktøy — ikke bare enkeltdelene.</p>
                 <div class="bv3-hero__stats">
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#FF8B5E;"></span><strong><?php echo esc_html($total_tools); ?></strong> verktøy</span>
                     <span class="bv3-hero__stat"><span class="bv3-hero__stat-dot" style="background:#005898;"></span><strong><?php echo esc_html($total_companies); ?></strong> foretak</span>
