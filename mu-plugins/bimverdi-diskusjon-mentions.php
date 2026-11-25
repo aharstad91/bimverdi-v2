@@ -31,9 +31,135 @@ const BV_MENTIONS_MAKS_PER_KOMMENTAR = 10;
 /**
  * Regex-mønster for «@Navn» med ordgrense — hindrer at «@Anna Berg» matcher
  * inne i «@Anna Bergström» (prefiks-kollisjon).
+ *
+ * Krav 34: uten forskjell på store og små bokstaver, og med fleksible
+ * mellomrom, slik at navn som er skrevet for hånd («@morten gustavsen»,
+ * «@Dag  Fjeld») markeres likt med navn valgt fra lista.
  */
 function bv_mention_pattern($navn) {
-    return '/@' . preg_quote($navn, '/') . '(?![\p{L}\p{N}])/u';
+    $ord = preg_split('/\s+/u', trim((string) $navn), -1, PREG_SPLIT_NO_EMPTY);
+    $ord = array_map(function ($o) { return preg_quote($o, '/'); }, $ord);
+    return '/@' . implode('\s+', $ord) . '(?![\p{L}\p{N}])/iu';
+}
+
+/** Normaliser et navn for sammenligning: små bokstaver, ett mellomrom. */
+function bv_mention_normaliser($navn) {
+    return mb_strtolower(preg_replace('/\s+/u', ' ', trim((string) $navn)));
+}
+
+/** Fjern tegnsetting og mellomrom på slutten («Jensen,» → «Jensen»). */
+function bv_mention_rens_slutt($tekst) {
+    return preg_replace('/[\s,.:;!?)]+$/u', '', (string) $tekst);
+}
+
+/**
+ * Alle brukere som kan tagges, indeksert på normalisert visningsnavn.
+ * Samme utvalg som autocompleten (alle brukere). Hentes én gang per
+ * forespørsel — med noen hundre brukere er det billigere og mer robust
+ * (kollasjon, doble mellomrom) enn én SQL-spørring per kandidat.
+ *
+ * @return array<string, int[]> normalisert navn → bruker-ID-er
+ */
+function bv_mention_kandidatindeks() {
+    static $indeks = null;
+    if (null !== $indeks) {
+        return $indeks;
+    }
+    global $wpdb;
+    $indeks = [];
+    foreach ($wpdb->get_results("SELECT ID, display_name FROM {$wpdb->users}") as $rad) {
+        $nokkel = bv_mention_normaliser($rad->display_name);
+        if ($nokkel !== '') {
+            $indeks[$nokkel][] = (int) $rad->ID;
+        }
+    }
+    return $indeks;
+}
+
+/**
+ * Krav 34: finn @-navn i en tekst og avgjør om hvert navn passer med én
+ * person. Brukes både ved lagring (R1, automatisk tagging) og av sjekken før
+ * publisering (R2, AJAX). Funksjonen skriver ingenting, sender ingenting og
+ * teller ikke mot dagsgrensen.
+ *
+ * Regler:
+ * - «@» må stå først eller etter blank/«(» (som i bv-mentions.js), så
+ *   e-postadresser og URL-er ikke treffer.
+ * - Opptil fem ord etter «@», lengste kombinasjon prøves først.
+ * - Tegnsetting på slutten fjernes; sammenligning uten forskjell på store og
+ *   små bokstaver og med mellomrom slått sammen.
+ *
+ * @param string $tekst
+ * @return array<int, array{tekst:string, navn:string, status:string, id:?int}>
+ *   status: 'unik' (id satt, navn = kontoens display_name) | 'flere' | 'ingen'
+ */
+function bimverdi_mention_finn_i_tekst($tekst) {
+    $tekst = (string) $tekst;
+    if (strpos($tekst, '@') === false) {
+        return [];
+    }
+    if (!preg_match_all('/(?<=^|[\s(])@(?=[\p{L}\p{N}])/u', $tekst, $m, PREG_OFFSET_CAPTURE)) {
+        return [];
+    }
+
+    $indeks   = bv_mention_kandidatindeks();
+    $resultat = [];
+
+    foreach ($m[0] as $treff) {
+        $rest = substr($tekst, $treff[1] + 1, 400);
+        // Opptil fem ord på samme linje (linjeskift avslutter et navn).
+        if (!preg_match('/^\S+(?:[^\S\r\n]+\S+){0,4}/u', $rest, $mm)) {
+            continue;
+        }
+        $ord = preg_split('/[^\S\r\n]+/u', $mm[0], -1, PREG_SPLIT_NO_EMPTY);
+
+        $funnet = null;
+        for ($k = count($ord); $k >= 1; $k--) {
+            $kandidat = bv_mention_rens_slutt(implode(' ', array_slice($ord, 0, $k)));
+            if ($kandidat === '') {
+                continue;
+            }
+            $nokkel = bv_mention_normaliser($kandidat);
+            if (isset($indeks[$nokkel])) {
+                $ids = array_values(array_unique($indeks[$nokkel]));
+                if (count($ids) === 1) {
+                    $bruker = get_userdata($ids[0]);
+                    $navn   = $bruker ? $bruker->display_name : $kandidat;
+                    $funnet = ['tekst' => '@' . $kandidat, 'navn' => $navn, 'status' => 'unik', 'id' => $ids[0]];
+                } else {
+                    $funnet = ['tekst' => '@' . $kandidat, 'navn' => $kandidat, 'status' => 'flere', 'id' => null];
+                }
+                break;
+            }
+        }
+
+        if (!$funnet) {
+            // Ingen treff: vis «@» + ord med stor forbokstav (maks tre) i
+            // advarselen. Bare til visning — ingenting bindes.
+            $vis = [];
+            foreach ($ord as $o) {
+                if (count($vis) >= 3 || !preg_match('/^\p{Lu}/u', $o)) {
+                    break;
+                }
+                $vis[] = $o;
+                if (bv_mention_rens_slutt($o) !== $o) {
+                    break; // «Testesen,» avslutter navnet.
+                }
+            }
+            if (!$vis) {
+                $vis = [$ord[0]];
+            }
+            $navn   = bv_mention_rens_slutt(implode(' ', $vis));
+            if ($navn === '') {
+                continue;
+            }
+            $funnet = ['tekst' => '@' . $navn, 'navn' => $navn, 'status' => 'ingen', 'id' => null];
+        }
+
+        $resultat[] = $funnet;
+    }
+
+    return $resultat;
 }
 
 /**
@@ -91,17 +217,16 @@ add_action('wp_ajax_bimverdi_mention_sok', function () {
  * logges med årsak (feilsøkbart uten å blokkere publisering).
  */
 add_action('wp_insert_comment', function ($comment_id, $comment) {
-    if (empty($_POST['bv_mentions'])) {
-        return;
-    }
     $post = get_post($comment->comment_post_ID);
     if (!$post || !function_exists('bimverdi_diskusjon_aktiv') || !bimverdi_diskusjon_aktiv($post)) {
         return;
     }
 
-    $raa = json_decode(wp_unslash($_POST['bv_mentions']), true);
+    // Krav 34: ingen tidlig retur når lista er tom — R1 under skal kjøre
+    // uansett. Ugyldig/manglende felt = ingen bindinger fra lista.
+    $raa = empty($_POST['bv_mentions']) ? [] : json_decode(wp_unslash($_POST['bv_mentions']), true);
     if (!is_array($raa)) {
-        return;
+        $raa = [];
     }
 
     $bundne = [];
@@ -130,9 +255,124 @@ add_action('wp_insert_comment', function ($comment_id, $comment) {
         $bundne[$uid] = $uid; // dedupe
     }
 
+    // Krav 34 R1: navn som er skrevet helt og bare passer med én person,
+    // tagges som om de var valgt fra lista. Et tillegg til bindingene over,
+    // ikke en erstatning. Feilisolert: tagging skal aldri gi feilside etter
+    // at innlegget er lagret (R7).
+    try {
+        $auto = 0;
+        foreach (bimverdi_mention_finn_i_tekst($comment->comment_content) as $treff) {
+            if ('unik' === $treff['status'] && !isset($bundne[$treff['id']])) {
+                $bundne[$treff['id']] = $treff['id'];
+                $auto++;
+            }
+        }
+        if ($auto) {
+            error_log(sprintf('[bv-mentions] Auto-tagget %d navn i kommentar %d.', $auto, $comment_id));
+        }
+    } catch (\Throwable $e) {
+        error_log(sprintf('[bv-mentions] Auto-tagging feilet (kommentar %d): %s', $comment_id, $e->getMessage()));
+    }
+
+    $bundne = array_slice($bundne, 0, BV_MENTIONS_MAKS_PER_KOMMENTAR, true);
     if ($bundne) {
         update_comment_meta($comment_id, '_bv_mention_user_ids', array_values($bundne));
     }
+}, 10, 2);
+
+/**
+ * Krav 34: redigering i wp-admin. Nye navn i teksten tagges, og BARE de nye
+ * får varsel. Tagger som var der fra før, gir ikke nytt varsel og fjernes
+ * aldri. Varselet går gjennom samme hjelper som ved publisering (samme gate,
+ * avmelding og tak).
+ */
+add_action('edit_comment', function ($comment_id) {
+    try {
+        $comment = get_comment($comment_id);
+        if (!$comment || '1' !== (string) $comment->comment_approved) {
+            return;
+        }
+        $post = get_post($comment->comment_post_ID);
+        if (!$post || !function_exists('bimverdi_diskusjon_aktiv') || !bimverdi_diskusjon_aktiv($post)) {
+            return;
+        }
+
+        $eksisterende = get_comment_meta($comment_id, '_bv_mention_user_ids', true);
+        $eksisterende = is_array($eksisterende) ? array_map('intval', $eksisterende) : [];
+
+        $nye = [];
+        foreach (bimverdi_mention_finn_i_tekst($comment->comment_content) as $treff) {
+            if ('unik' !== $treff['status'] || in_array($treff['id'], $eksisterende, true)) {
+                continue;
+            }
+            if (count($eksisterende) + count($nye) >= BV_MENTIONS_MAKS_PER_KOMMENTAR) {
+                break;
+            }
+            $nye[$treff['id']] = 'mention';
+        }
+        if (!$nye) {
+            return;
+        }
+
+        update_comment_meta($comment_id, '_bv_mention_user_ids', array_values(array_merge($eksisterende, array_keys($nye))));
+        error_log(sprintf('[bv-mentions] Redigering: %d nye tagger i kommentar %d.', count($nye), $comment_id));
+
+        if (function_exists('bimverdi_diskusjon_varsle_mottakere')) {
+            bimverdi_diskusjon_varsle_mottakere($comment, $post, $nye);
+        }
+    } catch (\Throwable $e) {
+        error_log(sprintf('[bv-mentions] Redigering feilet (kommentar %d): %s', $comment_id, $e->getMessage()));
+    }
+});
+
+/**
+ * Krav 34 R2: sjekk før publisering. Ett kall for hele teksten, og det teller
+ * som ETT søk mot dagsgrensen uansett hvor mange navn teksten har. Svaret har
+ * aldri bruker-ID for 'flere' eller 'ingen'.
+ */
+add_action('wp_ajax_bimverdi_mention_sjekk', function () {
+    if (!check_ajax_referer('bv_mentions', 'nonce', false)) {
+        wp_send_json_error(['code' => 'ugyldig_nonce'], 403);
+    }
+
+    $bruker_id = get_current_user_id();
+    $grense    = (int) apply_filters('bimverdi_mention_sok_dagsgrense', 50);
+    $rate_key  = 'bv_mention_sok_' . $bruker_id;
+    $antall    = (int) get_transient($rate_key);
+    if ($antall >= $grense) {
+        wp_send_json_error(['code' => 'rate_limit'], 429);
+    }
+    set_transient($rate_key, $antall + 1, DAY_IN_SECONDS);
+
+    $tekst = isset($_POST['tekst']) ? mb_substr((string) wp_unslash($_POST['tekst']), 0, 20000) : '';
+
+    $treff = array_map(function ($t) {
+        return [
+            'tekst'  => $t['tekst'],
+            'navn'   => $t['navn'],
+            'status' => $t['status'],
+            'id'     => 'unik' === $t['status'] ? (int) $t['id'] : null,
+        ];
+    }, bimverdi_mention_finn_i_tekst($tekst));
+
+    wp_send_json_success([
+        'treff' => $treff,
+        'maks'  => BV_MENTIONS_MAKS_PER_KOMMENTAR,
+    ]);
+});
+
+/**
+ * Krav 34 R3: etter publisering sendes skribenten tilbake med
+ * ?bv_varslet={id}, slik at innlegget kan vise «Varslet: …». Legges bare på
+ * når noen faktisk fikk mention-varsel (meta skrives av varsel-pluginen).
+ */
+add_filter('comment_post_redirect', function ($location, $comment) {
+    if (!$comment || !get_comment_meta($comment->comment_ID, '_bv_mention_varslet', true)) {
+        return $location;
+    }
+    $deler = explode('#', $location, 2);
+    $url   = add_query_arg('bv_varslet', (int) $comment->comment_ID, $deler[0]);
+    return $url . (isset($deler[1]) ? '#' . $deler[1] : '');
 }, 10, 2);
 
 /**

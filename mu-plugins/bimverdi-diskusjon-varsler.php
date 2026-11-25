@@ -109,10 +109,6 @@ function bimverdi_diskusjon_varsle($comment_id, $approved) {
             return;
         }
 
-        $avsender_id   = (int) $comment->user_id;
-        $avsender      = $avsender_id ? get_userdata($avsender_id) : false;
-        $avsender_navn = $avsender ? $avsender->display_name : $comment->comment_author;
-
         // Mottaker-oppløsning (R10): map user_id → varseltype, i stigende
         // prioritet — én e-post per person, og den mest personlige malen vinner.
         // Abonnement legges derfor FØRST, så svar, så mention øverst.
@@ -136,11 +132,41 @@ function bimverdi_diskusjon_varsle($comment_id, $approved) {
                 }
             }
         }
+
+        bimverdi_diskusjon_varsle_mottakere($comment, $post, $mottakere);
+    } catch (\Throwable $e) {
+        error_log(sprintf('[bv-varsler] Uventet feil (kommentar %d): %s', $comment_id, $e->getMessage()));
+    }
+}
+
+/**
+ * Send varsler til en ferdig oppløst mottakerliste (user_id → type).
+ *
+ * Skilt ut fra bimverdi_diskusjon_varsle() (krav 34) slik at redigering i
+ * wp-admin kan varsle nye tagger gjennom NØYAKTIG samme vei: selvfilter,
+ * avmelding, gate og tak. Kalleren fanger feil.
+ *
+ * Mention-varsler som faktisk ble sendt, lagres i kommentarmeta
+ * _bv_mention_varslet — grunnlaget for «Varslet: …» etter publisering (R3).
+ * Den viser bare dem som fikk e-post, ikke alle som er tagget.
+ *
+ * @param WP_Comment         $comment
+ * @param WP_Post            $post
+ * @param array<int, string> $mottakere user_id → 'mention' | 'svar' | 'abonnement'
+ */
+function bimverdi_diskusjon_varsle_mottakere($comment, $post, $mottakere) {
+        $comment_id    = (int) $comment->comment_ID;
+        $avsender_id   = (int) $comment->user_id;
+        $avsender      = $avsender_id ? get_userdata($avsender_id) : false;
+        $avsender_navn = $avsender ? $avsender->display_name : $comment->comment_author;
+
         unset($mottakere[$avsender_id]); // Aldri varsel til seg selv.
 
         if (!$mottakere) {
             return;
         }
+
+        $varslet = [];
 
         // To tak, med vilje adskilt (R15b utvidet 26.08):
         //
@@ -196,11 +222,16 @@ function bimverdi_diskusjon_varsle($comment_id, $approved) {
             }
             set_transient($total_key, $totalt + 1, HOUR_IN_SECONDS);
 
-            bimverdi_diskusjon_varsel_send($type, $mottaker, $avsender_navn, $comment, $post);
+            if (bimverdi_diskusjon_varsel_send($type, $mottaker, $avsender_navn, $comment, $post) && 'mention' === $type) {
+                $varslet[] = (int) $uid;
+            }
         }
-    } catch (\Throwable $e) {
-        error_log(sprintf('[bv-varsler] Uventet feil (kommentar %d): %s', $comment_id, $e->getMessage()));
-    }
+
+        if ($varslet) {
+            $fra_for = get_comment_meta($comment_id, '_bv_mention_varslet', true);
+            $fra_for = is_array($fra_for) ? array_map('intval', $fra_for) : [];
+            update_comment_meta($comment_id, '_bv_mention_varslet', array_values(array_unique(array_merge($fra_for, $varslet))));
+        }
 }
 
 /**
