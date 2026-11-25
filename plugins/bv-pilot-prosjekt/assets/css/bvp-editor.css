@@ -1,0 +1,359 @@
+/* BV-pilot/prosjekt - skjemaeditor */
+
+.bvp-editor .bvp-ed-intro {
+	max-width: 70em;
+}
+
+.bvp-editor .bvp-ed-toolbar {
+	display: flex;
+	gap: .5rem;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 1rem 0;
+}
+
+.bvp-ed-section {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #1d5c8a;
+	border-radius: 4px;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1.25rem;
+}
+
+.bvp-ed-section__head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .75rem;
+	align-items: center;
+}
+
+.bvp-ed-grow {
+	flex: 1 1 18rem;
+}
+
+.bvp-ed-grow input,
+.bvp-ed-intro-row input {
+	width: 100%;
+}
+
+.bvp-ed-title {
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+.bvp-ed-intro-row {
+	display: block;
+	margin: .75rem 0;
+	color: #50575e;
+}
+
+.bvp-ed-handle button {
+	font-size: 1rem;
+	line-height: 1;
+	padding: .2rem .3rem;
+	text-decoration: none;
+}
+
+.bvp-ed-field {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	margin-bottom: .5rem;
+	background: #fbfbfc;
+}
+
+.bvp-ed-field > summary {
+	cursor: pointer;
+	padding: .6rem .8rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .6rem;
+	align-items: center;
+}
+
+.bvp-ed-field__label {
+	font-weight: 600;
+	flex: 1 1 16rem;
+}
+
+.bvp-ed-field__type,
+.bvp-ed-key {
+	color: #50575e;
+	font-size: .85rem;
+}
+
+.bvp-ed-badge {
+	background: #fdf3e0;
+	color: #8a5a00;
+	border-radius: 999px;
+	padding: .05rem .5rem;
+	font-size: .75rem;
+}
+
+.bvp-ed-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: .9rem;
+	padding: 0 .8rem .8rem;
+}
+
+.bvp-ed-grid label {
+	display: block;
+	font-weight: 600;
+	font-size: .9rem;
+}
+
+.bvp-ed-grid input[type="text"],
+.bvp-ed-grid input[type="number"],
+.bvp-ed-grid select,
+.bvp-ed-grid textarea {
+	width: 100%;
+	font-weight: 400;
+	margin-top: .2rem;
+}
+
+.bvp-ed-span2 { grid-column: span 2; }
+.bvp-ed-span3 { grid-column: 1 / -1; }
+
+.bvp-ed-check,
+.bvp-ed-delete {
+	font-weight: 400;
+	align-self: end;
+}
+
+.bvp-ed-delete {
+	color: #b32d2e;
+}
+
+.bvp-ed-field__actions {
+	padding: 0 .8rem .8rem;
+	display: flex;
+	gap: .5rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.bvp-ed-marked {
+	opacity: .5;
+	outline: 2px dashed #b32d2e;
+}
+
+.bvp-ed-tools {
+	display: flex;
+	gap: 2rem;
+	flex-wrap: wrap;
+	align-items: center;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 1rem;
+}
+
+.bvp-preview {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 1.5rem;
+	max-width: 860px;
+}
+
+.bvp-preview fieldset {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+
+.bvp-preview__tag {
+	font-size: .8rem;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: #50575e;
+	margin: 1.5rem 0 .25rem;
+}
+
+@media (max-width: 782px) {
+	.bvp-ed-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.bvp-ed-span2,
+	.bvp-ed-span3 {
+		grid-column: auto;
+	}
+}
+
+.bvp-ed-badge--hidden {
+	background: #e8eaed;
+	color: #3c434a;
+}
+
+.bvp-ed-hide .description {
+	display: block;
+	font-weight: 400;
+}
+
+.bvp-ed-field[data-hidden="1"] > summary .bvp-ed-field__label {
+	text-decoration: line-through;
+	opacity: .7;
+}
+
+/* Skjul/slett side om side under hvert spørsmål */
+.bvp-ed-flags {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	border-top: 1px solid #e0e0e2;
+	padding-top: .8rem;
+	margin-top: .2rem;
+}
+
+.bvp-ed-flags label {
+	font-weight: 400;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: .6rem .7rem;
+	margin: 0;
+}
+
+.bvp-ed-flags label strong {
+	font-weight: 600;
+}
+
+.bvp-ed-flags .description {
+	display: block;
+	margin-top: .2rem;
+	font-size: .82rem;
+}
+
+.bvp-ed-flags .bvp-ed-hide:has( input:checked ) {
+	border-color: #3c434a;
+	background: #f0f0f1;
+}
+
+.bvp-ed-flags .bvp-ed-delete:has( input:checked ) {
+	border-color: #b32d2e;
+	background: #fcf0f1;
+}
+
+@media (max-width: 782px) {
+	.bvp-ed-flags {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Skjul/slett på seksjonsnivå */
+.bvp-ed-section-flags {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.bvp-ed-section-flags label {
+	font-weight: 400;
+	white-space: nowrap;
+}
+
+.bvp-ed-section-flags .bvp-ed-hide {
+	color: #3c434a;
+}
+
+.bvp-ed-hidden-note {
+	background: #f0f0f1;
+	border-left: 3px solid #8c8f94;
+	padding: .5rem .75rem;
+	margin: .75rem 0 0;
+	font-size: .9rem;
+}
+
+.bvp-ed-section[data-hidden="1"] {
+	border-left-color: #8c8f94;
+	background: #f6f7f7;
+}
+
+.bvp-ed-section[data-hidden="1"] .bvp-ed-title {
+	text-decoration: line-through;
+}
+
+/* Kollaps av seksjoner */
+.bvp-ed-kollaps {
+	font-size: 1rem;
+	line-height: 1;
+	padding: .2rem .4rem;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.bvp-ed-section--lukket .bvp-ed-fields,
+.bvp-ed-section--lukket .bvp-ed-intro-row,
+.bvp-ed-section--lukket .bvp-add-field {
+	display: none;
+}
+
+.bvp-ed-section--lukket > p:has(.bvp-add-field) {
+	display: none;
+}
+
+.bvp-ed-section__head::after {
+	content: attr(data-antall);
+	color: #50575e;
+	font-size: .85rem;
+}
+
+.bvp-ed-section--lukket {
+	padding-bottom: .6rem;
+}
+
+.bvp-ed-section--lukket .bvp-ed-section__head::after {
+	content: attr(data-antall);
+}
+
+.bvp-ed-klientfeil {
+	margin: 1rem 0;
+}
+
+/* Flytt felt til annen seksjon */
+.bvp-ed-flytt {
+	display: inline-flex;
+	align-items: center;
+	gap: .4rem;
+	font-size: .9rem;
+}
+
+.bvp-ed-flytt select {
+	max-width: 18rem;
+}
+
+/* Seksjon uten synlige felt */
+.bvp-ed-tomvarsel {
+	margin: .75rem 0;
+	padding: .5rem .75rem;
+	font-size: .9rem;
+}
+
+/* Unik ID-referanse på felt og seksjoner */
+.bvp-ed-id {
+	display: inline-block;
+	flex: 0 0 auto;
+	min-width: 3.2em;
+	text-align: center;
+	font-family: Consolas, Monaco, monospace;
+	font-size: .78rem;
+	color: #50575e;
+	background: #f0f0f1;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	padding: 0 .35em;
+}
+
+.bvp-ed-section__head .bvp-ed-id {
+	align-self: center;
+}
+
+.bvp-ed-valgvarsel {
+	display: block;
+	margin-top: .3rem;
+	color: #8a5700;
+	font-size: .85rem;
+}

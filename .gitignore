@@ -24,6 +24,8 @@ plugins/*
 !plugins/bv-hurtigreg/**
 !plugins/bv-lenkevakt/
 !plugins/bv-lenkevakt/**
+!plugins/bv-pilot-prosjekt/
+!plugins/bv-pilot-prosjekt/**
 !plugins/bumblebee/
 !plugins/bumblebee/**
 
