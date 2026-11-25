@@ -84,6 +84,25 @@ if (!function_exists('bimverdi_diskusjon_comment')) {
                 <span class="bv-diskusjon-pending">Venter på godkjenning</span>
                 <?php endif; ?>
             </div>
+            <?php
+            // Krav 34 R3: «Varslet: …» rett etter publisering — bare for den som
+            // skrev, og bare dem som faktisk fikk e-post (_bv_mention_varslet
+            // skrives av mu-plugins/bimverdi-diskusjon-varsler.php).
+            $bv_varslet_navn = [];
+            if (absint($_GET['bv_varslet'] ?? 0) === (int) $comment->comment_ID
+                && get_current_user_id()
+                && get_current_user_id() === (int) $comment->user_id) {
+                $bv_varslet_ids = get_comment_meta($comment->comment_ID, '_bv_mention_varslet', true);
+                foreach ((array) $bv_varslet_ids as $bv_uid) {
+                    $bv_u = get_userdata((int) $bv_uid);
+                    if ($bv_u) {
+                        $bv_varslet_navn[] = $bv_u->display_name;
+                    }
+                }
+            }
+            if ($bv_varslet_navn): ?>
+            <p class="bv-mentions-kvittering" role="status">Varslet: <?php echo esc_html(implode(', ', $bv_varslet_navn)); ?></p>
+            <?php endif; ?>
             <?php // Innlegget vises for alle (Bård, #348 punkt 6). Svar-lenken
                   // krever innlogging — den ville bare ledet til en boks
                   // utloggede ikke kan bruke. ?>
@@ -199,6 +218,19 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
 #diskusjon .bv-mentions-navn { font-weight: 500; color: #111827; }
 #diskusjon .bv-mentions-foretak { font-size: 12px; color: #78716C; }
 #diskusjon .bv-mentions-tom, #diskusjon .bv-mentions-laster { color: #78716C; cursor: default; font-size: 13px; }
+/* Krav 34: hjelpetekst (R4), advarsel før publisering (R2), kvittering (R3) */
+#diskusjon .bv-mentions-hjelp { max-width: 720px; margin: 6px 0 0; font-size: 12px; color: #78716C; }
+#diskusjon .bv-mentions-advarsel { max-width: 720px; margin: 10px 0 0; padding: 12px 14px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 8px; font-size: 13px; color: #57534E; line-height: 1.5; }
+#diskusjon .bv-mentions-advarsel strong { color: #111827; font-weight: 600; }
+#diskusjon .bv-mentions-advarsel ul { margin: 6px 0 10px; padding-left: 18px; list-style: disc; }
+#diskusjon .bv-mentions-advarsel em { color: #78716C; }
+#diskusjon .bv-mentions-advarsel p { margin: 0 0 10px; }
+#diskusjon .bv-mentions-advarsel-knapper { display: flex; flex-wrap: wrap; gap: 8px; }
+#diskusjon .bv-mentions-knapp { padding: 7px 13px; border: 1px solid #D6D3D1; border-radius: 8px; background: #fff; font-family: inherit; font-size: 13px; font-weight: 500; color: #111827; cursor: pointer; }
+#diskusjon .bv-mentions-knapp:hover { border-color: #A8A29E; }
+#diskusjon .bv-mentions-knapp--primar { background: #F97316; border-color: #F97316; color: #fff; }
+#diskusjon .bv-mentions-knapp--primar:hover { background: #EA580C; border-color: #EA580C; }
+#diskusjon .bv-mentions-kvittering { display: inline-block; margin: 0 0 8px; padding: 5px 10px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 6px; font-size: 12px; color: #9A3412; }
 </style>
 
 <section id="diskusjon" class="border-t border-[#E7E5E4] pt-10">
@@ -316,7 +348,9 @@ $bv_ab_kvittering = isset($_GET['bv_ab']) ? sanitize_key(wp_unslash($_GET['bv_ab
                 'cancel_reply_before' => ' <span class="text-xs font-normal">',
                 'cancel_reply_after'  => '</span>',
                 'cancel_reply_link'   => 'Avbryt svar',
-                'comment_field'       => '<p class="comment-form-comment mb-4"><label for="comment" class="screen-reader-text">Innlegg</label><textarea id="comment" name="comment" rows="4" required placeholder="Skriv innlegget ditt her&hellip;" class="w-full max-w-[720px] border border-[#D6D3D1] rounded-lg px-4 py-3 text-sm text-[#111827] placeholder-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#F97316]/40 focus:border-[#F97316] bg-white"></textarea></p>',
+                // div, ikke p: bv-mentions.js legger lista og advarselen (krav 34 R2)
+                // inn rett etter textarea, og de er blokkelementer.
+                'comment_field'       => '<div class="comment-form-comment mb-4"><label for="comment" class="screen-reader-text">Innlegg</label><textarea id="comment" name="comment" rows="4" required aria-describedby="bv-mentions-hjelp" placeholder="Skriv innlegget ditt her&hellip;" class="w-full max-w-[720px] border border-[#D6D3D1] rounded-lg px-4 py-3 text-sm text-[#111827] placeholder-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#F97316]/40 focus:border-[#F97316] bg-white"></textarea><p id="bv-mentions-hjelp" class="bv-mentions-hjelp">Skriv @ og velg personen i lista for å varsle hen.</p></div>',
                 'logged_in_as'        => '',
                 'comment_notes_before' => '',
                 'comment_notes_after' => $bv_abonner_felt,

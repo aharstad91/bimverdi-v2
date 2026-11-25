@@ -263,4 +263,200 @@
         // Liten forsinkelse så mousedown i lista rekker å kjøre.
         setTimeout(lukk, 150);
     });
+
+    /* ------------------------------------------------------------------
+     * Krav 34 R2: sjekk før publisering.
+     *
+     * @-navn som ikke er valgt fra lista, sendes til serveren i ett kall
+     * (bimverdi_mention_sjekk — samme serverfunksjon som tagger ved lagring).
+     * Unike treff tagges stille. Navn med flere eller ingen treff stopper
+     * publiseringen med en advarsel. Feiler kallet, publiseres innlegget
+     * uansett (R7) — serveren tagger det den kan ved lagring.
+     * ------------------------------------------------------------------ */
+    var advarsel = document.createElement('div');
+    advarsel.className = 'bv-mentions-advarsel';
+    advarsel.setAttribute('role', 'alert');
+    advarsel.hidden = true;
+    wrap.appendChild(advarsel);
+
+    var sendUtenSjekk = false;
+    var sjekkPagar = false;
+
+    /** Indekser for «@» først i teksten eller etter blank/«(», fulgt av bokstav/tall. */
+    function finnAlleAt(tekst) {
+        var re = /(^|[\s(])@(?=[\p{L}\p{N}])/gu;
+        var ut = [];
+        var m;
+        while ((m = re.exec(tekst)) !== null) {
+            ut.push(m.index + m[1].length);
+        }
+        return ut;
+    }
+
+    /** Står et navn valgt fra lista rett etter denne «@»-en? */
+    function dekketAvValgt(tekst, i) {
+        return valgte.some(function (v) {
+            var bit = tekst.substr(i + 1, v.navn.length);
+            var etter = tekst.charAt(i + 1 + v.navn.length);
+            return bit.toLowerCase() === v.navn.toLowerCase() && !/[\p{L}\p{N}]/u.test(etter);
+        });
+    }
+
+    function skjulAdvarsel() {
+        advarsel.hidden = true;
+        advarsel.innerHTML = '';
+    }
+
+    function sendSkjema() {
+        sendUtenSjekk = true;
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            // WPs knapp heter «submit» og skygger form.submit — kall prototypen.
+            HTMLFormElement.prototype.submit.call(form);
+        }
+    }
+
+    function rettOpp(forste) {
+        skjulAdvarsel();
+        var tekst = textarea.value;
+        var idx = forste ? tekst.indexOf(forste.tekst) : -1;
+        var caret = idx >= 0 ? idx + forste.tekst.length : tekst.length;
+        textarea.focus();
+        textarea.setSelectionRange(caret, caret);
+        var token = finnToken();
+        if (token && token.tekst.length >= 2) {
+            tomPrefiks = null;
+            sok(token);
+        }
+    }
+
+    function lagKnapp(tekst, klasse, handling) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'bv-mentions-knapp ' + klasse;
+        b.textContent = tekst;
+        b.addEventListener('click', handling);
+        return b;
+    }
+
+    function visAdvarsel(problemer, maks) {
+        advarsel.innerHTML = '';
+
+        if (problemer.length) {
+            var tittel = document.createElement('strong');
+            tittel.textContent = 'Disse navnene blir ikke tagget og får ikke beskjed:';
+            advarsel.appendChild(tittel);
+
+            var ul = document.createElement('ul');
+            problemer.forEach(function (p) {
+                var li = document.createElement('li');
+                li.appendChild(document.createTextNode(p.tekst + ' '));
+                var em = document.createElement('em');
+                em.textContent = p.status === 'flere'
+                    ? '(flere med samme navn — velg riktig i lista)'
+                    : '(fant ingen med dette navnet)';
+                li.appendChild(em);
+                ul.appendChild(li);
+            });
+            advarsel.appendChild(ul);
+        }
+
+        if (maks) {
+            var p = document.createElement('p');
+            p.textContent = 'Du kan tagge maks ' + maks + ' personer i ett innlegg.';
+            advarsel.appendChild(p);
+        }
+
+        var knapper = document.createElement('div');
+        knapper.className = 'bv-mentions-advarsel-knapper';
+        knapper.appendChild(lagKnapp('Publiser likevel', 'bv-mentions-knapp--primar', sendSkjema));
+        knapper.appendChild(lagKnapp('Rett opp', '', function () { rettOpp(problemer[0]); }));
+        advarsel.appendChild(knapper);
+
+        advarsel.hidden = false;
+    }
+
+    textarea.addEventListener('input', function () {
+        if (!advarsel.hidden) {
+            skjulAdvarsel(); // Teksten er endret — advarselen gjelder ikke lenger.
+        }
+    });
+
+    form.addEventListener('submit', function (e) {
+        if (sendUtenSjekk) {
+            return;
+        }
+        if (sjekkPagar) {
+            e.preventDefault();
+            return;
+        }
+
+        var tekst = textarea.value;
+        var udekket = finnAlleAt(tekst).filter(function (i) { return !dekketAvValgt(tekst, i); });
+        if (!udekket.length) {
+            skjulAdvarsel();
+            return; // Ingenting å sjekke — publiser med en gang.
+        }
+
+        e.preventDefault();
+        sjekkPagar = true;
+        lukk();
+
+        var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        var timer = setTimeout(function () { if (ctrl) { ctrl.abort(); } }, 4000);
+
+        var data = new FormData();
+        data.append('action', 'bimverdi_mention_sjekk');
+        data.append('nonce', cfg.nonce);
+        data.append('tekst', tekst);
+
+        fetch(cfg.ajaxUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: data,
+            signal: ctrl ? ctrl.signal : undefined
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (svar) {
+                clearTimeout(timer);
+                sjekkPagar = false;
+                if (!svar || !svar.success || !svar.data || !Array.isArray(svar.data.treff)) {
+                    sendSkjema(); // Rate-grense/feil → publiser uansett (R7).
+                    return;
+                }
+
+                var problemer = [];
+                var sett = {};
+                svar.data.treff.forEach(function (t) {
+                    if (t.status === 'unik' && t.id) {
+                        if (!valgte.some(function (v) { return v.id === t.id; })) {
+                            valgte.push({ id: t.id, navn: t.navn });
+                        }
+                        return;
+                    }
+                    var nokkel = String(t.navn).toLowerCase();
+                    // Valgt fra lista (f.eks. én av to med samme navn) → ikke et problem.
+                    if (sett[nokkel] || valgte.some(function (v) { return v.navn.toLowerCase() === nokkel; })) {
+                        return;
+                    }
+                    sett[nokkel] = true;
+                    problemer.push(t);
+                });
+                oppdaterHidden();
+
+                var maks = parseInt(svar.data.maks, 10) || 10;
+                var forMange = valgte.length > maks;
+                if (!problemer.length && !forMange) {
+                    sendSkjema();
+                    return;
+                }
+                visAdvarsel(problemer, forMange ? maks : 0);
+            })
+            .catch(function () {
+                clearTimeout(timer);
+                sjekkPagar = false;
+                sendSkjema(); // Nettverk/tidsgrense → publiser uansett (R7).
+            });
+    });
 })();
